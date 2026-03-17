@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from '../lib/axios';
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
-
 const SUGGESTIONS = [
   { label: '🖥 Help me build a PC',       text: 'I need help building a PC. What should I consider?' },
   { label: '🎮 GPU recommendations',      text: 'What GPU do you recommend for gaming in 2025?'      },
@@ -79,59 +77,69 @@ export default function SupportChat() {
   }, [open])
 
   const sendMessage = useCallback(async (text) => {
-    const trimmed = text?.trim() || input.trim()
-    if (!trimmed) return
+  const trimmed = text?.trim() || input.trim()
+  if (!trimmed) return
 
-    const userMsg = { id: Date.now(), sender: 'user', text: trimmed, ts: new Date() }
-    setMessages(prev => [...prev, userMsg])
-    setInput('')
-    setTyping(true)
+  const userMsg = {
+    id: Date.now(),
+    sender: 'user',
+    text: trimmed,
+    ts: new Date(),
+  }
 
-    try {
-      // POST to backend AI chat endpoint
-      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
-      const res = await fetch(`${API_URL}/api/chat/message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          message:    trimmed,
-          session_id: sessionId,
-          history:    messages.slice(-8).map(m => ({
-            role:    m.sender === 'user' ? 'user' : 'assistant',
-            content: m.text,
-          })),
-        }),
-        
-      })
+  const updatedMessages = [...messages, userMsg]
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = res.data || (await res.json())  // support both { data: ... } and direct response
-      const reply = data?.reply || data?.message || "I'll get back to you on that!"
-      if (data?.session_id) setSessionId(data.session_id)
+  setMessages(updatedMessages)
+  setInput('')
+  setTyping(true)
 
-      setMessages(prev => [...prev, {
-        id:     Date.now() + 1,
-        sender: 'bot',
-        text:   reply,
-        ts:     new Date(),
-      }])
-    } catch {
-      setMessages(prev => [...prev, {
-        id:     Date.now() + 1,
-        sender: 'bot',
-        text:   "Sorry, I couldn't reach the server. Make sure the backend is running at " + API_URL + ". You can also reach us on Facebook or call 077 711 126!",
-        ts:     new Date(),
-      }])
-    } finally {
-      setTyping(false)
+  try {
+    const res = await axios.post('/chat/message', {
+      message: trimmed,
+      session_id: sessionId,
+      history: updatedMessages.slice(-8).map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text,
+      })),
+    })
+
+    const data = res.data
+
+    const reply =
+      data?.reply ||
+      data?.message ||
+      "I'll get back to you on that!"
+
+    if (data?.session_id) {
+      setSessionId(data.session_id)
     }
-  }, [input, messages, sessionId])
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: reply,
+        ts: new Date(),
+      },
+    ])
+  } catch (error) {
+    console.error('Chat error:', error)
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text:
+          "⚠️ Server error. Please try again later or contact support.",
+        ts: new Date(),
+      },
+    ])
+  } finally {
+    setTyping(false)
+  }
+}, [input, messages, sessionId])
 
   function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
