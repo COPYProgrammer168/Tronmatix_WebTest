@@ -2,6 +2,7 @@
 import axios from 'axios'
 
 const instance = axios.create({
+  baseURL: import.meta.env.PROD ? import.meta.env.VITE_API_URL : undefined,
   // ✅ NO baseURL — requests stay relative to localhost:5173
   // Vite proxy intercepts /api/* and /storage/* and forwards to Laravel
   // ❌ DO NOT set baseURL: 'http://localhost:8000' — that bypasses Vite proxy → CORS error

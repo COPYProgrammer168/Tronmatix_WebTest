@@ -1,0 +1,43 @@
+name: Deploy Frontend to Netlify
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'                  # ← keep if you want caching
+          cache-dependency-path: '**/package-lock.json'   # ← important: tell it where to look (glob pattern)
+
+      # If your frontend is in a subfolder, add working-directory
+      - name: Install frontend dependencies
+        working-directory: ./tronmatix_frontend               # ← CHANGE THIS to your actual frontend folder (or remove line if in root)
+        run: npm ci                                 # or npm install if you don't have lockfile
+
+      - name: Build frontend
+        working-directory: ./tronmatix_frontend
+        run: npm run build
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './tronmatix_frontend/dist'            # ← adjust to where vite/esbuild outputs (usually dist or build)
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID:    ${{ secrets.NETLIFY_SITE_ID }}
