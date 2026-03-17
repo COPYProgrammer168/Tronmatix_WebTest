@@ -8,6 +8,8 @@ return [
         'http://localhost:5174',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
+        'https://agent-69b8b4653c0d634--tronmatixcomputertest.netlify.app',  // your exact Netlify URL
+        'https://*.netlify.app',
     ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
