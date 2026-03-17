@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import axios from '../lib/axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 const SUGGESTIONS = [
@@ -106,10 +107,11 @@ export default function SupportChat() {
             content: m.text,
           })),
         }),
+        
       })
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
+      const data = res.data || (await res.json())  // support both { data: ... } and direct response
       const reply = data?.reply || data?.message || "I'll get back to you on that!"
       if (data?.session_id) setSessionId(data.session_id)
 
