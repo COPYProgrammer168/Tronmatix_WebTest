@@ -1,41 +1,62 @@
 // src/lib/axios.js
 import axios from 'axios'
 
+// Detect environment
+const isProd = import.meta.env.PROD
+
+// Base URL strategy
+const baseURL = isProd
+  ? import.meta.env.VITE_API_URL // production API
+  : '/api' // use Vite proxy in development
+
+if (isProd && !baseURL) {
+  console.error("❌ VITE_API_URL is missing in production environment")
+}
+
 const instance = axios.create({
-  baseURL: import.meta.env.PROD ? import.meta.env.VITE_API_URL : undefined,
-  // ✅ NO baseURL — requests stay relative to localhost:5173
-  // Vite proxy intercepts /api/* and /storage/* and forwards to Laravel
-  // ❌ DO NOT set baseURL: 'http://localhost:8000' — that bypasses Vite proxy → CORS error
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
   withCredentials: false,
-  timeout: 15000, // 15s timeout
+  timeout: 15000,
 })
 
-// ── Request interceptor: attach Bearer token if present ───────────────────
+// ── Request interceptor ─────────────────────────────
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token')
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
     return config
   },
   (error) => Promise.reject(error)
 )
 
-// ── Response interceptor: handle 401 globally ─────────────────────────────
+// ── Response interceptor ────────────────────────────
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired / invalid — clear and redirect to home
+    const status = error.response?.status
+
+    // Handle Unauthorized
+    if (status === 401) {
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
-      window.location.href = '/'
+
+      // Better: soft redirect (SPA-safe)
+      window.location.replace('/')
     }
+
+    // Optional: log errors for debugging
+    if (import.meta.env.DEV) {
+      console.error('API Error:', error)
+    }
+
     return Promise.reject(error)
   }
 )
