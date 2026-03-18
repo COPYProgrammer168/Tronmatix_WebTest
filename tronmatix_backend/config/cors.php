@@ -8,7 +8,6 @@ return [
         'http://localhost:5174',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
-        'https://agent-69b9394875597800c3a1d24d--tronmaixtest168.netlify.app/',
     ],
     'allowed_origins_patterns' => [
         '#^https:\/\/.*\.netlify\.app$#', // ✅ correct wildcard support
