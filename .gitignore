@@ -47,4 +47,8 @@ tronmatix_frontend/yarn-error.log
 # .vercel
 # .netlify
 # vercel.json
+<<<<<<< HEAD
 # netlify.toml
+=======
+# netlify.toml
+>>>>>>> 96a88df4f11841d8bafeff0939c8580ec525cd84

@@ -1,4 +1,5 @@
-/.phpunit.cache
+# Laravel defaults + common ignores
+.phpunit.cache
 /bootstrap/ssr
 /node_modules
 /public/build
@@ -6,9 +7,6 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/resources/js/actions
-/resources/js/routes
-/resources/js/wayfinder
 /vendor
 .DS_Store
 .env
@@ -26,3 +24,16 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Frontend (Vite/React) - add these if you have tronmatix_frontend folder
+tronmatix_frontend/node_modules/
+tronmatix_frontend/dist/
+tronmatix_frontend/.vite/
+tronmatix_frontend/.env.local
+tronmatix_frontend/.env.development
+tronmatix_frontend/.env.production
+
+# Optional - if you don't want to commit lockfiles (usually you DO want to commit them)
+# package-lock.json
+# yarn.lock
+# composer.lock

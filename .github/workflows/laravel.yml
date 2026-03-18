@@ -18,26 +18,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'                  # ← keep if you want caching
-          cache-dependency-path: '**/package-lock.json'   # ← important: tell it where to look (glob pattern)
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-      # If your frontend is in a subfolder, add working-directory
       - name: Install frontend dependencies
-        working-directory: ./tronmatix_frontend               # ← CHANGE THIS to your actual frontend folder (or remove line if in root)
-        run: npm ci                                 # or npm install if you don't have lockfile
+        working-directory: ./tronmatix_frontend
+        run: npm ci
 
-      - name: Build frontend
+      - name: Build frontend (CONNECT TO BACKEND)
         working-directory: ./tronmatix_frontend
         run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2
         with:
-          publish-dir: './tronmatix_frontend/dist'            # ← adjust to where vite/esbuild outputs (usually dist or build)
+          publish-dir: './tronmatix_frontend/dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
           enable-pull-request-comment: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID:    ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
