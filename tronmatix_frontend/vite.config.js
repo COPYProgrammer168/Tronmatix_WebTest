@@ -1,11 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Use env variable for backend URL
-const backendUrl = process.env.VITE_DEV_API_URL || 'http://localhost:8000'
+// Use env variable for backend URL — set VITE_DEV_API_URL in your .env file
+const backendUrl = process.env.VITE_DEV_API_URL || 'http://127.0.0.1:8000'
 
 export default defineConfig({
   plugins: [react()],
+
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'axios',
+      'sweetalert2',
+    ],
+  },
 
   server: {
     port: 5173,
@@ -15,7 +25,6 @@ export default defineConfig({
         target: backendUrl,
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
 
       '/storage': {
@@ -60,7 +69,7 @@ export default defineConfig({
             return 'vendor-axios'
           }
 
-          // Others
+          // All other node_modules
           if (id.includes('node_modules/')) {
             return 'vendor-misc'
           }
