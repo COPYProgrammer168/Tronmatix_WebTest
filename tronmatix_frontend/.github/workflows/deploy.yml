@@ -1,0 +1,63 @@
+# .github/workflows/deploy.yml
+# Place this file in the tronmatix_frontend repo (not the Laravel repo)
+
+name: Build & Deploy Frontend to Render Static Site
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          # Points to your Laravel backend on Render
+          # Set this in GitHub Secrets: VITE_API_URL = https://tronmatix-webtest.onrender.com
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: List build output (debug)
+        run: ls -la dist/
+
+      - name: Trigger Render Static Site deployment
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "❌ RENDER_DEPLOY_HOOK secret is not set."
+            echo "   Render Dashboard → your Static Site → Settings → Deploy Hook"
+            echo "   GitHub repo → Settings → Secrets → RENDER_DEPLOY_HOOK"
+            exit 1
+          fi
+
+          HTTP_STATUS=$(curl -s -o /tmp/render_response.txt -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "$RENDER_DEPLOY_HOOK")
+
+          echo "Response: $(cat /tmp/render_response.txt)"
+          echo "HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Render Static Site deployment triggered (HTTP $HTTP_STATUS)"
+          else
+            echo "❌ Deploy trigger failed (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
