@@ -1,0 +1,24 @@
+# ── Node ──────────────────────────────────────────────────────────────────────
+node_modules/
+tronmatix_frontend/node_modules/
+tronmatix_frontend/dist/
+tronmatix_frontend/.vite/
+
+# ── Laravel ───────────────────────────────────────────────────────────────────
+vendor/
+public/build/
+public/spa/
+storage/logs/*.log
+bootstrap/cache/*.php
+
+# ── Git / IDE ─────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
