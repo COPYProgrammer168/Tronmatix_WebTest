@@ -39,7 +39,7 @@ return new class extends Migration
             $table->json('categories')->nullable()
                 ->comment('JSON array of category slugs; NULL = applies to all');
 
-            //$table->json('badge_config')->nullable()->after('categories');
+            $table->json('badge_config')->nullable()->after('categories');
 
             $table->timestamps();
 
