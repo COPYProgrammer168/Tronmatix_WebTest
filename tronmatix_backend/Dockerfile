@@ -1,6 +1,6 @@
 # ================================================================
 # Backend-only Dockerfile (Laravel + Apache)
-# Frontend deployed separately as Render Static Site.
+# Database: PostgreSQL (Render managed Postgres)
 # ================================================================
 
 
@@ -11,10 +11,7 @@ FROM composer:2.7 AS composer_builder
 
 WORKDIR /app
 
-# FIX: Create ALL required Laravel directories BEFORE copying any files.
-# This guarantees they exist and are writable when composer's
-# post-autoload-dump runs "php artisan package:discover".
-# Git does not track empty directories so they may be missing from COPY.
+# Create required Laravel directories before COPY
 RUN mkdir -p bootstrap/cache \
     && mkdir -p storage/framework/cache/data \
     && mkdir -p storage/framework/sessions \
@@ -22,16 +19,15 @@ RUN mkdir -p bootstrap/cache \
     && mkdir -p storage/logs \
     && chmod -R 777 bootstrap storage
 
-# NOW copy project files (bootstrap/cache already exists and is writable)
 COPY . .
 
-# Restore permissions after COPY (COPY may overwrite dir permissions)
+# Restore permissions after COPY
 RUN chmod -R 777 bootstrap/cache storage
 
-# Create minimal .env so php artisan can boot during post-autoload-dump
+# Create minimal .env — DB_CONNECTION=pgsql to match Render Postgres
 RUN if [ ! -f .env ]; then \
         cp .env.example .env 2>/dev/null || \
-        printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=mysql\n" > .env; \
+        printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=pgsql\n" > .env; \
     fi
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -52,20 +48,26 @@ RUN composer dump-autoload --optimize --no-scripts
 # ==============================
 FROM php:8.4-apache
 
+# FIX: Added libpq-dev + pdo_pgsql + pgsql extensions.
+# Previously only pdo_mysql was installed — Laravel couldn't find the
+# PostgreSQL driver → "could not find driver" on migrate.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev libjpeg-dev libfreetype6-dev \
     libzip-dev libicu-dev libonig-dev libxml2-dev \
+    libpq-dev \
     unzip zip git curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        gd intl mbstring exif pcntl bcmath zip pdo_mysql soap sockets opcache \
+        gd intl mbstring exif pcntl bcmath zip \
+        pdo_mysql pdo_pgsql pgsql \
+        soap sockets opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite headers
 
 WORKDIR /var/www/html
 
-# Create directories before COPY for the same reason as above
+# Create directories before COPY
 RUN mkdir -p bootstrap/cache \
     && mkdir -p storage/framework/cache/data \
     && mkdir -p storage/framework/sessions \
@@ -84,7 +86,6 @@ RUN printf "opcache.enable=1\nopcache.memory_consumption=128\nopcache.validate_t
 
 RUN if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
 
-# Final permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
     && chmod -R 775 storage bootstrap/cache
