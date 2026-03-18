@@ -6,12 +6,11 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        // Local development
         'http://localhost:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
-        'https://tronmatix-webtest.onrender.com/',     // ← replace with real domain later
+        'https://tronmatix-webtest.onrender.com',  // ✅ no trailing slash
     ],
 
     'allowed_origins_patterns' => [],
@@ -22,5 +21,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,  // ← MUST BE TRUE for Sanctum + cookies
+    'supports_credentials' => false,  // ✅ Bearer token auth = false
 ];
