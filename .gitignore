@@ -3,18 +3,25 @@
 Thumbs.db
 *.bak
 *.swp
+*.tmp
 *.log
 .idea/
 .vscode/
-*.env.*
+
+# Environment & secrets
+.env
+.env.*
+*.env.local
+*.env.production
+
+# Package managers
 npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# Laravel Backend
+# ── Laravel Backend ───────────────────────────────────────────────────────────
 tronmatix_backend/vendor/
-tronmatix_backend/node_modules/  # If backend has any JS deps
-tronmatix_backend/.env
+tronmatix_backend/node_modules/          # only if backend has frontend deps
 tronmatix_backend/storage/logs/
 tronmatix_backend/storage/framework/
 tronmatix_backend/storage/framework/cache/
@@ -24,14 +31,20 @@ tronmatix_backend/bootstrap/cache/
 tronmatix_backend/public/storage/
 tronmatix_backend/public/hot
 tronmatix_backend/public/build/
-tronmatix_backend/composer.lock  # Optional: if you regenerate often
 
-# Vite/React Frontend
+# (keep composer.lock committed unless you have a strong reason not to)
+# tronmatix_backend/composer.lock
+
+# ── Vite/React Frontend ───────────────────────────────────────────────────────
 tronmatix_frontend/node_modules/
 tronmatix_frontend/dist/
-tronmatix_frontend/build/
 tronmatix_frontend/.vite/
-tronmatix_frontend/.env.local
-tronmatix_frontend/.env.production
 tronmatix_frontend/npm-debug.log
 tronmatix_frontend/yarn-error.log
+
+# Optional extras (uncomment if needed)
+# tronmatix_frontend/build/              # only if you changed outDir to 'build'
+# .vercel
+# .netlify
+# vercel.json
+# netlify.toml
