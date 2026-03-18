@@ -1,24 +1,31 @@
-# ── Node ──────────────────────────────────────────────────────────────────────
+# ── Node modules (heavy, rebuilt in Docker) ───────────────────────────────────
 node_modules/
 tronmatix_frontend/node_modules/
+
+# ── Build output (rebuilt in Docker) ─────────────────────────────────────────
 tronmatix_frontend/dist/
 tronmatix_frontend/.vite/
-
-# ── Laravel ───────────────────────────────────────────────────────────────────
-vendor/
 public/build/
 public/spa/
-storage/logs/*.log
+
+# ── Laravel cache (regenerated in Docker) ────────────────────────────────────
+vendor/
 bootstrap/cache/*.php
+storage/logs/*.log
 
 # ── Git / IDE ─────────────────────────────────────────────────────────────────
 .git/
-.gitignore
 .github/
 .vscode/
 .idea/
 
-# ── Environment ───────────────────────────────────────────────────────────────
+# ── Secrets — NEVER include .env in Docker image ─────────────────────────────
 .env
-.env.*
+.env.backup
+.env.production
+# Keep .env.example — used as fallback template in Dockerfile
 !.env.example
+
+# IMPORTANT: tronmatix_frontend/ SOURCE must NOT be ignored
+# Docker needs it to build the React app
+# Do NOT add tronmatix_frontend/ here
