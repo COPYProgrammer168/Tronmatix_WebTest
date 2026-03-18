@@ -1,6 +1,6 @@
-FROM php:8.2-apache
+FROM php:8.4-apache
 
-# Install deps + all common extensions
+# Install dependencies + extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev libjpeg-dev libfreetype6-dev \
     libzip-dev \
@@ -33,8 +33,10 @@ COPY . .
 
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist --verbose
+# Install dependencies
+RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
 
+# Permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
