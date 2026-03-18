@@ -1,17 +1,12 @@
 FROM php:8.2-apache
 
-# Install system dependencies + dev packages for extensions
+# Install deps + all common extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev \
     libzip-dev \
     libicu-dev \
-    libonig-dev \
-    libxml2-dev \
-    unzip \
-    zip \
-    git \
+    libonig-dev libxml2-dev \
+    unzip zip git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         gd \
@@ -22,36 +17,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         bcmath \
         zip \
         pdo_mysql \
+        soap \
+        sockets \
         opcache \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Enable rewrite module
 RUN a2enmod rewrite
 
 WORKDIR /var/www/html
 
-# Copy code
 COPY . .
 
-# Increase memory for Composer
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-# Install dependencies
-RUN composer install \
-    --optimize-autoloader \
-    --no-dev \
-    --no-interaction \
-    --prefer-dist
+RUN composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist --verbose
 
-# Permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Apache config - point to /public
+# Apache config
 RUN echo '<VirtualHost *:80>\n\
     ServerName localhost\n\
     DocumentRoot /var/www/html/public\n\
