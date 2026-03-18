@@ -18,27 +18,14 @@ RUN npm run build
 
 
 # ==============================
-# 2. Composer Stage (FIXED)
+# 2. Composer Stage (PHP deps)
 # ==============================
-FROM php:8.4-cli AS composer_builder
-
-# Install required system libs
-RUN apt-get update && apt-get install -y \
-    git unzip zip \
-    libzip-dev libicu-dev libonig-dev libxml2-dev \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install zip intl mbstring gd
-
-# Install Composer manually
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+FROM composer:2.7 AS composer_builder
 
 WORKDIR /app
 
-# Copy only composer files first (cache optimization)
 COPY composer.json composer.lock ./
 
-# Install dependencies
 RUN composer install \
     --no-dev \
     --prefer-dist \
