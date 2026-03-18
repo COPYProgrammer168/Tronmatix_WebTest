@@ -1,19 +1,24 @@
-# Start from official PHP 8.2 with Apache
+# Use official PHP 8.2 with Apache (stable base)
 FROM php:8.2-apache
 
-# Install system dependencies + common PHP extensions for Laravel
-RUN apt-get update && apt-get install -y \
+# Install system dependencies + all required dev packages for extensions
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
+    libicu-dev \
+    libonig-dev \
+    libxml2-dev \
     zip \
     unzip \
     git \
-    libonig-dev \
-    libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure & install PHP extensions (one by one for better error messages)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
         gd \
         pdo_mysql \
         mbstring \
@@ -21,37 +26,38 @@ RUN apt-get update && apt-get install -y \
         pcntl \
         bcmath \
         zip \
-        intl \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+        intl
 
-# Install Composer
+# Install Composer from official image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Enable Apache mod_rewrite (required for Laravel routing)
+# Enable Apache rewrite module (Laravel routing)
 RUN a2enmod rewrite
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application code
+# Copy project files
 COPY . .
 
-# Install PHP dependencies (production mode)
+# Install Composer dependencies (production mode)
 RUN composer install \
     --optimize-autoloader \
     --no-dev \
     --no-interaction \
-    --prefer-dist
+    --prefer-dist \
+    --ignore-platform-req=ext-gd
 
-# Give correct permissions
+# Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Apache config - point DocumentRoot to /public
+# Custom Apache vhost - point to /public
 RUN echo '<VirtualHost *:80>\n\
     ServerName localhost\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
         AllowOverride All\n\
         Require all granted\n\
     </Directory>\n\
@@ -59,7 +65,7 @@ RUN echo '<VirtualHost *:80>\n\
     CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Expose port 80
+# Expose port
 EXPOSE 80
 
 # Start Apache
