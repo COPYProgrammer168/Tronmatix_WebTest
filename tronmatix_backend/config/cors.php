@@ -11,12 +11,6 @@ return [
         'http://localhost:5174',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
-
-        // Production / preview domains – add every place you deploy frontend
-        'https://tronmatixwebtest.netlify.app',
-        'https://*.netlify.app',               // all Netlify previews
-        'https://*.vercel.app',                // all Vercel previews
-        '*.onrender.com',                      // Render preview URLs
         'https://your-custom-domain.com',      // ← replace with real domain later
     ],
 

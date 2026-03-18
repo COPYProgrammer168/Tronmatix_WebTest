@@ -15,7 +15,6 @@
 
 namespace App\Exports;
 
-
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
@@ -28,13 +27,21 @@ class DashboardExport implements WithMultipleSheets
     protected Carbon $to;
 
     /**
-     * @param string $from  Y-m-d  (defaults to start of current month)
-     * @param string $to    Y-m-d  (defaults to today)
+     * Accept either Y-m-d (e.g. "2025-01-01") or Y-m (e.g. "2025-01").
+     * Defaults: from = start of current month, to = end of today.
+     *
+     * @param string $from
+     * @param string $to
      */
     public function __construct(string $from = '', string $to = '')
     {
-        $this->from = $from ? Carbon::parse($from)->startOfDay() : Carbon::now()->startOfMonth();
-        $this->to = $to ? Carbon::parse($to)->endOfDay() : Carbon::now()->endOfDay();
+        $this->from = $from
+            ? Carbon::parse($from)->startOfDay()
+            : Carbon::now()->startOfMonth()->startOfDay();
+
+        $this->to = $to
+            ? Carbon::parse($to)->endOfDay()
+            : Carbon::now()->endOfDay();
     }
 
     public function sheets(): array

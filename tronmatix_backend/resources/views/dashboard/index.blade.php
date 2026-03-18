@@ -184,7 +184,6 @@
         </div>
     </div>
 
-    {{-- ── NEW: Total Discount Used ($) ──────────────────────────────────────── --}}
     <div class="stat-card" style="border-color: rgba(168,85,247,0.3);">
         <div class="stat-icon" style="background:rgba(168,85,247,0.1); border-color:rgba(168,85,247,0.25);">
             <svg fill="none" stroke="#A855F7" stroke-width="2" viewBox="0 0 24 24">
@@ -199,7 +198,6 @@
         </div>
     </div>
 
-    {{-- ── NEW: Active Discount Codes count ──────────────────────────────────── --}}
     <div class="stat-card" style="border-color: rgba(34,197,94,0.25);">
         <div class="stat-icon" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.2);">
             <svg fill="none" stroke="#22C55E" stroke-width="2" viewBox="0 0 24 24">
@@ -215,10 +213,10 @@
 
 </div>
 
-{{-- ── Discount Export Panel ──────────────────────────────────────────────────── --}}
+{{-- ── Export Panel ────────────────────────────────────────────────────────────── --}}
 <div class="card" style="margin-bottom:20px;">
     <div class="card-header">
-        <span class="card-title">🏷️EXPORT</span>
+        <span class="card-title">🏷️ EXPORT</span>
         <span class="chart-badge">Last 30 Days</span>
     </div>
     <div class="card-body">
@@ -242,45 +240,64 @@
                 </div>
             </div>
 
-            {{-- Dashboard Full Export Panel --}}
-<form action="{{ url('/dashboard/export') }}" method="GET"
-      style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-    @csrf
-    <div style="display:flex; flex-direction:column; gap:4px;">
-        <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">FROM MONTH</label>
-        <input type="month"
-               name="from"
-               value="{{ now()->subMonth()->format('Y-m') }}"
-               max="{{ now()->format('Y-m') }}"
-               style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; padding:8px 12px; font-size:14px;" />
-    </div>
+            {{-- ── Dashboard Full Export Form ───────────────────────────────────────
+                 FIX 1: action uses route() helper instead of hardcoded url()
+                 FIX 2: removed @csrf — GET requests do not use CSRF tokens
+                 FIX 3: name="from" / name="to" send Y-m which the controller converts
+            ──────────────────────────────────────────────────────────────────────── --}}
+            <form action="{{ route('dashboard.export') }}" method="GET"
+                  style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
 
-    <div style="display:flex; flex-direction:column; gap:4px;">
-        <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">TO MONTH</label>
-        <input type="month"
-               name="to"
-               value="{{ now()->format('Y-m') }}"
-               max="{{ now()->format('Y-m') }}"
-               style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; padding:8px 12px; font-size:14px;" />
-    </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">FROM MONTH</label>
+                    <input type="month"
+                           name="from"
+                           value="{{ now()->subMonth()->format('Y-m') }}"
+                           max="{{ now()->format('Y-m') }}"
+                           style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff;
+                                  border-radius:8px; padding:8px 12px; font-size:14px;" />
+                </div>
 
-    <div style="display:flex; flex-direction:column; gap:4px;">
-        <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">FORMAT</label>
-        <select name="format" style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:8px; padding:8px 14px; font-size:14px;">
-            <option value="xlsx">Excel (.xlsx)</option>
-            <option value="csv">CSV (.csv)</option>
-        </select>
-    </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">TO MONTH</label>
+                    <input type="month"
+                           name="to"
+                           value="{{ now()->format('Y-m') }}"
+                           max="{{ now()->format('Y-m') }}"
+                           style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff;
+                                  border-radius:8px; padding:8px 12px; font-size:14px;" />
+                </div>
 
-    <div style="display:flex; flex-direction:column; gap:4px;">
-        <label style="color:transparent;">.</label>
-        <button type="submit" class="btn btn-orange" style="padding:8px 20px;">
-            Export Dashboard
-        </button>
-    </div>
-</form>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">FORMAT</label>
+                    <select name="format"
+                            style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff;
+                                   border-radius:8px; padding:8px 14px; font-size:14px;">
+                        {{-- xlsx exports all 8 sheets; csv exports Summary sheet only --}}
+                        <option value="xlsx">Excel (.xlsx) — All 8 sheets</option>
+                        <option value="csv">CSV (.csv) — Summary only</option>
+                    </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="color:transparent; font-size:11px;">.</label>
+                    <button type="submit" class="btn btn-orange" style="padding:8px 20px;">
+                        ⬇ Export Dashboard
+                    </button>
+                </div>
+
+            </form>
 
         </div>
+
+        {{-- Validation error display --}}
+        @if($errors->has('export'))
+        <div style="margin-top:12px; padding:10px 16px; background:rgba(239,68,68,0.1);
+             border:1px solid rgba(239,68,68,0.3); border-radius:8px;
+             color:#ef4444; font-size:13px; font-weight:600;">
+            ⚠ {{ $errors->first('export') }}
+        </div>
+        @endif
 
         {{-- Top codes this month mini-table --}}
         @if(isset($top_discount_codes) && $top_discount_codes->isNotEmpty())

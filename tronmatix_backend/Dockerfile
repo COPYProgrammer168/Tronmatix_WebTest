@@ -1,41 +1,100 @@
-# Use official PHP + Apache image (or PHP-FPM + Nginx if you prefer)
-FROM php:8.2-apache
+# ==============================
+# 1. Node Stage (Build Frontend)
+# ==============================
+FROM node:20 AS node_builder
 
-# Install system dependencies + PHP extensions Laravel needs
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql exif pcntl bcmath
+WORKDIR /app
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copy only package files first (better caching)
+COPY package*.json ./
 
-# Set working directory
-WORKDIR /var/www/html
+RUN npm install
 
-# Copy application code
+# Copy full project
 COPY . .
 
-# Install PHP dependencies (no dev packages)
-RUN composer install --optimize-autoloader --no-dev --no-interaction
+# Build frontend (Vite)
+RUN npm run build
 
-# Give permissions
+
+# ==============================
+# 2. Composer Stage (FIXED)
+# ==============================
+FROM php:8.4-cli AS composer_builder
+
+# Install required system libs
+RUN apt-get update && apt-get install -y \
+    git unzip zip \
+    libzip-dev libicu-dev libonig-dev libxml2-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install zip intl mbstring gd
+
+# Install Composer manually
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+
+# Copy only composer files first (cache optimization)
+COPY composer.json composer.lock ./
+
+# Install dependencies
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --no-interaction \
+    --optimize-autoloader
+
+# Copy rest of app AFTER install (important)
+COPY . .
+
+# ==============================
+# 3. Final Runtime (Apache + PHP)
+# ==============================
+FROM php:8.4-apache
+
+# Install PHP extensions
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libzip-dev \
+    libicu-dev \
+    libonig-dev libxml2-dev \
+    unzip zip git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        gd intl mbstring exif pcntl bcmath zip pdo_mysql soap sockets opcache \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN a2enmod rewrite
+
+WORKDIR /var/www/html
+
+# Copy app source
+COPY . .
+
+# Copy vendor from composer stage
+COPY --from=composer_builder /app/vendor ./vendor
+
+# Copy built frontend assets
+COPY --from=node_builder /app/public/build ./public/build
+
+# Permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Enable Apache mod_rewrite (important for Laravel routing)
-RUN a2enmod rewrite
+# Apache config
+RUN echo '<VirtualHost *:80>\n\
+    ServerName localhost\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Copy custom Apache config (optional but recommended)
-COPY .docker/apache.conf /etc/apache2/sites-available/000-default.conf
-
-# Expose port 80
 EXPOSE 80
 
-# Start Apache
 CMD ["apache2-foreground"]

@@ -34,8 +34,7 @@ Route::prefix('dashboard')->name('dashboard.')
         // ── Overview ──────────────────────────────────────────────────────────
         Route::get('/', [DashboardController::class, 'index'])->name('index');
 
-        Route::get('/dashboard/export', [DashboardController::class, 'dashboardExport'])
-     ->name('dashboard.export');
+        Route::get('/export', [DashboardController::class, 'dashboardExport'])->name('export');
 
         // ── Logout (must be inside auth middleware) ───────────────────────────
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');

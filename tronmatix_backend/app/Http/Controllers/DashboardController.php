@@ -471,24 +471,48 @@ class DashboardController extends Controller
     //   Summary | Monthly Sales | Daily Sales | Orders |
     //   Order Status | Category Revenue | Top Products | Discounts
     public function dashboardExport(Request $request)
-    {
-        $request->validate([
-            'from'   => ['nullable', 'date'],
-            'to'     => ['nullable', 'date', 'after_or_equal:from'],
-            'format' => ['nullable', 'string', 'in:xlsx,csv'],
-        ]);
+{
+    // ── 1. Parse & validate the month inputs (blade sends Y-m) ────────────────
+    $fromRaw = $request->input('from', \Carbon\Carbon::now()->subMonth()->format('Y-m'));
+    $toRaw   = $request->input('to',   \Carbon\Carbon::now()->format('Y-m'));
 
-        $from   = $request->input('from', Carbon::now()->startOfMonth()->toDateString());
-        $to     = $request->input('to',   Carbon::now()->toDateString());
-        $format = $request->input('format', 'xlsx');
-
-        $filename   = 'dashboard_export_' . $from . '_to_' . $to . '.' . $format;
-        $writerType = $format === 'csv'
-            ? \Maatwebsite\Excel\Excel::CSV
-            : \Maatwebsite\Excel\Excel::XLSX;
-
-        return Excel::download(new DashboardExport($from, $to), $filename, $writerType);
+    // Validate format: must be Y-m (e.g. "2025-01")
+    $monthPattern = '/^\d{4}-(0[1-9]|1[0-2])$/';
+    if (!preg_match($monthPattern, $fromRaw) || !preg_match($monthPattern, $toRaw)) {
+        return back()->withErrors(['export' => 'Invalid date format. Please use month pickers.']);
     }
+
+    // Convert Y-m → full Y-m-d dates for the export class
+    $from = \Carbon\Carbon::createFromFormat('Y-m', $fromRaw)->startOfMonth()->format('Y-m-d');
+    $to   = \Carbon\Carbon::createFromFormat('Y-m', $toRaw)->endOfMonth()->format('Y-m-d');
+
+    // Ensure "from" is not after "to"
+    if ($from > $to) {
+        return back()->withErrors(['export' => '"From" month cannot be after "To" month.']);
+    }
+
+    // ── 2. Determine export format ────────────────────────────────────────────
+    $format   = in_array($request->input('format'), ['xlsx', 'csv']) ? $request->input('format') : 'xlsx';
+    $filename = 'dashboard-' . $from . '-to-' . $to . '.' . $format;
+
+    // ── 3. Stream the download ────────────────────────────────────────────────
+    if ($format === 'csv') {
+        // CSV does not support multiple sheets — export Summary sheet only.
+        // SummarySheet must implement FromCollection/FromQuery + WithHeadings.
+        return Excel::download(
+            new \App\Exports\Sheets\SummarySheet(
+                \Carbon\Carbon::parse($from)->startOfDay(),
+                \Carbon\Carbon::parse($to)->endOfDay()
+            ),
+            $filename,
+            \Maatwebsite\Excel\Excel::CSV,
+            ['Content-Type' => 'text/csv']
+        );
+    }
+
+    // Default: full multi-sheet .xlsx
+    return Excel::download(new DashboardExport($from, $to), $filename);
+}
 
     // ── Private helpers ───────────────────────────────────────────────────────
     private function processImages(Request $request, array $currentImages): array
