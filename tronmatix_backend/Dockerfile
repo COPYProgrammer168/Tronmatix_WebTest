@@ -1,7 +1,6 @@
 # ================================================================
 # Backend-only Dockerfile (Laravel + Apache)
-# Frontend is deployed separately as a Render Static Site.
-# No Node/Vite build stage needed here.
+# Database: PostgreSQL (Render managed Postgres)
 # ================================================================
 
 
@@ -12,13 +11,23 @@ FROM composer:2.7 AS composer_builder
 
 WORKDIR /app
 
+# Create required Laravel directories before COPY
+RUN mkdir -p bootstrap/cache \
+    && mkdir -p storage/framework/cache/data \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/logs \
+    && chmod -R 777 bootstrap storage
+
 COPY . .
 
-# Create minimal .env so post-autoload-dump (php artisan package:discover)
-# can boot Laravel — real secrets are injected via Render environment variables
+# Restore permissions after COPY
+RUN chmod -R 777 bootstrap/cache storage
+
+# Create minimal .env — DB_CONNECTION=pgsql to match Render Postgres
 RUN if [ ! -f .env ]; then \
         cp .env.example .env 2>/dev/null || \
-        printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=mysql\n" > .env; \
+        printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=pgsql\n" > .env; \
     fi
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -39,18 +48,31 @@ RUN composer dump-autoload --optimize --no-scripts
 # ==============================
 FROM php:8.4-apache
 
+# FIX: Added libpq-dev + pdo_pgsql + pgsql extensions.
+# Previously only pdo_mysql was installed — Laravel couldn't find the
+# PostgreSQL driver → "could not find driver" on migrate.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev libjpeg-dev libfreetype6-dev \
     libzip-dev libicu-dev libonig-dev libxml2-dev \
+    libpq-dev \
     unzip zip git curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
-        gd intl mbstring exif pcntl bcmath zip pdo_mysql soap sockets opcache \
+        gd intl mbstring exif pcntl bcmath zip \
+        pdo_mysql pdo_pgsql pgsql \
+        soap sockets opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite headers
 
 WORKDIR /var/www/html
+
+# Create directories before COPY
+RUN mkdir -p bootstrap/cache \
+    && mkdir -p storage/framework/cache/data \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/logs
 
 COPY . .
 COPY --from=composer_builder /app/vendor ./vendor
@@ -59,7 +81,6 @@ COPY .docker/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY .docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# PHP opcache production config
 RUN printf "opcache.enable=1\nopcache.memory_consumption=128\nopcache.validate_timestamps=0\n" \
     > /usr/local/etc/php/conf.d/opcache.ini
 
