@@ -1,19 +1,16 @@
 # ==============================
 # 1. Node Stage (Build Frontend)
 # ==============================
-FROM node:20 AS node_builder
+FROM node:20-alpine AS node_builder
 
 WORKDIR /app
 
-# Copy only package files first (better caching)
+# Copy only package files first (layer cache optimization)
 COPY package*.json ./
+RUN npm ci --frozen-lockfile
 
-RUN npm install
-
-# Copy full project
+# Copy full project and build
 COPY . .
-
-# Build frontend (Vite)
 RUN npm run build
 
 
@@ -30,10 +27,15 @@ RUN composer install \
     --no-dev \
     --prefer-dist \
     --no-interaction \
+    --no-scripts \
     --optimize-autoloader
 
-# Copy rest of app AFTER install (important)
+# Copy rest of app AFTER install
 COPY . .
+
+# Run post-install scripts now that full app is present
+RUN composer dump-autoload --optimize
+
 
 # ==============================
 # 3. Final Runtime (Apache + PHP)
@@ -46,13 +48,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip-dev \
     libicu-dev \
     libonig-dev libxml2-dev \
-    unzip zip git \
+    unzip zip git curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         gd intl mbstring exif pcntl bcmath zip pdo_mysql soap sockets opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN a2enmod rewrite
+# Enable Apache modules
+RUN a2enmod rewrite headers
 
 WORKDIR /var/www/html
 
@@ -65,23 +68,23 @@ COPY --from=composer_builder /app/vendor ./vendor
 # Copy built frontend assets
 COPY --from=node_builder /app/public/build ./public/build
 
-# Permissions
-RUN chown -R www-data:www-data storage bootstrap/cache \
+# Use the external apache config file (cleaner than inline echo)
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
+
+# PHP config for production
+RUN echo "opcache.enable=1\nopcache.memory_consumption=128\nopcache.validate_timestamps=0" \
+    > /usr/local/etc/php/conf.d/opcache.ini
+
+# Set correct permissions for Laravel
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# Apache config
-RUN echo '<VirtualHost *:80>\n\
-    ServerName localhost\n\
-    DocumentRoot /var/www/html/public\n\
-    <Directory /var/www/html/public>\n\
-        Options Indexes FollowSymLinks\n\
-        AllowOverride All\n\
-        Require all granted\n\
-    </Directory>\n\
-    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
-    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+# FIX: Render injects PORT env variable — Apache must listen on $PORT, not hardcoded 80
+# This start script replaces the port at runtime before starting Apache
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 80
+EXPOSE 10000
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["docker-entrypoint.sh"]
