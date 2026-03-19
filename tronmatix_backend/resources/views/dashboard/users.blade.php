@@ -221,7 +221,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 @endif
 
 {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
-<div class="stats-grid" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
+<div class="stats-grid users-stats-grid" style="margin-bottom:20px;">
     @foreach(['customer','vip','reseller','banned'] as $role)
     <div class="stat-card">
         <div class="stat-icon"><span style="font-size:20px;">{{ $roleIcons[$role] }}</span></div>
@@ -588,6 +588,46 @@ if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
     40%     { transform: translateX(5px); }
     60%     { transform: translateX(-4px); }
     80%     { transform: translateX(4px); }
+}
+</style>
+
+<style>
+/* ── Users stats grid responsive ─────────────────────────────────────────── */
+.users-stats-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+}
+@media (max-width: 700px) {
+    .users-stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+    }
+}
+@media (max-width: 420px) {
+    .users-stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+    }
+    .users-stats-grid .stat-card {
+        padding: 10px 8px !important;
+    }
+    .users-stats-grid .stat-value {
+        font-size: 18px !important;
+    }
+    .users-stats-grid .stat-label {
+        font-size: 9px !important;
+        letter-spacing: 0.5px !important;
+    }
+}
+
+/* ── Search input full-width on mobile ────────────────────────────────────── */
+@media (max-width: 600px) {
+    .search-input {
+        width: 100% !important;
+    }
+    .card-header form {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
 }
 </style>
 @endpush

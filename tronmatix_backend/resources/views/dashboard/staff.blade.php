@@ -90,16 +90,16 @@
 </div>
 
 {{-- ── Role summary cards ───────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;" class="role-summary-grid">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:24px;" class="role-summary-grid">
     @foreach($roleMeta as $rKey => $rMeta)
     @php $count = $staff->where('role',$rKey)->count(); @endphp
-    <div style="padding:18px 20px;border-radius:14px;background:var(--dark-700);
+    <div class="role-card" style="padding:12px 14px;border-radius:12px;background:var(--dark-700);
                 border:1px solid {{ $rMeta['color'] }}22;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:-18px;right:-12px;font-size:64px;opacity:0.06;pointer-events:none;">{{ $rMeta['icon'] }}</div>
-        <div style="font-size:28px;margin-bottom:4px;">{{ $rMeta['icon'] }}</div>
-        <div style="font-size:22px;font-weight:900;color:{{ $rMeta['color'] }};">{{ $count }}</div>
-        <div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:{{ $rMeta['color'] }};margin-top:2px;">{{ strtoupper($rMeta['label']) }}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px;">{{ $rMeta['desc'] }}</div>
+        <div style="position:absolute;top:-14px;right:-8px;font-size:48px;opacity:0.06;pointer-events:none;">{{ $rMeta['icon'] }}</div>
+        <div style="font-size:20px;margin-bottom:2px;">{{ $rMeta['icon'] }}</div>
+        <div style="font-size:20px;font-weight:900;color:{{ $rMeta['color'] }};line-height:1.1;">{{ $count }}</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:{{ $rMeta['color'] }};margin-top:2px;">{{ strtoupper($rMeta['label']) }}</div>
+        <div class="role-card-desc" style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;line-height:1.3;">{{ $rMeta['desc'] }}</div>
     </div>
     @endforeach
 </div>
@@ -497,8 +497,14 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeInviteModal()
 
 /* Role summary cards responsive */
 @media(max-width:900px){ .role-summary-grid{grid-template-columns:repeat(3,1fr)!important;} }
-@media(max-width:600px){ .role-summary-grid{grid-template-columns:repeat(2,1fr)!important;} }
-@media(max-width:380px){ .role-summary-grid{grid-template-columns:1fr!important;} }
+@media(max-width:600px){ .role-summary-grid{grid-template-columns:repeat(3,1fr)!important; gap:8px!important;} }
+@media(max-width:420px){ .role-summary-grid{grid-template-columns:repeat(2,1fr)!important;} }
+
+/* Hide description text on very small screens to keep cards compact */
+@media(max-width:480px) {
+    .role-card-desc { display:none!important; }
+    .role-card { padding:10px 10px!important; }
+}
 
 /* Staff table — hide less important cols on small screens */
 @media(max-width:700px){

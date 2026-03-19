@@ -264,13 +264,13 @@
      MODAL
 ═══════════════════════════════════════════════════════════════════════════════ --}}
 <div id="bannerModal" style="display:none; position:fixed; inset:0; z-index:1000;
-     background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
-                padding:28px; width:100%; max-width:620px; max-height:92vh; overflow-y:auto;">
+     background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:12px;">
+    <div class="banner-modal-box" style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
+                padding:24px; width:100%; max-width:540px; max-height:94vh; overflow-y:auto;">
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <h2 id="modalTitle" style="font-size:20px; font-weight:900; color:#fff; letter-spacing:2px;">ADD BANNER</h2>
-            <button onclick="closeModal()" style="background:none; border:none; color:rgba(255,255,255,0.4); font-size:24px; cursor:pointer;">✕</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="modalTitle" style="font-size:18px; font-weight:900; color:#fff; letter-spacing:2px;">ADD BANNER</h2>
+            <button onclick="closeModal()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); font-size:20px; cursor:pointer; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
         </div>
 
         <form id="bannerForm" method="POST" enctype="multipart/form-data">
@@ -302,7 +302,7 @@
             </div>
             @endif
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div class="banner-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
 
                 {{-- Title --}}
                 <div style="grid-column:1/-1;">
@@ -740,6 +740,35 @@ document.getElementById('bannerModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal()
 })
 </script>
+
+<style>
+/* ── Banner modal responsive ───────────────────────────────────────────── */
+@media (max-width: 540px) {
+    .banner-modal-box {
+        padding: 16px !important;
+        border-radius: 14px !important;
+        max-height: 96vh !important;
+    }
+    .banner-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    /* On mobile, make badge/order and bg/text color fields full-width */
+    .banner-form-grid > div {
+        grid-column: 1 / -1 !important;
+    }
+    /* Keep video tab pills wrapping nicely */
+    .video-tab {
+        padding: 5px 10px !important;
+        font-size: 12px !important;
+    }
+}
+/* Restore 2-col for badge+order and bg+text color on ≥ 541px */
+@media (min-width: 541px) {
+    .banner-form-grid > div:not([style*="grid-column:1/-1"]):not([style*="grid-column: 1 / -1"]) {
+        grid-column: auto !important;
+    }
+}
+</style>
 
 @endif
 @endsection

@@ -1,7 +1,22 @@
 # .github/workflows/deploy.yml
 # ── Place this in: tronmatix_frontend/.github/workflows/deploy.yml ────────────
+#
+# HOW THIS WORKS:
+#   Render is a Static Site — it clones your repo and runs its OWN build.
+#   This workflow simply triggers that Render build via deploy hook.
+#   VITE_API_URL must be set in Render → Environment (not only here).
+#
+# REQUIRED SECRETS (GitHub → Settings → Secrets → Actions):
+#   RENDER_DEPLOY_HOOK  →  Render → Service → Settings → Deploy Hook → copy URL
+#
+# REQUIRED ENV VAR ON RENDER (Render → Service → Environment):
+#   VITE_API_URL = https://tronmatix-beckend.onrender.com
+#
+# REQUIRED FILES IN YOUR REPO (ensures SPA routing works after deploy):
+#   public/_redirects   →  contains exactly one line:  /* /index.html 200
+# ─────────────────────────────────────────────────────────────────────────────
 
-name: Build & Deploy Frontend to Render Static Site
+name: Deploy Frontend to Render
 
 on:
   push:
@@ -9,38 +24,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ───────────────────────────────────────────────────────────
+      # ── 1. Checkout (needed for the _redirects check below) ──────────────────
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Setup Node ─────────────────────────────────────────────────────────
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
+      # ── 2. Verify _redirects exists so SPA routing works on Render ───────────
+      - name: Check public/_redirects exists
+        run: |
+          if [ ! -f "public/_redirects" ]; then
+            echo "❌ public/_redirects is missing!"
+            echo "   Create the file with this single line:"
+            echo "   /* /index.html 200"
+            echo ""
+            echo "   Without it, reloading /product/2 or /checkout will show 'Not Found'."
+            exit 1
+          fi
 
-      # ── 3. Install ────────────────────────────────────────────────────────────
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+          CONTENT=$(cat public/_redirects)
+          if [[ "$CONTENT" != "/* /index.html 200" ]]; then
+            echo "⚠️  public/_redirects content looks wrong. Expected:"
+            echo "   /* /index.html 200"
+            echo "   Got:"
+            echo "   $CONTENT"
+            echo "   Continuing anyway — please double-check."
+          else
+            echo "✅ public/_redirects is correct"
+          fi
 
-      # ── 4. Build ──────────────────────────────────────────────────────────────
-      # VITE_API_URL injected at build time into JS bundle.
-      # GitHub Secret: VITE_API_URL = https://tronmatix-beckend.onrender.com
-      - name: Build frontend
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      # ── 5. Verify ─────────────────────────────────────────────────────────────
-      - name: List build output (debug)
-        run: ls -la dist/
-
-      # ── 6. Deploy ─────────────────────────────────────────────────────────────
+      # ── 3. Trigger Render deploy (Render runs npm run build with its own env) ─
       # GitHub Secret: RENDER_DEPLOY_HOOK = https://api.render.com/deploy/srv-xxx?key=yyy
       - name: Trigger Render deployment
         env:
@@ -48,7 +63,7 @@ jobs:
         run: |
           if [ -z "$RENDER_DEPLOY_HOOK" ]; then
             echo "❌ RENDER_DEPLOY_HOOK secret is not set"
-            echo "   Render → Tronmatix_frontend → Settings → Deploy Hook → copy URL"
+            echo "   Render → Service → Settings → Deploy Hook → copy URL"
             echo "   GitHub → Settings → Secrets → Actions → New secret → RENDER_DEPLOY_HOOK"
             exit 1
           fi
@@ -65,8 +80,16 @@ jobs:
           echo "HTTP status: $HTTP_STATUS"
 
           if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
-            echo "✅ Deployed successfully (HTTP $HTTP_STATUS)"
+            echo "✅ Render build triggered successfully (HTTP $HTTP_STATUS)"
+            echo ""
+            echo "📋 Render will now:"
+            echo "   1. Clone your repo"
+            echo "   2. Run: npm ci && npm run build"
+            echo "   3. Serve the dist/ folder with VITE_API_URL from Render env"
+            echo ""
+            echo "   Monitor progress: https://dashboard.render.com"
           else
-            echo "❌ Deploy failed (HTTP $HTTP_STATUS)"
+            echo "❌ Deploy trigger failed (HTTP $HTTP_STATUS)"
+            cat /tmp/render_response.txt
             exit 1
           fi
