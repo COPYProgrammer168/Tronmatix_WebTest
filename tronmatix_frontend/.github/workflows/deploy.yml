@@ -20,7 +20,7 @@ name: Deploy Frontend to Render
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
   workflow_dispatch:
 
 jobs:

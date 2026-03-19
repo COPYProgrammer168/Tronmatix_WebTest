@@ -1,12 +1,30 @@
-name: Build Frontend & Deploy to Render (Static Site)
+# .github/workflows/laravel.yml
+# ── Triggers Render to rebuild the frontend Static Site on every push ─────────
+#
+# WHY NO npm build here:
+#   Render Static Site clones your repo and runs its OWN build.
+#   Building here is wasted — Render ignores GitHub's dist/ folder.
+#   VITE_API_URL must be set in:  Render → Service → Environment Variables
+#
+# REQUIRED GITHUB SECRET:
+#   RENDER_DEPLOY_HOOK  →  Render → Service → Settings → Deploy Hook → copy URL
+#
+# REQUIRED RENDER ENVIRONMENT VARIABLE (set once in Render dashboard):
+#   VITE_API_URL = https://tronmatix-beckend.onrender.com
+#
+# REQUIRED FILE IN REPO ROOT (fixes 404 on page reload):
+#   public/_redirects  →  content:  /* /index.html 200
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy Frontend to Render
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch: # allows manual trigger from GitHub Actions tab
+    branches: ["master"]
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,47 +32,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Setup Node.js ──────────────────────────────────────────────────────
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: tronmatix_frontend/package-lock.json
+      # ── 2. Verify _redirects exists (SPA routing — fixes 404 on reload) ───────
+      - name: Check tronmatix_frontend/public/_redirects
+        run: |
+          FILE="tronmatix_frontend/public/_redirects"
+          if [ ! -f "$FILE" ]; then
+            echo "❌ $FILE is missing!"
+            echo "   Create it with exactly this content:"
+            echo "   /* /index.html 200"
+            echo ""
+            echo "   Without it, reloading /product/2 or /checkout will show 404."
+            exit 1
+          fi
+          CONTENT=$(tr -d '[:space:]' < "$FILE")
+          if [ "$CONTENT" = "/*  /index.html  200" ] || [ "$CONTENT" = "///index.html200" ] || echo "$CONTENT" | grep -q "index.html"; then
+            echo "✅ _redirects looks correct"
+          else
+            echo "⚠️  _redirects content: $(cat $FILE)"
+            echo "   Expected:  /* /index.html 200"
+          fi
 
-      # ── 3. Install dependencies ───────────────────────────────────────────────
-      - name: Install dependencies
-        working-directory: tronmatix_frontend
-        run: npm ci
-
-      # ── 4. Build frontend ─────────────────────────────────────────────────────
-      - name: Build frontend
-        working-directory: tronmatix_frontend
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      # ── 5. List build output (debug) ──────────────────────────────────────────
-      - name: List build output (debug)
-        run: ls -la tronmatix_frontend/dist
-
-      # ── 6. Trigger Render Deployment ──────────────────────────────────────────
-      # HOW TO SET THE SECRET:
-      #   1. Render Dashboard → your service → Settings → Deploy Hook → copy URL
-      #   2. GitHub repo → Settings → Secrets and variables → Actions → New secret
-      #      Name:  RENDER_DEPLOY_HOOK
-      #      Value: https://api.render.com/deploy/srv-XXXX?key=YYYY
-      #      (no quotes, no trailing spaces or newlines)
-      - name: Trigger Render Deployment
+      # ── 3. Trigger Render deployment ──────────────────────────────────────────
+      - name: Trigger Render deployment
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          # Validate secret is set before attempting curl
           if [ -z "$RENDER_DEPLOY_HOOK" ]; then
-            echo "❌ ERROR: RENDER_DEPLOY_HOOK secret is not set in GitHub."
-            echo "   Go to: GitHub repo → Settings → Secrets and variables → Actions"
-            echo "   Add secret name: RENDER_DEPLOY_HOOK"
-            echo "   Value: your Render deploy hook URL (from Render Dashboard → Settings → Deploy Hook)"
+            echo "❌ RENDER_DEPLOY_HOOK secret is not set"
+            echo "   Render → Service → Settings → Deploy Hook → copy URL"
+            echo "   GitHub → Settings → Secrets → Actions → New secret → RENDER_DEPLOY_HOOK"
             exit 1
           fi
 
@@ -66,13 +72,24 @@ jobs:
             -d '{}' \
             "$RENDER_DEPLOY_HOOK")
 
-          RESPONSE_BODY=$(cat /tmp/render_response.txt)
-          echo "Response: $RESPONSE_BODY"
+          echo "Response: $(cat /tmp/render_response.txt)"
           echo "HTTP status: $HTTP_STATUS"
 
           if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
-            echo "✅ Render deployment triggered successfully (HTTP $HTTP_STATUS)"
+            echo "✅ Render build triggered (HTTP $HTTP_STATUS)"
+            echo ""
+            echo "📋 Render will now:"
+            echo "   1. Clone branch: master"
+            echo "   2. cd tronmatix_frontend"
+            echo "   3. npm ci --legacy-peer-deps && npm run build"
+            echo "   4. Serve dist/ with VITE_API_URL from Render environment"
+            echo ""
+            echo "   ⚠️  Make sure VITE_API_URL is set in Render → Environment:"
+            echo "      VITE_API_URL = https://tronmatix-beckend.onrender.com"
+            echo ""
+            echo "   Monitor: https://dashboard.render.com"
           else
-            echo "❌ Render deployment trigger failed (HTTP $HTTP_STATUS)"
+            echo "❌ Deploy trigger failed (HTTP $HTTP_STATUS)"
+            cat /tmp/render_response.txt
             exit 1
           fi
