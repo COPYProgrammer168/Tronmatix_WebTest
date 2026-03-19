@@ -6,11 +6,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-<<<<<<< HEAD
     // Use env('FRONTEND_URL') so Render env var controls it
-=======
-    // FIX: Use env('FRONTEND_URL') so Render env var controls it
->>>>>>> 9e4a5a0dada098a10ce7f3e2c6138f60419f6ea6
     // without needing a code push every time URL changes
     'allowed_origins' => array_values(array_filter([
         'http://localhost:5173',

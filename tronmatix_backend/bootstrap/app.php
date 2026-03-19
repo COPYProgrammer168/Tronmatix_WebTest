@@ -15,11 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-<<<<<<< HEAD
         // ── CORS must be the VERY FIRST middleware ───────────────────────
-=======
-        // ── FIX: CORS must be the VERY FIRST middleware ───────────────────────
->>>>>>> 9e4a5a0dada098a10ce7f3e2c6138f60419f6ea6
         // Laravel 11 does NOT auto-register HandleCors.
         // Without this, OPTIONS preflight requests get blocked before reaching
         // any route → browser sees CORS error → "Provisional headers are shown"
