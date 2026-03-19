@@ -15,20 +15,20 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // ── FIX: HandleCors MUST be first ────────────────────────────────────
-        // Laravel 11 removed auto-registration of HandleCors.
-        // Without this, OPTIONS preflight = blocked = CORS error = login fails.
+        // ── CORS + TrustProxies MUST be first ─────────────────────────────────
+        // HandleCors is no longer auto-registered in Laravel 11.
+        // Without prepend(), OPTIONS preflight hits auth middleware first → 401 → CORS blocked.
         $middleware->prepend([
             \Illuminate\Http\Middleware\TrustProxies::class,
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 
-        // Exclude /api/* from CSRF — protected by Bearer token
+        // ── Exclude /api/* from CSRF — API uses Bearer tokens, not cookies ────
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
 
-        // Sanctum stateful middleware
+        // ── Sanctum stateful middleware for API ───────────────────────────────
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
@@ -41,24 +41,43 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
+        // ── Return JSON errors for all /api/* routes ──────────────────────────
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json(['success' => false, 'message' => 'Unauthenticated.'],
-                    Response::HTTP_UNAUTHORIZED);
+                return response()->json(
+                    ['success' => false, 'message' => 'Unauthenticated.'],
+                    Response::HTTP_UNAUTHORIZED
+                );
             }
         });
 
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json(['success' => false, 'message' => 'Validation failed.',
-                    'errors' => $e->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+                return response()->json(
+                    ['success' => false, 'message' => 'Validation failed.', 'errors' => $e->errors()],
+                    Response::HTTP_UNPROCESSABLE_ENTITY
+                );
             }
         });
 
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return response()->json(['success' => false, 'message' => 'Resource not found.'],
-                    Response::HTTP_NOT_FOUND);
+                return response()->json(
+                    ['success' => false, 'message' => 'Resource not found.'],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+        });
+
+        // ── FIX: Handle 405 Method Not Allowed for API routes ─────────────────
+        // Without this, wrong-method requests return Laravel's HTML error page
+        // instead of JSON — confusing for frontend debugging.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(
+                    ['success' => false, 'message' => 'Method not allowed. Check the HTTP method (GET/POST/PUT/DELETE).'],
+                    Response::HTTP_METHOD_NOT_ALLOWED
+                );
             }
         });
     })
