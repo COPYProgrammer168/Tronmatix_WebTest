@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useDeliveryLocation } from '../context/LocationContext'
 import { useDiscount } from '../context/DiscountContext'
 import { useTheme } from '../context/ThemeContext'
+import { resolveImage } from '../lib/resolveImage'
 
 export default function CartPage() {
   const { items, removeItem, updateQty, subtotal } = useCart()
@@ -51,7 +52,14 @@ export default function CartPage() {
 
               {items.map(item => (
                 <div key={item.id} className="flex items-center gap-4 py-4" style={{ borderBottom: `1px solid ${rowBd}` }}>
-                  <img src={item.image || '/placeholder.png'} alt={item.name} className="w-20 h-20 object-cover rounded" />
+                  <img
+                    src={resolveImage(
+                      Array.isArray(item.images) ? item.images[0] : item.image
+                    ) || '/placeholder.png'}
+                    alt={item.name}
+                    className="w-20 h-20 object-cover rounded flex-shrink-0"
+                    onError={e => { e.target.src = '/placeholder.png' }}
+                  />
                   <div className="flex-1">
                     <p className="font-bold text-sm" style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 18, color: textMain }}>
                       {item.name}

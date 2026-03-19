@@ -61,6 +61,28 @@ export default function CheckoutPage() {
   const handleLocation = (e) => setLocation((p) => ({ ...p, [e.target.name]: e.target.value }))
   const handleSelectSavedLocation = (loc) => setLocation({ name: loc.name || "", phone: loc.phone || "", address: loc.address || "", city: loc.city || "", note: loc.note || "" })
 
+  // ── Save location to user profile ─────────────────────────────────────────
+  const saveLocationToProfile = async (locationData, setAsDefault = false) => {
+    if (!user) return
+    try {
+      const res = await axios.post('/api/user/locations', {
+        name:       locationData.name,
+        phone:      locationData.phone,
+        address:    locationData.address,
+        city:       locationData.city || '',
+        note:       locationData.note || '',
+        is_default: setAsDefault,
+      })
+      // Refresh saved locations list
+      const updated = await axios.get('/api/user/locations')
+      const list = Array.isArray(updated.data?.data) ? updated.data.data : Array.isArray(updated.data) ? updated.data : []
+      setSavedLocations(list)
+      return res.data
+    } catch (e) {
+      console.warn('Failed to save location:', e)
+    }
+  }
+
   const placeOrder = async () => {
     const summaryHtml = `<div style="text-align:left;line-height:1.8;font-size:1rem;color:#1f2937;padding:0 12px;">
       <strong>Total:</strong> $${finalTotal.toFixed(2)}${discountAmount > 0 ? ` <span style="color:#16a34a">(−$${discountAmount.toFixed(2)} discount)</span>` : ""}<br>
@@ -80,7 +102,11 @@ export default function CheckoutPage() {
     if (!confirmed.isConfirmed) return
 
     setLoading(true)
-    if (saveAddr) saveLocation(location)
+    // Save address to both LocationContext AND user profile API
+    if (saveAddr) {
+      saveLocation(location)                        // local context / localStorage
+      await saveLocationToProfile(location, false)  // persisted to DB
+    }
 
     try {
       const res = await axios.post("/api/orders", {
@@ -152,6 +178,7 @@ export default function CheckoutPage() {
           delivery={delivery} onDeliveryChange={setDelivery}
           saveAddr={saveAddr} onSaveAddr={setSaveAddr}
           savedLocations={savedLocations} onPickLocation={() => setShowLocPicker(true)}
+          onSaveToProfile={user ? saveLocationToProfile : null}
           onNext={() => setStep(2)}
         />
       )}

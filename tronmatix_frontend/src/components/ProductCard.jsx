@@ -4,14 +4,7 @@ import { useCart } from '../context/CartContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { useDiscount } from '../context/DiscountContext'
 import { useTheme } from '../context/ThemeContext'
-
-const LARAVEL_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
-function resolveImage(path) {
-  if (!path) return null
-  if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return LARAVEL_URL + (path.startsWith('/') ? path : '/' + path)
-}
+import { resolveImage } from '../lib/resolveImage'
 
 function PlaceholderImg({ name, dark }) {
   return (

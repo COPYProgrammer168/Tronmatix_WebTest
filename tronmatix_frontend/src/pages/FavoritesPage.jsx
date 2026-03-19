@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useFavorites } from '../context/FavoritesContext'
 import { useCart } from '../context/CartContext'
 import { useTheme } from '../context/ThemeContext'
+import { resolveImage } from '../lib/resolveImage'
 
 export default function FavoritesPage() {
   const { favorites, toggleFavorite } = useFavorites()
@@ -54,8 +55,12 @@ export default function FavoritesPage() {
               </button>
               <Link to={`/product/${product.id}`} className="block">
                 <div className="flex items-center justify-center" style={{ height: 150, background: imgBg }}>
-                  <img src={product.image || '/placeholder.png'} alt={product.name}
-                    className="h-28 object-contain group-hover:scale-105 transition-transform duration-300" />
+                  <img
+                    src={resolveImage(Array.isArray(product.images) ? product.images[0] : product.image) || '/placeholder.png'}
+                    alt={product.name}
+                    className="h-28 object-contain group-hover:scale-105 transition-transform duration-300"
+                    onError={e => { e.target.src = '/placeholder.png' }}
+                  />
                 </div>
               </Link>
               <div className="p-3 text-center flex flex-col flex-1">

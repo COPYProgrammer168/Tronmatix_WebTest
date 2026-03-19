@@ -39,23 +39,13 @@ class Banner extends Model
     // ── Accessors ─────────────────────────────────────────────────────────────
 
     /**
-     * Return a fully-resolved video URL for the frontend.
-     * For uploaded files: prepend LARAVEL_URL/storage/…
-     * For YouTube/Vimeo embeds: return as-is.
+     * Return the video URL for the frontend.
+     * BannerController now stores full S3/R2 URLs for uploaded files and
+     * embed URLs for YouTube/Vimeo/Facebook — all returned as-is.
      */
     public function getVideoUrlAttribute(): ?string
     {
-        if (! $this->video) {
-            return null;
-        }
-
-        // Already a full URL (YouTube / Vimeo embed)
-        if (str_starts_with($this->video, 'http://') || str_starts_with($this->video, 'https://')) {
-            return $this->video;
-        }
-
-        // Stored path like /storage/banners/videos/xxx.mp4
-        return $this->video;
+        return $this->video ?: null;
     }
 
     /**
@@ -68,7 +58,10 @@ class Banner extends Model
 
     public function getIsGifAttribute(): bool
     {
-        return $this->image
-            && strtolower(pathinfo($this->image, PATHINFO_EXTENSION)) === 'gif';
+        if (! $this->image) return false;
+        // parse_url extracts the path before any query string — safe for S3/R2 URLs
+        // e.g. https://r2.../banners/uuid.gif?X-Amz-... → 'gif'
+        $path = parse_url($this->image, PHP_URL_PATH) ?? $this->image;
+        return strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'gif';
     }
 }
