@@ -119,20 +119,18 @@
                             </div>
                         </div>
 
-                        {{-- Remove avatar button --}}
+                    {{-- Remove avatar button — MUST be outside the upload form (no nested forms) --}}
                         @if($avatarUrl)
-                        <form method="POST" action="{{ route('dashboard.profile.avatar.remove') }}"
-                              style="display:inline;" id="remove-avatar-form">
-                            @csrf @method('DELETE')
-                            <button type="submit"
-                                    onclick="return confirm('Remove profile photo?')"
+                        <div style="margin-top:6px;">
+                            <button type="button"
+                                    onclick="document.getElementById('remove-avatar-form').submit()"
                                     style="font-size:12px; color:rgba(239,68,68,0.7); background:none;
                                            border:none; cursor:pointer; padding:0; font-weight:600;"
                                     onmouseover="this.style.color='#ef4444'"
                                     onmouseout="this.style.color='rgba(239,68,68,0.7)'">
                                 🗑 Remove photo
                             </button>
-                        </form>
+                        </div>
                         @endif
                     </div>
 
@@ -260,6 +258,14 @@
 </div>
 @endsection
 
+{{-- Standalone remove-avatar form (outside the upload form to avoid nested forms) --}}
+@if($avatarUrl)
+<form method="POST" action="{{ route('dashboard.profile.avatar.remove') }}"
+      id="remove-avatar-form" style="display:none;">
+    @csrf @method('DELETE')
+</form>
+@endif
+
 @push('scripts')
 <script>
 function previewAvatar(input) {
@@ -279,9 +285,31 @@ function previewAvatar(input) {
 
 @push('styles')
 <style>
-@media (max-width: 700px) {
+/* Profile grid: 2-col → 1-col on tablet/mobile */
+@media (max-width: 760px) {
     div[style*="grid-template-columns:1fr 1fr"] {
         grid-template-columns: 1fr !important;
+    }
+}
+
+/* Page header stack on mobile */
+@media (max-width: 540px) {
+    div[style*="margin-bottom:28px; display:flex"] {
+        flex-wrap: wrap !important;
+    }
+}
+
+/* Account info grid: compact on mobile */
+@media (max-width: 480px) {
+    div[style*="grid-template-columns:repeat(auto-fit,minmax(180px"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Full-width form controls on small screens */
+@media (max-width: 380px) {
+    div[style*="max-width:800px"] {
+        max-width: 100% !important;
     }
 }
 </style>

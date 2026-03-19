@@ -23,6 +23,9 @@
             'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
             'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
             'editor_settings'=>'0','editor_staff'=>'0',
+            'seller_dashboard'=>'1','seller_products'=>'1','seller_orders'=>'1',
+            'seller_orders_edit'=>'1','seller_users'=>'0','seller_discounts'=>'1',
+            'seller_settings'=>'0','seller_staff'=>'0',
             'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
             'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
             'viewer_settings'=>'0','viewer_staff'=>'0',
@@ -36,6 +39,7 @@
         'superadmin' => ['color' => '#F97316', 'icon' => '👑', 'label' => 'Super Admin'],
         'admin'      => ['color' => '#F97316', 'icon' => '🛡️', 'label' => 'Admin'],
         'editor'     => ['color' => '#3b82f6', 'icon' => '✏️',  'label' => 'Editor'],
+        'seller'     => ['color' => '#10b981', 'icon' => '🏪',  'label' => 'Seller'],
         'viewer'     => ['color' => '#a78bfa', 'icon' => '👁️',  'label' => 'Viewer'],
     ];
     $_rm = $_roleMeta[$_role] ?? $_roleMeta['viewer'];
@@ -101,7 +105,7 @@
             @foreach($_allFeatures as $_fKey => $_fIcon)
             @php
                 $_fPermKey = "perm_{$_role}_{$_fKey}";
-                $_fDefaults = ['admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1','admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1','admin_settings'=>'1','admin_staff'=>'1','editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1','editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1','editor_settings'=>'0','editor_staff'=>'0','viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1','viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0','viewer_settings'=>'0','viewer_staff'=>'0'];
+                $_fDefaults = ['admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1','admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1','admin_settings'=>'1','admin_staff'=>'1','editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1','editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1','editor_settings'=>'0','editor_staff'=>'0','seller_dashboard'=>'1','seller_products'=>'1','seller_orders'=>'1','seller_orders_edit'=>'1','seller_users'=>'0','seller_discounts'=>'1','seller_settings'=>'0','seller_staff'=>'0','viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1','viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0','viewer_settings'=>'0','viewer_staff'=>'0'];
                 $_fHas = $_role === 'superadmin' || (AdminSetting::get($_fPermKey, $_fDefaults["{$_role}_{$_fKey}"] ?? '0') === '1');
                 $_fActive = $_fKey === $_feature;
             @endphp

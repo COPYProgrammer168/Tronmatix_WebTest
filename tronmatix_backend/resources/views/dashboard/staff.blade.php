@@ -11,13 +11,14 @@
     if (!$isAdmin) abort(403, 'Access denied.');
 
     $availableRoles = $isSuper
-        ? ['superadmin','admin','editor','viewer']
-        : ['admin','editor','viewer'];
+        ? ['superadmin','admin','editor','seller','viewer']
+        : ['admin','editor','seller','viewer'];
 
     $roleMeta = [
         'superadmin' => ['label'=>'Super Admin','color'=>'#F97316','icon'=>'👑','desc'=>'Full system owner access'],
         'admin'      => ['label'=>'Admin',      'color'=>'#F97316','icon'=>'🛡️','desc'=>'Full access, manage staff & settings'],
         'editor'     => ['label'=>'Editor',     'color'=>'#3b82f6','icon'=>'✏️','desc'=>'Products, banners, discounts'],
+        'seller'     => ['label'=>'Seller',     'color'=>'#10b981','icon'=>'🏪','desc'=>'Products, orders & discounts management'],
         'viewer'     => ['label'=>'Viewer',     'color'=>'#a78bfa','icon'=>'👁️','desc'=>'Read-only orders & dashboard'],
     ];
 @endphp
@@ -89,7 +90,7 @@
 </div>
 
 {{-- ── Role summary cards ───────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;" class="role-summary-grid">
     @foreach($roleMeta as $rKey => $rMeta)
     @php $count = $staff->where('role',$rKey)->count(); @endphp
     <div style="padding:18px 20px;border-radius:14px;background:var(--dark-700);
@@ -156,10 +157,10 @@
             <thead>
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
                     <th style="padding:14px 20px;text-align:left;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">MEMBER</th>
-                    <th style="padding:14px 14px;text-align:left;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">EMAIL</th>
+                    <th class="staff-col-email" style="padding:14px 14px;text-align:left;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">EMAIL</th>
                     <th style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">ROLE</th>
-                    <th style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">JOINED</th>
-                    <th style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">STATUS</th>
+                    <th class="staff-col-joined" style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">JOINED</th>
+                    <th class="staff-col-status" style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">STATUS</th>
                     <th style="padding:14px 20px;text-align:right;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.3);font-weight:700;white-space:nowrap;">ACTIONS</th>
                 </tr>
             </thead>
@@ -226,7 +227,7 @@
                     </td>
 
                     {{-- Email --}}
-                    <td style="padding:16px 14px;font-size:13px;color:rgba(255,255,255,0.55);">{{ $member->email }}</td>
+                    <td class="staff-col-email" style="padding:16px 14px;font-size:13px;color:rgba(255,255,255,0.55);">{{ $member->email }}</td>
 
                     {{-- Role badge --}}
                     <td style="padding:16px 14px;text-align:center;">
@@ -258,12 +259,12 @@
                     </td>
 
                     {{-- Joined --}}
-                    <td style="padding:16px 14px;text-align:center;font-size:13px;color:rgba(255,255,255,0.4);">
+                    <td class="staff-col-joined" style="padding:16px 14px;text-align:center;font-size:13px;color:rgba(255,255,255,0.4);">
                         {{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}
                     </td>
 
                     {{-- Status --}}
-                    <td style="padding:16px 14px;text-align:center;">
+                    <td class="staff-col-status" style="padding:16px 14px;text-align:center;">
                         @php $active = ($member->is_active ?? true); @endphp
                         <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
                                      border-radius:6px;font-size:11px;font-weight:700;letter-spacing:1px;
@@ -493,7 +494,49 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeInviteModal()
 @keyframes stModalIn  { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
 .role-filter { transition:all .2s; }
 .role-filter.active { background:rgba(249,115,22,0.15)!important; border-color:rgba(249,115,22,0.4)!important; color:#F97316!important; }
-@media(max-width:900px){ div[style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important;} }
-@media(max-width:560px){ div[style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr!important;} }
+
+/* Role summary cards responsive */
+@media(max-width:900px){ .role-summary-grid{grid-template-columns:repeat(3,1fr)!important;} }
+@media(max-width:600px){ .role-summary-grid{grid-template-columns:repeat(2,1fr)!important;} }
+@media(max-width:380px){ .role-summary-grid{grid-template-columns:1fr!important;} }
+
+/* Staff table — hide less important cols on small screens */
+@media(max-width:700px){
+    .staff-col-joined { display:none; }
+    .staff-col-email  { display:none; }
+}
+@media(max-width:500px){
+    .staff-col-status { display:none; }
+}
+
+/* Page header wrap on mobile */
+@media(max-width:600px){
+    div[style*="align-items:flex-start;justify-content:space-between"]{
+        flex-direction:column!important;
+        align-items:stretch!important;
+    }
+    div[style*="align-items:flex-start;justify-content:space-between"] > button{
+        width:100%!important;
+        justify-content:center!important;
+    }
+}
+
+/* Toast positioning on mobile */
+@media(max-width:480px){
+    #staff-toast, #staff-err {
+        top:auto!important; bottom:16px!important;
+        right:12px!important; left:12px!important;
+        width:auto!important;
+    }
+}
+
+/* Invite modal full-screen on mobile */
+@media(max-width:540px){
+    #invite-modal > div {
+        max-width:100%!important;
+        border-radius:16px!important;
+        margin:0!important;
+    }
+}
 </style>
 @endsection

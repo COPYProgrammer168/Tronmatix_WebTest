@@ -397,6 +397,7 @@ setTimeout(closeSavePopup, 3500);
     $permRoles = [
         'admin'  => ['label' => 'Admin',   'color' => '#F97316', 'icon' => '🛡️'],
         'editor' => ['label' => 'Editor',  'color' => '#3b82f6', 'icon' => '✏️'],
+        'seller' => ['label' => 'Seller',  'color' => '#10b981', 'icon' => '🏪'],
         'viewer' => ['label' => 'Viewer',  'color' => '#a78bfa', 'icon' => '👁️'],
     ];
 
@@ -414,6 +415,9 @@ setTimeout(closeSavePopup, 3500);
             'editor_dashboard'  => '1','editor_products'=> '1','editor_orders' => '1',
             'editor_orders_edit'=> '0','editor_users'   => '0','editor_discounts'=>'1',
             'editor_settings'   => '0','editor_staff'   => '0',
+            'seller_dashboard'  => '1','seller_products'=> '1','seller_orders' => '1',
+            'seller_orders_edit'=> '1','seller_users'   => '0','seller_discounts'=>'1',
+            'seller_settings'   => '0','seller_staff'   => '0',
             'viewer_dashboard'  => '1','viewer_products'=> '0','viewer_orders'  => '1',
             'viewer_orders_edit'=> '0','viewer_users'   => '0','viewer_discounts'=>'0',
             'viewer_settings'   => '0','viewer_staff'   => '0',
@@ -605,6 +609,7 @@ setTimeout(closeSavePopup, 3500);
                 ['👑','SUPER ADMIN','#F97316','Full owner-level access to everything'],
                 ['🛡️','ADMIN',     '#F97316','Full access; cannot demote superadmin'],
                 ['✏️','EDITOR',    '#3b82f6','Products, banners & discounts; read-only orders'],
+                ['🏪','SELLER',    '#10b981','Products, orders & discounts management'],
                 ['👁️','VIEWER',    '#a78bfa','Dashboard & orders read-only only'],
             ];
         @endphp
@@ -819,6 +824,33 @@ if (permsForm) {
 }
 .perm-toggle:hover .perm-check {
     transform: scale(1.1);
+}
+
+/* Permission matrix: scroll on small screens */
+@media (max-width: 768px) {
+    div[style*="overflow-x:auto"] table,
+    .table-wrap table { min-width: 520px; }
+}
+
+/* Settings cards stack on mobile */
+@media (max-width: 700px) {
+    div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"],
+    div[style*="display:grid"][style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Role legend wraps nicely on mobile */
+@media (max-width: 540px) {
+    div[style*="min-width:200px"] {
+        min-width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+}
+
+/* Perm matrix role header compact on tablet */
+@media (max-width: 860px) {
+    .perm-role-header { font-size: 9px !important; }
 }
 </style>
 

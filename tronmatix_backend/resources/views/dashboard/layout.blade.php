@@ -230,6 +230,15 @@
             font-weight: 700;
             font-size: 14px;
             flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid rgba(249,115,22,0.4);
+        }
+
+        .admin-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .admin-name {
@@ -400,6 +409,7 @@
         .badge-cancelled { background: rgba(239,68,68,0.15);  color: #EF4444; border: 1px solid rgba(239,68,68,0.3); }
         .badge-orange    { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
         .badge-gray      { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
+        .badge-seller    { background: rgba(16,185,129,0.15);  color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
 
         /* ── Buttons ──────────────────────────────────────────────────────────── */
         .btn {
@@ -601,17 +611,27 @@
             .main     { margin-left: 0; }
             .hamburger { display: flex; }
             .admin-name { display: none; }
-            .content  { padding: 16px; }
+            .content  { padding: 14px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .stat-card  { padding: 14px; gap: 10px; }
             .stat-value { font-size: 22px; }
             .stat-icon  { width: 38px; height: 38px; }
             .chart-grid-2 { grid-template-columns: 1fr; }
+            .card-header { flex-direction: column; align-items: flex-start; }
+            .topbar { padding: 0 14px; }
+            table { font-size: 13px; }
+            thead th { padding: 10px 10px; font-size: 10px; }
+            tbody td  { padding: 10px 10px; }
         }
 
-        @media (max-width: 400px) {
-            .stats-grid  { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 480px) {
+            .stats-grid  { grid-template-columns: 1fr 1fr; gap: 8px; }
             .topbar-badge { display: none; }
+            .content  { padding: 10px; }
+            .stat-card { padding: 12px; gap: 8px; }
+            .stat-value { font-size: 20px; }
+            .card-header { padding: 12px 14px; }
+            .card-body   { padding: 14px; }
         }
     </style>
 
@@ -821,12 +841,29 @@
                     {{ strtoupper(Auth::guard('admin')->user()->role ?? 'ADMIN') }}
                 </span>
 
+                @php
+                    $_topbarAdmin = Auth::guard('admin')->user();
+                    $_topbarAvatar = $_topbarAdmin->avatar
+                        ? (Str::startsWith($_topbarAdmin->avatar, ['http://','https://'])
+                            ? $_topbarAdmin->avatar
+                            : asset('storage/' . $_topbarAdmin->avatar))
+                        : null;
+                @endphp
                 <a href="{{ route('dashboard.profile') }}" class="admin-profile-link" title="My Profile">
                     <div class="admin-avatar">
-                        {{ strtoupper(substr(Auth::guard('admin')->user()->name ?? 'A', 0, 1)) }}
+                        @if($_topbarAvatar)
+                            <img src="{{ $_topbarAvatar }}"
+                                 alt="{{ $_topbarAdmin->name }}"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:700;font-size:14px;">
+                                {{ strtoupper(substr($_topbarAdmin->name ?? 'A', 0, 1)) }}
+                            </span>
+                        @else
+                            {{ strtoupper(substr($_topbarAdmin->name ?? 'A', 0, 1)) }}
+                        @endif
                     </div>
                     <span class="admin-name">
-                        {{ Auth::guard('admin')->user()->name ?? 'Admin' }}
+                        {{ $_topbarAdmin->name ?? 'Admin' }}
                     </span>
                 </a>
 
