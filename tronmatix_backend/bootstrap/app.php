@@ -15,12 +15,22 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // Exclude all /api/* routes from CSRF verification (protected by Bearer token instead)
+        // ── CORS must be the VERY FIRST middleware ───────────────────────
+        // Laravel 11 does NOT auto-register HandleCors.
+        // Without this, OPTIONS preflight requests get blocked before reaching
+        // any route → browser sees CORS error → "Provisional headers are shown"
+        // → login/register fails with "Registration failed." / "Login failed."
+        $middleware->prepend([
+            \Illuminate\Http\Middleware\TrustProxies::class,
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
+        // Exclude /api/* from CSRF — API uses Bearer token, not cookies
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
 
-        // Sanctum for API token authentication
+        // Sanctum stateful for SPA authentication
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
@@ -28,14 +38,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware aliases
         $middleware->alias([
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-            'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-            'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
+            'auth'     => \Illuminate\Auth\Middleware\Authenticate::class,
+            'guest'    => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
         ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
-        // Return JSON for API errors
+        // JSON response for API auth errors
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -45,16 +55,18 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        // JSON response for API validation errors
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed.',
-                    'errors' => $e->errors(),
+                    'errors'  => $e->errors(),
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
         });
 
+        // JSON response for API 404 errors
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
