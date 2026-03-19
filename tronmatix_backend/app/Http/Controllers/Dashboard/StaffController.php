@@ -56,7 +56,7 @@ class StaffController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('dashboard.Staff', compact('staff'));
+        return view('dashboard.staff', compact('staff'));
     }
 
     // ── invite (create) ───────────────────────────────────────────────────────
