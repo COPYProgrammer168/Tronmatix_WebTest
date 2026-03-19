@@ -6,15 +6,15 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // FIX: Use env('FRONTEND_URL') so you can change it from Render dashboard
-    // without pushing code. Falls back to hardcoded URLs for local dev.
-    'allowed_origins' => array_filter([
+    // FIX: Use env('FRONTEND_URL') so Render env var controls it
+    // without needing a code push every time URL changes
+    'allowed_origins' => array_values(array_filter([
         'http://localhost:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
-        env('FRONTEND_URL'),   // set in Render: https://tronmatix-webtest.onrender.com
-    ]),
+        env('FRONTEND_URL', 'https://tronmatix-webtest.onrender.com'),
+    ])),
 
     'allowed_origins_patterns' => [],
 
@@ -22,9 +22,10 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 86400, // cache preflight for 24h — reduces OPTIONS requests
+    // Cache preflight for 24h — reduces OPTIONS requests
+    'max_age' => 86400,
 
-    // Must be false for Bearer token auth (no cookies)
+    // false = Bearer token auth (no cookies needed)
     'supports_credentials' => false,
 
 ];
