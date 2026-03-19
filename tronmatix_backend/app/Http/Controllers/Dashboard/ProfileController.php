@@ -31,6 +31,7 @@ class ProfileController extends Controller
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+<<<<<<< HEAD
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
             // Delete old avatar
             $this->deleteStorageFile($admin->avatar);
@@ -39,6 +40,16 @@ class ProfileController extends Controller
             $file     = $request->file('avatar');
             $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
             $data['avatar'] = $this->storeFileAs($file, 'avatars/admins', $filename);
+=======
+        // FIX: Upload avatar to S3/R2 instead of local 'public' disk
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+            // Delete old avatar
+            $this->deleteAvatar($admin->avatar);
+
+            $disk = $this->storageDisk();
+            $path = $request->file('avatar')->store('avatars/admins', $disk);
+            $data['avatar'] = Storage::disk($disk)->url($path);
+>>>>>>> 82a51346582e7e958aee906bd907014d342a8a3b
         }
 
         if (!isset($data['avatar'])) unset($data['avatar']);
@@ -53,7 +64,11 @@ class ProfileController extends Controller
     {
         /** @var \App\Models\Admin $admin */
         $admin = Auth::guard('admin')->user();
+<<<<<<< HEAD
         $this->deleteStorageFile($admin->avatar);
+=======
+        $this->deleteAvatar($admin->avatar);
+>>>>>>> 82a51346582e7e958aee906bd907014d342a8a3b
         $admin->update(['avatar' => null]);
 
         return redirect()->route('dashboard.profile')
@@ -90,5 +105,30 @@ class ProfileController extends Controller
 
         return redirect()->route('dashboard.profile')
             ->with('success', 'Role updated to '.strtoupper($request->role).'.');
+<<<<<<< HEAD
+=======
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function deleteAvatar(?string $avatar): void
+    {
+        if (!$avatar) return;
+
+        $disk = $this->storageDisk();
+
+        if (str_starts_with($avatar, 'http://') || str_starts_with($avatar, 'https://')) {
+            $bucket = config("filesystems.disks.{$disk}.bucket");
+            $key    = preg_replace('#^https?://[^/]+/(?:'.preg_quote($bucket, '#').'/)?#', '', $avatar);
+            if ($key) Storage::disk($disk)->delete($key);
+        } elseif (Storage::disk('public')->exists($avatar)) {
+            Storage::disk('public')->delete($avatar);
+        }
+    }
+
+    private function storageDisk(): string
+    {
+        return config('filesystems.default') === 's3' ? 's3' : 'public';
+>>>>>>> 82a51346582e7e958aee906bd907014d342a8a3b
     }
 }
