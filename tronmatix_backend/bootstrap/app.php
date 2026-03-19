@@ -15,7 +15,20 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // Exclude all /api/* routes from CSRF verification (protected by Bearer token instead)
+        // FIX: Add CORS middleware FIRST — before any other middleware.
+        // Without this, OPTIONS preflight requests get blocked before
+        // reaching the route → frontend sees CORS error → "Provisional headers"
+        // Laravel 11 does NOT auto-register HandleCors — must be done manually.
+        $middleware->prepend(
+            \Illuminate\Http\Middleware\HandleCors::class
+        );
+
+        // Trust Render's load balancer so Laravel detects HTTPS correctly
+        $middleware->prepend(
+            \Illuminate\Http\Middleware\TrustProxies::class
+        );
+
+        // Exclude all /api/* routes from CSRF (protected by Bearer token)
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
@@ -28,14 +41,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware aliases
         $middleware->alias([
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-            'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-            'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
+            'auth'     => \Illuminate\Auth\Middleware\Authenticate::class,
+            'guest'    => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
         ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
-        // Return JSON for API errors
+        // Return JSON for API authentication errors
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -45,16 +58,18 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        // Return JSON for API validation errors
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed.',
-                    'errors' => $e->errors(),
+                    'errors'  => $e->errors(),
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
         });
 
+        // Return JSON for API 404 errors
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
