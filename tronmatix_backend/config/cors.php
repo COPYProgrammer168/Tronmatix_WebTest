@@ -23,6 +23,6 @@ return [
     // Cache preflight for 24h — reduces OPTIONS requests
     'max_age' => 86400,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];
