@@ -15,25 +15,22 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // FIX: Add CORS middleware FIRST — before any other middleware.
-        // Without this, OPTIONS preflight requests get blocked before
-        // reaching the route → frontend sees CORS error → "Provisional headers"
-        // Laravel 11 does NOT auto-register HandleCors — must be done manually.
-        $middleware->prepend(
-            \Illuminate\Http\Middleware\HandleCors::class
-        );
+        // ── FIX: CORS must be the VERY FIRST middleware ───────────────────────
+        // Laravel 11 does NOT auto-register HandleCors.
+        // Without this, OPTIONS preflight requests get blocked before reaching
+        // any route → browser sees CORS error → "Provisional headers are shown"
+        // → login/register fails with "Registration failed." / "Login failed."
+        $middleware->prepend([
+            \Illuminate\Http\Middleware\TrustProxies::class,
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
 
-        // Trust Render's load balancer so Laravel detects HTTPS correctly
-        $middleware->prepend(
-            \Illuminate\Http\Middleware\TrustProxies::class
-        );
-
-        // Exclude all /api/* routes from CSRF (protected by Bearer token)
+        // Exclude /api/* from CSRF — API uses Bearer token, not cookies
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
 
-        // Sanctum for API token authentication
+        // Sanctum stateful for SPA authentication
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
@@ -48,7 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
-        // Return JSON for API authentication errors
+        // JSON response for API auth errors
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -58,7 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Return JSON for API validation errors
+        // JSON response for API validation errors
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -69,7 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Return JSON for API 404 errors
+        // JSON response for API 404 errors
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
