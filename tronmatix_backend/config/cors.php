@@ -1,44 +1,44 @@
 <?php
 
 // config/cors.php
-// ── CORS must allow the frontend origin for ALL api/* routes ─────────────────
-// FIX: Use '*' wildcard for allowed_origins_patterns as fallback
-// FIX: supports_credentials must match frontend axios withCredentials setting
-
-$frontendUrl = rtrim(env('FRONTEND_URL', 'https://tronmatix-webtest.onrender.com'), '/');
+// ── Laravel CORS — must match Apache headers exactly ─────────────────────────
 
 return [
 
-    // Allow ALL paths — '*' catches any route including OPTIONS preflight
-    'paths' => ['*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', '*'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    // FIX: Build allowed_origins dynamically from env so no code push needed
-    'allowed_origins' => array_values(array_unique(array_filter([
-        $frontendUrl,
+    'allowed_origins' => [
+        'https://tronmatix-webtest.onrender.com',
         'http://localhost:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
-    ]))),
+    ],
 
-    // FIX: Allow any onrender.com subdomain as pattern fallback
     'allowed_origins_patterns' => [
         '#^https://[\w-]+\.onrender\.com$#',
         '#^http://localhost(:\d+)?$#',
-        '#^http://127\.0\.0\.1(:\d+)?$#',
     ],
 
-    'allowed_headers' => ['*'],
+    // ── FIX: Content-Type MUST be listed here ─────────────────────────────────
+    // Error was: "content-type is not allowed by Access-Control-Allow-Headers"
+    // Solution: list every header axios sends explicitly
+    'allowed_headers' => [
+        'Authorization',
+        'Content-Type',
+        'Accept',
+        'Origin',
+        'X-Requested-With',
+        'X-CSRF-TOKEN',
+    ],
 
     'exposed_headers' => ['Authorization'],
 
-    // Cache preflight 2h (86400 = 24h can cause stale issues during dev)
-    'max_age' => 7200,
+    'max_age' => 86400,
 
-    // FIX: MUST be false — frontend uses Bearer token not cookies
-    // If true, browser blocks requests unless axios has withCredentials:true
+    // false = Bearer token (no cookies) — must match axios withCredentials:false
     'supports_credentials' => false,
 
 ];
