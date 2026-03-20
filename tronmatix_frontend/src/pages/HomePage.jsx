@@ -55,7 +55,7 @@ export default function HomePage() {
         const data = Array.isArray(res.data) ? res.data : (res.data?.data ?? [])
         const active = data.filter(b => b.active !== false)
         if (active.length > 0) setBanners(active)
-      }).catch(err => { console.error('Failed to fetch banners:', err?.response?.status, err?.message) })
+      }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -72,10 +72,11 @@ export default function HomePage() {
     // Fetch newest products for the "NEW PRODUCTS" section
     axios.get('/api/products', { params: { sort: 'newest', per_page: 12, page: 1 } })
       .then(res => {
-        const items = res.data.data ?? res.data ?? []
+        const raw   = res.data
+        const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
         if (Array.isArray(items) && items.length > 0) setNewProducts(items)
       })
-      .catch(err => { console.error('Failed to fetch new products:', err?.response?.status, err?.message) })
+      .catch(() => {})
   }, [])
 
   const fetchCatPage = async (cat, page) => {
@@ -84,12 +85,14 @@ export default function HomePage() {
       ? { cats: subs.join(','), per_page: 6, page }
       : { category: subs[0],   per_page: 6, page }
     try {
-      const res = await axios.get('/api/products', { params })
-      const items = res.data.data ?? []
-      const total = res.data.total ?? items.length
+      const res   = await axios.get('/api/products', { params })
+      const raw   = res.data
+      // Handle both { data: [...], total: N } and direct array response shapes
+      const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
+      const total = raw?.total ?? items.length
       setProducts(prev => ({ ...prev, [cat]: { items, total, page } }))
     } catch(err) {
-      console.error('Failed to fetch category', cat, err?.response?.status, err?.message)
+      console.error('fetchCatPage error', cat, err?.response?.status, err?.message)
       setProducts(prev => ({ ...prev, [cat]: { items: [], total: 0, page } }))
     }
   }
