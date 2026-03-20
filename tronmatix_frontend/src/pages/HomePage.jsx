@@ -37,6 +37,7 @@ export default function HomePage() {
   const [slide, setSlide]       = useState(0)
   const [banners, setBanners]   = useState(FALLBACK_BANNERS)
   const [products, setProducts] = useState({})
+  const [debugError, setDebugError] = useState(null)
   const [loading, setLoading]   = useState(true)
   const [newProducts, setNewProducts] = useState([])
   const [catPage, setCatPage]         = useState({})   // { CPU: 1, RAM: 1, ... }
@@ -55,7 +56,7 @@ export default function HomePage() {
         const data = Array.isArray(res.data) ? res.data : (res.data?.data ?? [])
         const active = data.filter(b => b.active !== false)
         if (active.length > 0) setBanners(active)
-      }).catch(err => { console.error('Failed to fetch banners:', err?.response?.status, err?.message) })
+      }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -75,7 +76,7 @@ export default function HomePage() {
         const items = res.data.data ?? res.data ?? []
         if (Array.isArray(items) && items.length > 0) setNewProducts(items)
       })
-      .catch(err => { console.error('Failed to fetch new products:', err?.response?.status, err?.message) })
+      .catch(() => {})
   }, [])
 
   const fetchCatPage = async (cat, page) => {
@@ -88,8 +89,7 @@ export default function HomePage() {
       const items = res.data.data ?? []
       const total = res.data.total ?? items.length
       setProducts(prev => ({ ...prev, [cat]: { items, total, page } }))
-    } catch(err) {
-      console.error('Failed to fetch category', cat, err?.response?.status, err?.message)
+    } catch {
       setProducts(prev => ({ ...prev, [cat]: { items: [], total: 0, page } }))
     }
   }
@@ -121,6 +121,12 @@ export default function HomePage() {
     || `/category/search?q=${encodeURIComponent((b.title || '').replace('\n', ' ').split(' ').slice(0, 3).join(' '))}`
 
   return (
+    <div>
+      {debugError && (
+        <div style={{ background: '#dc2626', color: '#fff', padding: '12px 16px', fontSize: 13, wordBreak: 'break-all', zIndex: 9999, position: 'relative' }}>
+          🐛 DEBUG (remove after fix): {debugError}
+        </div>
+      )}
     <div style={{ background: bg }}>
 
       <div className="max-w-[1280px] mx-auto px-4 pt-6 pb-2">
@@ -353,5 +359,6 @@ export default function HomePage() {
         )
       })}
     </div>
+  </div>
   )
 }
