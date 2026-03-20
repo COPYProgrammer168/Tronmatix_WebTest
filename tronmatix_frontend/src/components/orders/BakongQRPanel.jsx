@@ -108,12 +108,27 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
     pollerRef.current = setInterval(tick, 4000)
   }, [orderId, onPaid])
 
+  // Normalize expiration to UTC ms.
+  // Django returns datetimes without a timezone suffix (e.g. "2025-03-20T08:30:00").
+  // JS new Date() treats tz-naive strings as LOCAL time, not UTC — so in UTC+7
+  // the value is parsed 7 hours too early and the QR expires instantly.
+  // Appending "Z" forces correct UTC interpretation.
+  const parseExpirationMs = (exp) => {
+    if (!exp) return null
+    const hasTimezone = /Z|[+-]\d{2}:?\d{2}$/.test(exp)
+    const normalized = hasTimezone ? exp : exp.replace(" ", "T") + "Z"
+    return new Date(normalized).getTime()
+  }
+
   const startCountdown = (qrExpiration) => {
     clearInterval(countdownRef.current)
     if (!qrExpiration) return
 
+    const expiryMs = parseExpirationMs(qrExpiration)
+    if (!expiryMs || isNaN(expiryMs)) return
+
     const tick = () => {
-      const remaining = new Date(qrExpiration).getTime() - Date.now()
+      const remaining = expiryMs - Date.now()
       if (remaining <= 0) {
         stopAll()   // FIX: stop both poller and countdown on expiry
         setCountdown("0:00")
