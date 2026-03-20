@@ -54,21 +54,20 @@ instance.interceptors.response.use(
     const status = error.response?.status
 
     if (status === 401) {
-      // Clear all token keys — legacy and current
+      // Clear all stored auth keys
       localStorage.removeItem('token')
       localStorage.removeItem('tronmatix_user')
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
 
-      // FIX: do NOT redirect with window.location.replace('/').
-      // Redirecting caused an infinite reload loop on mobile:
-      //   stale token → 401 → redirect to / → reload → 401 → redirect → ...
-      // Public pages (home, products) don't need auth — just clear the token
-      // and let React re-render in unauthenticated state naturally.
-      // Only redirect if the current page actually requires auth.
-      const publicPaths = ['/', '/category', '/products', '/contact']
-      const isPublic = publicPaths.some(p => window.location.pathname.startsWith(p))
-      if (!isPublic) {
+      // FIX: do NOT always redirect with window.location.replace('/').
+      // On mobile this caused an infinite reload loop:
+      //   stale token → 401 → replace('/') → reload → 401 → replace('/') → ...
+      // Public pages don't need auth — just clear the token and let React
+      // re-render unauthenticated. Only redirect if on a protected page.
+      const protectedPaths = ['/orders', '/profile', '/checkout', '/cart']
+      const onProtected = protectedPaths.some(p => window.location.pathname.startsWith(p))
+      if (onProtected) {
         window.location.replace('/')
       }
     }
