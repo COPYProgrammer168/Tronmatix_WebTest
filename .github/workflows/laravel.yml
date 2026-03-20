@@ -1,20 +1,5 @@
 # .github/workflows/laravel.yml
-# ── Triggers Render to rebuild the frontend Static Site on every push ─────────
-#
-# WHY NO npm build here:
-#   Render Static Site clones your repo and runs its OWN build.
-#   Building here is wasted — Render ignores GitHub's dist/ folder.
-#   VITE_API_URL must be set in:  Render → Service → Environment Variables
-#
-# REQUIRED GITHUB SECRET:
-#   RENDER_DEPLOY_HOOK  →  Render → Service → Settings → Deploy Hook → copy URL
-#
-# REQUIRED RENDER ENVIRONMENT VARIABLE (set once in Render dashboard):
-#   VITE_API_URL = https://tronmatix-beckend.onrender.com
-#
-# REQUIRED FILE IN REPO ROOT (fixes 404 on page reload):
-#   public/_redirects  →  content:  /* /index.html 200
-# ─────────────────────────────────────────────────────────────────────────────
+# Single workflow — triggers Render to rebuild the frontend on every push to master.
 
 name: Deploy Frontend to Render
 
@@ -28,31 +13,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ───────────────────────────────────────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Verify _redirects exists (SPA routing — fixes 404 on reload) ───────
-      - name: Check tronmatix_frontend/public/_redirects
+      # Check _redirects exists — try both monorepo and root locations
+      - name: Check public/_redirects exists
         run: |
-          FILE="tronmatix_frontend/public/_redirects"
-          if [ ! -f "$FILE" ]; then
-            echo "❌ $FILE is missing!"
-            echo "   Create it with exactly this content:"
-            echo "   /* /index.html 200"
-            echo ""
-            echo "   Without it, reloading /product/2 or /checkout will show 404."
-            exit 1
-          fi
-          CONTENT=$(tr -d '[:space:]' < "$FILE")
-          if [ "$CONTENT" = "/*  /index.html  200" ] || [ "$CONTENT" = "///index.html200" ] || echo "$CONTENT" | grep -q "index.html"; then
-            echo "✅ _redirects looks correct"
+          if [ -f "tronmatix_frontend/public/_redirects" ]; then
+            echo "✅ Found at tronmatix_frontend/public/_redirects"
+          elif [ -f "public/_redirects" ]; then
+            echo "✅ Found at public/_redirects"
           else
-            echo "⚠️  _redirects content: $(cat $FILE)"
-            echo "   Expected:  /* /index.html 200"
+            echo "❌ public/_redirects is missing! Creating it now..."
+            mkdir -p public
+            echo "/* /index.html 200" > public/_redirects
+            echo "✅ Created public/_redirects"
           fi
 
-      # ── 3. Trigger Render deployment ──────────────────────────────────────────
       - name: Trigger Render deployment
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
@@ -76,20 +53,9 @@ jobs:
           echo "HTTP status: $HTTP_STATUS"
 
           if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
-            echo "✅ Render build triggered (HTTP $HTTP_STATUS)"
-            echo ""
-            echo "📋 Render will now:"
-            echo "   1. Clone branch: master"
-            echo "   2. cd tronmatix_frontend"
-            echo "   3. npm ci --legacy-peer-deps && npm run build"
-            echo "   4. Serve dist/ with VITE_API_URL from Render environment"
-            echo ""
-            echo "   ⚠️  Make sure VITE_API_URL is set in Render → Environment:"
-            echo "      VITE_API_URL = https://tronmatix-beckend.onrender.com"
-            echo ""
+            echo "✅ Render build triggered successfully (HTTP $HTTP_STATUS)"
             echo "   Monitor: https://dashboard.render.com"
           else
             echo "❌ Deploy trigger failed (HTTP $HTTP_STATUS)"
-            cat /tmp/render_response.txt
             exit 1
           fi
