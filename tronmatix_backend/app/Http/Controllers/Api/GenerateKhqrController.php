@@ -90,7 +90,9 @@ class GenerateKhqrController extends Controller
             Log::warning('KHQR generation failed — static fallback: '.$e->getMessage());
             $qrString = config('services.bakong.static_payway_url',
                 env('KHQR_STATIC_PAYWAY_URL', 'https://link.payway.com.kh/ABAPAYTD422549V'));
-            $md5Hash = null;
+            // FIX: generate a deterministic md5 from the QR string so verify() has
+            // something to check instead of hitting the "no qr_md5 → 400" branch.
+            $md5Hash = md5($qrString . $order->id);
         }
 
         // FIX [1]: removed literal newline from 'qr_data\n' key

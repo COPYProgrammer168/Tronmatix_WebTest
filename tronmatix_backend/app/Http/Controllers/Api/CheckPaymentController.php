@@ -69,7 +69,9 @@ class CheckPaymentController extends Controller
         }
 
         if (! $payment->qr_md5) {
-            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No QR MD5 — cannot poll Bakong.'], 400);
+            // FIX: qr_md5 is null when Bakong API failed and static PayWay URL was used as fallback.
+            // Return 404 (pending) not 400 — so frontend keeps polling instead of treating it as expired.
+            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No QR MD5 — waiting for Bakong registration.'], 404);
         }
 
         // FIX [8]: handle null (network error) — treat as still-pending, never crash
