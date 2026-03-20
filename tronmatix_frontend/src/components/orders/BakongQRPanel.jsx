@@ -19,10 +19,15 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
     return () => stopAll()
   }, [orderId]) // eslint-disable-line
 
-  const stopAll = () => {
+  const stopPoller = () => {
     if (pollerRef.current) { clearInterval(pollerRef.current); pollerRef.current = null }
+  }
+
+  const stopCountdown = () => {
     if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null }
   }
+
+  const stopAll = () => { stopPoller(); stopCountdown() }
 
   const generateQRCode = async () => {
     if (!orderId) { setError("Order ID not found"); return }
@@ -53,7 +58,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
   // FIX: Use setInterval directly instead of qrApi pollPaymentStatus
   // This gives us full control and avoids the wrapper's issues
   const startPoller = useCallback(() => {
-    stopAll()
+    stopPoller()   // FIX: only clear poller — don't kill the countdown interval
     let attempts = 0
     const MAX = 60  // 4min at 4s intervals
 
@@ -110,9 +115,10 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
     const tick = () => {
       const remaining = new Date(qrExpiration).getTime() - Date.now()
       if (remaining <= 0) {
-        clearInterval(countdownRef.current)
+        stopAll()   // FIX: stop both poller and countdown on expiry
         setCountdown("0:00")
         setPaymentStatus(prev => prev === "pending" ? "expired" : prev)
+        setError("QR code has expired. Please generate a new one.")
         return
       }
       const m = Math.floor(remaining / 60000)
