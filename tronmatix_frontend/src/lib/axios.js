@@ -1,18 +1,12 @@
 // src/lib/axios.js
-
 import axios from 'axios'
 
 const isProd = import.meta.env.PROD
 
-// DEV:  '' → Vite proxy → http://127.0.0.1:8000
-// PROD: must set VITE_API_URL in Render environment variables
-//       e.g. https://tronmatix-beckend.onrender.com
 const baseURL = isProd
   ? (import.meta.env.VITE_API_URL ?? '')
   : ''
 
-// Fail loudly in prod if the env var is missing — empty baseURL means
-// every /api/* call hits the static frontend domain and returns HTML, not JSON
 if (isProd && !import.meta.env.VITE_API_URL) {
   console.error(
     '❌ VITE_API_URL is not set!\n' +
@@ -33,11 +27,9 @@ const instance = axios.create({
   timeout: 15000,
 })
 
-// ── Request interceptor: attach Bearer token ──────────────────────────────────
+// ── Request interceptor: attach Bearer token ─────────────────────────────────
 instance.interceptors.request.use(
   (config) => {
-    // FIX: AuthContext saves token as 'token' — must read same key here
-    // Previously was 'auth_token' → token never attached → all API calls 401
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -47,7 +39,7 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// ── Response interceptor ───────────────────────────────────────────────────────
+// ── Response interceptor ──────────────────────────────────────────────────────
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -60,16 +52,15 @@ instance.interceptors.response.use(
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
 
-      // FIX: do NOT always redirect with window.location.replace('/').
-      // On mobile this caused an infinite reload loop:
-      //   stale token → 401 → replace('/') → reload → 401 → replace('/') → ...
-      // Public pages don't need auth — just clear the token and let React
-      // re-render unauthenticated. Only redirect if on a protected page.
+      // Only redirect if on a protected page.
+      // Public pages (home, products) don't need auth — just clear the token
+      // and let React re-render unauthenticated. No reload loop.
       const protectedPaths = ['/orders', '/profile', '/checkout', '/cart']
-const onProtected = protectedPaths.some(p => window.location.pathname.startsWith(p))
-if (onProtected) {
-  window.location.replace('/')
-}
+      const onProtected = protectedPaths.some(p => window.location.pathname.startsWith(p))
+      if (onProtected) {
+        window.location.replace('/')
+      }
+    }
 
     if (import.meta.env.DEV) {
       console.error(`API Error [${status}]:`, error.config?.url, error.message)
