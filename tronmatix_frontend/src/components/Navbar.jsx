@@ -266,7 +266,7 @@ export default function Navbar({ onAuthOpen }) {
             </button>
 
             {/* Compact user */}
-            <div className="relative hidden md:block" ref={compactUserMenuRef}>
+            <div className="relative block" ref={compactUserMenuRef}>
               <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors"
                 style={{ color: textColor }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
@@ -287,7 +287,7 @@ export default function Navbar({ onAuthOpen }) {
                         {(user.username || user.name || 'U').charAt(0).toUpperCase()}
                       </div>
                     </div>
-                    <span className="font-bold hidden lg:block max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
+                    <span className="font-bold max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
                       {user.username || user.name}
                     </span>
                   </>
@@ -404,7 +404,7 @@ export default function Navbar({ onAuthOpen }) {
               </button>
 
               {/* User button */}
-              <div className="relative hidden lg:block" ref={userMenuRef}>
+              <div className="relative block" ref={userMenuRef}>
                 <button
                   onClick={() => { if (!ready || loading) return; user ? setUserMenu(p => !p) : onAuthOpen?.('login') }}
                   className="flex flex-col items-center gap-0.5 hover:text-primary transition-colors px-1"

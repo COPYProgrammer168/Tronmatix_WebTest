@@ -5,13 +5,22 @@ import axios from 'axios'
 const isProd = import.meta.env.PROD
 
 // DEV:  '' → Vite proxy → http://127.0.0.1:8000
-// PROD: 'https://tronmatix-beckend.onrender.com'
+// PROD: must set VITE_API_URL in Render environment variables
+//       e.g. https://tronmatix-beckend.onrender.com
 const baseURL = isProd
   ? (import.meta.env.VITE_API_URL ?? '')
   : ''
 
+// Fail loudly in prod if the env var is missing — empty baseURL means
+// every /api/* call hits the static frontend domain and returns HTML, not JSON
 if (isProd && !import.meta.env.VITE_API_URL) {
-  console.error('❌ VITE_API_URL is not set — API calls will fail in production')
+  console.error(
+    '❌ VITE_API_URL is not set!\n' +
+    'Go to Render → your frontend service → Environment → Add:\n' +
+    '  Key:   VITE_API_URL\n' +
+    '  Value: https://tronmatix-beckend.onrender.com\n' +
+    'Then trigger a manual redeploy.'
+  )
 }
 
 const instance = axios.create({

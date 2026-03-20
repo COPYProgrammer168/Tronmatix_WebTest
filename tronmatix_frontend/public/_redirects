@@ -1,1 +1,2 @@
-/* /index.html 200
+# Render SPA rewrite — send ALL routes to index.html so React Router handles them
+/*    /index.html   200

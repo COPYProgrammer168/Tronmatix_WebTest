@@ -92,19 +92,36 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
           setError("Payment window closed. Please generate a new QR code.")
         }
       } catch (err) {
-        const status = err?.response?.status
+        const status   = err?.response?.status
+        const errBody  = err?.response?.data
+
         if (status === 400) {
-          stopAll(); setPaymentStatus("expired"); setError("QR expired.")
+          // Only treat 400 as expired if the backend explicitly says so.
+          // A 400 on the first poll often means "QR not registered yet" —
+          // NOT that it's expired. Keep polling until MAX attempts.
+          const isExpired =
+            errBody?.status === 'expired' ||
+            errBody?.message?.toLowerCase().includes('expired') ||
+            errBody?.error?.toLowerCase().includes('expired')
+
+          if (isExpired) {
+            stopAll(); setPaymentStatus("expired"); setError("QR expired.")
+            return
+          }
+          // Not expired — just keep polling (backend not ready yet)
+          if (attempts >= MAX) { stopAll(); setPaymentStatus("expired") }
           return
         }
+
         // 404 = still pending, keep polling
         // network errors: stop after max attempts
         if (attempts >= MAX) { stopAll(); setPaymentStatus("expired") }
       }
     }
 
-    // FIX: check immediately (1s delay), then every 4s
-    setTimeout(tick, 1000)
+    // Delay first check — give backend time to register the QR
+    // Render cold starts + Bakong API registration can take 3-5s
+    setTimeout(tick, 3000)
     pollerRef.current = setInterval(tick, 4000)
   }, [orderId, onPaid])
 

@@ -10,6 +10,11 @@ const backendUrl = process.env.VITE_DEV_API_URL || 'http://127.0.0.1:8000'
 export default defineConfig({
   plugins: [react()],
 
+  // Explicit base path — required for Render Static Site so asset URLs are
+  // absolute (/assets/...) not relative (./assets/...). Without this,
+  // nested routes like /dashboard/orders load a blank page.
+  base: '/',
+
   // Pre-bundle deps to avoid re-optimization on every cold start
   optimizeDeps: {
     include: [
@@ -25,8 +30,8 @@ export default defineConfig({
   server: {
     port: 5173,
 
-    // Dev proxy — forwards /api/* and /storage/* to Laravel backend
-    // This avoids CORS issues in development
+    // Dev proxy — forwards /api/* and /storage/* to Django backend
+    // This avoids CORS issues in development (not used in production)
     proxy: {
       '/api': {
         target: backendUrl,
