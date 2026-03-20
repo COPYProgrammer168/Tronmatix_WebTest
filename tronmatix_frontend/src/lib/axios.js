@@ -66,11 +66,10 @@ instance.interceptors.response.use(
       // Public pages don't need auth — just clear the token and let React
       // re-render unauthenticated. Only redirect if on a protected page.
       const protectedPaths = ['/orders', '/profile', '/checkout', '/cart']
-      const onProtected = protectedPaths.some(p => window.location.pathname.startsWith(p))
-      if (onProtected) {
-        window.location.replace('/')
-      }
-    }
+const onProtected = protectedPaths.some(p => window.location.pathname.startsWith(p))
+if (onProtected) {
+  window.location.replace('/')
+}
 
     if (import.meta.env.DEV) {
       console.error(`API Error [${status}]:`, error.config?.url, error.message)
