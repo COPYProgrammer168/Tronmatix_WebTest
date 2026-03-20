@@ -72,7 +72,7 @@ export default function HomePage() {
     // Fetch newest products for the "NEW PRODUCTS" section
     axios.get('/api/products', { params: { sort: 'newest', per_page: 12, page: 1 } })
       .then(res => {
-        const raw = res.data
+        const raw   = res.data
         const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
         if (Array.isArray(items) && items.length > 0) setNewProducts(items)
       })
@@ -85,23 +85,14 @@ export default function HomePage() {
       ? { cats: subs.join(','), per_page: 6, page }
       : { category: subs[0],   per_page: 6, page }
     try {
-      const res = await axios.get('/api/products', { params })
-      // FIX: handle both { data: [...] } and direct array response shapes
+      const res   = await axios.get('/api/products', { params })
       const raw   = res.data
+      // Handle both { data: [...], total: N } and direct array response shapes
       const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
       const total = raw?.total ?? items.length
-      // DEBUG: show what we got on screen
-      setDebugError(prev => {
-        const msg = `${cat}:${items.length}items`
-        return prev ? prev + ' | ' + msg : msg
-      })
       setProducts(prev => ({ ...prev, [cat]: { items, total, page } }))
     } catch(err) {
       console.error('fetchCatPage error', cat, err?.response?.status, err?.message)
-      setDebugError(prev => {
-        const msg = `${cat} ERR:${err?.response?.status}`
-        return prev ? prev + ' | ' + msg : msg
-      })
       setProducts(prev => ({ ...prev, [cat]: { items: [], total: 0, page } }))
     }
   }
