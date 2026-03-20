@@ -66,6 +66,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/profile', [UserProfileController::class, 'show']);
     Route::put('/user/profile', [UserProfileController::class, 'update']);
     Route::get('/user/stats', [UserProfileController::class, 'stats']);
+
+    // Avatar upload / remove
+    Route::post('/user/avatar', [UserProfileController::class, 'uploadAvatar']);
+    Route::delete('/user/avatar', [UserProfileController::class, 'removeAvatar']);
+
     Route::get('/user/locations', [UserProfileController::class, 'locations']);
     Route::post('/user/locations', [UserProfileController::class, 'storeLocation']);
     Route::put('/user/locations/{id}', [UserProfileController::class, 'updateLocation']);

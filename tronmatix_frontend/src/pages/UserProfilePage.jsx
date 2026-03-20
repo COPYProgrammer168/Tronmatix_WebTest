@@ -71,7 +71,11 @@ export default function UserProfilePage() {
       })
   }, [authUser?.id])
 
-  const handleProfileSaved = async () => {
+  const handleProfileSaved = async (updatedFields) => {
+    // If avatar was updated directly, merge immediately for instant header update
+    if (updatedFields) {
+      setProfileUser(prev => ({ ...prev, ...updatedFields }))
+    }
     const fresh = await refreshUser?.()
     if (fresh) setProfileUser(fresh)
     // Also re-fetch from /api/user/profile to ensure all fields up to date

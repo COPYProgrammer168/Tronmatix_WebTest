@@ -1,6 +1,7 @@
 // src/components/profile/ProfileTab.jsx
 import { useState, useEffect } from 'react'
 import axiosClient from '../../lib/axios'
+import AvatarUpload from './AvatarUpload'
 
 // ── Shared style helpers ──────────────────────────────────────────────────────
 const labelStyle = {
@@ -34,10 +35,12 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
   const [saved,    setSaved]    = useState(false)   // animation trigger
   const [errors,   setErrors]   = useState({})
   const [form,     setForm]     = useState({ name: '', phone: '' })
+  const [localUser, setLocalUser] = useState(user)
 
   // Sync form when user changes (e.g. after refreshUser)
   useEffect(() => {
     if (user) {
+      setLocalUser(user)
       setForm({
         name:  user.username || user.name || '',
         phone: user.phone || '',
@@ -54,6 +57,11 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       errs.phone = 'Invalid phone number'
     setErrors(errs)
     return Object.keys(errs).length === 0
+  }
+
+  const handleAvatarUpdated = (updatedUser) => {
+    if (updatedUser) setLocalUser(prev => ({ ...prev, ...updatedUser }))
+    onSaved?.()
   }
 
   const handleSave = async () => {
@@ -118,6 +126,13 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           }}>SAVED!</div>
         </div>
       )}
+
+      {/* ── Avatar Upload ─────────────────────────────────────────────────────── */}
+      <AvatarUpload
+        user={localUser}
+        onUpdated={handleAvatarUpdated}
+        notify={notify}
+      />
 
       {/* ── Header row ───────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>

@@ -28,36 +28,58 @@
 {{-- Flash toasts --}}
 @if(session('success'))
 <div id="staff-toast" style="position:fixed;top:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:12px;
-    padding:14px 22px;border-radius:14px;background:linear-gradient(135deg,#0b1f0e,#0a280c);
-    border:1px solid rgba(34,197,94,0.35);box-shadow:0 16px 48px rgba(0,0,0,0.5);
-    font-family:Rajdhani,sans-serif;animation:stToastIn .35s cubic-bezier(0.34,1.4,0.64,1);">
-    <div style="width:34px;height:34px;border-radius:50%;background:rgba(34,197,94,0.15);
-                border:1px solid rgba(34,197,94,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;">✓</div>
-    <div>
-        <div style="font-size:14px;font-weight:800;color:#22c55e;letter-spacing:1.5px;">SUCCESS</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:1px;">{{ session('success') }}</div>
+    padding:14px 22px;border-radius:16px;background:linear-gradient(135deg,#0b1f0e,#0a280c);
+    border:1px solid rgba(34,197,94,0.4);box-shadow:0 16px 48px rgba(0,0,0,0.6),0 0 0 0 rgba(34,197,94,0.3);
+    font-family:Rajdhani,sans-serif;animation:stToastIn .4s cubic-bezier(0.34,1.4,0.64,1);
+    max-width:340px;">
+    {{-- animated checkmark icon --}}
+    <div style="width:38px;height:38px;border-radius:50%;background:rgba(34,197,94,0.15);flex-shrink:0;
+                border:1.5px solid rgba(34,197,94,0.4);display:flex;align-items:center;justify-content:center;
+                font-size:20px;animation:popIn .4s .15s cubic-bezier(0.34,1.6,0.64,1) both;">✓</div>
+    <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:#22c55e;letter-spacing:1.5px;">SUCCESS</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;line-height:1.4;">{{ session('success') }}</div>
     </div>
-    <button onclick="this.closest('#staff-toast').remove()"
-            style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:18px;cursor:pointer;">×</button>
+    <button onclick="dismissToast('staff-toast')"
+            style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.05);
+                   border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size:16px;cursor:pointer;
+                   display:flex;align-items:center;justify-content:center;transition:all .2s;"
+            onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
+    {{-- progress bar --}}
+    <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <div id="staff-toast-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#22c55e,#4ade80);
+            animation:toastBar 4s linear forwards;border-radius:0 0 16px 16px;"></div>
+    </div>
 </div>
-<script>setTimeout(()=>document.getElementById('staff-toast')?.remove(),4000);</script>
+<script>
+setTimeout(()=>dismissToast('staff-toast'), 4000);
+</script>
 @endif
 
 @if(session('error'))
 <div id="staff-err" style="position:fixed;top:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:12px;
-    padding:14px 22px;border-radius:14px;background:linear-gradient(135deg,#1f0b0b,#280a0a);
-    border:1px solid rgba(239,68,68,0.35);box-shadow:0 16px 48px rgba(0,0,0,0.5);
-    font-family:Rajdhani,sans-serif;animation:stToastIn .35s cubic-bezier(0.34,1.4,0.64,1);">
-    <div style="width:34px;height:34px;border-radius:50%;background:rgba(239,68,68,0.12);
-                border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;">✕</div>
-    <div>
-        <div style="font-size:14px;font-weight:800;color:#ef4444;letter-spacing:1.5px;">ERROR</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:1px;">{{ session('error') }}</div>
+    padding:14px 22px;border-radius:16px;background:linear-gradient(135deg,#1f0b0b,#280a0a);
+    border:1px solid rgba(239,68,68,0.4);box-shadow:0 16px 48px rgba(0,0,0,0.6);
+    font-family:Rajdhani,sans-serif;animation:stToastIn .4s cubic-bezier(0.34,1.4,0.64,1);
+    max-width:340px;position:relative;">
+    <div style="width:38px;height:38px;border-radius:50%;background:rgba(239,68,68,0.12);flex-shrink:0;
+                border:1.5px solid rgba(239,68,68,0.4);display:flex;align-items:center;justify-content:center;
+                font-size:20px;animation:popIn .4s .15s cubic-bezier(0.34,1.6,0.64,1) both;">✕</div>
+    <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:#ef4444;letter-spacing:1.5px;">ERROR</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;line-height:1.4;">{{ session('error') }}</div>
     </div>
-    <button onclick="this.closest('#staff-err').remove()"
-            style="margin-left:8px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:18px;cursor:pointer;">×</button>
+    <button onclick="dismissToast('staff-err')"
+            style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.05);
+                   border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size:16px;cursor:pointer;
+                   display:flex;align-items:center;justify-content:center;transition:all .2s;"
+            onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;overflow:hidden;">
+        <div style="height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#f87171);
+            animation:toastBar 5s linear forwards;border-radius:0 0 16px 16px;"></div>
+    </div>
 </div>
-<script>setTimeout(()=>document.getElementById('staff-err')?.remove(),5000);</script>
+<script>setTimeout(()=>dismissToast('staff-err'), 5000);</script>
 @endif
 
 {{-- ── Page header ──────────────────────────────────────────────────────────── --}}
@@ -452,6 +474,12 @@
 </div>
 
 <script>
+function dismissToast(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.animation = 'fadeOutRight .3s ease forwards';
+    setTimeout(() => el?.remove(), 300);
+}
 function openInviteModal()  { const m=document.getElementById('invite-modal'); m.style.display='flex'; setTimeout(()=>m.querySelector('input[name=name]')?.focus(),100); }
 function closeInviteModal() { document.getElementById('invite-modal').style.display='none'; }
 document.getElementById('invite-modal').addEventListener('click',function(e){ if(e.target===this) closeInviteModal(); });
@@ -490,8 +518,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeInviteModal()
 </script>
 
 <style>
-@keyframes stToastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+@keyframes stToastIn  { from{opacity:0;transform:translateX(30px) scale(.95)} to{opacity:1;transform:none} }
 @keyframes stModalIn  { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+@keyframes popIn      { 0%{transform:scale(0) rotate(-10deg)} 60%{transform:scale(1.2) rotate(3deg)} 100%{transform:scale(1) rotate(0)} }
+@keyframes toastBar   { from{width:100%} to{width:0%} }
+@keyframes fadeOutRight { to{opacity:0;transform:translateX(30px) scale(.95)} }
 .role-filter { transition:all .2s; }
 .role-filter.active { background:rgba(249,115,22,0.15)!important; border-color:rgba(249,115,22,0.4)!important; color:#F97316!important; }
 

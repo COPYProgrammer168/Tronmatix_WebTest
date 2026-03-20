@@ -65,8 +65,39 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 24px 24px', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
 
-          {/* Left: name + email + badge */}
-          <div>
+          {/* Left: avatar + name + email + badge */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+
+            {/* Avatar circle */}
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+              overflow: 'hidden',
+              border: `2.5px solid ${t.accent}`,
+              boxShadow: `0 0 0 3px ${t.glow1}, 0 4px 16px rgba(0,0,0,0.3)`,
+              background: `linear-gradient(135deg, ${t.accent}, ${t.gold})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, fontWeight: 900, color: '#fff',
+              fontFamily: 'Rajdhani, sans-serif',
+              transition: 'all 0.3s',
+            }}>
+              {user?.avatar ? (
+                <img
+                  src={user.avatar.startsWith('http') ? user.avatar : null}
+                  alt={user?.username}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+                />
+              ) : null}
+              <div style={{
+                display: user?.avatar ? 'none' : 'flex',
+                width: '100%', height: '100%',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                {(user?.username || user?.name || '?').charAt(0).toUpperCase()}
+              </div>
+            </div>
+
+            <div>
             <div style={{
               fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: 1, lineHeight: 1,
               fontFamily: 'Rajdhani, sans-serif',
@@ -112,6 +143,7 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
                   border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Rajdhani, sans-serif',
                 }}>MEMBER</div>
               )}
+            </div>
             </div>
           </div>
 

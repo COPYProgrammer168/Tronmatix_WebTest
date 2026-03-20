@@ -214,37 +214,66 @@
             </div>
             <div class="card-body">
                 @php
-                    $steps   = ['confirmed','processing','shipped','delivered'];
-                    $labels  = ['Confirmed','Processing','Shipped','Delivered'];
-                    $icons   = ['✅','⚙️','🚚','📦'];
+                    // Full delivery pipeline — pending → confirmed → processing → shipped → delivered
+                    $steps   = ['pending','confirmed','processing','shipped','delivered'];
+                    $labels  = ['Pending','Confirmed','Processing','Shipped','Delivered'];
+                    $icons   = ['⏳','✅','⚙️','🚚','📦'];
+                    $colors  = ['#eab308','#22c55e','#3b82f6','#a78bfa','#F97316'];
                     $current = array_search($order->status, $steps);
-                    if ($current === false) $current = -1;
+                    if ($current === false) $current = ($order->status === 'cancelled') ? -1 : 0;
                 @endphp
-                <div style="display:flex; align-items:center;">
+
+                {{-- Cancelled banner --}}
+                @if($order->status === 'cancelled')
+                <div style="text-align:center; padding:20px; border-radius:12px;
+                    background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);">
+                    <div style="font-size:28px; margin-bottom:6px;">❌</div>
+                    <div style="font-size:14px; font-weight:800; color:#ef4444; letter-spacing:2px;">ORDER CANCELLED</div>
+                </div>
+                @else
+                <div style="overflow-x:auto; padding-bottom:8px;">
+                <div style="display:flex; align-items:flex-start; min-width:420px;">
                     @foreach($steps as $i => $s)
-                    <div style="display:flex; align-items:center; flex:1;">
-                        <div style="display:flex; flex-direction:column; align-items:center; flex:1;">
+                    <div style="display:flex; align-items:center; flex:1; min-width:0;">
+                        <div style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:60px;">
+                            {{-- Step circle --}}
                             <div style="
-                                width:44px; height:44px; border-radius:50%;
+                                width:46px; height:46px; border-radius:50%;
                                 display:flex; align-items:center; justify-content:center; font-size:18px;
-                                background: {{ $i <= $current ? '#F97316' : 'rgba(255,255,255,0.08)' }};
-                                border: 2px solid {{ $i <= $current ? '#F97316' : 'rgba(255,255,255,0.12)' }};
-                                box-shadow: {{ $i === $current ? '0 0 16px rgba(249,115,22,0.5)' : 'none' }};
-                                transition: all .4s;
-                            ">{{ $icons[$i] }}</div>
-                            <div style="margin-top:6px; font-size:10px; text-align:center; font-weight:700; letter-spacing:1px;
-                                color: {{ $i <= $current ? '#F97316' : 'rgba(255,255,255,0.25)' }};">
+                                background: {{ $i < $current ? $colors[$i].'22' : ($i === $current ? $colors[$i] : 'rgba(255,255,255,0.06)') }};
+                                border: 2px solid {{ $i <= $current ? $colors[$i] : 'rgba(255,255,255,0.1)' }};
+                                box-shadow: {{ $i === $current ? '0 0 20px '.$colors[$i].'55' : 'none' }};
+                                transition: all .5s ease;
+                                {{ $i === $current ? 'animation:stepPulse 2s ease-in-out infinite;' : '' }}
+                                position:relative; z-index:2;
+                            ">
+                                @if($i < $current)
+                                    <span style="color:{{ $colors[$i] }}; font-size:16px;">✓</span>
+                                @else
+                                    {{ $icons[$i] }}
+                                @endif
+                            </div>
+                            {{-- Step label --}}
+                            <div style="margin-top:8px; font-size:10px; text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
+                                color: {{ $i <= $current ? $colors[$i] : 'rgba(255,255,255,0.2)' }};">
                                 {{ $labels[$i] }}
+                                @if($i === $current)
+                                <div style="width:6px;height:6px;border-radius:50%;background:{{ $colors[$i] }};
+                                    margin:4px auto 0;animation:stepPulse 1.5s ease infinite;"></div>
+                                @endif
                             </div>
                         </div>
+                        {{-- Connector line --}}
                         @if($i < count($steps)-1)
-                        <div style="height:2px; flex:1; margin:0 4px; border-radius:1px; margin-bottom:18px;
-                            background: {{ $i < $current ? 'linear-gradient(90deg,#F97316,#fb923c)' : 'rgba(255,255,255,0.08)' }};
-                            transition: all .4s;"></div>
+                        <div style="height:2px; flex:1; margin:0 2px; border-radius:1px; margin-bottom:26px;
+                            background: {{ $i < $current ? 'linear-gradient(90deg,'.$colors[$i].','.$colors[$i+1].')' : 'rgba(255,255,255,0.07)' }};
+                            transition: all .6s ease; min-width:10px;"></div>
                         @endif
                     </div>
                     @endforeach
                 </div>
+                </div>
+                @endif
             </div>
         </div>
 
@@ -650,6 +679,10 @@
 
 {{-- ── Styles ─────────────────────────────────────────────────────────────────── --}}
 <style>
+@keyframes stepPulse {
+    0%,100% { box-shadow: 0 0 8px rgba(249,115,22,0.3); transform: scale(1); }
+    50%      { box-shadow: 0 0 24px rgba(249,115,22,0.6); transform: scale(1.08); }
+}
 @keyframes slideDown {
     from { opacity:0; transform:translateX(-50%) translateY(-20px); }
     to   { opacity:1; transform:translateX(-50%) translateY(0); }

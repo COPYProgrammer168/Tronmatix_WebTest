@@ -382,31 +382,6 @@ export default function ContactPage() {
             />
           </div>
         </div>
-
-        {/* ── Bottom call strip ── */}
-        {/* <div className="mt-8 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
-          style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>
-          <div>
-            <div className="font-black text-white" style={{ fontSize: 18, letterSpacing: 1 }}>
-              Need Help? Call Us Now
-            </div>
-            <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 3 }}>
-              Available Mon–Sun, 9:00AM – 8:00PM
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2.5">
-            <a href="tel:+85596733 3725"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-white transition-all hover:scale-105 hover:shadow-lg"
-              style={{ background: '#F97316', fontSize: 15 }}>
-              <PhoneIcon size={16} /> 096 733 3725
-            </a>
-            <a href="tel:+85577711126"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black transition-all hover:scale-105"
-              style={{ background: 'rgba(249,115,22,0.15)', border: '1px solid rgba(249,115,22,0.4)', color: '#F97316', fontSize: 15 }}>
-              <PhoneIcon size={16} /> 077 711 126
-            </a>
-          </div>
-        </div> */}
       </div>
     </div>
   )

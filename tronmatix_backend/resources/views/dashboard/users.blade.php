@@ -307,12 +307,34 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                     {{-- Avatar + username --}}
                     <td>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="
-                                width:34px; height:34px; border-radius:50%; flex-shrink:0;
-                                background:linear-gradient(135deg,#F97316,#ea580c);
-                                display:flex; align-items:center; justify-content:center;
-                                font-weight:800; font-size:13px; color:#fff;">
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                            @php
+                                $userAvatar = $user->avatar
+                                    ? (Str::startsWith($user->avatar, ['http://','https://'])
+                                        ? $user->avatar
+                                        : asset('storage/' . $user->avatar))
+                                    : null;
+                            @endphp
+                            {{-- Avatar: real photo or gradient initial --}}
+                            <div style="width:36px; height:36px; border-radius:50%; flex-shrink:0; overflow:hidden;
+                                        border:1.5px solid rgba(249,115,22,0.3); position:relative;">
+                                @if($userAvatar)
+                                    <img src="{{ $userAvatar }}" alt="{{ $user->username }}"
+                                         style="width:100%; height:100%; object-fit:cover; display:block;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                    <div style="display:none; width:100%; height:100%;
+                                                background:linear-gradient(135deg,#F97316,#ea580c);
+                                                align-items:center; justify-content:center;
+                                                font-weight:800; font-size:13px; color:#fff; position:absolute; inset:0;">
+                                        {{ strtoupper(substr($user->username, 0, 1)) }}
+                                    </div>
+                                @else
+                                    <div style="width:100%; height:100%;
+                                                background:linear-gradient(135deg,#F97316,#ea580c);
+                                                display:flex; align-items:center; justify-content:center;
+                                                font-weight:800; font-size:13px; color:#fff;">
+                                        {{ strtoupper(substr($user->username, 0, 1)) }}
+                                    </div>
+                                @endif
                             </div>
                             <div>
                                 <div style="font-weight:700; font-size:15px;">{{ $user->username }}</div>
