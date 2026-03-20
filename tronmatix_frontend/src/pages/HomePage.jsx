@@ -37,7 +37,6 @@ export default function HomePage() {
   const [slide, setSlide]       = useState(0)
   const [banners, setBanners]   = useState(FALLBACK_BANNERS)
   const [products, setProducts] = useState({})
-  const [debugError, setDebugError] = useState(null)
   const [loading, setLoading]   = useState(true)
   const [newProducts, setNewProducts] = useState([])
   const [catPage, setCatPage]         = useState({})   // { CPU: 1, RAM: 1, ... }
@@ -73,7 +72,8 @@ export default function HomePage() {
     // Fetch newest products for the "NEW PRODUCTS" section
     axios.get('/api/products', { params: { sort: 'newest', per_page: 12, page: 1 } })
       .then(res => {
-        const items = res.data.data ?? res.data ?? []
+        const raw = res.data
+        const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
         if (Array.isArray(items) && items.length > 0) setNewProducts(items)
       })
       .catch(() => {})
@@ -86,10 +86,22 @@ export default function HomePage() {
       : { category: subs[0],   per_page: 6, page }
     try {
       const res = await axios.get('/api/products', { params })
-      const items = res.data.data ?? []
-      const total = res.data.total ?? items.length
+      // FIX: handle both { data: [...] } and direct array response shapes
+      const raw   = res.data
+      const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
+      const total = raw?.total ?? items.length
+      // DEBUG: show what we got on screen
+      setDebugError(prev => {
+        const msg = `${cat}:${items.length}items`
+        return prev ? prev + ' | ' + msg : msg
+      })
       setProducts(prev => ({ ...prev, [cat]: { items, total, page } }))
-    } catch {
+    } catch(err) {
+      console.error('fetchCatPage error', cat, err?.response?.status, err?.message)
+      setDebugError(prev => {
+        const msg = `${cat} ERR:${err?.response?.status}`
+        return prev ? prev + ' | ' + msg : msg
+      })
       setProducts(prev => ({ ...prev, [cat]: { items: [], total: 0, page } }))
     }
   }
@@ -121,12 +133,6 @@ export default function HomePage() {
     || `/category/search?q=${encodeURIComponent((b.title || '').replace('\n', ' ').split(' ').slice(0, 3).join(' '))}`
 
   return (
-    <div>
-      {debugError && (
-        <div style={{ background: '#dc2626', color: '#fff', padding: '12px 16px', fontSize: 13, wordBreak: 'break-all', zIndex: 9999, position: 'relative' }}>
-          🐛 DEBUG (remove after fix): {debugError}
-        </div>
-      )}
     <div style={{ background: bg }}>
 
       <div className="max-w-[1280px] mx-auto px-4 pt-6 pb-2">
@@ -359,6 +365,5 @@ export default function HomePage() {
         )
       })}
     </div>
-  </div>
   )
 }
