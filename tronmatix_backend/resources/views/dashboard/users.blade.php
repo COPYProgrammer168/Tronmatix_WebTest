@@ -337,7 +337,11 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                                 @endif
                             </div>
                             <div>
-                                <div style="font-weight:700; font-size:15px;">{{ $user->username }}</div>
+                                <div style="font-weight:700; font-size:15px; cursor:pointer;"
+                                     onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ number_format((float)($user->total_spent ?? 0), 2) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }})"
+                                     onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
+                                    {{ $user->username }}
+                                </div>
                                 @if($user->name && $user->name !== $user->username)
                                     <div style="font-size:11px; color:rgba(255,255,255,0.3);">{{ $user->name }}</div>
                                 @endif
@@ -456,6 +460,169 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 {{-- ── Toast element (for AJAX feedback) ──────────────────────────────────── --}}
 <div class="flash-toast" id="ajaxToast"></div>
+
+
+{{-- ── User Info Modal ───────────────────────────────────────────────────────── --}}
+<div id="user-info-modal" style="display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:16px;">
+    <div style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
+                background:linear-gradient(145deg,#141414,#1a1a1a);
+                border:1px solid rgba(255,255,255,0.1);
+                box-shadow:0 32px 80px rgba(0,0,0,0.7);
+                animation:uiModalIn .3s cubic-bezier(0.34,1.2,0.64,1);
+                font-family:Rajdhani,sans-serif;">
+
+        {{-- Header --}}
+        <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between;">
+            <div style="font-size:16px; font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.7);">USER INFORMATION</div>
+            <button onclick="closeUserInfo()"
+                style="width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,0.06);
+                       border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.4);
+                       font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
+        </div>
+
+        {{-- Avatar + name --}}
+        <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+            <div id="ui-avatar-wrap" style="width:72px; height:72px; border-radius:50%; overflow:hidden; flex-shrink:0;
+                border:2.5px solid #F97316; box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
+            </div>
+            <div>
+                <div id="ui-username" style="font-size:22px; font-weight:900; color:#fff; letter-spacing:1px;"></div>
+                <div id="ui-name" style="font-size:13px; color:rgba(255,255,255,0.4); margin-top:2px;"></div>
+                <div id="ui-role-badge" style="margin-top:6px;"></div>
+            </div>
+        </div>
+
+        {{-- Info grid --}}
+        <div style="padding:0 24px 8px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
+                <div id="ui-email" style="font-size:13px; color:#fff; font-weight:600; word-break:break-all;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
+                <div id="ui-phone" style="font-size:13px; color:#fff; font-weight:600;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
+                <div id="ui-orders" style="font-size:18px; color:#F97316; font-weight:900;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TOTAL SPENT</div>
+                <div id="ui-spent" style="font-size:18px; color:#22c55e; font-weight:900;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">JOINED</div>
+                <div id="ui-joined" style="font-size:13px; color:#fff; font-weight:600;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">2FA</div>
+                <div id="ui-2fa" style="font-size:13px; font-weight:700;"></div>
+            </div>
+        </div>
+
+        {{-- VIP progress --}}
+        <div id="ui-vip-wrap" style="padding:0 24px 20px;">
+            <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <div style="font-size:11px; color:#F97316; font-weight:700; letter-spacing:1px;">⭐ VIP PROGRESS</div>
+                    <div id="ui-vip-pct" style="font-size:11px; color:rgba(255,255,255,0.4); font-weight:600;"></div>
+                </div>
+                <div style="height:6px; border-radius:6px; background:rgba(255,255,255,0.08); overflow:hidden;">
+                    <div id="ui-vip-bar" style="height:100%; border-radius:6px; background:linear-gradient(90deg,#F97316,#fb923c); transition:width 0.6s ease;"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Footer button --}}
+        <div style="padding:0 24px 24px;">
+            <a id="ui-view-orders-btn" href="#"
+                style="display:block; text-align:center; padding:11px; border-radius:10px;
+                       background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
+                       font-size:14px; font-weight:800; letter-spacing:1px; text-decoration:none;
+                       box-shadow:0 4px 16px rgba(249,115,22,0.3); transition:opacity .2s;"
+                onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                📦 VIEW ORDERS
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes uiModalIn { from { opacity:0; transform:scale(.93) translateY(16px); } to { opacity:1; transform:none; } }
+</style>
+
+<script>
+const ROLE_COLORS = {
+    customer: { bg:'rgba(156,163,175,0.15)', color:'#9CA3AF', border:'rgba(156,163,175,0.3)', label:'CUSTOMER' },
+    vip:      { bg:'rgba(249,115,22,0.15)',  color:'#F97316', border:'rgba(249,115,22,0.4)',  label:'⭐ VIP' },
+    reseller: { bg:'rgba(59,130,246,0.15)',  color:'#3B82F6', border:'rgba(59,130,246,0.4)',  label:'🏪 RESELLER' },
+    banned:   { bg:'rgba(239,68,68,0.15)',   color:'#EF4444', border:'rgba(239,68,68,0.4)',   label:'🚫 BANNED' },
+};
+
+function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa) {
+    const modal = document.getElementById('user-info-modal');
+    modal.style.display = 'flex';
+
+    // Avatar
+    const avatarWrap = document.getElementById('ui-avatar-wrap');
+    const initial = (username || '?').charAt(0).toUpperCase();
+    if (avatar) {
+        avatarWrap.innerHTML = `<img src="${avatar}" alt="${username}"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.style.display='none';this.nextSibling.style.display='flex'" />
+            <div style="display:none;width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
+                align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;">${initial}</div>`;
+    } else {
+        avatarWrap.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
+            display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;">${initial}</div>`;
+    }
+
+    // Basic info
+    document.getElementById('ui-username').textContent = username;
+    document.getElementById('ui-name').textContent = (name && name !== username) ? name : '';
+    document.getElementById('ui-email').textContent = email || '—';
+    document.getElementById('ui-phone').textContent = phone || '—';
+    document.getElementById('ui-orders').textContent = orders;
+    document.getElementById('ui-spent').textContent = '$' + spent;
+    document.getElementById('ui-joined').textContent = joined;
+    document.getElementById('ui-2fa').innerHTML = twofa
+        ? '<span style="color:#22c55e;">✓ ENABLED</span>'
+        : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
+
+    // Role badge
+    const rm = ROLE_COLORS[role] || ROLE_COLORS.customer;
+    document.getElementById('ui-role-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;
+        padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:1px;
+        background:${rm.bg};color:${rm.color};border:1px solid ${rm.border};">${rm.label}</span>`;
+
+    // VIP progress
+    const vipGoal = 1000;
+    const spentNum = parseFloat(spent) || 0;
+    const pct = Math.min(100, Math.round((spentNum / vipGoal) * 100));
+    const vipWrap = document.getElementById('ui-vip-wrap');
+    if (role === 'vip') {
+        vipWrap.style.display = 'none';
+    } else {
+        vipWrap.style.display = 'block';
+        document.getElementById('ui-vip-bar').style.width = pct + '%';
+        document.getElementById('ui-vip-pct').textContent = pct + '% · $' + vipGoal + ' goal';
+    }
+
+    // View orders link
+    document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${id}`;
+}
+
+function closeUserInfo() {
+    document.getElementById('user-info-modal').style.display = 'none';
+}
+document.getElementById('user-info-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeUserInfo();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUserInfo(); });
+</script>
 
 @endif
 @endsection

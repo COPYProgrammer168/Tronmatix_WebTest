@@ -175,7 +175,7 @@
                         'Order ID'       => $order->order_id,
                         'Customer'       => $order->user?->username ?? 'Guest',
                         'Payment Method' => strtoupper($order->payment_method),
-                        'Date'           => $order->created_at->format('d M Y H:i'),
+                        'Date'           => $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i').' (ICT)',
                     ] as $label => $value)
                     <div>
                         <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">
@@ -199,7 +199,7 @@
                     <div>
                         <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">CONFIRMED AT</div>
                         <div style="font-weight:700; color:#22c55e;">
-                            ✅ {{ $order->delivery_confirmed_at->format('d M Y H:i') }}
+                            ✅ {{ $order->delivery_confirmed_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i') }} (ICT)
                         </div>
                     </div>
                     @endif
@@ -383,19 +383,19 @@
         <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
             <div class="card-body" style="text-align:center;">
                 <div style="font-size:36px; margin-bottom:8px;">📦</div>
-                <div style="font-weight:700; color:#22c55e; font-size:16px; margin-bottom:6px; letter-spacing:1px;">
-                    CONFIRM DELIVERY
+                <div style="font-weight:700; color:#3b82f6; font-size:16px; margin-bottom:6px; letter-spacing:1px;">
+                    CONFIRM &amp; PROCESS
                 </div>
                 <div style="color:rgba(255,255,255,0.45); font-size:13px; margin-bottom:18px;">
-                    Mark this order as delivered.
+                    Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.
                 </div>
                 <button onclick="openPopup('confirm-delivery')" style="
-                    background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; font-weight:700;
+                    background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; font-weight:700;
                     width:100%; border:none; padding:13px; border-radius:10px; font-size:15px;
                     letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
-                    box-shadow:0 4px 20px rgba(34,197,94,0.35); transition:all .2s;
+                    box-shadow:0 4px 20px rgba(59,130,246,0.35); transition:all .2s;
                 " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                    ✅ CONFIRM DELIVERY
+                    ⚙️ START PROCESSING
                 </button>
             </div>
         </div>
@@ -406,7 +406,7 @@
                 <div style="font-size:32px; margin-bottom:8px;">✅</div>
                 <div style="font-weight:700; color:#22c55e; font-size:15px;">Delivery Confirmed</div>
                 <div style="color:rgba(255,255,255,0.35); font-size:12px; margin-top:4px;">
-                    {{ $order->delivery_confirmed_at->format('d M Y, H:i') }}
+                    {{ $order->delivery_confirmed_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i') }} (ICT)
                 </div>
             </div>
         </div>
@@ -583,18 +583,34 @@
                 font-size:40px; box-shadow:0 0 32px rgba(34,197,94,0.4);
                 animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
             ">📦</div>
-            <div style="font-size:22px; font-weight:900; color:#22c55e; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
-                CONFIRM DELIVERY
+            <div style="font-size:22px; font-weight:900; color:#3b82f6; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+                CONFIRM &amp; PROCESS
             </div>
             <div style="color:rgba(255,255,255,0.45); font-size:13px; margin-top:6px;">
-                Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong> will be marked as delivered.
+                Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong> will move to
+                <strong style="color:#3b82f6;">Processing</strong> status.
             </div>
         </div>
 
-        <div style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:12px; padding:14px 16px; margin-bottom:20px;">
-            <div style="display:flex; gap:10px; align-items:flex-start; font-size:13px; color:rgba(255,255,255,0.6);">
-                <span>ℹ️</span>
-                <span>This will set the order status to <strong style="color:#22c55e;">Delivered</strong> and record the delivery timestamp.</span>
+        {{-- Step flow indicator --}}
+        <div style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:12px; padding:14px 16px; margin-bottom:20px;">
+            <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:10px;">NEXT STEPS</div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                @foreach(['Confirmed' => '#22c55e', 'Processing' => '#3b82f6', 'Shipped' => '#a78bfa', 'Delivered' => '#F97316'] as $stepName => $stepColor)
+                @php
+                    $stepActive = $stepName === 'Processing';
+                    $stepDone   = in_array($stepName, ['Confirmed']);
+                @endphp
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <div style="padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.5px;
+                        background: {{ $stepActive ? $stepColor.'22' : ($stepDone ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)') }};
+                        border: 1px solid {{ $stepActive ? $stepColor : ($stepDone ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)') }};
+                        color: {{ $stepActive ? $stepColor : ($stepDone ? '#22c55e' : 'rgba(255,255,255,0.3)') }};">
+                        {{ $stepDone ? '✓ ' : '' }}{{ $stepName }}{{ $stepActive ? ' ◀ NEXT' : '' }}
+                    </div>
+                    @if($stepName !== 'Delivered') <span style="color:rgba(255,255,255,0.2); font-size:10px;">›</span> @endif
+                </div>
+                @endforeach
             </div>
         </div>
 
@@ -602,8 +618,8 @@
             <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
             <form method="POST" action="{{ route('dashboard.orders.confirm-delivery', $order) }}" style="flex:2;">
                 @csrf @method('POST')
-                <button type="submit" class="popup-btn-confirm" style="background:linear-gradient(135deg,#22c55e,#16a34a); width:100%;">
-                    ✅ YES, CONFIRM DELIVERY
+                <button type="submit" class="popup-btn-confirm" style="background:linear-gradient(135deg,#3b82f6,#2563eb); width:100%;">
+                    ⚙️ YES, START PROCESSING
                 </button>
             </form>
         </div>

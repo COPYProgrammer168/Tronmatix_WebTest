@@ -235,7 +235,9 @@ setTimeout(()=>dismissToast('staff-toast'), 4000);
                                 @endif
                             </div>
                             <div>
-                                <div style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;">
+                                <div style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;cursor:pointer;"
+                                     onclick="openStaffProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format("d M Y") : "—" }}', {{ ($member->is_active ?? true) ? 'true' : 'false' }}, {{ $isSelf ? 'true' : 'false' }})"
+                                     onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='#fff'">
                                     {{ $member->name }}
                                     @if($isSelf)
                                     <span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:600;
@@ -576,4 +578,138 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeInviteModal()
     }
 }
 </style>
+
+{{-- ── Staff Profile Modal ─────────────────────────────────────────────────── --}}
+<div id="staff-profile-modal" style="display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+    align-items:center;justify-content:center;padding:16px;">
+    <div style="width:100%;max-width:380px;border-radius:20px;overflow:hidden;
+                background:linear-gradient(145deg,#141414,#1a1a1a);
+                border:1px solid rgba(255,255,255,0.1);
+                box-shadow:0 32px 80px rgba(0,0,0,0.7);
+                font-family:Rajdhani,sans-serif;
+                animation:spModalIn .3s cubic-bezier(0.34,1.2,0.64,1);">
+
+        {{-- Header bar --}}
+        <div id="sp-header-bar" style="height:4px;background:linear-gradient(90deg,#F97316,#fb923c);"></div>
+
+        {{-- Close + title --}}
+        <div style="padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:13px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.4);">STAFF PROFILE</div>
+            <button onclick="closeStaffProfile()"
+                style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.06);
+                       border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);
+                       font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+                onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
+        </div>
+
+        {{-- Avatar + name --}}
+        <div style="padding:16px 20px;display:flex;align-items:center;gap:14px;">
+            <div id="sp-avatar" style="width:64px;height:64px;border-radius:16px;flex-shrink:0;overflow:hidden;
+                border:2px solid #F97316;box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
+            </div>
+            <div>
+                <div id="sp-name" style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;"></div>
+                <div id="sp-email" style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px;"></div>
+                <div id="sp-role-badge" style="margin-top:8px;"></div>
+            </div>
+        </div>
+
+        {{-- Info cards --}}
+        <div style="padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px;">
+                <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:4px;">JOINED</div>
+                <div id="sp-joined" style="font-size:13px;color:#fff;font-weight:700;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px;">
+                <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:4px;">STATUS</div>
+                <div id="sp-status" style="font-size:13px;font-weight:700;"></div>
+            </div>
+        </div>
+
+        {{-- Self badge --}}
+        <div id="sp-self-note" style="display:none;margin:10px 20px 0;padding:10px 14px;border-radius:10px;
+            background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);
+            font-size:12px;color:#F97316;font-weight:700;text-align:center;letter-spacing:1px;">
+            👤 THIS IS YOUR ACCOUNT
+        </div>
+
+        {{-- Footer --}}
+        <div style="padding:16px 20px 20px;margin-top:4px;">
+            <a id="sp-email-btn" href="#"
+                style="display:block;text-align:center;padding:10px;border-radius:10px;
+                       background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+                       color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;letter-spacing:1px;
+                       text-decoration:none;transition:all .2s;"
+                onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
+                onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.5)'">
+                ✉ SEND EMAIL
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spModalIn { from{opacity:0;transform:scale(.93) translateY(16px)} to{opacity:1;transform:none} }
+</style>
+
+<script>
+function openStaffProfile(id, name, email, avatar, role, roleColor, roleIcon, roleLabel, joined, active, isSelf) {
+    const modal = document.getElementById('staff-profile-modal');
+    modal.style.display = 'flex';
+
+    // Header bar color
+    document.getElementById('sp-header-bar').style.background =
+        `linear-gradient(90deg, ${roleColor}, ${roleColor}88)`;
+
+    // Avatar
+    const avatarEl = document.getElementById('sp-avatar');
+    avatarEl.style.borderColor = roleColor;
+    avatarEl.style.boxShadow = `0 0 0 3px ${roleColor}22`;
+    const initial = (name || '?').charAt(0).toUpperCase();
+    if (avatar) {
+        avatarEl.innerHTML = `<img src="${avatar}" alt="${name}"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.style.display='none';this.nextSibling.style.display='flex'" />
+            <div style="display:none;width:100%;height:100%;background:linear-gradient(135deg,${roleColor},${roleColor}88);
+                align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#fff;">${initial}</div>`;
+    } else {
+        avatarEl.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,${roleColor},${roleColor}88);
+            display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#fff;">${initial}</div>`;
+    }
+
+    // Info
+    document.getElementById('sp-name').textContent = name || '—';
+    document.getElementById('sp-email').textContent = email || '—';
+    document.getElementById('sp-joined').textContent = joined;
+
+    // Status
+    const statusEl = document.getElementById('sp-status');
+    statusEl.innerHTML = active
+        ? '<span style="color:#22c55e;">● ACTIVE</span>'
+        : '<span style="color:#ef4444;">○ INACTIVE</span>';
+
+    // Role badge
+    document.getElementById('sp-role-badge').innerHTML =
+        `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;
+            font-size:11px;font-weight:800;letter-spacing:1px;
+            background:${roleColor}18;color:${roleColor};border:1px solid ${roleColor}44;">
+            ${roleIcon} ${roleLabel.toUpperCase()}
+        </span>`;
+
+    // Self note
+    document.getElementById('sp-self-note').style.display = isSelf ? 'block' : 'none';
+
+    // Email button
+    document.getElementById('sp-email-btn').href = `mailto:${email}`;
+}
+
+function closeStaffProfile() {
+    document.getElementById('staff-profile-modal').style.display = 'none';
+}
+document.getElementById('staff-profile-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeStaffProfile();
+});
+</script>
+
 @endsection

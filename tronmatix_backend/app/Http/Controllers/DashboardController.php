@@ -317,14 +317,39 @@ class DashboardController extends Controller
 
     public function confirmDelivery(Order $order)
     {
-        if (! in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
+        // FIX: "Confirm & Process" advances to the NEXT step — not straight to delivered.
+        // Flow: pending → confirmed → [CLICK HERE] → processing → shipped → delivered
+        // Admin then manually advances each step via "Update Status".
+        $allowedFrom = ['confirmed', 'processing', 'shipped'];
+
+        if (! in_array($order->status, $allowedFrom)) {
             return redirect()->route('dashboard.orders.show', $order)
-                ->with('error', 'Order cannot be marked as delivered from its current status.');
+                ->with('error', 'Cannot advance order from current status: '.$order->status);
         }
-        $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
+
+        // Determine the next logical step
+        $nextStatus = match($order->status) {
+            'confirmed'  => 'processing',   // confirmed → processing
+            'processing' => 'shipped',       // processing → shipped
+            'shipped'    => 'delivered',     // shipped → delivered
+            default      => 'processing',
+        };
+
+        $order->update([
+            'status'                => $nextStatus,
+            'delivery_confirmed_at' => now('Asia/Phnom_Penh'),
+        ]);
+
+        $label = strtoupper($nextStatus);
+
+        // Notify Telegram
+        try {
+            app(\App\Services\TelegramService::class)
+                ->sendAlert("📦 Order #{$order->order_id} → {$label}");
+        } catch (\Throwable) {}
 
         return redirect()->route('dashboard.orders.show', $order)
-            ->with('success', "Order #{$order->order_id} marked as delivered ✅");
+            ->with('success', "Order #{$order->order_id} moved to {$label} ✅");
     }
 
     // ── Payments ──────────────────────────────────────────────────────────────
