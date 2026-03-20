@@ -55,7 +55,7 @@ export default function HomePage() {
         const data = Array.isArray(res.data) ? res.data : (res.data?.data ?? [])
         const active = data.filter(b => b.active !== false)
         if (active.length > 0) setBanners(active)
-      }).catch(() => {})
+      }).catch(err => { console.error('Failed to fetch banners:', err?.response?.status, err?.message) })
   }, [])
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function HomePage() {
         const items = res.data.data ?? res.data ?? []
         if (Array.isArray(items) && items.length > 0) setNewProducts(items)
       })
-      .catch(() => {})
+      .catch(err => { console.error('Failed to fetch new products:', err?.response?.status, err?.message) })
   }, [])
 
   const fetchCatPage = async (cat, page) => {
@@ -88,7 +88,8 @@ export default function HomePage() {
       const items = res.data.data ?? []
       const total = res.data.total ?? items.length
       setProducts(prev => ({ ...prev, [cat]: { items, total, page } }))
-    } catch {
+    } catch(err) {
+      console.error('Failed to fetch category', cat, err?.response?.status, err?.message)
       setProducts(prev => ({ ...prev, [cat]: { items: [], total: 0, page } }))
     }
   }
