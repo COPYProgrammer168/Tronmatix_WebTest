@@ -267,8 +267,8 @@
                     <td><span class="badge badge-{{ $order->status }}" style="font-size:11px;">{{ strtoupper($order->status) }}</span></td>
 
                     <td style="font-size:12px; white-space:nowrap;">
-                        <div style="color:rgba(255,255,255,0.75); font-weight:600;">{{ $order->created_at->format('d M Y') }}</div>
-                        <div style="color:rgba(255,255,255,0.3); font-size:11px;">🕐 {{ $order->created_at->format('H:i') }}</div>
+                        <div style="color:rgba(255,255,255,0.75); font-weight:600;">{{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y') }}</div>
+                        <div style="color:rgba(255,255,255,0.3); font-size:11px;">🕐 {{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('H:i') }}</div>
                     </td>
 
                     <td style="font-size:12px; white-space:nowrap;">

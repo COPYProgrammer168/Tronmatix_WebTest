@@ -757,11 +757,34 @@
 }
 .popup-btn-confirm:hover { transform:scale(1.02); }
 
-/* Responsive: stack columns on small screens */
-@media (max-width: 900px) {
+/* ── Responsive order-show layout ───────────────────────────────── */
+@media (max-width: 960px) {
     div[style*="grid-template-columns:1fr 340px"] {
         grid-template-columns: 1fr !important;
     }
+}
+/* Order info grid: 2-col → 1-col on mobile */
+@media (max-width: 540px) {
+    div[style*="grid-template-columns:1fr 1fr; gap:16px"] {
+        grid-template-columns: 1fr !important;
+    }
+    /* Status buttons: 2-col → 1-col */
+    div[style*="grid-template-columns:1fr 1fr; gap:8px"] {
+        grid-template-columns: 1fr !important;
+    }
+    /* Table horizontal scroll */
+    .table-wrap { overflow-x: auto; }
+    /* Timeline horizontal scroll */
+    div[style*="min-width:420px"] {
+        min-width: 340px !important;
+    }
+    /* Back button full width */
+    a[href*="orders"].btn { display: block; text-align: center; }
+    /* Popup box padding */
+    .popup-box { padding: 20px 16px !important; }
+}
+@media (max-width: 400px) {
+    div[style*="min-width:420px"] { min-width: 300px !important; }
 }
 </style>
 

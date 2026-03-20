@@ -116,8 +116,10 @@ export default function CheckoutPage() {
         delivery_date: delivery.date || null, delivery_time_slot: delivery.timeSlot || null,
       })
 
+      // FIX: handle both res.data and res.data.data response shapes
+      const rawOrder = res.data?.data ?? res.data
       const orderData = {
-        ...res.data, items, location, payment_method: payMethod, total: finalTotal, subtotal,
+        ...rawOrder, items, location, payment_method: payMethod, total: finalTotal, subtotal,
         _discountAmount: discountAmount, _discountCode: discount?.code || null,
         _discountType: discount?.type || null, _discountValue: discount?.value || null,
         delivery_date: delivery.date || null, delivery_time_slot: delivery.timeSlot || null,
@@ -129,7 +131,7 @@ export default function CheckoutPage() {
         setShowQrModal(true)
       } else {
         setStep(3)
-        Swal.fire({ title: "Order Placed! 🎉", text: `Order #${res.data.order_id} received. We'll contact you before delivery.`, icon: "success", confirmButtonColor: "#F97316" })
+        Swal.fire({ title: "Order Placed! 🎉", text: `Order #${rawOrder?.order_id || rawOrder?.id} received. We'll contact you before delivery.`, icon: "success", confirmButtonColor: "#F97316" })
       }
     } catch (e) {
       let msg = "Order failed. Please try again."
@@ -207,7 +209,7 @@ export default function CheckoutPage() {
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
                 title="Close">✕</button>
             </div>
-            <BakongQRPanel orderId={order.id ?? order.data?.id} total={order.total}
+            <BakongQRPanel orderId={order.id ?? order.order_id ?? order.data?.id} total={order.total}
               onPaid={() => { setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800) }} />
           </div>
           <style>{`@keyframes fadeInScale { from { opacity:0; transform:scale(.93) translateY(20px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>
