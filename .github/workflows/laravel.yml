@@ -1,6 +1,4 @@
 # .github/workflows/laravel.yml
-# Single workflow — triggers Render to rebuild the frontend on every push to master.
-
 name: Deploy Frontend to Render
 
 on:
@@ -11,23 +9,20 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Check _redirects exists — try both monorepo and root locations
-      - name: Check public/_redirects exists
+      - name: Verify _redirects exists
         run: |
-          if [ -f "tronmatix_frontend/public/_redirects" ]; then
-            echo "✅ Found at tronmatix_frontend/public/_redirects"
-          elif [ -f "public/_redirects" ]; then
-            echo "✅ Found at public/_redirects"
+          if [ -f "public/_redirects" ]; then
+            echo "✅ public/_redirects exists: $(cat public/_redirects)"
           else
-            echo "❌ public/_redirects is missing! Creating it now..."
-            mkdir -p public
-            echo "/* /index.html 200" > public/_redirects
-            echo "✅ Created public/_redirects"
+            echo "❌ public/_redirects is MISSING from the repo!"
+            echo "   Create the file manually: public/_redirects"
+            echo "   Content: /* /index.html 200"
+            echo "   Then commit and push it."
+            exit 1
           fi
 
       - name: Trigger Render deployment
@@ -36,26 +31,10 @@ jobs:
         run: |
           if [ -z "$RENDER_DEPLOY_HOOK" ]; then
             echo "❌ RENDER_DEPLOY_HOOK secret is not set"
-            echo "   Render → Service → Settings → Deploy Hook → copy URL"
-            echo "   GitHub → Settings → Secrets → Actions → New secret → RENDER_DEPLOY_HOOK"
             exit 1
           fi
-
-          echo "🚀 Triggering Render deployment..."
-
           HTTP_STATUS=$(curl -s -o /tmp/render_response.txt -w "%{http_code}" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -d '{}' \
+            -X POST -H "Content-Type: application/json" -d '{}' \
             "$RENDER_DEPLOY_HOOK")
-
-          echo "Response: $(cat /tmp/render_response.txt)"
-          echo "HTTP status: $HTTP_STATUS"
-
-          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
-            echo "✅ Render build triggered successfully (HTTP $HTTP_STATUS)"
-            echo "   Monitor: https://dashboard.render.com"
-          else
-            echo "❌ Deploy trigger failed (HTTP $HTTP_STATUS)"
-            exit 1
-          fi
+          echo "HTTP status: $HTTP_STATUS — $(cat /tmp/render_response.txt)"
+          [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ] && echo "✅ Render build triggered" || exit 1
