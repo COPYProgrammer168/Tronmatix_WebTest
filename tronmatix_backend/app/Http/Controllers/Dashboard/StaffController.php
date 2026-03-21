@@ -49,8 +49,9 @@ class StaffController extends Controller
                         WHEN 'superadmin' THEN 1
                         WHEN 'admin'      THEN 2
                         WHEN 'editor'     THEN 3
-                        WHEN 'viewer'     THEN 4
-                        ELSE 5
+                        WHEN 'seller'     THEN 4
+                        WHEN 'viewer'     THEN 5
+                        ELSE 6
                     END
                 ")
             ->orderBy('name')
@@ -66,8 +67,8 @@ class StaffController extends Controller
         $this->assertAdmin();
 
         $allowedRoles = $this->isSuper()
-            ? ['superadmin', 'admin', 'editor', 'viewer']
-            : ['admin', 'editor', 'viewer'];
+            ? ['superadmin', 'admin', 'editor', 'seller', 'viewer']
+            : ['admin', 'editor', 'seller', 'viewer'];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
@@ -101,8 +102,8 @@ class StaffController extends Controller
         $this->assertAdmin();
 
         $allowedRoles = $this->isSuper()
-            ? ['superadmin', 'admin', 'editor', 'viewer']
-            : ['admin', 'editor', 'viewer'];
+            ? ['superadmin', 'admin', 'editor', 'seller', 'viewer']
+            : ['admin', 'editor', 'seller', 'viewer'];
 
         $data = $request->validate([
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],

@@ -145,26 +145,33 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           {isLogin && (
             <>
               <input name="username" placeholder="Username" value={form.username} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                className={inputClass} style={inputStyle} {...focusHandlers}
+                autoCapitalize="none" autoCorrect="off" autoComplete="username" spellCheck="false" />
               <input name="password" type="password" placeholder="Password" value={form.password} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                className={inputClass} style={inputStyle} {...focusHandlers}
+                autoCapitalize="none" autoCorrect="off" autoComplete="current-password" />
             </>
           )}
           {isRegister && (
             <>
               <input name="username" placeholder="Username" value={form.username} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                className={inputClass} style={inputStyle} {...focusHandlers}
+                autoCapitalize="none" autoCorrect="off" autoComplete="username" spellCheck="false" />
               <input name="email" type="email" placeholder="Email" value={form.email} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                className={inputClass} style={inputStyle} {...focusHandlers}
+                autoCapitalize="none" autoCorrect="off" autoComplete="email" />
               <input name="password" type="password" placeholder="Password" value={form.password} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                className={inputClass} style={inputStyle} {...focusHandlers}
+                autoCapitalize="none" autoCorrect="off" autoComplete="new-password" />
               <input name="confirm" type="password" placeholder="Confirm Password" value={form.confirm} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                className={inputClass} style={inputStyle} {...focusHandlers}
+                autoCapitalize="none" autoCorrect="off" autoComplete="new-password" />
             </>
           )}
           {isForgot && (
             <input name="email" type="email" placeholder="Your email address" value={form.email} onChange={handle}
-              className={inputClass} style={inputStyle} {...focusHandlers} />
+              className={inputClass} style={inputStyle} {...focusHandlers}
+              autoCapitalize="none" autoCorrect="off" autoComplete="email" />
           )}
         </div>
 

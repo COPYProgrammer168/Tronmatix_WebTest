@@ -109,7 +109,11 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (username, password) => {
     setLoading(true)
     try {
-      const res = await axios.post('/api/auth/login', { username, password })
+      // FIX: trim + lowercase username — mobile keyboards often capitalize or add spaces
+      const res = await axios.post('/api/auth/login', {
+        username: username.trim().toLowerCase(),
+        password: password.trim(),
+      })
 
       const t = res.data?.token ?? res.data?.data?.token
       const u = extractUser(res.data)

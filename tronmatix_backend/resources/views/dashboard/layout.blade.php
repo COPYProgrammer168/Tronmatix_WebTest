@@ -1029,9 +1029,127 @@
             .catch(() => {});
         }
 
+        // ── Alert toast system ────────────────────────────────────────────────
+        // Track seen alert IDs in localStorage to avoid re-showing same alert
+        function getSeenAlerts() {
+            try { return JSON.parse(localStorage.getItem('seen_alerts') || '[]'); }
+            catch { return []; }
+        }
+        function markAlertsSeen(ids) {
+            try { localStorage.setItem('seen_alerts', JSON.stringify(ids)); }
+            catch {}
+        }
+
+        function showAlertToast(alert) {
+            const id = 'atst_' + Date.now() + Math.random().toString(36).slice(2);
+            const colors = {
+                '#22c55e': { bg: '#0b1f0e', border: 'rgba(34,197,94,0.4)',  text: '#22c55e' },
+                '#F97316': { bg: '#1f0e03', border: 'rgba(249,115,22,0.4)', text: '#F97316' },
+                '#ef4444': { bg: '#1f0808', border: 'rgba(239,68,68,0.4)',  text: '#ef4444' },
+                '#3b82f6': { bg: '#080f1f', border: 'rgba(59,130,246,0.4)', text: '#3b82f6' },
+            };
+            const c = colors[alert.color] || colors['#F97316'];
+
+            const el = document.createElement('div');
+            el.id = id;
+            el.style.cssText = `
+                position:fixed; top:24px; right:24px; z-index:99999;
+                display:flex; align-items:flex-start; gap:12px;
+                padding:14px 18px; border-radius:16px; max-width:340px;
+                background:${c.bg}; border:1px solid ${c.border};
+                box-shadow:0 16px 48px rgba(0,0,0,0.6);
+                font-family:Rajdhani,sans-serif;
+                animation:atToastIn .4s cubic-bezier(0.34,1.4,0.64,1);
+                cursor:pointer; transition:transform .15s, box-shadow .15s;
+            `;
+            el.onmouseenter = () => { el.style.transform='translateY(-2px)'; el.style.boxShadow='0 20px 60px rgba(0,0,0,0.7)'; };
+            el.onmouseleave = () => { el.style.transform=''; el.style.boxShadow='0 16px 48px rgba(0,0,0,0.6)'; };
+            el.onclick = () => { if (alert.url) window.location.href = alert.url; };
+
+            el.innerHTML = `
+                <div style="width:40px;height:40px;border-radius:12px;flex-shrink:0;
+                     background:${c.text}18;border:1px solid ${c.border};
+                     display:flex;align-items:center;justify-content:center;font-size:20px;">
+                    ${alert.icon}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:800;color:${c.text};letter-spacing:1px;margin-bottom:2px;">
+                        ${alert.title}
+                    </div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.4;">
+                        ${alert.body}
+                    </div>
+                </div>
+                <button onclick="event.stopPropagation();dismissAlertToast('${id}')"
+                    style="flex-shrink:0;width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.06);
+                           border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);
+                           font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+                <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;overflow:hidden;">
+                    <div style="height:100%;background:${c.text};animation:atToastBar 6s linear forwards;border-radius:inherit;"></div>
+                </div>
+            `;
+            el.style.position = 'fixed';
+            document.body.appendChild(el);
+
+            // Stack multiple toasts
+            const toasts = document.querySelectorAll('[id^="atst_"]');
+            toasts.forEach((t, i) => {
+                if (t.id !== id) t.style.top = (24 + (toasts.length - 1 - i) * 80) + 'px';
+            });
+
+            setTimeout(() => dismissAlertToast(id), 6000);
+        }
+
+        function dismissAlertToast(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.animation = 'atToastOut .3s ease forwards';
+            setTimeout(() => el?.remove(), 300);
+        }
+
+        function pollBellDot() {
+            fetch('{{ route('dashboard.notifications') }}', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const count = data.count ?? 0;
+                document.getElementById('bell-dot').style.display = count > 0 ? 'block' : 'none';
+
+                if (!data.alerts || data.alerts.length === 0) return;
+
+                // Show toast for any NEW alerts not yet seen
+                const seen    = getSeenAlerts();
+                const current = data.alerts.map(a => a.id || a.title + a.body);
+                const newAlerts = data.alerts.filter(a => {
+                    const key = a.id || a.title + a.body;
+                    return !seen.includes(key);
+                });
+
+                newAlerts.forEach(a => showAlertToast(a));
+
+                // Mark all current alerts as seen
+                const allSeen = [...new Set([...seen, ...current])].slice(-50);
+                markAlertsSeen(allSeen);
+            })
+            .catch(() => {});
+        }
+
+        // Poll every 15 seconds for fast alert delivery
         pollBellDot();
-        setInterval(pollBellDot, 60000);
+        setInterval(pollBellDot, 15000);
+
+        // Reset seen alerts when bell is opened so user sees them in dropdown
+        document.getElementById('bell-btn').addEventListener('click', function() {
+            // Don't reset seen — just open the dropdown
+        });
     </script>
+
+    <style>
+    @keyframes atToastIn  { from{opacity:0;transform:translateX(40px) scale(.95)} to{opacity:1;transform:none} }
+    @keyframes atToastOut { to{opacity:0;transform:translateX(40px) scale(.95)} }
+    @keyframes atToastBar { from{width:100%} to{width:0%} }
+    </style>
 
 </body>
 </html>
