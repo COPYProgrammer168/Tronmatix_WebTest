@@ -10,7 +10,7 @@ return [
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => [
-        'https://tronmatix-webtest.onrender.com',
+        'https://tronmatix-frontend.onrender.com',
         'http://localhost:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5173',
