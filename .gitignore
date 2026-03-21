@@ -37,4 +37,8 @@ tronmatix_frontend/node_modules/
 tronmatix_frontend/dist/
 tronmatix_frontend/.vite/
 tronmatix_frontend/npm-debug.log
+<<<<<<< HEAD
 tronmatix_frontend/yarn-error.log
+=======
+tronmatix_frontend/yarn-error.log
+>>>>>>> 67aff9ea222ea7b20ff6d2306ec806df960689f9
