@@ -13,18 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify _redirects exists
-        run: |
-          if [ -f "public/_redirects" ]; then
-            echo "✅ public/_redirects exists: $(cat public/_redirects)"
-          else
-            echo "❌ public/_redirects is MISSING from the repo!"
-            echo "   Create the file manually: public/_redirects"
-            echo "   Content: /* /index.html 200"
-            echo "   Then commit and push it."
-            exit 1
-          fi
-
       - name: Trigger Render deployment
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
@@ -36,5 +24,10 @@ jobs:
           HTTP_STATUS=$(curl -s -o /tmp/render_response.txt -w "%{http_code}" \
             -X POST -H "Content-Type: application/json" -d '{}' \
             "$RENDER_DEPLOY_HOOK")
-          echo "HTTP status: $HTTP_STATUS — $(cat /tmp/render_response.txt)"
-          [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ] && echo "✅ Render build triggered" || exit 1
+          echo "HTTP $HTTP_STATUS — $(cat /tmp/render_response.txt)"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Render build triggered successfully"
+          else
+            echo "❌ Deploy trigger failed (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
