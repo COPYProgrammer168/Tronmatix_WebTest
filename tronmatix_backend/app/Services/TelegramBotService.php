@@ -46,9 +46,28 @@ class TelegramBotService
         $message = $update['message'] ?? null;
         if (! $message || ! isset($message['text'])) return;
 
-        $chatId = (string) $message['chat']['id'];
-        $text   = trim($message['text']);
-        $from   = $message['from'] ?? [];
+        $chatId  = (string) $message['chat']['id'];
+        $text    = trim($message['text']);
+        $from    = $message['from'] ?? [];
+        $msgDate = (int) ($message['date'] ?? 0);
+
+        // ── Stale-update guard ────────────────────────────────────────────────
+        // Polling mode can replay old updates that predate the user's current
+        // connection (e.g. /profile sent while disconnected, processed only
+        // after reconnect).  Skip such messages silently to prevent a false
+        // "No account linked" reply arriving right after the welcome message.
+        if ($msgDate > 0) {
+            $linked = User::where('telegram_chat_id', $chatId)->first();
+            if ($linked && $linked->telegram_connected_at
+                && $msgDate < $linked->telegram_connected_at->timestamp) {
+                Log::info('[UserBot] skipping stale update', [
+                    'chat_id'      => $chatId,
+                    'msg_date'     => $msgDate,
+                    'connected_at' => $linked->telegram_connected_at->timestamp,
+                ]);
+                return;
+            }
+        }
 
         Log::info('[UserBot] incoming', ['chat_id' => $chatId, 'text' => $text]);
 
@@ -243,7 +262,7 @@ class TelegramBotService
             "Your Telegram has been unlinked from <b>{$uname}</b>.", '',
             "You won't receive order notifications anymore.", '',
             'To reconnect, visit your profile page on the website and click <b>Connect with Telegram</b>.',
-        ]));
+        ]), $this->mainKeyboard());
     }
 
     private function cmdUnknown(string $chatId): void
@@ -469,7 +488,7 @@ class TelegramBotService
             $itemLines, '',
             "💰 Subtotal: \${$subtotal}",
             ($order->discount_amount ?? 0) > 0
-                ? '🏷 Discount ('.$this->e($order->discount_code ?? '').'-): -$'.$this->e((string) $order->discount_amount)
+                ? '🏷 Discount ('.$this->e($order->discount_code ?? '').'): -$'.$this->e((string) $order->discount_amount)
                 : null,
             "✅ <b>Total: \${$total}</b>", '',
             "We'll notify you when your order ships. 💙",

@@ -92,6 +92,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
       notify('Telegram disconnected.', 'success')
       setTestSent(false)
       setShowSwitch(false)
+      setWidgetKey(k => k + 1)   // force widget re-inject after disconnect
       await fetchStatus(true)
       onUpdate?.({ telegram_connected: false })
     } catch { notify('Failed to disconnect.', 'error') }

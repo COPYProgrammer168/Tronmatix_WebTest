@@ -558,7 +558,6 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
                 <div id="ui-telegram" style="font-size:13px; font-weight:700;"></div>
-            </div
             </div>
         </div>
 
@@ -628,11 +627,11 @@ function openUserInfo(id, username, name, email, phone, avatar, role, joined, or
     document.getElementById('ui-spent').textContent = '$' + spent;
     document.getElementById('ui-joined').textContent = joined;
     document.getElementById('ui-2fa').innerHTML = twofa
+        ? '<span style="color:#22c55e;">✓ ENABLED</span>'
+        : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
     document.getElementById('ui-telegram').innerHTML = telegram
         ? '<span style="color:#229ED9;">✈️ ' + telegram + '</span>'
         : '<span style="color:rgba(255,255,255,0.3);">— Not connected</span>';
-        ? '<span style="color:#22c55e;">✓ ENABLED</span>'
-        : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
 
     // Role badge
     const rm = ROLE_COLORS[role] || ROLE_COLORS.customer;
@@ -826,7 +825,13 @@ if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
 <style>
 /* ── Users stats grid responsive ─────────────────────────────────────────── */
 .users-stats-grid {
-    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+}
+@media (max-width: 860px) {
+    .users-stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+    }
 }
 @media (max-width: 700px) {
     .users-stats-grid {
