@@ -7,16 +7,17 @@ use App\Models\AdminSetting;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\UserLocation;
+use App\Traits\StorageHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class UserProfileController extends Controller
 {
+    use StorageHelper;
+
     public function show(): JsonResponse
     {
         return response()->json(['success' => true, 'data' => $this->userPayload(Auth::user())]);
@@ -54,40 +55,18 @@ class UserProfileController extends Controller
             'avatar' => 'required|file|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $disk     = config('filesystems.default'); // 's3' on Render, 'public' locally
         $file     = $request->file('avatar');
         $uuidName = Str::uuid().'.'.$file->getClientOriginalExtension();
 
-        // Delete old avatar before uploading new one
+        // Delete old avatar from S3/R2 or local
         if ($user->avatar) {
-            $this->deleteAvatarFile($user->avatar, $disk);
+            $this->deleteStorageFile($user->avatar);
         }
 
-        if ($disk === 's3') {
-            // Store to R2/S3
-            $storedPath = Storage::disk('s3')->putFileAs(
-                'avatars/users',
-                $file,
-                $uuidName,
-                ['visibility' => 'public']
-            );
-
-            // FIX: Build URL manually using AWS_URL env var
-            // Storage::disk('s3')->url() triggers PHP0418 / P1013 because
-            // the contract Filesystem doesn't declare url().
-            // Instead: combine AWS_URL + stored path directly — no interface violation.
-            $awsUrl    = rtrim(config('filesystems.disks.s3.url', ''), '/');
-            $avatarUrl = $awsUrl
-                ? $awsUrl.'/'.$storedPath
-                : 'https://'.config('filesystems.disks.s3.bucket').'.'.config('filesystems.disks.s3.endpoint').'/'.$storedPath;
-
-        } else {
-            // Local public disk
-            Storage::disk('public')->makeDirectory('avatars/users');
-            $storedPath = $file->storeAs('avatars/users', $uuidName, 'public');
-            // Return relative path — resolveImage() in frontend prepends BACKEND_URL
-            $avatarUrl  = '/storage/'.$storedPath;
-        }
+        // FIX: Use StorageHelper — auto-detects S3/R2 (production) or local (dev)
+        // Replaces the manual disk check + Storage::disk('s3')->putFileAs() pattern
+        // which caused PHP0418 error (url() not on Filesystem contract)
+        $avatarUrl = $this->storeFileAs($file, 'avatars/users', $uuidName);
 
         $user->update(['avatar' => $avatarUrl]);
 
@@ -104,13 +83,14 @@ class UserProfileController extends Controller
         $user = Auth::user();
 
         if ($user->avatar) {
-            $this->deleteAvatarFile($user->avatar, config('filesystems.default'));
+            $this->deleteStorageFile($user->avatar);
             $user->update(['avatar' => null]);
         }
 
         return response()->json(['success' => true, 'data' => $this->userPayload($user->fresh())]);
     }
 
+    // ── GET /api/user/locations ───────────────────────────────────────────────
     public function locations(): JsonResponse
     {
         $locations = UserLocation::where('user_id', Auth::id())
@@ -121,6 +101,7 @@ class UserProfileController extends Controller
         return response()->json(['success' => true, 'data' => $locations]);
     }
 
+    // ── POST /api/user/locations ──────────────────────────────────────────────
     public function storeLocation(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -153,6 +134,7 @@ class UserProfileController extends Controller
         return response()->json(['success' => true, 'data' => $location], 201);
     }
 
+    // ── PUT /api/user/locations/{id} ──────────────────────────────────────────
     public function updateLocation(Request $request, int $id): JsonResponse
     {
         $location  = UserLocation::where('user_id', Auth::id())->findOrFail($id);
@@ -176,6 +158,7 @@ class UserProfileController extends Controller
         return response()->json(['success' => true, 'data' => $location->fresh()]);
     }
 
+    // ── DELETE /api/user/locations/{id} ──────────────────────────────────────
     public function destroyLocation(int $id): JsonResponse
     {
         $location   = UserLocation::where('user_id', Auth::id())->findOrFail($id);
@@ -190,6 +173,7 @@ class UserProfileController extends Controller
         return response()->json(['success' => true]);
     }
 
+    // ── GET /api/user/stats ───────────────────────────────────────────────────
     public function stats(): JsonResponse
     {
         /** @var User $user */
@@ -204,7 +188,7 @@ class UserProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
+            'data'    => [
                 'total_spent'     => (float) $totalSpent,
                 'order_count'     => Order::where('user_id', $user->id)->count(),
                 'cancelled_count' => Order::where('user_id', $user->id)->where('status', 'cancelled')->count(),
@@ -230,37 +214,5 @@ class UserProfileController extends Controller
             'is_banned'  => $user->is_banned ?? false,
             'created_at' => $user->created_at,
         ];
-    }
-
-    private function deleteAvatarFile(string $avatar, string $disk): void
-    {
-        try {
-            if (Str::startsWith($avatar, ['http://', 'https://'])) {
-                if ($disk === 's3') {
-                    // Extract relative path from full R2/S3 URL
-                    $awsUrl = rtrim(config('filesystems.disks.s3.url', ''), '/');
-                    if ($awsUrl && str_starts_with($avatar, $awsUrl)) {
-                        $rel = ltrim(substr($avatar, strlen($awsUrl)), '/');
-                    } else {
-                        // Fallback: parse URL path
-                        $parsed = parse_url($avatar);
-                        $rel    = ltrim($parsed['path'] ?? '', '/');
-                        $bucket = config('filesystems.disks.s3.bucket', '');
-                        if ($bucket && str_starts_with($rel, $bucket.'/')) {
-                            $rel = substr($rel, strlen($bucket) + 1);
-                        }
-                    }
-                    if (! empty($rel)) {
-                        Storage::disk('s3')->delete($rel);
-                    }
-                }
-            } else {
-                // Local path e.g. /storage/avatars/users/uuid.jpg
-                $rel = ltrim(str_replace('/storage/', '', $avatar), '/');
-                Storage::disk('public')->delete($rel);
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Avatar delete failed: '.$e->getMessage());
-        }
     }
 }

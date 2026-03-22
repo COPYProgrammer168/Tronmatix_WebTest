@@ -15,28 +15,32 @@ class AuthController extends Controller
     // ── Register ──────────────────────────────────────────────────────────────
     public function register(Request $request)
     {
+        // FIX: lowercase username before validation so uniqueness check is case-insensitive
+        $request->merge([
+            'username' => strtolower(trim($request->input('username', ''))),
+            'email'    => strtolower(trim($request->input('email', ''))),
+        ]);
+
         $validated = $request->validate([
             'username' => 'required|string|min:3|max:50|unique:users,username',
-            'email' => 'required|email|max:255|unique:users,email',
+            'email'    => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        // FIX [3]: 'name' column is NOT NULL — set it to username as fallback
         $user = User::create([
-            'name' => $validated['username'],  // FIX [3]
-            'username' => $validated['username'],
-            'email' => $validated['email'],
+            'name'     => $validated['username'],
+            'username' => $validated['username'], // already lowercased
+            'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'customer',
+            'role'     => 'customer',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // FIX [1,2]: include role, is_banned, avatar, phone in response
         return response()->json([
             'success' => true,
-            'user' => $this->userPayload($user),
-            'token' => $token,
+            'user'    => $this->userPayload($user),
+            'token'   => $token,
         ], 201);
     }
 
@@ -48,8 +52,12 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('username', $validated['username'])
-            ->orWhere('email', $validated['username'])
+        // FIX: normalize input — mobile keyboards capitalize and add spaces
+        $input = strtolower(trim($validated['username']));
+
+        // FIX: case-insensitive lookup using LOWER() — works on PostgreSQL + MySQL
+        $user = User::whereRaw('LOWER(username) = ?', [$input])
+            ->orWhereRaw('LOWER(email) = ?', [$input])
             ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
@@ -66,11 +74,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // FIX [1,2]: include role, is_banned, avatar, phone in response
         return response()->json([
             'success' => true,
-            'user' => $this->userPayload($user),
-            'token' => $token,
+            'user'    => $this->userPayload($user),
+            'token'   => $token,
         ]);
     }
 
@@ -78,17 +85,15 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
         return response()->json(['success' => true]);
     }
 
     // ── Me ────────────────────────────────────────────────────────────────────
     public function me(Request $request)
     {
-        // FIX [1,2]: return full payload including role, avatar, phone
         return response()->json([
             'success' => true,
-            'user' => $this->userPayload($request->user()),
+            'user'    => $this->userPayload($request->user()),
         ]);
     }
 
@@ -100,14 +105,17 @@ class AuthController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Password reset link sent! Check your email.', 'status' => $status]);
+            return response()->json([
+                'message' => 'Password reset link sent! Check your email.',
+                'status'  => $status,
+            ]);
         }
 
         return response()->json([
             'message' => match ($status) {
-                Password::INVALID_USER => 'No account found with that email.',
+                Password::INVALID_USER    => 'No account found with that email.',
                 Password::RESET_THROTTLED => 'Too many attempts. Please wait.',
-                default => 'Failed to send reset email.',
+                default                   => 'Failed to send reset email.',
             },
             'status' => $status,
         ], 422);
@@ -117,9 +125,9 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|string|min:6|confirmed',
+            'token'                 => 'required',
+            'email'                 => 'required|email',
+            'password'              => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required',
         ]);
 
@@ -127,7 +135,7 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill(['password' => Hash::make($password)])->save();
-                $user->tokens()->delete(); // invalidate all existing sessions
+                $user->tokens()->delete();
             }
         );
 
@@ -143,22 +151,17 @@ class AuthController extends Controller
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
-
-    /**
-     * FIX [1,2]: Consistent user payload for all auth endpoints.
-     * Includes all fields the frontend AuthContext and ProfileHeader need.
-     */
     private function userPayload(User $user): array
     {
         return [
-            'id' => $user->id,
+            'id'       => $user->id,
             'username' => $user->username,
-            'email' => $user->email,
-            'name' => $user->name,
-            'phone' => $user->phone,
-            'avatar' => $user->avatar,
-            'role' => $user->role ?? 'customer',
-            'is_banned' => $user->is_banned ?? false,
+            'email'    => $user->email,
+            'name'     => $user->name,
+            'phone'    => $user->phone,
+            'avatar'   => $user->avatar,
+            'role'     => $user->role ?? 'customer',
+            'is_banned'=> $user->is_banned ?? false,
         ];
     }
 }

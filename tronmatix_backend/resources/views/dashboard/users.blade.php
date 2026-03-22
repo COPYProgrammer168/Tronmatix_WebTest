@@ -292,6 +292,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                     <th>ORDERS</th>
                     <th>SPENT</th>
                     <th>2FA</th>
+                    <th>TELEGRAM</th>
                     <th>ROLE</th>
                     <th>JOINED</th>
                     <th style="min-width:200px;">CHANGE ROLE</th>
@@ -338,7 +339,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                             </div>
                             <div>
                                 <div style="font-weight:700; font-size:15px; cursor:pointer;"
-                                     onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ number_format((float)($user->total_spent ?? 0), 2) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }})"
+                                     onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ number_format((float)($user->total_spent ?? 0), 2) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
                                      onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
                                     {{ $user->username }}
                                 </div>
@@ -400,6 +401,17 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                         @endif
                     </td>
 
+                    {{-- Telegram --}}
+                    <td>
+                        @if($user->telegram_chat_id)
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(34,158,217,0.15);border:1px solid rgba(34,158,217,0.3);color:#229ED9;" title="{{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}">
+                                ✈️ {{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}
+                            </span>
+                        @else
+                            <span style="font-size:11px;color:rgba(255,255,255,0.25);">—</span>
+                        @endif
+                    </td>
+
                     {{-- Current role badge --}}
                     <td>
                         <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
@@ -440,7 +452,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="10" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
+                    <td colspan="11" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
                         <div style="font-size:32px; margin-bottom:10px;">👥</div>
                         No users found
                     </td>
@@ -521,6 +533,11 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                 <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">2FA</div>
                 <div id="ui-2fa" style="font-size:13px; font-weight:700;"></div>
             </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
+                <div id="ui-telegram" style="font-size:13px; font-weight:700;"></div>
+            </div
+            </div>
         </div>
 
         {{-- VIP progress --}}
@@ -562,7 +579,7 @@ const ROLE_COLORS = {
     banned:   { bg:'rgba(239,68,68,0.15)',   color:'#EF4444', border:'rgba(239,68,68,0.4)',   label:'🚫 BANNED' },
 };
 
-function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa) {
+function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa, telegram) {
     const modal = document.getElementById('user-info-modal');
     modal.style.display = 'flex';
 
@@ -589,6 +606,9 @@ function openUserInfo(id, username, name, email, phone, avatar, role, joined, or
     document.getElementById('ui-spent').textContent = '$' + spent;
     document.getElementById('ui-joined').textContent = joined;
     document.getElementById('ui-2fa').innerHTML = twofa
+    document.getElementById('ui-telegram').innerHTML = telegram
+        ? '<span style="color:#229ED9;">✈️ ' + telegram + '</span>'
+        : '<span style="color:rgba(255,255,255,0.3);">— Not connected</span>';
         ? '<span style="color:#22c55e;">✓ ENABLED</span>'
         : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
 

@@ -12,15 +12,19 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Exports\DashboardExport;
+use App\Services\TelegramService;      // Bot 1 — admin/owner alerts
+use App\Services\TelegramBotService;   // Bot 2 — user-facing notifications
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Traits\StorageHelper;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
+    use StorageHelper;
     // ── Dashboard index ───────────────────────────────────────────────────────
     public function index()
     {
@@ -310,46 +314,75 @@ class DashboardController extends Controller
         $request->validate([
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
         ]);
-        $order->update(['status' => $request->status]);
 
-        return redirect()->route('dashboard.orders.show', $order)->with('success', 'Order status updated.');
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        $order->update(['status' => $newStatus]);
+
+        // Load relations needed by Telegram message builders
+        $order->load(['items', 'user']);
+
+        // ── Bot 1 — notify admin channel ──────────────────────────────────────
+        try {
+            app(TelegramService::class)->sendAlert(
+                "📋 *Order Status Updated*\n\n" .
+                "📦 Order: `#{$order->order_id}`\n" .
+                "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+                "🔄 {$oldStatus} → *{$newStatus}*\n" .
+                "🕐 " . now()->format('d M Y, H:i')
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
+        }
+
+        // ── Bot 2 — notify customer in their Telegram ─────────────────────────
+        // Only fires if the customer has connected their Telegram account.
+        try {
+            $bot = app(TelegramBotService::class);
+            match ($newStatus) {
+                'confirmed'  => $bot->onOrderConfirmed($order),
+                'processing' => $bot->onOrderProcessing($order),
+                'shipped'    => $bot->onOrderShipped($order),
+                'delivered'  => $bot->onOrderDelivered($order),
+                'cancelled'  => $bot->onOrderCancelled($order),
+                default      => null, // 'pending' — no user alert
+            };
+        } catch (\Throwable $e) {
+            Log::warning('[Bot2] User status notification failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('dashboard.orders.show', $order)->with('success', 'Order status updated to ' . strtoupper($newStatus) . '.');
     }
 
     public function confirmDelivery(Order $order)
     {
-        // FIX: "Confirm & Process" advances to the NEXT step — not straight to delivered.
-        // Flow: pending → confirmed → [CLICK HERE] → processing → shipped → delivered
-        // Admin then manually advances each step via "Update Status".
-        $allowedFrom = ['confirmed', 'processing', 'shipped'];
-
-        if (! in_array($order->status, $allowedFrom)) {
+        if (! in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
             return redirect()->route('dashboard.orders.show', $order)
-                ->with('error', 'Cannot advance order from current status: '.$order->status);
+                ->with('error', 'Order cannot be marked as delivered from its current status.');
         }
 
-        // Determine the next logical step
-        $nextStatus = match($order->status) {
-            'confirmed'  => 'processing',   // confirmed → processing
-            'processing' => 'shipped',       // processing → shipped
-            'shipped'    => 'delivered',     // shipped → delivered
-            default      => 'processing',
-        };
+        $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
 
-        $order->update([
-            'status'                => $nextStatus,
-            'delivery_confirmed_at' => now('Asia/Phnom_Penh'),
-        ]);
+        // Load relations needed by Telegram message builders
+        $order->load(['items', 'user']);
 
-        $label = strtoupper($nextStatus);
-
-        // Notify Telegram
+        // ── Bot 1 — notify admin channel ──────────────────────────────────────
         try {
-            app(\App\Services\TelegramService::class)
-                ->sendAlert("📦 Order #{$order->order_id} → {$label}");
-        } catch (\Throwable) {}
+            app(TelegramService::class)->sendDeliveryConfirmed($order);
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Delivery confirm failed: ' . $e->getMessage());
+        }
+
+        // ── Bot 2 — notify customer their order was delivered ─────────────────
+        try {
+            app(TelegramBotService::class)->onOrderDelivered($order);
+        } catch (\Throwable $e) {
+            Log::warning('[Bot2] User delivery notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('dashboard.orders.show', $order)
-            ->with('success', "Order #{$order->order_id} moved to {$label} ✅");
+            ->with('success', "Order #{$order->order_id} marked as delivered ✅");
     }
 
     // ── Payments ──────────────────────────────────────────────────────────────
@@ -394,11 +427,46 @@ class DashboardController extends Controller
     }
 
     // ── Users ─────────────────────────────────────────────────────────────────
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::withCount('orders')->latest()->paginate(15);
+        // Build base query — include total_spent via subquery for VIP progress bar in blade
+        $query = User::withCount('orders')
+            ->selectRaw(
+                'users.*, COALESCE((SELECT SUM(total) FROM orders WHERE orders.user_id = users.id AND orders.status != ?), 0) as total_spent',
+                ['cancelled']
+            )
+            ->latest();
 
-        return view('dashboard.users', compact('users'));
+        // Role filter
+        if ($role = $request->input('role')) {
+            if ($role !== 'all') {
+                $query->where('role', $role);
+            }
+        }
+
+        // Telegram filter
+        if ($request->input('telegram') === 'connected') {
+            $query->whereNotNull('telegram_chat_id');
+        }
+
+        // Search
+        if ($search = trim($request->input('search', ''))) {
+            $query->where(fn ($q) => $q
+                ->where('username', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+            );
+        }
+
+        $perPage = AdminSetting::int('dashboard_rows_per_page', 15);
+        $users   = $query->paginate($perPage)->withQueryString();
+
+        // Role counts for the filter tabs
+        $roleCounts = User::selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role')
+            ->toArray();
+
+        return view('dashboard.users', compact('users', 'roleCounts'));
     }
 
     // ── Banners ───────────────────────────────────────────────────────────────
@@ -561,9 +629,10 @@ class DashboardController extends Controller
                 if (! $file->isValid() || count($finalImages) >= 8) {
                     continue;
                 }
-                $path = $file->store('products', 'public');
-                if ($path) {
-                    $finalImages[] = '/storage/'.$path;
+                // FIX: Upload to S3/R2 (production) or local (dev)
+                $url = $this->storeFile($file, 'products');
+                if ($url) {
+                    $finalImages[] = $url;
                 }
             }
         }
@@ -604,9 +673,8 @@ class DashboardController extends Controller
 
     private function deleteStoredFile(string $path): void
     {
-        if (Str::startsWith($path, '/storage/')) {
-            Storage::disk('public')->delete(Str::after($path, '/storage/'));
-        }
+        // FIX: Handle both S3/R2 URLs and local /storage/ paths
+        $this->deleteStorageFile($path);
     }
 
     private function dateFormatExpr(string $column, string $format): string
