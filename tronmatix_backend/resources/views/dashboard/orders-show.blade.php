@@ -616,8 +616,10 @@
 
         <div style="display:flex; gap:10px;">
             <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
-            <form method="POST" action="{{ route('dashboard.orders.confirm-delivery', $order) }}" style="flex:2;">
-                @csrf @method('POST')
+            {{-- FIX: was confirm-delivery (sets delivered directly) → now orders.status + processing --}}
+            <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
+                @csrf @method('PUT')
+                <input type="hidden" name="status" value="processing">
                 <button type="submit" class="popup-btn-confirm" style="background:linear-gradient(135deg,#3b82f6,#2563eb); width:100%;">
                     ⚙️ YES, START PROCESSING
                 </button>

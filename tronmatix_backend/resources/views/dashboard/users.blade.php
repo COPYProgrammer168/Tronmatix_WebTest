@@ -22,10 +22,20 @@
     padding: 5px 10px;
     cursor: pointer;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, color 0.2s;
 }
 .role-select:hover { border-color: var(--orange); }
 .role-select:focus { border-color: var(--orange); }
+/* Role color per selected value */
+.role-select[data-role="customer"] { color: #9CA3AF; border-color: rgba(156,163,175,0.3); }
+.role-select[data-role="vip"]      { color: #F97316; border-color: rgba(249,115,22,0.5); }
+.role-select[data-role="reseller"] { color: #3B82F6; border-color: rgba(59,130,246,0.5); }
+.role-select[data-role="banned"]   { color: #EF4444; border-color: rgba(239,68,68,0.5); }
+/* Option colors in dropdown list */
+.role-select option[value="customer"] { color: #9CA3AF; background: #1a1a1a; }
+.role-select option[value="vip"]      { color: #F97316; background: #1a1a1a; }
+.role-select option[value="reseller"] { color: #3B82F6; background: #1a1a1a; }
+.role-select option[value="banned"]   { color: #EF4444; background: #1a1a1a; }
 
 /* ── Filter tabs ─────────────────────────────────────────────────────────── */
 .filter-tab {
@@ -243,6 +253,16 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="stat-label">TOTAL</div>
         </div>
     </div>
+    @php $telegramCount = \App\Models\User::whereNotNull('telegram_chat_id')->count(); @endphp
+    <div class="stat-card" style="border-color:rgba(34,158,217,0.25);background:rgba(34,158,217,0.06);">
+        <div class="stat-icon" style="background:rgba(34,158,217,0.15);border-color:rgba(34,158,217,0.3);">
+            <span style="font-size:20px;">&#9992;&#65039;</span>
+        </div>
+        <div>
+            <div class="stat-value" style="color:#229ED9;">{{ $telegramCount }}</div>
+            <div class="stat-label" style="color:#229ED9;">TELEGRAM</div>
+        </div>
+    </div>
 </div>
 
 {{-- ── Main card ─────────────────────────────────────────────────────────────── --}}
@@ -430,7 +450,9 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                         <div style="display:flex; align-items:center; gap:8px;">
                             <select class="role-select" id="role-select-{{ $user->id }}"
                                     data-user="{{ $user->id }}"
-                                    data-current="{{ $user->role ?? 'customer' }}">
+                                    data-current="{{ $user->role ?? 'customer' }}"
+                                    data-role="{{ $user->role ?? 'customer' }}"
+                                    onchange="this.dataset.role=this.value">
                                 @foreach(\App\Models\User::ROLES as $role)
                                     <option value="{{ $role }}"
                                         {{ ($user->role ?? 'customer') === $role ? 'selected' : '' }}>
@@ -754,6 +776,7 @@ async function applyRole(userId, username) {
             setTimeout(() => row.style.background = '', 1200);
 
             select.dataset.current = newRole;
+            select.dataset.role = newRole;
             // Reset button to checkmark briefly then back to APPLY
             btn.innerHTML  = '✓';
             btn.style.color = '#22c55e';
