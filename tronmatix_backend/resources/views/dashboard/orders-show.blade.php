@@ -378,24 +378,69 @@
     {{-- ══ RIGHT COLUMN ═════════════════════════════════════════════════════════ --}}
     <div style="display:flex; flex-direction:column; gap:20px;">
 
-        {{-- Confirm Delivery card --}}
-        @if(!$order->delivery_confirmed_at && in_array($order->status, ['shipped','processing','confirmed']))
-        <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
+        {{-- ── Smart next-action card ─────────────────────────────────────────────
+             Advances: confirmed → processing → shipped → delivered.
+             Shows ONE correct next button per status; never a generic "process" CTA.
+        --}}
+        @php
+            $nextActions = [
+                'confirmed'  => [
+                    'status'   => 'processing',
+                    'icon'     => '⚙️',
+                    'label'    => 'START PROCESSING',
+                    'title'    => 'CONFIRM &amp; PROCESS',
+                    'desc'     => 'Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.',
+                    'color'    => '#3b82f6',
+                    'gradient' => 'linear-gradient(135deg,#3b82f6,#2563eb)',
+                    'shadow'   => 'rgba(59,130,246,0.35)',
+                    'border'   => 'rgba(59,130,246,0.3)',
+                    'bg'       => 'rgba(59,130,246,0.04)',
+                ],
+                'processing' => [
+                    'status'   => 'shipped',
+                    'icon'     => '🚚',
+                    'label'    => 'SHIP ORDER',
+                    'title'    => 'MARK AS SHIPPED',
+                    'desc'     => 'Confirm the order has been <strong style="color:#a78bfa;">dispatched</strong> to the customer.',
+                    'color'    => '#a78bfa',
+                    'gradient' => 'linear-gradient(135deg,#a78bfa,#7c3aed)',
+                    'shadow'   => 'rgba(167,139,250,0.35)',
+                    'border'   => 'rgba(167,139,250,0.3)',
+                    'bg'       => 'rgba(167,139,250,0.04)',
+                ],
+                'shipped'    => [
+                    'status'   => 'delivered',
+                    'icon'     => '📦',
+                    'label'    => 'CONFIRM DELIVERY',
+                    'title'    => 'MARK AS DELIVERED',
+                    'desc'     => 'Confirm the order has been <strong style="color:#22c55e;">delivered</strong> successfully.',
+                    'color'    => '#22c55e',
+                    'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
+                    'shadow'   => 'rgba(34,197,94,0.35)',
+                    'border'   => 'rgba(34,197,94,0.3)',
+                    'bg'       => 'rgba(34,197,94,0.04)',
+                ],
+            ];
+            $nextAction = $nextActions[$order->status] ?? null;
+        @endphp
+
+        @if($nextAction && !$order->delivery_confirmed_at)
+        <div class="card" style="border-color:{{ $nextAction['border'] }}; background:{{ $nextAction['bg'] }};">
             <div class="card-body" style="text-align:center;">
-                <div style="font-size:36px; margin-bottom:8px;">📦</div>
-                <div style="font-weight:700; color:#3b82f6; font-size:16px; margin-bottom:6px; letter-spacing:1px;">
-                    CONFIRM &amp; PROCESS
+                <div style="font-size:36px; margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
+                <div style="font-weight:700; color:{{ $nextAction['color'] }}; font-size:16px; margin-bottom:6px; letter-spacing:1px;">
+                    {!! $nextAction['title'] !!}
                 </div>
                 <div style="color:rgba(255,255,255,0.45); font-size:13px; margin-bottom:18px;">
-                    Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.
+                    {!! $nextAction['desc'] !!}
                 </div>
                 <button onclick="openPopup('confirm-delivery')" style="
-                    background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; font-weight:700;
+                    background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
                     width:100%; border:none; padding:13px; border-radius:10px; font-size:15px;
                     letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
-                    box-shadow:0 4px 20px rgba(59,130,246,0.35); transition:all .2s;
+                    box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
                 " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                    ⚙️ START PROCESSING
+                    {{ $nextAction['icon'] }} {{ $nextAction['label'] }}
                 </button>
             </div>
         </div>
@@ -572,43 +617,59 @@
      POPUP MODALS
 ══════════════════════════════════════════════════════════════════════════════ --}}
 
-{{-- Confirm Delivery Popup --}}
+{{-- ── Confirm-delivery Popup (dynamic — content reflects $nextAction) ── --}}
+@if($nextAction)
 <div id="popup-confirm-delivery" class="popup-overlay" onclick="if(event.target===this) closePopup('confirm-delivery')">
     <div class="popup-box" id="popup-confirm-delivery-box">
         <div style="text-align:center; margin-bottom:20px;">
             <div style="
                 width:80px; height:80px; border-radius:50%; margin:0 auto 12px;
-                background:linear-gradient(135deg,#22c55e,#16a34a);
+                background:{{ $nextAction['gradient'] }};
                 display:flex; align-items:center; justify-content:center;
-                font-size:40px; box-shadow:0 0 32px rgba(34,197,94,0.4);
+                font-size:40px; box-shadow:0 0 32px {{ $nextAction['shadow'] }};
                 animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
-            ">📦</div>
-            <div style="font-size:22px; font-weight:900; color:#3b82f6; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
-                CONFIRM &amp; PROCESS
+            ">{{ $nextAction['icon'] }}</div>
+            <div style="font-size:22px; font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+                {!! $nextAction['title'] !!}
             </div>
             <div style="color:rgba(255,255,255,0.45); font-size:13px; margin-top:6px;">
                 Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong> will move to
-                <strong style="color:#3b82f6;">Processing</strong> status.
+                <strong style="color:{{ $nextAction['color'] }};">{{ ucfirst($nextAction['status']) }}</strong> status.
             </div>
         </div>
 
-        {{-- Step flow indicator --}}
-        <div style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2); border-radius:12px; padding:14px 16px; margin-bottom:20px;">
-            <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:10px;">NEXT STEPS</div>
+        {{-- Step flow — highlight the target status --}}
+        @php
+            $popupSteps = [
+                'pending'    => ['label'=>'Pending',    'color'=>'#eab308'],
+                'confirmed'  => ['label'=>'Confirmed',  'color'=>'#22c55e'],
+                'processing' => ['label'=>'Processing', 'color'=>'#3b82f6'],
+                'shipped'    => ['label'=>'Shipped',    'color'=>'#a78bfa'],
+                'delivered'  => ['label'=>'Delivered',  'color'=>'#F97316'],
+            ];
+            $currentIdx = array_search($order->status, array_keys($popupSteps));
+            $targetIdx  = array_search($nextAction['status'], array_keys($popupSteps));
+        @endphp
+        <div style="background:{{ $nextAction['color'] }}11; border:1px solid {{ $nextAction['color'] }}33; border-radius:12px; padding:14px 16px; margin-bottom:20px;">
+            <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:10px;">FLOW</div>
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                @foreach(['Confirmed' => '#22c55e', 'Processing' => '#3b82f6', 'Shipped' => '#a78bfa', 'Delivered' => '#F97316'] as $stepName => $stepColor)
+                @foreach($popupSteps as $sKey => $sData)
                 @php
-                    $stepActive = $stepName === 'Processing';
-                    $stepDone   = in_array($stepName, ['Confirmed']);
+                    $sIdx    = array_search($sKey, array_keys($popupSteps));
+                    $sDone   = $sIdx < $currentIdx;
+                    $sCurrent= $sKey === $order->status;
+                    $sTarget = $sKey === $nextAction['status'];
+                    $sFuture = $sIdx > $targetIdx;
                 @endphp
                 <div style="display:flex; align-items:center; gap:4px;">
                     <div style="padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.5px;
-                        background: {{ $stepActive ? $stepColor.'22' : ($stepDone ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)') }};
-                        border: 1px solid {{ $stepActive ? $stepColor : ($stepDone ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)') }};
-                        color: {{ $stepActive ? $stepColor : ($stepDone ? '#22c55e' : 'rgba(255,255,255,0.3)') }};">
-                        {{ $stepDone ? '✓ ' : '' }}{{ $stepName }}{{ $stepActive ? ' ◀ NEXT' : '' }}
+                        background: {{ $sTarget ? $sData['color'].'22' : ($sDone||$sCurrent ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)') }};
+                        border: 1px solid {{ $sTarget ? $sData['color'] : ($sDone||$sCurrent ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)') }};
+                        color: {{ $sTarget ? $sData['color'] : ($sDone||$sCurrent ? '#22c55e' : 'rgba(255,255,255,0.25)') }};
+                        opacity: {{ $sFuture ? '0.45' : '1' }};">
+                        {{ ($sDone||$sCurrent) && !$sTarget ? '✓ ' : '' }}{{ $sData['label'] }}{{ $sTarget ? ' ◀' : '' }}
                     </div>
-                    @if($stepName !== 'Delivered') <span style="color:rgba(255,255,255,0.2); font-size:10px;">›</span> @endif
+                    @if(!$loop->last)<span style="color:rgba(255,255,255,0.2);font-size:10px;">›</span>@endif
                 </div>
                 @endforeach
             </div>
@@ -616,17 +677,17 @@
 
         <div style="display:flex; gap:10px;">
             <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
-            {{-- FIX: was confirm-delivery (sets delivered directly) → now orders.status + processing --}}
             <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
                 @csrf @method('PUT')
-                <input type="hidden" name="status" value="processing">
-                <button type="submit" class="popup-btn-confirm" style="background:linear-gradient(135deg,#3b82f6,#2563eb); width:100%;">
-                    ⚙️ YES, START PROCESSING
+                <input type="hidden" name="status" value="{{ $nextAction['status'] }}">
+                <button type="submit" class="popup-btn-confirm" style="background:{{ $nextAction['gradient'] }}; width:100%;">
+                    {{ $nextAction['icon'] }} YES, {{ $nextAction['label'] }}
                 </button>
             </form>
         </div>
     </div>
 </div>
+@endif
 
 {{-- Status Change Popups --}}
 @php

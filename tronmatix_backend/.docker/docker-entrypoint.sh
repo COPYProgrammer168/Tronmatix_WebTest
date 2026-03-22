@@ -46,5 +46,23 @@ fi
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
+# ── Telegram poll — background daemon ────────────────────────────────────────
+# Runs telegram:poll in a restart loop so it stays alive
+# alongside Apache inside the same container.
+if [ -n "$TELEGRAM_USER_BOT_TOKEN" ]; then
+    echo ">>> Starting Telegram poll worker in background..."
+    (
+        while true; do
+            echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — starting..."
+            php /var/www/html/artisan telegram:poll --timeout=25 --limit=10
+            echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — exited, restarting in 3s..."
+            sleep 3
+        done
+    ) &
+    echo ">>> Telegram poll PID: $!"
+else
+    echo ">>> TELEGRAM_USER_BOT_TOKEN not set — skipping telegram:poll"
+fi
+
 echo ">>> Launching Apache on port $PORT..."
 exec apache2-foreground
