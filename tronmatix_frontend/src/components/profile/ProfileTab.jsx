@@ -167,6 +167,17 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
         )}
       </div>
 
+        {/* ── FIX: Telegram Connect Section ───────────────────────────────────── */}
+        <TelegramConnect
+          user={localUser}
+          dark={dark ?? false}
+          onUpdate={(data) => {
+            setLocalUser(prev => ({ ...prev, ...data }))
+            onSaved?.()
+          }}
+          notify={notify}
+        />
+        
       {/* Role card + VIP progress */}
       <div style={{ marginTop: 28 }}>
         <div style={{ padding: '14px 18px', borderRadius: 12, background: s.bg, border: `1px solid ${s.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -220,16 +231,6 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
         ))}
       </div>
 
-      {/* ── FIX: Telegram Connect Section ───────────────────────────────────── */}
-      <TelegramConnect
-        user={localUser}
-        dark={dark ?? false}
-        onUpdate={(data) => {
-          setLocalUser(prev => ({ ...prev, ...data }))
-          onSaved?.()
-        }}
-        notify={notify}
-      />
     </div>
   )
 }

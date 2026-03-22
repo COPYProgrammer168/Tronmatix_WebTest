@@ -16,11 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // ── FIX: HandleCors MUST be the very first middleware ─────────────────
+        // HandleCors MUST be the very first middleware ─────────────────
         // Laravel 11 removed auto-registration of HandleCors.
         // OPTIONS preflight must be handled BEFORE any auth/session middleware,
         // otherwise preflight returns 401/419 with no CORS headers → browser blocks.
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->prepend(\Illuminate\Http\Middleware\TrustProxies::class);
 
         // ── Trust Render's reverse proxy (fixes HTTPS detection) ──────────────
         $middleware->trustProxies(at: '*', headers:
