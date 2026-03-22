@@ -32,12 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         // ── Exclude /api/* from CSRF — API uses Bearer token ──────────────────
-        $middleware->validateCsrfTokens(except: ['api/*', '*']);
-
-        // ── Sanctum stateful for API group ────────────────────────────────────
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
+        $middleware->validateCsrfTokens(except: ['api/*']);
 
         $middleware->alias([
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
