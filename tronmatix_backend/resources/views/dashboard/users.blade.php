@@ -558,7 +558,6 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
                 <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
                 <div id="ui-telegram" style="font-size:13px; font-weight:700;"></div>
-            </div
             </div>
         </div>
 
