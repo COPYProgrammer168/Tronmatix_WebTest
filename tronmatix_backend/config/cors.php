@@ -5,34 +5,18 @@
 
 return [
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', '*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allowed_methods' => ['*'],
 
     'allowed_origins' => [
         env('FRONTEND_URL', 'https://tronmatix-frontend.onrender.com'),
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:5174',
     ],
 
     'allowed_origins_patterns' => [
-        '#^https://[\w-]+\.onrender\.com$#',
-        '#^http://localhost(:\d+)?$#',
     ],
 
-    // ── FIX: Content-Type MUST be listed here ─────────────────────────────────
-    // Error was: "content-type is not allowed by Access-Control-Allow-Headers"
-    // Solution: list every header axios sends explicitly
-    'allowed_headers' => [
-        'Authorization',
-        'Content-Type',
-        'Accept',
-        'Origin',
-        'X-Requested-With',
-        'X-CSRF-TOKEN',
-    ],
+    'allowed_headers' => [*],
 
     'exposed_headers' => ['Authorization'],
 
