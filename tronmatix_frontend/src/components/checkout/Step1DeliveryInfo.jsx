@@ -151,17 +151,6 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
           }}
         />
       )}
-
-            {/* Temporary disable map picker to test */}
-      {showMapPicker && (
-        <div style={{ padding: 20, background: '#1f2937', color: '#fff', borderRadius: 12 }}>
-          Map picker temporarily disabled for testing.<br />
-          <button onClick={() => setShowMapPicker(false)} style={{ marginTop: 10, padding: '8px 16px' }}>
-            Close
-          </button>
-        </div>
-      )}
-
       {/* Note */}
       <div>
         <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>Note (optional)</label>
