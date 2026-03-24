@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
-import LocationPickerModal from "./LocationPickerModal"
+import MapPickerModal from "../profile/MapPickerModal"
 
 export default function Step1DeliveryInfo({ location, onChange, delivery, onDeliveryChange, saveAddr, onSaveAddr, savedLocations, onPickLocation, onSaveToProfile, onNext, mapPin, onMapPin }) {
   const { dark } = useTheme()

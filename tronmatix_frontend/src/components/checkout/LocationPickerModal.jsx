@@ -3,6 +3,7 @@ import { useTheme } from "../../context/ThemeContext"
 
 export default function LocationPickerModal({ locations, onSelect, onClose }) {
   const { dark } = useTheme()
+  const [loading, setLoading] = useState(false);
 
   // Semantic color tokens — all theme-aware
   const colors = {
@@ -61,18 +62,18 @@ export default function LocationPickerModal({ locations, onSelect, onClose }) {
           >✕</button>
         </div>
 
-        {/* Location list */}
+                {/* Location list */}
         <div style={{
           maxHeight: 380, overflowY: "auto",
           padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10,
         }}>
-          {locations.length === 0 && (
+          {(!locations || locations.length === 0) && (
             <p style={{ fontSize: 14, color: colors.subtitleText, textAlign: "center", padding: "24px 0" }}>
               No saved addresses found.
             </p>
           )}
 
-          {locations.map((loc) => (
+          {Array.isArray(locations) && locations.map((loc) => (
             <button
               key={loc.id}
               onClick={() => { onSelect(loc); onClose() }}
