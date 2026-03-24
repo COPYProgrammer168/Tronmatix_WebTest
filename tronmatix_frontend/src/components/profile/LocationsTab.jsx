@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import axiosClient from '../../lib/axios'
 import { useTheme } from '../../context/ThemeContext'
+import MapPickerModal from '../profile/MapPickerModal';
 
 // ─── Cambodian provinces ───────────────────────────────────────────────────────
 const KH_CITIES = [
@@ -257,21 +258,17 @@ function LocationModal({ loc, onClose, onSave }) {
             </button>
           </div>
 
-          {/* MapPickerModal will render here once the component is created */}
+          {/* Map Picker */}
           {showMapPicker && (
-            <div style={{
-              padding: '16px', borderRadius: 10, border: '1px dashed #D1D5DB',
-              background: dark ? '#111827' : '#F9FAFB',
-              color: dark ? '#9ca3af' : '#6B7280', fontSize: 14, textAlign: 'center',
-            }}>
-              🗺️ Map picker component not found.<br />
-              <span style={{ fontSize: 12 }}>Create <code>MapPickerModal.jsx</code> in this directory.</span>
-              <br />
-              <button type="button" onClick={() => setShowMapPicker(false)}
-                style={{ marginTop: 8, fontSize: 12, color: '#F97316', background: 'none', border: 'none', cursor: 'pointer' }}>
-                Close
-              </button>
-            </div>
+            <MapPickerModal
+              initialLat={mapPin?.lat}
+              initialLng={mapPin?.lng}
+              onClose={() => setShowMapPicker(false)}
+              onConfirm={(pin) => {
+                setMapPin(pin)
+                setShowMapPicker(false)
+              }}
+            />
           )}
 
           {saveErr && (
