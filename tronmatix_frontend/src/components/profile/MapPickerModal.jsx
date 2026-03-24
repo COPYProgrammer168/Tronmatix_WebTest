@@ -105,11 +105,15 @@ export default function MapPickerModal({ onClose, onConfirm, initialLat, initial
 
         userMarker.addListener('dragend', () => {
           const pos = userMarker.position
-          updateAll(pos.lat, pos.lng)
+          if (pos) {
+            updateAll(pos.lat, pos.lng)
+          }
         })
         map.addListener('click', (e) => {
-          userMarker.position = e.latLng
-          updateAll(e.latLng.lat(), e.latLng.lng())
+          if (userMarker) {
+            userMarker.position = e.latLng
+            updateAll(e.latLng.lat(), e.latLng.lng())
+          }
         })
 
         reverseGeocode(initialLat || STORE_LAT, initialLng || STORE_LNG)
