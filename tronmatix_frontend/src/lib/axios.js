@@ -2,12 +2,20 @@ import axios from 'axios'
 
 const isProd = import.meta.env.PROD
 
+// never throw at module level — a module-level throw crashes the ENTIRE
+// app before React mounts, causing a blank white page with "loading is not defined"
+// in the minified bundle stack trace.
+// Instead: warn in console and fall back to relative URLs (works when frontend
+// and backend are on the same origin, e.g. a monorepo deploy).
 const baseURL = isProd
-  ? import.meta.env.VITE_API_URL
+  ? (import.meta.env.VITE_API_URL || '')
   : ''
 
 if (isProd && !import.meta.env.VITE_API_URL) {
-  throw new Error('VITE_API_URL is not set!')
+  console.warn(
+    '[axios] VITE_API_URL is not set. API calls will use relative URLs.\n' +
+    'If your frontend and backend are on different origins, set VITE_API_URL in your deployment env vars.'
+  )
 }
 
 const instance = axios.create({

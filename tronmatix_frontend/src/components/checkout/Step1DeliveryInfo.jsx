@@ -4,14 +4,18 @@ import { useTheme } from "../../context/ThemeContext"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
 import MapPickerModal from "../profile/MapPickerModal"
 
-export default function Step1DeliveryInfo({ location, onChange, delivery, onDeliveryChange, saveAddr, onSaveAddr, savedLocations, onPickLocation, onNext, mapPin, onMapPin }) {
+export default function Step1DeliveryInfo({
+  location, onChange, delivery, onDeliveryChange,
+  saveAddr, onSaveAddr, savedLocations, onPickLocation,
+  onNext, mapPin, onMapPin,
+  onSaveToProfile,   // optional: (location, isDefault) => Promise<void>
+}) {
   const [showMapPicker, setShowMapPicker] = useState(false)
   const { dark } = useTheme()
   const canProceed = location.name && location.phone && location.address
-  const [saving,   setSaving]   = useState(false)   // saving to profile
-  const [saved,    setSaved]    = useState(false)    // saved success flash
+  const [saving,   setSaving]   = useState(false)
+  const [saved,    setSaved]    = useState(false)
   const [saveErr,  setSaveErr]  = useState(null)
-  
 
   // Theme tokens
   const c = {
@@ -26,8 +30,7 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
     saveBg:       dark ? 'rgba(249,115,22,0.08)' : '#fff7ed',
     saveBorder:   dark ? 'rgba(249,115,22,0.25)' : '#fed7aa',
     saveText:     dark ? '#d1d5db' : '#374151',
-    backBtn:      dark ? '#374151' : '#d1d5db',
-    backText:     dark ? '#f9fafb' : '#374151',
+    textSub:      dark ? '#6b7280' : '#9ca3af',
   }
 
   const inputStyle = {
@@ -41,7 +44,7 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
     onFocus: (e) => { e.target.style.borderColor = '#F97316' },
     onBlur:  (e) => { e.target.style.borderColor = c.inputBorder },
   }
-  
+
   const handleSaveToProfile = async () => {
     if (!onSaveToProfile || !location.name || !location.phone || !location.address) return
     setSaving(true); setSaved(false); setSaveErr(null)
@@ -170,7 +173,7 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
         <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
       </div>
 
-      {/* ── Save to Profile button ──────────────────────────────────────────── */}
+      {/* ── Save to Profile button — only rendered when onSaveToProfile prop is passed ── */}
       {onSaveToProfile && (
         <div>
           <button
