@@ -2,19 +2,13 @@
 import { useState } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
-import MapPickerModal from "../profile/MapPickerModal"
 
-export default function Step1DeliveryInfo({
-  location, onChange, delivery, onDeliveryChange,
-  saveAddr, onSaveAddr, savedLocations, onPickLocation,
-  onNext, mapPin, onMapPin,
-  onSaveToProfile,   // optional: (location, isDefault) => Promise<void>
-}) {
-  const [showMapPicker, setShowMapPicker] = useState(false)
+export default function Step1DeliveryInfo({ location, onChange, delivery, onDeliveryChange, saveAddr, onSaveAddr, savedLocations, onPickLocation, onSaveToProfile, onNext, mapPin, onMapPin }) {
   const { dark } = useTheme()
+  const [showMapPicker, setShowMapPicker] = useState(false)
   const canProceed = location.name && location.phone && location.address
-  const [saving,   setSaving]   = useState(false)
-  const [saved,    setSaved]    = useState(false)
+  const [saving,   setSaving]   = useState(false)   // saving to profile
+  const [saved,    setSaved]    = useState(false)    // saved success flash
   const [saveErr,  setSaveErr]  = useState(null)
 
   // Theme tokens
@@ -30,7 +24,6 @@ export default function Step1DeliveryInfo({
     saveBg:       dark ? 'rgba(249,115,22,0.08)' : '#fff7ed',
     saveBorder:   dark ? 'rgba(249,115,22,0.25)' : '#fed7aa',
     saveText:     dark ? '#d1d5db' : '#374151',
-    textSub:      dark ? '#6b7280' : '#9ca3af',
   }
 
   const inputStyle = {
@@ -61,7 +54,6 @@ export default function Step1DeliveryInfo({
 
   return (
     <div className="space-y-4">
-      {/* Placeholder color override for dark mode */}
       {dark && (
         <style>{`
           .checkout-input::placeholder { color: #6b7280; }
@@ -119,17 +111,6 @@ export default function Step1DeliveryInfo({
         />
       </div>
 
-      {/* Note */}
-      <div>
-        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>Note (optional)</label>
-        <textarea
-          name="note" value={location.note} onChange={onChange} rows={2}
-          placeholder="Delivery instructions…"
-          className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none resize-none transition-colors"
-          style={inputStyle} {...focusHandlers}
-        />
-      </div>
-
       {/* Map pin picker */}
       <div>
         <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>
@@ -168,12 +149,18 @@ export default function Step1DeliveryInfo({
         />
       )}
 
-      {/* Delivery schedule */}
-      <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
-        <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
+      {/* Note */}
+      <div>
+        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>Note (optional)</label>
+        <textarea
+          name="note" value={location.note} onChange={onChange} rows={2}
+          placeholder="Delivery instructions…"
+          className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none resize-none transition-colors"
+          style={inputStyle} {...focusHandlers}
+        />
       </div>
 
-      {/* ── Save to Profile button — only rendered when onSaveToProfile prop is passed ── */}
+      {/* ── Save to Profile button ──────────────────────────────────────────── */}
       {onSaveToProfile && (
         <div>
           <button
@@ -221,7 +208,12 @@ export default function Step1DeliveryInfo({
         </div>
       )}
 
-      {/* Save address toggle */}
+      {/* Delivery schedule */}
+      <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
+        <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
+      </div>
+
+      {/* Save address on order toggle */}
       <label
         className="flex items-center gap-3 cursor-pointer p-3 rounded-lg"
         style={{ background: c.saveBg, border: `1px solid ${c.saveBorder}` }}
@@ -230,9 +222,14 @@ export default function Step1DeliveryInfo({
           type="checkbox" checked={saveAddr} onChange={(e) => onSaveAddr(e.target.checked)}
           className="w-4 h-4 accent-primary"
         />
-        <span className="font-bold" style={{ fontSize: 15, color: c.saveText }}>
-          💾 Save this address for next time
-        </span>
+        <div>
+          <span className="font-bold" style={{ fontSize: 15, color: c.saveText }}>
+            💾 Save this address when I place the order
+          </span>
+          <p style={{ fontSize: 12, color: dark ? '#6b7280' : '#9ca3af', marginTop: 2 }}>
+            Automatically saved to your profile when you checkout
+          </p>
+        </div>
       </label>
 
       {/* Continue */}
