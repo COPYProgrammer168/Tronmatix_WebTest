@@ -373,64 +373,209 @@
             </div>
         </div>
 
-        {{-- ── Delivery Location Map ──────────────────────────────────────────── --}}
+         {{-- ══ Shipping Address + Map (inside left column, below order items) ══ --}}
         @php
-            $mapLat  = $order->delivery_lat  ?? $order->location?->lat  ?? null;
-            $mapLng  = $order->delivery_lng  ?? $order->location?->lng  ?? null;
-            $mapAddr = $order->delivery_map_address ?? $order->location?->map_address ?? null;
+            $name    = $order->location?->name    ?? ($order->shipping['name']    ?? '—');
+            $phone   = $order->location?->phone   ?? ($order->shipping['phone']   ?? '—');
+            $address = $order->location?->address ?? ($order->shipping['address'] ?? '—');
+            $city    = $order->location?->city    ?? ($order->shipping['city']    ?? '');
+            $note    = $order->location?->note    ?? ($order->shipping['note']    ?? '');
+            $mapLat  = $order->location?->lat
+                     ?? ($order->shipping['lat']  ?? null)
+                     ?? $order->getRawOriginal('delivery_lat');
+            $mapLng  = $order->location?->lng
+                     ?? ($order->shipping['lng']  ?? null)
+                     ?? $order->getRawOriginal('delivery_lng');
+            $mapAddr = $order->location?->map_address
+                     ?? ($order->shipping['map_address'] ?? null)
+                     ?? $order->getRawOriginal('delivery_map_address');
         @endphp
-        @if($mapLat && $mapLng)
-        <div class="card" style="max-width:540px;">
+
+        <div class="card">
             <div class="card-header">
-                <span class="card-title">📍 DELIVERY LOCATION</span>
-                @if($mapAddr)
-                <span style="font-size:11px; color:rgba(255,255,255,0.35); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    {{ $mapAddr }}
+                <span class="card-title">🚚 SHIPPING ADDRESS & DELIVERY MAP</span>
+                @if($order->location)
+                <span style="font-size:11px; color:#F97316; letter-spacing:1px;">
+                    📌 SAVED #{{ $order->location->id }}
+                    @if($order->location->is_default) · DEFAULT @endif
                 </span>
                 @endif
             </div>
-            <div class="card-body" style="padding:0; overflow:hidden; border-radius:0 0 12px 12px;">
-                @php
-                    $googleKey = config('services.google.maps_key');
-                    $markerPos = $mapLat . ',' . $mapLng;
-                    $staticUrl = 'https://maps.googleapis.com/maps/api/staticmap'
-                        . '?center=' . $markerPos
-                        . '&zoom=15&size=540x240&scale=2&maptype=roadmap'
-                        . '&markers=color:blue%7C' . $markerPos
-                        . '&markers=color:orange%7Clabel:S%7C11.5629735,104.8995165'
-                        . '&key=' . $googleKey;
-                @endphp
-                <a href="https://www.google.com/maps?q={{ $markerPos }}" target="_blank" rel="noopener"
-                   style="display:block; position:relative; line-height:0;">
-                    <img src="{{ $staticUrl }}"
-                         alt="Delivery location map"
-                         style="width:100%; height:240px; object-fit:cover; display:block;"
-                         loading="lazy"
-                         onerror="this.closest('.card').style.display='none'">
-                    <div style="
-                        position:absolute; bottom:12px; right:12px;
-                        background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
-                        color:#fff; font-family:Rajdhani,sans-serif; font-size:12px;
-                        font-weight:700; letter-spacing:1px; padding:6px 12px;
-                        border-radius:8px; border:1px solid rgba(255,255,255,0.15);
-                    ">🗺 OPEN IN MAPS ↗</div>
-                </a>
-                <div style="
-                    padding:10px 16px; display:flex; align-items:center; gap:16px;
-                    background:rgba(0,0,0,0.25); border-top:1px solid rgba(255,255,255,0.06);
-                ">
-                    <div style="font-size:11px; color:rgba(255,255,255,0.35); font-family:monospace; flex-shrink:0;">
-                        {{ number_format((float)$mapLat, 6) }}, {{ number_format((float)$mapLng, 6) }}
+            <div class="card-body">
+
+                {{-- Address info row --}}
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:{{ $mapLat && $mapLng ? '20px' : '0' }};">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size:18px;">👤</span>
+                        <div>
+                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NAME</div>
+                            <div style="font-weight:700; color:#fff; font-size:14px;">{{ $name }}</div>
+                        </div>
                     </div>
-                    @if($mapAddr)
-                    <div style="font-size:12px; color:rgba(255,255,255,0.5); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                        {{ $mapAddr }}
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size:18px;">📞</span>
+                        <div>
+                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">PHONE</div>
+                            <div style="font-weight:700; color:#F97316; font-size:14px;">{{ $phone }}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size:18px;">📍</span>
+                        <div>
+                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">ADDRESS</div>
+                            <div style="font-weight:700; color:rgba(255,255,255,0.85); font-size:14px; line-height:1.5;">
+                                {{ $address }}{{ $city ? ', '.$city : '' }}
+                            </div>
+                        </div>
+                    </div>
+                    @if($note)
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size:18px;">📝</span>
+                        <div>
+                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
+                            <div style="color:rgba(255,255,255,0.5); font-size:13px; font-style:italic;">{{ $note }}</div>
+                        </div>
                     </div>
                     @endif
                 </div>
+
+                {{-- Map — only if coordinates exist --}}
+                @if($mapLat && $mapLng)
+                <div>
+                    <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                        📍 PINNED DELIVERY ROUTE
+                        <span id="map-route-label" style="color:rgba(255,255,255,0.2); font-weight:400; font-size:10px;">Loading route...</span>
+                    </div>
+                    <div id="order-map" style="height:400px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);"></div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; flex-wrap:wrap; gap:8px;">
+                        @if($mapAddr)
+                        <div style="font-size:12px; color:rgba(255,255,255,0.4);">📍 {{ $mapAddr }}</div>
+                        @endif
+                        <div style="display:flex; gap:16px;">
+                            <span style="font-size:12px; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#F97316;display:inline-block;"></span> Tronmatix Store
+                            </span>
+                            <span style="font-size:12px; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span> Customer
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                @if($mapLat && $mapLng)
+                (function(){
+                    const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
+                    const USER_LAT  = {{ (float) $mapLat }};
+                    const USER_LNG  = {{ (float) $mapLng }};
+                    const KEY       = '{{ config("services.google.maps_key") }}';
+
+                    function initMap(){
+                        const g = window.google;
+
+                        const map = new g.maps.Map(document.getElementById('order-map'), {
+                            center: { lat: (STORE_LAT + USER_LAT) / 2, lng: (STORE_LNG + USER_LNG) / 2 },
+                            zoom: 13,
+                            styles: [
+                                { elementType: 'geometry',          stylers: [{ color: '#1a1a2e' }] },
+                                { elementType: 'labels.text.fill',  stylers: [{ color: '#8ec3b9' }] },
+                                { elementType: 'labels.text.stroke',stylers: [{ color: '#1a1a2e' }] },
+                                { featureType: 'road',              elementType: 'geometry',        stylers: [{ color: '#2d3561' }] },
+                                { featureType: 'road',              elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
+                                { featureType: 'road.highway',      elementType: 'geometry',        stylers: [{ color: '#3a4d8c' }] },
+                                { featureType: 'water',             elementType: 'geometry',        stylers: [{ color: '#0f3460' }] },
+                                { featureType: 'poi',               stylers: [{ visibility: 'off' }] },
+                            ],
+                            disableDefaultUI: true,
+                            zoomControl: true,
+                            gestureHandling: 'cooperative',
+                        });
+
+                        // Store pin — orange
+                        new g.maps.Marker({
+                            position: { lat: STORE_LAT, lng: STORE_LNG }, map,
+                            title: '🏪 Tronmatix Computer Store',
+                            icon: { path: g.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#F97316', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2.5 },
+                            zIndex: 2,
+                        });
+
+                        // Customer pin — blue
+                        new g.maps.Marker({
+                            position: { lat: USER_LAT, lng: USER_LNG }, map,
+                            title: 'Customer Location',
+                            icon: { path: g.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#3b82f6', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2.5 },
+                            zIndex: 2,
+                        });
+
+                        // Try Directions API for real road route
+                        const directionsService  = new g.maps.DirectionsService();
+                        const directionsRenderer = new g.maps.DirectionsRenderer({
+                            suppressMarkers: true,
+                            polylineOptions: {
+                                strokeColor:   '#F97316',
+                                strokeOpacity: 0.85,
+                                strokeWeight:  4,
+                            },
+                        });
+                        directionsRenderer.setMap(map);
+
+                        directionsService.route({
+                            origin:      { lat: STORE_LAT, lng: STORE_LNG },
+                            destination: { lat: USER_LAT,  lng: USER_LNG  },
+                            travelMode:  g.maps.TravelMode.DRIVING,
+                        }, function(result, status) {
+                            if (status === 'OK') {
+                                directionsRenderer.setDirections(result);
+                                const leg = result.routes[0]?.legs[0];
+                                if (leg) {
+                                    const label = document.getElementById('map-route-label');
+                                    if (label) label.textContent = leg.distance.text + ' · ' + leg.duration.text;
+                                }
+                            } else {
+                                // Directions API unavailable — fall back to dashed straight line
+                                directionsRenderer.setMap(null);
+                                new g.maps.Polyline({
+                                    path: [{ lat: STORE_LAT, lng: STORE_LNG }, { lat: USER_LAT, lng: USER_LNG }],
+                                    strokeColor: '#F97316', strokeOpacity: 0,
+                                    icons: [{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3, strokeColor: '#F97316' }, offset: '0', repeat: '12px' }],
+                                    map,
+                                });
+                                const b = new g.maps.LatLngBounds();
+                                b.extend({ lat: STORE_LAT, lng: STORE_LNG });
+                                b.extend({ lat: USER_LAT,  lng: USER_LNG  });
+                                map.fitBounds(b, 60);
+                                const label = document.getElementById('map-route-label');
+                                if (label) label.textContent = '(straight-line — enable Directions API for road route)';
+                            }
+                        });
+                    }
+
+                    // Load Maps JS API with directions library
+                    if (window.google?.maps?.DirectionsService) {
+                        initMap();
+                    } else if (window.google?.maps) {
+                        initMap();
+                    } else {
+                        const existing = document.getElementById('google-maps-script');
+                        if (existing) {
+                            existing.addEventListener('load', initMap);
+                            if (window.google?.maps) initMap();
+                        } else {
+                            const s = document.createElement('script');
+                            s.id    = 'google-maps-script';
+                            s.src   = 'https://maps.googleapis.com/maps/api/js?key=' + KEY + '&libraries=directions';
+                            s.async = true;
+                            s.onload = initMap;
+                            document.head.appendChild(s);
+                        }
+                    }
+                })();
+                @endif
+                </script>
+                @endif
+
             </div>
         </div>
-        @endif
 
     </div>{{-- /left --}}
 
