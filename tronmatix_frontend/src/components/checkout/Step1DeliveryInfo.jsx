@@ -8,6 +8,10 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
   const [showMapPicker, setShowMapPicker] = useState(false)
   const { dark } = useTheme()
   const canProceed = location.name && location.phone && location.address
+  const [saving,   setSaving]   = useState(false)   // saving to profile
+  const [saved,    setSaved]    = useState(false)    // saved success flash
+  const [saveErr,  setSaveErr]  = useState(null)
+  
 
   // Theme tokens
   const c = {
@@ -36,6 +40,20 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
   const focusHandlers = {
     onFocus: (e) => { e.target.style.borderColor = '#F97316' },
     onBlur:  (e) => { e.target.style.borderColor = c.inputBorder },
+  }
+  
+  const handleSaveToProfile = async () => {
+    if (!onSaveToProfile || !location.name || !location.phone || !location.address) return
+    setSaving(true); setSaved(false); setSaveErr(null)
+    try {
+      await onSaveToProfile(location, false)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch {
+      setSaveErr('Failed to save. Try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -151,6 +169,54 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
       <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
         <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
       </div>
+
+      {/* ── Save to Profile button ──────────────────────────────────────────── */}
+      {onSaveToProfile && (
+        <div>
+          <button
+            type="button"
+            onClick={handleSaveToProfile}
+            disabled={saving || !location.name || !location.phone || !location.address}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold transition-all disabled:opacity-40"
+            style={{
+              fontSize: 14, letterSpacing: 0.5,
+              background: saved
+                ? 'rgba(34,197,94,0.12)'
+                : dark ? 'rgba(249,115,22,0.10)' : '#fff7ed',
+              border: `1.5px solid ${saved ? 'rgba(34,197,94,0.4)' : 'rgba(249,115,22,0.35)'}`,
+              color: saved ? '#22c55e' : '#F97316',
+              cursor: saving ? 'wait' : 'pointer',
+            }}
+          >
+            {saving ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Saving…
+              </>
+            ) : saved ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Saved to Profile!
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Save Address to My Profile
+              </>
+            )}
+          </button>
+          {saveErr && (
+            <p className="text-red-500 font-semibold mt-1" style={{ fontSize: 12 }}>⚠ {saveErr}</p>
+          )}
+        </div>
+      )}
 
       {/* Save address toggle */}
       <label
