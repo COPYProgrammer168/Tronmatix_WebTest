@@ -9,6 +9,7 @@ import { useTheme }     from "../context/ThemeContext"
 import axios from "../lib/axios"
 import Swal  from "sweetalert2"
 import AuthModal from "../components/AuthModal"
+import MapPickerModal from "../components/profile/MapPickerModal"
 
 import Step1DeliveryInfo    from "../components/checkout/Step1DeliveryInfo"
 import Step2Payment         from "../components/checkout/Step2Payment"

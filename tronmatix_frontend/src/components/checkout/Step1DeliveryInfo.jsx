@@ -141,13 +141,10 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
       </div>
 
       {showMapPicker && (
-        <LocationPickerModal
-          locations={[]}
-          onClose={() => setShowMapPicker(false)}
-          onSelect={() => {}}
-          isMapPicker
+        <MapPickerModal
           initialLat={mapPin?.lat}
           initialLng={mapPin?.lng}
+          onClose={() => setShowMapPicker(false)}
           onConfirm={(pin) => {
             onMapPin?.(pin)
             setShowMapPicker(false)
