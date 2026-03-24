@@ -71,6 +71,20 @@ export default function CheckoutPage() {
       }).catch(() => {})
   }, [user]) // eslint-disable-line
 
+  // Save a location directly to the user's profile from Step1
+  const handleSaveToProfile = async (loc, isDefault = false) => {
+    if (!user) throw new Error("Not logged in")
+    await axios.post("/api/user/locations", {
+      name: loc.name, phone: loc.phone, address: loc.address,
+      city: loc.city || null, note: loc.note || null,
+      is_default: isDefault,
+    })
+    // Refresh saved locations list after saving
+    const res = await axios.get("/api/user/locations")
+    const list = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : []
+    setSavedLocations(list)
+  }
+
   const discountAmount = calcDiscount(subtotal, items)
   const finalTotal     = Math.max(0, subtotal - discountAmount)
   const handleLocation = (e) => {
@@ -189,6 +203,7 @@ export default function CheckoutPage() {
           saveAddr={saveAddr} onSaveAddr={setSaveAddr}
           savedLocations={savedLocations} onPickLocation={() => setShowLocPicker(true)}
           mapPin={mapPin} onMapPin={setMapPin}
+          onSaveToProfile={user ? handleSaveToProfile : undefined}
           onNext={() => setStep(2)}
         />
       )}

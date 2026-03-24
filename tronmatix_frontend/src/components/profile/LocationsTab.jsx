@@ -1,7 +1,7 @@
 // src/components/profile/LocationsTab.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axiosClient from '../../lib/axios'
-import MapPickerModal from './MapPickerModal'
+import { useTheme } from '../../context/ThemeContext'
 
 // ─── Cambodian provinces ───────────────────────────────────────────────────────
 const KH_CITIES = [
@@ -30,13 +30,22 @@ function btnStyle(bg, color, border) {
 
 // ── Location card ──────────────────────────────────────────────────────────────
 function LocationCard({ loc, onEdit, onDelete, onSetDefault }) {
+  const { dark } = useTheme()
   const [confirmDel, setConfirmDel] = useState(false)
+
+  const cardBg     = dark ? '#111827' : '#fff'
+  const cardBorder = loc.is_default ? '#F97316' : (dark ? '#374151' : '#E5E7EB')
+  const nameColor  = dark ? '#f9fafb' : '#111'
+  const addrColor  = dark ? '#d1d5db' : '#4B5563'
+  const metaColor  = dark ? '#9ca3af' : '#6B7280'
+  const divider    = dark ? '#1f2937' : '#F3F4F6'
+
   return (
     <div className="loc-card" style={{
-      border: loc.is_default ? '1.5px solid #F97316' : '1px solid #E5E7EB',
-      borderRadius: 14, padding: '16px 20px', background: '#fff',
+      border: `${loc.is_default ? '1.5px' : '1px'} solid ${cardBorder}`,
+      borderRadius: 14, padding: '16px 20px', background: cardBg,
       position: 'relative', transition: 'box-shadow 0.2s',
-      boxShadow: loc.is_default ? '0 0 0 3px rgba(249,115,22,0.1)' : '0 1px 4px rgba(0,0,0,0.06)',
+      boxShadow: loc.is_default ? '0 0 0 3px rgba(249,115,22,0.1)' : (dark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 4px rgba(0,0,0,0.06)'),
     }}>
       {loc.is_default && (
         <span style={{
@@ -50,17 +59,17 @@ function LocationCard({ loc, onEdit, onDelete, onSetDefault }) {
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
         <div style={{
           width: 38, height: 38, borderRadius: 10,
-          background: loc.is_default ? 'rgba(249,115,22,0.1)' : '#F9FAFB',
+          background: loc.is_default ? 'rgba(249,115,22,0.1)' : (dark ? '#1f2937' : '#F9FAFB'),
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 18, flexShrink: 0,
-          border: loc.is_default ? '1px solid rgba(249,115,22,0.3)' : '1px solid #E5E7EB',
+          border: loc.is_default ? '1px solid rgba(249,115,22,0.3)' : `1px solid ${dark ? '#374151' : '#E5E7EB'}`,
         }}>📍</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#111', fontFamily: 'Rajdhani, sans-serif' }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: nameColor, fontFamily: 'Rajdhani, sans-serif' }}>
             {loc.name}
           </div>
-          <div style={{ fontSize: 14, color: '#6B7280', marginTop: 2 }}>📞 {loc.phone}</div>
-          <div style={{ fontSize: 14, color: '#4B5563', marginTop: 4, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 14, color: metaColor, marginTop: 2 }}>📞 {loc.phone}</div>
+          <div style={{ fontSize: 14, color: addrColor, marginTop: 4, lineHeight: 1.5 }}>
             {loc.address}, {loc.city}
           </div>
           {loc.lat && loc.lng && (
@@ -72,13 +81,13 @@ function LocationCard({ loc, onEdit, onDelete, onSetDefault }) {
             }}>📌 Map pin saved</span>
           )}
           {loc.note && (
-            <div style={{ fontSize: 13, color: '#9CA3AF', marginTop: 4, fontStyle: 'italic' }}>
+            <div style={{ fontSize: 13, color: dark ? '#6b7280' : '#9CA3AF', marginTop: 4, fontStyle: 'italic' }}>
               Note: {loc.note}
             </div>
           )}
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 14, paddingTop: 12, borderTop: '1px solid #F3F4F6' }}>
+      <div style={{ display: 'flex', gap: 8, marginTop: 14, paddingTop: 12, borderTop: `1px solid ${divider}` }}>
         {!loc.is_default && (
           <button onClick={() => onSetDefault(loc.id)} style={btnStyle('#F9FAFB', '#374151', '#E5E7EB')}>
             Set Default
@@ -106,16 +115,18 @@ function LocationCard({ loc, onEdit, onDelete, onSetDefault }) {
 
 // ── Location modal ─────────────────────────────────────────────────────────────
 function LocationModal({ loc, onClose, onSave }) {
+  const { dark } = useTheme()
   const isEdit = !!loc?.id
   const [form, setForm] = useState({
     name: loc?.name || '', phone: loc?.phone || '',
     address: loc?.address || '', city: loc?.city || 'Phnom Penh',
     note: loc?.note || '', is_default: loc?.is_default ?? false,
   })
-  const [mapPin,      setMapPin]      = useState(loc?.lat ? { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng), address: loc.map_address || '' } : null)
+  const [mapPin,        setMapPin]        = useState(loc?.lat ? { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng), address: loc.map_address || '' } : null)
   const [showMapPicker, setShowMapPicker] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [errors, setErrors] = useState({})
+  const [saving,        setSaving]        = useState(false)
+  const [errors,        setErrors]        = useState({})
+  const [saveErr,       setSaveErr]       = useState(null)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const validate = () => {
@@ -127,24 +138,36 @@ function LocationModal({ loc, onClose, onSave }) {
     return Object.keys(e).length === 0
   }
 
+  // Fix 3: wrap in try/catch so saving never gets stuck on true after an error
   const submit = async () => {
     if (!validate()) return
     setSaving(true)
-    await onSave({
-      ...form,
-      lat:         mapPin?.lat  ?? null,
-      lng:         mapPin?.lng  ?? null,
-      map_address: mapPin?.address ?? null,
-    }, loc?.id)
-    setSaving(false)
+    setSaveErr(null)
+    try {
+      await onSave({
+        ...form,
+        lat:         mapPin?.lat     ?? null,
+        lng:         mapPin?.lng     ?? null,
+        map_address: mapPin?.address ?? null,
+      }, loc?.id)
+    } catch (err) {
+      setSaveErr(err?.response?.data?.message || 'Failed to save. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
+  const modalBg   = dark ? '#1f2937' : '#fff'
+  const titleColor = dark ? '#f9fafb' : '#111'
+  const labelColor = dark ? '#9ca3af' : '#6B7280'
+
   const iStyle = (err) => ({
-    width: '100%', border: `1px solid ${err ? '#FCA5A5' : '#D1D5DB'}`,
+    width: '100%', border: `1px solid ${err ? '#FCA5A5' : (dark ? '#374151' : '#D1D5DB')}`,
     borderRadius: 10, padding: '10px 14px', fontSize: 15,
     fontFamily: 'Rajdhani, sans-serif', outline: 'none',
-    background: '#fff', color: '#111', transition: 'border-color 0.2s',
-    boxSizing: 'border-box',
+    background: dark ? '#111827' : '#fff',
+    color: dark ? '#f9fafb' : '#111',
+    transition: 'border-color 0.2s', boxSizing: 'border-box',
   })
 
   return (
@@ -154,13 +177,13 @@ function LocationModal({ loc, onClose, onSave }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background: '#fff', borderRadius: 20, padding: 28,
+        background: modalBg, borderRadius: 20, padding: 28,
         width: '100%', maxWidth: 520,
         boxShadow: '0 24px 64px rgba(0,0,0,0.2)',
         animation: 'modalIn 0.25s ease',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 800, letterSpacing: 1 }}>
+          <h2 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, fontWeight: 800, letterSpacing: 1, color: titleColor }}>
             {isEdit ? '✏️ Edit Location' : '📍 Add New Location'}
           </h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#9CA3AF' }}>✕</button>
@@ -169,13 +192,13 @@ function LocationModal({ loc, onClose, onSave }) {
         <div style={{ display: 'grid', gap: 16 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <label style={labelStyle}>RECIPIENT NAME *</label>
+              <label style={{ ...labelStyle, color: labelColor }}>RECIPIENT NAME *</label>
               <input value={form.name} onChange={e => set('name', e.target.value)}
                 placeholder="e.g. Home, Office" style={iStyle(errors.name)} />
               {errors.name && <div style={{ color: '#DC2626', fontSize: 12, marginTop: 4 }}>{errors.name}</div>}
             </div>
             <div>
-              <label style={labelStyle}>PHONE NUMBER *</label>
+              <label style={{ ...labelStyle, color: labelColor }}>PHONE NUMBER *</label>
               <input value={form.phone} onChange={e => set('phone', e.target.value)}
                 placeholder="0xx xxx xxx" style={iStyle(errors.phone)} />
               {errors.phone && <div style={{ color: '#DC2626', fontSize: 12, marginTop: 4 }}>{errors.phone}</div>}
@@ -183,14 +206,14 @@ function LocationModal({ loc, onClose, onSave }) {
           </div>
 
           <div>
-            <label style={labelStyle}>STREET ADDRESS *</label>
+            <label style={{ ...labelStyle, color: labelColor }}>STREET ADDRESS *</label>
             <input value={form.address} onChange={e => set('address', e.target.value)}
               placeholder="House No., Street, Village, Commune" style={iStyle(errors.address)} />
             {errors.address && <div style={{ color: '#DC2626', fontSize: 12, marginTop: 4 }}>{errors.address}</div>}
           </div>
 
           <div>
-            <label style={labelStyle}>CITY / PROVINCE</label>
+            <label style={{ ...labelStyle, color: labelColor }}>CITY / PROVINCE</label>
             <select value={form.city} onChange={e => set('city', e.target.value)}
               style={{ ...iStyle(false), cursor: 'pointer' }}>
               {KH_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -198,14 +221,14 @@ function LocationModal({ loc, onClose, onSave }) {
           </div>
 
           <div>
-            <label style={labelStyle}>NOTE (OPTIONAL)</label>
+            <label style={{ ...labelStyle, color: labelColor }}>NOTE (OPTIONAL)</label>
             <input value={form.note} onChange={e => set('note', e.target.value)}
               placeholder="Landmark, gate color, etc." style={iStyle(false)} />
           </div>
 
-          {/* Map Pin */}
+          {/* Map Pin — MapPickerModal is not yet available; button preserved for future integration */}
           <div>
-            <label style={labelStyle}>MAP PIN (OPTIONAL)</label>
+            <label style={{ ...labelStyle, color: labelColor }}>MAP PIN (OPTIONAL)</label>
             <button
               type="button"
               onClick={() => setShowMapPicker(true)}
@@ -234,13 +257,27 @@ function LocationModal({ loc, onClose, onSave }) {
             </button>
           </div>
 
+          {/* MapPickerModal will render here once the component is created */}
           {showMapPicker && (
-            <MapPickerModal
-              initialLat={mapPin?.lat}
-              initialLng={mapPin?.lng}
-              onConfirm={(pin) => setMapPin(pin)}
-              onClose={() => setShowMapPicker(false)}
-            />
+            <div style={{
+              padding: '16px', borderRadius: 10, border: '1px dashed #D1D5DB',
+              background: dark ? '#111827' : '#F9FAFB',
+              color: dark ? '#9ca3af' : '#6B7280', fontSize: 14, textAlign: 'center',
+            }}>
+              🗺️ Map picker component not found.<br />
+              <span style={{ fontSize: 12 }}>Create <code>MapPickerModal.jsx</code> in this directory.</span>
+              <br />
+              <button type="button" onClick={() => setShowMapPicker(false)}
+                style={{ marginTop: 8, fontSize: 12, color: '#F97316', background: 'none', border: 'none', cursor: 'pointer' }}>
+                Close
+              </button>
+            </div>
+          )}
+
+          {saveErr && (
+            <div style={{ color: '#DC2626', fontSize: 13, fontWeight: 600, padding: '8px 12px', background: '#FEF2F2', borderRadius: 8, border: '1px solid #FCA5A5' }}>
+              ⚠ {saveErr}
+            </div>
           )}
 
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
@@ -260,7 +297,7 @@ function LocationModal({ loc, onClose, onSave }) {
                 }} />
               </div>
             </div>
-            <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 600, color: '#374151' }}>
+            <span style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 600, color: dark ? '#d1d5db' : '#374151' }}>
               Set as default delivery address
             </span>
           </label>
@@ -268,9 +305,11 @@ function LocationModal({ loc, onClose, onSave }) {
 
         <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
           <button onClick={onClose} style={{
-            flex: 1, padding: '12px', borderRadius: 10, border: '1px solid #E5E7EB',
-            background: '#F9FAFB', fontFamily: 'Rajdhani, sans-serif',
-            fontSize: 15, fontWeight: 700, cursor: 'pointer', color: '#6B7280',
+            flex: 1, padding: '12px', borderRadius: 10,
+            border: `1px solid ${dark ? '#374151' : '#E5E7EB'}`,
+            background: dark ? '#111827' : '#F9FAFB',
+            fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 700,
+            cursor: 'pointer', color: dark ? '#9ca3af' : '#6B7280',
           }}>CANCEL</button>
           <button onClick={submit} disabled={saving} style={{
             flex: 2, padding: '12px', borderRadius: 10, border: 'none',
@@ -292,13 +331,9 @@ export default function LocationsTab({ notify }) {
   const [locations,  setLocations]  = useState([])
   const [locLoading, setLocLoading] = useState(false)
   const [locModal,   setLocModal]   = useState(null)
-  const [loaded,     setLoaded]     = useState(false)
 
-  // Fetch on first render
-  if (!loaded) {
-    setLoaded(true)
-    fetchLocations()
-  }
+  // Fix: use useEffect instead of calling fetch during render body (caused infinite loops)
+  useEffect(() => { fetchLocations() }, []) // eslint-disable-line
 
   async function fetchLocations() {
     setLocLoading(true)
@@ -312,20 +347,17 @@ export default function LocationsTab({ notify }) {
     }
   }
 
+  // Fix: rethrow errors so LocationModal's try/catch receives them and doesn't get stuck
   const saveLocation = async (form, id) => {
-    try {
-      if (id) {
-        await axiosClient.put(`/api/user/locations/${id}`, form)
-        notify('Location updated!')
-      } else {
-        await axiosClient.post('/api/user/locations', form)
-        notify('Location added!')
-      }
-      setLocModal(null)
-      fetchLocations()
-    } catch (err) {
-      notify(err.response?.data?.message || 'Failed to save location', 'error')
+    if (id) {
+      await axiosClient.put(`/api/user/locations/${id}`, form)
+      notify('Location updated!')
+    } else {
+      await axiosClient.post('/api/user/locations', form)
+      notify('Location added!')
     }
+    setLocModal(null)
+    fetchLocations()
   }
 
   const deleteLocation = async (id) => {

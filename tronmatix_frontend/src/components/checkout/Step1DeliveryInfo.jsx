@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
+import LocationPickerModal from "./LocationPickerModal"
 
 export default function Step1DeliveryInfo({ location, onChange, delivery, onDeliveryChange, saveAddr, onSaveAddr, savedLocations, onPickLocation, onSaveToProfile, onNext, mapPin, onMapPin }) {
   const { dark } = useTheme()
@@ -24,6 +25,8 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
     saveBg:       dark ? 'rgba(249,115,22,0.08)' : '#fff7ed',
     saveBorder:   dark ? 'rgba(249,115,22,0.25)' : '#fed7aa',
     saveText:     dark ? '#d1d5db' : '#374151',
+    // used for placeholder-like text in the map pin button
+    textSub:      dark ? '#6b7280' : '#9ca3af',
   }
 
   const inputStyle = {
@@ -138,8 +141,11 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
       </div>
 
       {showMapPicker && (
-        <MapPickerModal
+        <LocationPickerModal
+          locations={[]}
           onClose={() => setShowMapPicker(false)}
+          onSelect={() => {}}
+          isMapPicker
           initialLat={mapPin?.lat}
           initialLng={mapPin?.lng}
           onConfirm={(pin) => {
