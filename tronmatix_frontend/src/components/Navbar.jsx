@@ -151,7 +151,7 @@ export default function Navbar({ onAuthOpen }) {
   const [search, setSearch]         = useState('')
   const [userMenu, setUserMenu]     = useState(false)
   const [scrolled, setScrolled]     = useState(false)
-  const { user, logout, ready, loading } = useAuth()
+  const { user, logout, ready } = useAuth()
   const { items, setCartOpen }      = useCart()
   const { favorites }               = useFavorites()
   const { dark }                    = useTheme()
@@ -266,28 +266,18 @@ export default function Navbar({ onAuthOpen }) {
             </button>
 
             {/* Compact user */}
-            <div className="relative block" ref={compactUserMenuRef}>
+            <div className="relative hidden md:block" ref={compactUserMenuRef}>
               <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors"
                 style={{ color: textColor }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                 onMouseLeave={e => e.currentTarget.style.color = textColor}
-                onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>
-                {user ? (
+                onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>                {user ? (
                   <>
-                    <div className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
-                      style={{ border: '2px solid #F97316', background: '#F97316' }}>
-                      {user.avatar
-                        ? <img src={user.avatar} alt={user.username}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }} />
-                        : null}
-                      <div style={{ display: user.avatar ? 'none' : 'flex', width: '100%', height: '100%',
-                        alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontWeight: 900, fontSize: 13 }}>
-                        {(user.username || user.name || 'U').charAt(0).toUpperCase()}
-                      </div>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-black"
+                      style={{ background: '#F97316', fontSize: 13 }}>
+                      {(user.username || user.name || 'U').charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-bold max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
+                    <span className="font-bold hidden lg:block max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
                       {user.username || user.name}
                     </span>
                   </>
@@ -404,46 +394,20 @@ export default function Navbar({ onAuthOpen }) {
               </button>
 
               {/* User button */}
-              <div className="relative block" ref={userMenuRef}>
+              <div className="relative hidden lg:block" ref={userMenuRef}>
                 <button
-                  onClick={() => { if (!ready || loading) return; user ? setUserMenu(p => !p) : onAuthOpen?.('login') }}
+                  onClick={() => { user ? setUserMenu(p => !p) : onAuthOpen?.('login') }}
                   className="flex flex-col items-center gap-0.5 hover:text-primary transition-colors px-1"
-                  style={{ color: textColor }}
-                  disabled={!ready || loading}>
-                  {!ready || loading ? (
-                    user
-                      ? <>
-                          <div className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
-                            style={{ border: '2px solid #F97316', background: '#F97316' }}>
-                            {user.avatar
-                              ? <img src={user.avatar} alt={user.username}
-                                  style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
-                                  onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }} />
-                              : null}
-                            <div style={{ display: user.avatar ? 'none' : 'flex', width:'100%', height:'100%',
-                              alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:900, fontSize:13 }}>
-                              {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
-                            </div>
-                          </div>
-                          <span className="font-bold max-w-[60px] truncate" style={{ fontSize: 11, color: '#F97316' }}>{user.username || user.name || 'User'}</span>
-                        </>
-                      : <div className="w-7 h-7 rounded-full animate-pulse" style={{ background: dark ? '#374151' : '#e5e7eb' }} />
-                  ) : user ? (
+                  style={{ color: textColor }}>
+                  {user ? (
                     <>
-                      <div className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
-                        style={{ border: '2px solid #F97316', background: '#F97316' }}>
-                        {user.avatar
-                          ? <img src={user.avatar} alt={user.username}
-                              style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
-                              onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }} />
-                          : null}
-                        <div style={{ display: user.avatar ? 'none' : 'flex', width:'100%', height:'100%',
-                          alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:900, fontSize:13 }}>
-                          {(user.username || user.name || 'U').charAt(0).toUpperCase()}
-                        </div>
-                      </div>
+                      <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" style={{ color: '#F97316' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+                      </svg>
                       <span className="font-bold max-w-[64px] truncate" style={{ fontSize: 13, color: '#F97316' }}>{user.username || user.name || 'User'}</span>
                     </>
+                  ) : !ready ? (
+                    <div className="w-7 h-7 rounded-full animate-pulse" style={{ background: dark ? '#374151' : '#e5e7eb' }} />
                   ) : (
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />

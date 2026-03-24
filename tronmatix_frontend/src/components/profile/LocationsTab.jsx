@@ -1,6 +1,7 @@
 // src/components/profile/LocationsTab.jsx
 import { useState } from 'react'
 import axiosClient from '../../lib/axios'
+import MapPickerModal from './MapPickerModal'
 
 // ─── Cambodian provinces ───────────────────────────────────────────────────────
 const KH_CITIES = [
@@ -62,6 +63,14 @@ function LocationCard({ loc, onEdit, onDelete, onSetDefault }) {
           <div style={{ fontSize: 14, color: '#4B5563', marginTop: 4, lineHeight: 1.5 }}>
             {loc.address}, {loc.city}
           </div>
+          {loc.lat && loc.lng && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 11, fontWeight: 700, color: '#3b82f6',
+              background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)',
+              borderRadius: 6, padding: '2px 8px', marginTop: 4,
+            }}>📌 Map pin saved</span>
+          )}
           {loc.note && (
             <div style={{ fontSize: 13, color: '#9CA3AF', marginTop: 4, fontStyle: 'italic' }}>
               Note: {loc.note}
@@ -103,6 +112,8 @@ function LocationModal({ loc, onClose, onSave }) {
     address: loc?.address || '', city: loc?.city || 'Phnom Penh',
     note: loc?.note || '', is_default: loc?.is_default ?? false,
   })
+  const [mapPin,      setMapPin]      = useState(loc?.lat ? { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng), address: loc.map_address || '' } : null)
+  const [showMapPicker, setShowMapPicker] = useState(false)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -119,7 +130,12 @@ function LocationModal({ loc, onClose, onSave }) {
   const submit = async () => {
     if (!validate()) return
     setSaving(true)
-    await onSave(form, loc?.id)
+    await onSave({
+      ...form,
+      lat:         mapPin?.lat  ?? null,
+      lng:         mapPin?.lng  ?? null,
+      map_address: mapPin?.address ?? null,
+    }, loc?.id)
     setSaving(false)
   }
 
@@ -186,6 +202,46 @@ function LocationModal({ loc, onClose, onSave }) {
             <input value={form.note} onChange={e => set('note', e.target.value)}
               placeholder="Landmark, gate color, etc." style={iStyle(false)} />
           </div>
+
+          {/* Map Pin */}
+          <div>
+            <label style={labelStyle}>MAP PIN (OPTIONAL)</label>
+            <button
+              type="button"
+              onClick={() => setShowMapPicker(true)}
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+                border: mapPin ? '1.5px solid #3b82f6' : '1px dashed #D1D5DB',
+                background: mapPin ? 'rgba(59,130,246,0.05)' : '#F9FAFB',
+                display: 'flex', alignItems: 'center', gap: 10,
+                fontFamily: 'Rajdhani, sans-serif', fontSize: 14, fontWeight: 600,
+                color: mapPin ? '#3b82f6' : '#6B7280', textAlign: 'left',
+              }}>
+              <span style={{ fontSize: 18 }}>{mapPin ? '📌' : '🗺️'}</span>
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                {mapPin
+                  ? <><div style={{ fontWeight: 700 }}>Pin saved ✓</div>
+                      <div style={{ fontSize: 12, color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mapPin.address || `${mapPin.lat.toFixed(5)}, ${mapPin.lng.toFixed(5)}`}</div></>
+                  : <span>Click to pin your exact location on map</span>
+                }
+              </div>
+              {mapPin && (
+                <span
+                  onClick={e => { e.stopPropagation(); setMapPin(null) }}
+                  style={{ fontSize: 16, color: '#9CA3AF', cursor: 'pointer', padding: '0 4px' }}
+                  title="Remove pin">✕</span>
+              )}
+            </button>
+          </div>
+
+          {showMapPicker && (
+            <MapPickerModal
+              initialLat={mapPin?.lat}
+              initialLng={mapPin?.lng}
+              onConfirm={(pin) => setMapPin(pin)}
+              onClose={() => setShowMapPicker(false)}
+            />
+          )}
 
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
             <div style={{ position: 'relative', width: 44, height: 24 }}>

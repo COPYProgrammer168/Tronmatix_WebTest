@@ -105,13 +105,16 @@ class UserProfileController extends Controller
     public function storeLocation(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:100',
-            'phone'      => 'required|string|max:30',
-            'address'    => 'required|string|max:500',
-            'city'       => 'required|string|max:100',
-            'country'    => 'nullable|string|max:100',
-            'note'       => 'nullable|string|max:255',
-            'is_default' => 'nullable|boolean',
+            'name'        => 'required|string|max:100',
+            'phone'       => 'required|string|max:30',
+            'address'     => 'required|string|max:500',
+            'city'        => 'required|string|max:100',
+            'country'     => 'nullable|string|max:100',
+            'note'        => 'nullable|string|max:255',
+            'is_default'  => 'nullable|boolean',
+            'lat'         => 'nullable|numeric|between:-90,90',
+            'lng'         => 'nullable|numeric|between:-180,180',
+            'map_address' => 'nullable|string|max:1000',
         ]);
 
         $userId   = Auth::id();
@@ -125,9 +128,12 @@ class UserProfileController extends Controller
 
             return UserLocation::create([
                 ...$validated,
-                'user_id'    => $userId,
-                'country'    => $validated['country'] ?? 'Cambodia',
-                'is_default' => $isDefault,
+                'user_id'     => $userId,
+                'country'     => $validated['country'] ?? 'Cambodia',
+                'is_default'  => $isDefault,
+                'lat'         => $validated['lat'] ?? null,
+                'lng'         => $validated['lng'] ?? null,
+                'map_address' => $validated['map_address'] ?? null,
             ]);
         });
 
@@ -139,13 +145,16 @@ class UserProfileController extends Controller
     {
         $location  = UserLocation::where('user_id', Auth::id())->findOrFail($id);
         $validated = $request->validate([
-            'name'       => 'sometimes|required|string|max:100',
-            'phone'      => 'sometimes|required|string|max:30',
-            'address'    => 'sometimes|required|string|max:500',
-            'city'       => 'sometimes|required|string|max:100',
-            'country'    => 'nullable|string|max:100',
-            'note'       => 'nullable|string|max:255',
-            'is_default' => 'nullable|boolean',
+            'name'        => 'sometimes|required|string|max:100',
+            'phone'       => 'sometimes|required|string|max:30',
+            'address'     => 'sometimes|required|string|max:500',
+            'city'        => 'sometimes|required|string|max:100',
+            'country'     => 'nullable|string|max:100',
+            'note'        => 'nullable|string|max:255',
+            'is_default'  => 'nullable|boolean',
+            'lat'         => 'nullable|numeric|between:-90,90',
+            'lng'         => 'nullable|numeric|between:-180,180',
+            'map_address' => 'nullable|string|max:1000',
         ]);
 
         if (! empty($validated['is_default'])) {

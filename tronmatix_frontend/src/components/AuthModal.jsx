@@ -7,7 +7,7 @@ import logo from '../assets/logo.png'
 export default function AuthModal({ mode, onClose, onSwitch }) {
   const { login, register, forgotPassword, loading } = useAuth()
   const { dark } = useTheme()
-  const [form, setForm]       = useState({ username: '', email: '', password: '', confirm: '' })
+  const [form, setForm]       = useState({ usernameOrEmail: '', username: '', email: '', password: '', confirm: '' })
   const [error, setError]     = useState('')
   const [success, setSuccess] = useState('')
 
@@ -46,8 +46,8 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
 
   const handle = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
-  const handleSwitch = (newMode) => {
-    setForm({ username: '', email: '', password: '', confirm: '' })
+  const handleSwitch = (newMode, prefill = {}) => {
+    setForm({ usernameOrEmail: prefill.username || '', username: '', email: '', password: '', confirm: '' })
     setError('')
     setSuccess('')
     onSwitch(newMode)
@@ -67,8 +67,8 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     }
 
     if (isLogin) {
-      if (!form.username || !form.password) { setError('Please fill all fields'); return }
-      const res = await login(form.username, form.password)
+      if (!form.usernameOrEmail || !form.password) { setError('Please fill all fields'); return }
+      const res = await login(form.usernameOrEmail, form.password)
       if (res.success) { setSuccess('Login successful!'); setTimeout(onClose, 800) }
       else setError(res.message)
       return
@@ -78,7 +78,10 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     if (!form.username || !form.email || !form.password) { setError('Please fill all fields'); return }
     if (form.password !== form.confirm) { setError('Passwords do not match'); return }
     const res = await register(form.username, form.email, form.password, form.confirm)
-    if (res.success) { setSuccess('Registered!'); setTimeout(onClose, 800) }
+    if (res.success) {
+      setSuccess('Account created! Please log in to continue.')
+      setTimeout(() => handleSwitch('login', { username: form.username }), 1200)
+    }
     else setError(res.message)
   }
 
@@ -144,34 +147,27 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
         <div className="space-y-3" onKeyDown={onKeyDown}>
           {isLogin && (
             <>
-              <input name="username" placeholder="Username" value={form.username} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers}
-                autoCapitalize="none" autoCorrect="off" autoComplete="username" spellCheck="false" />
+              <input name="usernameOrEmail" placeholder="Username or Email" value={form.usernameOrEmail} onChange={handle}
+                className={inputClass} style={inputStyle} {...focusHandlers} />
               <input name="password" type="password" placeholder="Password" value={form.password} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers}
-                autoCapitalize="none" autoCorrect="off" autoComplete="current-password" />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
             </>
           )}
           {isRegister && (
             <>
               <input name="username" placeholder="Username" value={form.username} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers}
-                autoCapitalize="none" autoCorrect="off" autoComplete="username" spellCheck="false" />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
               <input name="email" type="email" placeholder="Email" value={form.email} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers}
-                autoCapitalize="none" autoCorrect="off" autoComplete="email" />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
               <input name="password" type="password" placeholder="Password" value={form.password} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers}
-                autoCapitalize="none" autoCorrect="off" autoComplete="new-password" />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
               <input name="confirm" type="password" placeholder="Confirm Password" value={form.confirm} onChange={handle}
-                className={inputClass} style={inputStyle} {...focusHandlers}
-                autoCapitalize="none" autoCorrect="off" autoComplete="new-password" />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
             </>
           )}
           {isForgot && (
             <input name="email" type="email" placeholder="Your email address" value={form.email} onChange={handle}
-              className={inputClass} style={inputStyle} {...focusHandlers}
-              autoCapitalize="none" autoCorrect="off" autoComplete="email" />
+              className={inputClass} style={inputStyle} {...focusHandlers} />
           )}
         </div>
 

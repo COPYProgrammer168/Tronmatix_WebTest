@@ -61,7 +61,7 @@ class TelegramService
                 : null,
             "✅ *Total: \${$order->total}*",
             '',
-            '🕐 '.$order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i').' (ICT)',
+            '🕐 '.$order->created_at->format('d M Y, H:i'),
         ], fn ($line) => $line !== null);
 
         $this->send(implode("\n", $lines));
@@ -79,7 +79,7 @@ class TelegramService
             '',
             "📦 Order `#{$order->order_id}` has been delivered.",
             '👤 Customer: '.($order->user?->username ?? 'Guest'),
-            '🕐 Confirmed: '.now('Asia/Phnom_Penh')->format('d M Y, H:i').' (ICT)',
+            '🕐 Confirmed: '.now()->format('d M Y, H:i'),
         ]);
 
         $this->send($message);
@@ -103,7 +103,7 @@ class TelegramService
             "💰 Amount: \${$order->total}",
             "🔑 APV: {$apv}",
             '👤 Customer: '.($order->user?->username ?? 'Guest'),
-            '🕐 '.now('Asia/Phnom_Penh')->format('d M Y, H:i').' (ICT)',
+            '🕐 '.now()->format('d M Y, H:i'),
         ]);
 
         $this->send($message);
@@ -116,6 +116,18 @@ class TelegramService
             return;
         }
         $this->send($text);
+    }
+
+    /**
+     * FIX: sendMessage() alias — several controllers called ->sendMessage() which
+     * didn't exist, causing PHP0418 "Call to unknown method" fatal errors.
+     */
+    public function sendMessage(string $text, ?string $chatId = null): void
+    {
+        if (! $this->token) {
+            return;
+        }
+        $this->send($text, $chatId);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

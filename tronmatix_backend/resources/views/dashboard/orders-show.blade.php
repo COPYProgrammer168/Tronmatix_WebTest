@@ -373,6 +373,65 @@
             </div>
         </div>
 
+        {{-- ── Delivery Location Map ──────────────────────────────────────────── --}}
+        @php
+            $mapLat  = $order->delivery_lat  ?? $order->location?->lat  ?? null;
+            $mapLng  = $order->delivery_lng  ?? $order->location?->lng  ?? null;
+            $mapAddr = $order->delivery_map_address ?? $order->location?->map_address ?? null;
+        @endphp
+        @if($mapLat && $mapLng)
+        <div class="card" style="max-width:540px;">
+            <div class="card-header">
+                <span class="card-title">📍 DELIVERY LOCATION</span>
+                @if($mapAddr)
+                <span style="font-size:11px; color:rgba(255,255,255,0.35); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    {{ $mapAddr }}
+                </span>
+                @endif
+            </div>
+            <div class="card-body" style="padding:0; overflow:hidden; border-radius:0 0 12px 12px;">
+                @php
+                    $googleKey = config('services.google.maps_key');
+                    $markerPos = $mapLat . ',' . $mapLng;
+                    $staticUrl = 'https://maps.googleapis.com/maps/api/staticmap'
+                        . '?center=' . $markerPos
+                        . '&zoom=15&size=540x240&scale=2&maptype=roadmap'
+                        . '&markers=color:blue%7C' . $markerPos
+                        . '&markers=color:orange%7Clabel:S%7C11.5629735,104.8995165'
+                        . '&key=' . $googleKey;
+                @endphp
+                <a href="https://www.google.com/maps?q={{ $markerPos }}" target="_blank" rel="noopener"
+                   style="display:block; position:relative; line-height:0;">
+                    <img src="{{ $staticUrl }}"
+                         alt="Delivery location map"
+                         style="width:100%; height:240px; object-fit:cover; display:block;"
+                         loading="lazy"
+                         onerror="this.closest('.card').style.display='none'">
+                    <div style="
+                        position:absolute; bottom:12px; right:12px;
+                        background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+                        color:#fff; font-family:Rajdhani,sans-serif; font-size:12px;
+                        font-weight:700; letter-spacing:1px; padding:6px 12px;
+                        border-radius:8px; border:1px solid rgba(255,255,255,0.15);
+                    ">🗺 OPEN IN MAPS ↗</div>
+                </a>
+                <div style="
+                    padding:10px 16px; display:flex; align-items:center; gap:16px;
+                    background:rgba(0,0,0,0.25); border-top:1px solid rgba(255,255,255,0.06);
+                ">
+                    <div style="font-size:11px; color:rgba(255,255,255,0.35); font-family:monospace; flex-shrink:0;">
+                        {{ number_format((float)$mapLat, 6) }}, {{ number_format((float)$mapLng, 6) }}
+                    </div>
+                    @if($mapAddr)
+                    <div style="font-size:12px; color:rgba(255,255,255,0.5); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        {{ $mapAddr }}
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+
     </div>{{-- /left --}}
 
     {{-- ══ RIGHT COLUMN ═════════════════════════════════════════════════════════ --}}

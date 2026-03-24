@@ -1,5 +1,5 @@
 // src/pages/CheckoutPage.jsx
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useCart }      from "../context/CartContext"
 import { useAuth }      from "../context/AuthContext"
@@ -42,6 +42,16 @@ export default function CheckoutPage() {
   const [showQrModal,    setShowQrModal]    = useState(false)
   const [savedLocations, setSavedLocations] = useState([])
   const [showLocPicker,  setShowLocPicker]  = useState(false)
+  const [mapPin,         setMapPin]         = useState(null)   // { lat, lng, address }
+  const [locationId,     setLocationId]     = useState(null)   // ✅ FIX: FK → user_locations.id
+  const pendingOrderAfterLogin              = useRef(false)    // retry placeOrder after login
+
+  useEffect(() => {
+    if (user && pendingOrderAfterLogin.current) {
+      pendingOrderAfterLogin.current = false
+      placeOrder()
+    }
+  }, [user]) // eslint-disable-line
 
   useEffect(() => {
     if (!user) return
@@ -51,36 +61,29 @@ export default function CheckoutPage() {
         setSavedLocations(list)
         if (!location.address) {
           const def = list.find((l) => l.is_default) || list[0]
-          if (def) setLocation({ name: def.name || "", phone: def.phone || "", address: def.address || "", city: def.city || "", note: def.note || "" })
+          if (def) {
+            setLocation({ name: def.name || "", phone: def.phone || "", address: def.address || "", city: def.city || "", note: def.note || "" })
+            // ✅ FIX: pre-fill locationId and mapPin from default location
+            setLocationId(def.id)
+            if (def.lat && def.lng) setMapPin({ lat: def.lat, lng: def.lng, address: def.map_address || def.address })
+          }
         }
       }).catch(() => {})
   }, [user]) // eslint-disable-line
 
   const discountAmount = calcDiscount(subtotal, items)
   const finalTotal     = Math.max(0, subtotal - discountAmount)
-  const handleLocation = (e) => setLocation((p) => ({ ...p, [e.target.name]: e.target.value }))
-  const handleSelectSavedLocation = (loc) => setLocation({ name: loc.name || "", phone: loc.phone || "", address: loc.address || "", city: loc.city || "", note: loc.note || "" })
-
-  // ── Save location to user profile ─────────────────────────────────────────
-  const saveLocationToProfile = async (locationData, setAsDefault = false) => {
-    if (!user) return
-    try {
-      const res = await axios.post('/api/user/locations', {
-        name:       locationData.name,
-        phone:      locationData.phone,
-        address:    locationData.address,
-        city:       locationData.city || '',
-        note:       locationData.note || '',
-        is_default: setAsDefault,
-      })
-      // Refresh saved locations list
-      const updated = await axios.get('/api/user/locations')
-      const list = Array.isArray(updated.data?.data) ? updated.data.data : Array.isArray(updated.data) ? updated.data : []
-      setSavedLocations(list)
-      return res.data
-    } catch (e) {
-      console.warn('Failed to save location:', e)
-    }
+  const handleLocation = (e) => {
+    setLocation((p) => ({ ...p, [e.target.name]: e.target.value }))
+    // ✅ FIX: if user edits fields manually, unlink the saved location FK
+    setLocationId(null)
+  }
+  const handleSelectSavedLocation = (loc) => {
+    setLocation({ name: loc.name || "", phone: loc.phone || "", address: loc.address || "", city: loc.city || "", note: loc.note || "" })
+    // ✅ FIX: store the FK so the order links to this saved location
+    setLocationId(loc.id)
+    if (loc.lat && loc.lng) setMapPin({ lat: loc.lat, lng: loc.lng, address: loc.map_address || loc.address })
+    else setMapPin(null)
   }
 
   const placeOrder = async () => {
@@ -94,7 +97,11 @@ export default function CheckoutPage() {
 
     if (!user) {
       const result = await Swal.fire({ title: "Login Required", html: summaryHtml + `<div style="margin-top:1rem;color:#4b5563;">Login to place this order.</div>`, icon: "info", showCancelButton: true, confirmButtonColor: "#F97316", confirmButtonText: "Log in / Register →", cancelButtonText: "Cancel" })
-      if (result.isConfirmed) { setAuthMode("login"); setShowAuthModal(true) }
+      if (result.isConfirmed) {
+        pendingOrderAfterLogin.current = true
+        setAuthMode("login")
+        setShowAuthModal(true)
+      }
       return
     }
 
@@ -102,24 +109,25 @@ export default function CheckoutPage() {
     if (!confirmed.isConfirmed) return
 
     setLoading(true)
-    // Save address to both LocationContext AND user profile API
-    if (saveAddr) {
-      saveLocation(location)                        // local context / localStorage
-      await saveLocationToProfile(location, false)  // persisted to DB
-    }
+    if (saveAddr) saveLocation(location)
 
     try {
       const res = await axios.post("/api/orders", {
         items: items.map((i) => ({ product_id: i.id, qty: i.qty })),
-        location, payment_method: payMethod, subtotal,
+        location,
+        // ✅ FIX: send location_id so backend links order to saved address (enables map in admin)
+        location_id: locationId || null,
+        payment_method: payMethod, subtotal,
         discount_code: discount?.code || null, discount_amount: discountAmount > 0 ? discountAmount : null,
         delivery_date: delivery.date || null, delivery_time_slot: delivery.timeSlot || null,
+        // ✅ FIX: map pin comes from the saved location or from a manual pin set in Step1
+        delivery_lat: mapPin?.lat || null,
+        delivery_lng: mapPin?.lng || null,
+        delivery_map_address: mapPin?.address || null,
       })
 
-      // FIX: handle both res.data and res.data.data response shapes
-      const rawOrder = res.data?.data ?? res.data
       const orderData = {
-        ...rawOrder, items, location, payment_method: payMethod, total: finalTotal, subtotal,
+        ...res.data, items, location, payment_method: payMethod, total: finalTotal, subtotal,
         _discountAmount: discountAmount, _discountCode: discount?.code || null,
         _discountType: discount?.type || null, _discountValue: discount?.value || null,
         delivery_date: delivery.date || null, delivery_time_slot: delivery.timeSlot || null,
@@ -131,7 +139,7 @@ export default function CheckoutPage() {
         setShowQrModal(true)
       } else {
         setStep(3)
-        Swal.fire({ title: "Order Placed! 🎉", text: `Order #${rawOrder?.order_id || rawOrder?.id} received. We'll contact you before delivery.`, icon: "success", confirmButtonColor: "#F97316" })
+        Swal.fire({ title: "Order Placed! 🎉", text: `Order #${res.data.order_id} received. We'll contact you before delivery.`, icon: "success", confirmButtonColor: "#F97316" })
       }
     } catch (e) {
       let msg = "Order failed. Please try again."
@@ -180,7 +188,7 @@ export default function CheckoutPage() {
           delivery={delivery} onDeliveryChange={setDelivery}
           saveAddr={saveAddr} onSaveAddr={setSaveAddr}
           savedLocations={savedLocations} onPickLocation={() => setShowLocPicker(true)}
-          onSaveToProfile={user ? saveLocationToProfile : null}
+          mapPin={mapPin} onMapPin={setMapPin}
           onNext={() => setStep(2)}
         />
       )}
@@ -209,7 +217,7 @@ export default function CheckoutPage() {
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
                 title="Close">✕</button>
             </div>
-            <BakongQRPanel orderId={order.id ?? order.order_id ?? order.data?.id} total={order.total}
+            <BakongQRPanel orderId={order.id ?? order.data?.id} total={order.total}
               onPaid={() => { setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800) }} />
           </div>
           <style>{`@keyframes fadeInScale { from { opacity:0; transform:scale(.93) translateY(20px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>
@@ -217,7 +225,14 @@ export default function CheckoutPage() {
       )}
 
       {showAuthModal && (
-        <AuthModal mode={authMode} onClose={() => setShowAuthModal(false)} onSwitch={setAuthMode} />
+        <AuthModal
+          mode={authMode}
+          onClose={() => {
+            setShowAuthModal(false)
+            if (!user) pendingOrderAfterLogin.current = false
+          }}
+          onSwitch={setAuthMode}
+        />
       )}
     </div>
   )

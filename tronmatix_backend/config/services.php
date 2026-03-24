@@ -51,4 +51,8 @@ return [
         'token'          => env('KHQR_BAKONG_TOKEN'),
         'static_payway_url' => env('KHQR_STATIC_PAYWAY_URL', 'https://link.payway.com.kh/ABAPAYTD422549V'),
     ],
+
+    'google' => [
+        'maps_key' => env('GOOGLE_MAPS_KEY'),
+    ],
 ];
