@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import axiosClient from '../../lib/axios'
 import { useTheme } from '../../context/ThemeContext'
+import MapPickerModal from '../profile/MapPickerModal';
 
 // ─── Cambodian provinces ───────────────────────────────────────────────────────
 const KH_CITIES = [
