@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminSetting;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StaffRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -74,11 +75,38 @@ class SettingsController extends Controller
     // ── Notifications JSON (polled by topbar bell) ────────────────────────────
     public function notifications()
     {
-        // FIX [3]: allMap() not all_map()
-        $settings = AdminSetting::allMap();
+        $settings  = AdminSetting::allMap();
         $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
+        $admin     = Auth::guard('admin')->user();
+        $isSuperAdmin = $admin && $admin->role === 'superadmin';
 
         $alerts = [];
+
+        // ── Staff access requests — superadmin only ───────────────────────────
+        if ($isSuperAdmin) {
+            $pendingRequests = StaffRequest::pending()
+                ->orderByDesc('created_at')
+                ->take(10)
+                ->get();
+
+            foreach ($pendingRequests as $req) {
+                $alerts[] = [
+                    'id'              => 'staff_request_' . $req->id,
+                    'type'            => 'staff_request',
+                    'icon'            => '👤',
+                    'color'           => '#a78bfa',
+                    'title'           => 'ACCESS REQUEST — ' . strtoupper($req->name),
+                    'body'            => $req->email . ' · wants ' . strtoupper($req->requested_role) . ' · ' . $req->created_at->diffForHumans(),
+                    'url'             => route('dashboard.staff'),
+                    'request_id'      => $req->id,
+                    'request_name'    => $req->name,
+                    'request_role'    => $req->requested_role,
+                    'request_email'   => $req->email,
+                    'request_message' => $req->message,
+                    'actionable'      => true,
+                ];
+            }
+        }
 
         if (AdminSetting::enabled('notif_low_stock')) {
             $count = Product::lowStock()->count();
@@ -96,7 +124,6 @@ class SettingsController extends Controller
         }
 
         if (AdminSetting::enabled('notif_new_order')) {
-            // Show each new pending order individually (last 30 min) for live toasts
             $newOrders = Order::where('status', 'pending')
                 ->where('created_at', '>=', now()->subMinutes(30))
                 ->orderByDesc('created_at')
@@ -114,7 +141,6 @@ class SettingsController extends Controller
                 ];
             }
 
-            // Also show daily summary count in bell dropdown
             $todayCount = Order::where('status', 'pending')->whereDate('created_at', today())->count();
             if ($todayCount > 0 && $newOrders->isEmpty()) {
                 $alerts[] = [
@@ -146,7 +172,6 @@ class SettingsController extends Controller
                 ];
             }
 
-            // Manual payment claims — show individually
             $manualPending = Order::where('payment_status', 'manual_pending')
                 ->where('updated_at', '>=', now()->subMinutes(60))
                 ->orderByDesc('updated_at')->take(3)->get();
@@ -164,7 +189,6 @@ class SettingsController extends Controller
         }
 
         if (AdminSetting::enabled('notif_qr_confirmed')) {
-            // Show each confirmed payment individually (last 30 min) for live toasts
             $paidOrders = Order::where('payment_status', 'paid')
                 ->where('payment_method', 'bakong')
                 ->where('updated_at', '>=', now()->subMinutes(30))
@@ -196,7 +220,7 @@ class SettingsController extends Controller
             }
         }
 
-        // Cancelled orders (last 60 min) — always show regardless of settings toggle
+        // Cancelled orders (last 60 min) — always show
         $cancelledOrders = Order::where('status', 'cancelled')
             ->where('updated_at', '>=', now()->subMinutes(60))
             ->orderByDesc('updated_at')->take(3)->get();

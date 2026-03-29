@@ -5,11 +5,17 @@
 @section('content')
 @php
     $admin   = Auth::guard('admin')->user();
-    $avatarUrl = $admin->avatar
-        ? (Str::startsWith($admin->avatar, ['http://','https://'])
-            ? $admin->avatar
-            : asset('storage/' . $admin->avatar))
-        : null;
+    // Resolve avatar URL — handles S3 full URL and local public disk path
+    $avatarUrl = null;
+    if ($admin->avatar) {
+        if (Str::startsWith($admin->avatar, ['http://', 'https://'])) {
+            // S3 / R2 / external — already a full URL, use directly
+            $avatarUrl = $admin->avatar;
+        } else {
+            // Local public disk — build URL via asset()
+            $avatarUrl = asset('storage/' . $admin->avatar);
+        }
+    }
 @endphp
 
 <div style="max-width:800px; margin:0 auto;">
@@ -74,10 +80,12 @@
                 <span style="font-size:16px; font-weight:800; letter-spacing:2px;">✏️ EDIT PROFILE</span>
             </div>
             <div style="padding:24px;">
-                {{-- NOTE: action uses POST (not PUT) — required for file uploads --}}
+                {{-- HTML forms can't send PUT directly; use POST + @method('PUT') spoofing.
+                     Laravel reads the hidden _method field and routes it to the PUT handler. --}}
                 <form method="POST" action="{{ route('dashboard.profile.update') }}"
                       enctype="multipart/form-data">
                     @csrf
+                    @method('PUT')
 
                     {{-- Avatar Upload --}}
                     <div class="form-group">
@@ -229,7 +237,7 @@
             <span style="font-size:16px; font-weight:800; letter-spacing:2px;">📋 ACCOUNT INFORMATION</span>
         </div>
         <div style="padding:20px;">
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px;">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
                 @php
                     $infos = [
                         ['label' => 'ACCOUNT ID',   'value' => '#' . ($admin->id ?? '—')],
@@ -255,16 +263,16 @@
         </div>
     </div>
 
-</div>
-@endsection
+    {{-- Standalone remove-avatar form — outside the upload form (no nested forms allowed) --}}
+    @if($avatarUrl)
+    <form method="POST" action="{{ route('dashboard.profile.avatar.remove') }}"
+          id="remove-avatar-form" style="display:none;">
+        @csrf @method('DELETE')
+    </form>
+    @endif
 
-{{-- Standalone remove-avatar form (outside the upload form to avoid nested forms) --}}
-@if($avatarUrl)
-<form method="POST" action="{{ route('dashboard.profile.avatar.remove') }}"
-      id="remove-avatar-form" style="display:none;">
-    @csrf @method('DELETE')
-</form>
-@endif
+</div>{{-- /max-width wrapper --}}
+@endsection
 
 @push('scripts')
 <script>
@@ -299,9 +307,9 @@ function previewAvatar(input) {
     }
 }
 
-/* Account info grid: compact on mobile */
-@media (max-width: 480px) {
-    div[style*="grid-template-columns:repeat(auto-fit,minmax(180px"] {
+/* Account info grid: 4-col → 2-col on mobile */
+@media (max-width: 640px) {
+    div[style*="grid-template-columns:repeat(4,1fr)"] {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }

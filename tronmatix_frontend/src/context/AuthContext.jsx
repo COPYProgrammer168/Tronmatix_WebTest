@@ -1,16 +1,34 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import axios from '../lib/axios'
+import axios, { clearAuthStorage } from '../lib/axios'
 
 const AuthContext = createContext(null)
 
-// ── Axios defaults ─────────────────────────────────────────────────────────────
 axios.defaults.withCredentials = false
 axios.defaults.headers.common['Accept']       = 'application/json'
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-// ── localStorage helpers ───────────────────────────────────────────────────────
 const USER_KEY = 'tronmatix_user'
+
+// Check token expiry from JWT payload — 30s clock-skew buffer
+function isTokenExpired(token) {
+  try {
+    const base64Url = token.split('.')[1]
+    if (!base64Url) return true
+    const json = JSON.parse(atob(base64Url.replace(/-/g, '+').replace(/_/g, '/')))
+    return json.exp ? json.exp * 1000 < Date.now() - 30_000 : false
+  } catch {
+    return true
+  }
+}
+
+// Strip server-only fields before persisting to localStorage
+function sanitizeUser(user) {
+  if (!user) return null
+  // eslint-disable-next-line no-unused-vars
+  const { password, password_confirmation, remember_token, ...safe } = user
+  return safe
+}
 
 function loadCachedUser() {
   try {
@@ -20,32 +38,26 @@ function loadCachedUser() {
 }
 
 function saveUser(user) {
-  if (user) localStorage.setItem(USER_KEY, JSON.stringify(user))
+  const safe = sanitizeUser(user)
+  if (safe) localStorage.setItem(USER_KEY, JSON.stringify(safe))
   else       localStorage.removeItem(USER_KEY)
 }
 
-// ── Normalize whatever the API returns into a plain user object ───────────────
-// Handles: { data: user }, { user: user }, or just the user directly
+// Normalize API response shapes: { data: user }, { user: user }, or just user
 function extractUser(responseData) {
   if (!responseData) return null
-  // { data: { id, username, ... } }
   if (responseData.data && responseData.data.id) return responseData.data
-  // { user: { id, username, ... } }
   if (responseData.user && responseData.user.id) return responseData.user
-  // { id, username, ... } — already the user
   if (responseData.id) return responseData
   return null
 }
 
-// ── Provider ───────────────────────────────────────────────────────────────────
 export function AuthProvider({ children }) {
-  // Seed from cache immediately → Navbar shows username on first paint, no flash
   const [user,    setUser]    = useState(() => loadCachedUser())
   const [token,   setToken]   = useState(() => localStorage.getItem('token'))
   const [loading, setLoading] = useState(false)
   const [ready,   setReady]   = useState(false)
 
-  // ── Helper: set token in state + axios headers + localStorage ───────────────
   const applyToken = useCallback((t) => {
     if (t) {
       localStorage.setItem('token', t)
@@ -57,49 +69,42 @@ export function AuthProvider({ children }) {
     setToken(t)
   }, [])
 
-  // ── Helper: set user in state + localStorage ────────────────────────────────
   const applyUser = useCallback((u) => {
-    // Merge with cached user to avoid losing fields the API omitted
-    const merged = u ? { ...loadCachedUser(), ...u } : null
+    const merged = u ? sanitizeUser({ ...loadCachedUser(), ...u }) : null
     setUser(merged)
     saveUser(merged)
   }, [])
 
-  // ── Helper: clear everything ────────────────────────────────────────────────
   const clearSession = useCallback(() => {
     applyToken(null)
     applyUser(null)
+    clearAuthStorage()
   }, [applyToken, applyUser])
 
-  // ── Restore session on mount ────────────────────────────────────────────────
+  // Restore session on mount
   useEffect(() => {
-    if (!token) {
+    if (!token) { setReady(true); return }
+
+    if (isTokenExpired(token)) {
+      clearSession()
       setReady(true)
       return
     }
-    // Apply saved token to axios immediately
+
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
     axios.get('/api/auth/me')
       .then(res => {
         const fresh = extractUser(res.data)
-        if (fresh) {
-          applyUser(fresh)
-        } else {
-          // Token valid but empty response — keep cache
-        }
+        if (fresh) applyUser(fresh)
       })
-      .catch(() => {
-        // 401 or network error
-        // If 401 → clear session. If network error → keep cache so user
-        // isn't logged out on a bad connection.
-        // We check by seeing if there's any cached user; if not, clear.
-        if (!loadCachedUser()) clearSession()
+      .catch((err) => {
+        if (err.response?.status === 401) clearSession()
+        // Network errors: keep cached user — don't log out on bad connection
       })
       .finally(() => setReady(true))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── refreshUser — call after profile updates ────────────────────────────────
   const refreshUser = useCallback(async () => {
     try {
       const res = await axios.get('/api/auth/me')
@@ -110,18 +115,17 @@ export function AuthProvider({ children }) {
   }, [applyUser])
 
   // ── LOGIN ───────────────────────────────────────────────────────────────────
+  // Accepts username OR email. The backend does case-insensitive lookup on both.
   const login = useCallback(async (usernameOrEmail, password) => {
     setLoading(true)
     try {
-      // Detect whether the user typed an email or a username
       const isEmail = usernameOrEmail.includes('@')
       const payload = isEmail
-        ? { email: usernameOrEmail, password }
+        ? { username: usernameOrEmail, password }  // backend accepts email in the username field
         : { username: usernameOrEmail, password }
 
       const res = await axios.post('/api/auth/login', payload)
 
-      // Token may be at res.data.token or res.data.data.token
       const t = res.data?.token ?? res.data?.data?.token
       const u = extractUser(res.data)
 
@@ -132,7 +136,7 @@ export function AuthProvider({ children }) {
       return { success: true }
     } catch (e) {
       const data = e.response?.data
-      let msg = 'Login failed. Check your username and password.'
+      let msg = 'Login failed. Check your credentials and try again.'
       if (data?.errors) {
         msg = Object.values(data.errors).flat()[0] || msg
       } else if (data?.message) {
@@ -145,6 +149,8 @@ export function AuthProvider({ children }) {
   }, [applyToken, applyUser])
 
   // ── REGISTER ─────────────────────────────────────────────────────────────────
+  // Returns the registered email so the caller can prefill the login form.
+  // No token is returned by the backend — user must log in explicitly.
   const register = useCallback(async (username, email, password, confirm) => {
     setLoading(true)
     try {
@@ -154,8 +160,9 @@ export function AuthProvider({ children }) {
         password,
         password_confirmation: confirm,
       })
-      // Do NOT apply token/user here — user must manually log in to confirm
-      return { success: true }
+      // Return the email so AuthModal can prefill the login form.
+      // The user's Gmail address becomes the login credential automatically.
+      return { success: true, email }
     } catch (e) {
       const data = e.response?.data
       let msg = 'Registration failed.'
@@ -175,10 +182,8 @@ export function AuthProvider({ children }) {
     setLoading(true)
     try {
       const res = await axios.post('/api/auth/forgot-password', { email })
-      const msg =
-        res.data?.message ||
-        res.data?.status  ||
-        'Password reset link sent! Please check your email.'
+      // Backend always returns the same message to prevent email enumeration
+      const msg = res.data?.message || 'If that email is registered, a reset link has been sent.'
       return { success: true, message: msg }
     } catch (e) {
       const data = e.response?.data
@@ -187,12 +192,6 @@ export function AuthProvider({ children }) {
         msg = data.errors.email[0]
       } else if (data?.message) {
         msg = data.message
-      } else if (data?.status) {
-        const statusMap = {
-          'passwords.throttled': 'Too many attempts. Please wait before requesting another link.',
-          'passwords.user':      'No account found with that email address.',
-        }
-        msg = statusMap[data.status] || data.status
       }
       return { success: false, message: msg }
     } finally {

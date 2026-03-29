@@ -439,11 +439,10 @@
             </button>
         </form>
 
-        {{-- Register link — always visible --}}
+        {{-- Request access link --}}
         <div class="divider"><span>OR</span></div>
         <div class="auth-footer">
-            Don't have an account?
-            <a href="{{ route('dashboard.register') }}">Create admin account</a>
+            Need staff access? <a href="{{ route('dashboard.request-access') }}">Request access</a>
         </div>
 
     </div>

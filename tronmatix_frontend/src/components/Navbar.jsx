@@ -271,11 +271,24 @@ export default function Navbar({ onAuthOpen }) {
                 style={{ color: textColor }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                 onMouseLeave={e => e.currentTarget.style.color = textColor}
-                onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>                {user ? (
+                onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>
+                {user ? (
                   <>
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-black"
-                      style={{ background: '#F97316', fontSize: 13 }}>
-                      {(user.username || user.name || 'U').charAt(0).toUpperCase()}
+                    <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
+                      style={{ border: '2px solid #F97316', background: '#F97316' }}>
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.username}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                      ) : null}
+                      <div style={{
+                        display: user.avatar ? 'none' : 'flex',
+                        width: '100%', height: '100%',
+                        alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontWeight: 900, fontSize: 15
+                      }}>
+                        {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
+                      </div>
                     </div>
                     <span className="font-bold hidden lg:block max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
                       {user.username || user.name}
@@ -404,7 +417,7 @@ export default function Navbar({ onAuthOpen }) {
                     <div className="w-7 h-7 rounded-full animate-pulse" style={{ background: dark ? '#374151' : '#e5e7eb' }} />
                   ) : user ? (
                     <>
-                      <div className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
+                      <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
                         style={{ border: '2px solid #F97316', background: '#F97316' }}>
                         {user.avatar ? (
                           <img 
@@ -421,7 +434,7 @@ export default function Navbar({ onAuthOpen }) {
                           display: user.avatar ? 'none' : 'flex', 
                           width: '100%', height: '100%',
                           alignItems: 'center', justifyContent: 'center', 
-                          color: '#fff', fontWeight: 900, fontSize: 13 
+                          color: '#fff', fontWeight: 900, fontSize: 16 
                         }}>
                           {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
                         </div>
@@ -597,9 +610,22 @@ export default function Navbar({ onAuthOpen }) {
             </div>
             {user ? (
               <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black" style={{ background: '#F97316', fontSize: 16 }}>
-                    {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-full flex-shrink-0 overflow-hidden"
+                    style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.username}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                    ) : null}
+                    <div style={{
+                      display: user.avatar ? 'none' : 'flex',
+                      width: '100%', height: '100%',
+                      alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontWeight: 900, fontSize: 20
+                    }}>
+                      {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
+                    </div>
                   </div>
                   <div>
                     <div className="font-black" style={{ fontSize: 16, color: '#F97316' }}>{user.username || user.name || 'User'}</div>

@@ -807,8 +807,9 @@
                     </button>
 
                     <div id="bell-dropdown" style="
-                        display:none; position:absolute; top:48px; right:0; z-index:500;
-                        width:320px; background:#141414; border:1px solid rgba(255,255,255,0.1);
+                        display:none; position:fixed; top:60px; right:12px; z-index:500;
+                        width:min(340px, calc(100vw - 24px)); background:#141414;
+                        border:1px solid rgba(255,255,255,0.1);
                         border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.6);
                         overflow:hidden;
                     ">
@@ -821,7 +822,7 @@
                                 ⚙ SETTINGS
                             </a>
                         </div>
-                        <div id="bell-list" style="max-height:320px; overflow-y:auto; padding:8px 0;">
+                        <div id="bell-list" style="max-height:min(320px, calc(100vh - 160px)); overflow-y:auto; padding:8px 0;">
                             <div style="padding:24px; text-align:center; color:rgba(255,255,255,0.25); font-family:Rajdhani,sans-serif;">
                                 <div style="font-size:24px; margin-bottom:6px;">⏳</div>
                                 Loading…
@@ -997,7 +998,55 @@
                         </div>`;
                     return;
                 }
-                list.innerHTML = data.alerts.map(a => `
+                list.innerHTML = data.alerts.map(a => {
+                    if (a.actionable && a.type === 'staff_request') {
+                        return `
+                        <div class="bell-item" style="flex-direction:column;gap:8px;align-items:stretch;">
+                            <div style="display:flex;align-items:flex-start;gap:12px;">
+                                <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;
+                                     background:${a.color}18;border:1px solid ${a.color}44;
+                                     display:flex;align-items:center;justify-content:center;font-size:18px;">
+                                     ${a.icon}
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
+                                         color:${a.color};letter-spacing:.5px;">${a.title}</div>
+                                    <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px;line-height:1.4;">${a.body}</div>
+                                    ${a.request_message ? `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:3px;font-style:italic;">"${a.request_message}"</div>` : ''}
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;padding-left:48px;">
+                                <button onclick="openStaffRequestModal(${JSON.stringify(a).replace(/"/g,'&quot;')})"
+                                    style="flex:1;padding:7px 0;border-radius:8px;border:none;
+                                           background:#a78bfa22;border:1px solid #a78bfa44;
+                                           color:#a78bfa;font-family:Rajdhani,sans-serif;font-size:11px;
+                                           font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
+                                    onmouseover="this.style.background='#a78bfa33'"
+                                    onmouseout="this.style.background='#a78bfa22'">
+                                    👁 REVIEW
+                                </button>
+                                <button onclick="handleStaffRequest(${a.request_id},'accept',this)"
+                                    style="flex:1;padding:7px 0;border-radius:8px;border:none;
+                                           background:#22c55e22;border:1px solid #22c55e44;
+                                           color:#22c55e;font-family:Rajdhani,sans-serif;font-size:11px;
+                                           font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
+                                    onmouseover="this.style.background='#22c55e33'"
+                                    onmouseout="this.style.background='#22c55e22'">
+                                    ✓ ACCEPT
+                                </button>
+                                <button onclick="handleStaffRequest(${a.request_id},'reject',this)"
+                                    style="flex:1;padding:7px 0;border-radius:8px;border:none;
+                                           background:#ef444422;border:1px solid #ef444444;
+                                           color:#ef4444;font-family:Rajdhani,sans-serif;font-size:11px;
+                                           font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
+                                    onmouseover="this.style.background='#ef444433'"
+                                    onmouseout="this.style.background='#ef444422'">
+                                    ✕ REJECT
+                                </button>
+                            </div>
+                        </div>`;
+                    }
+                    return `
                     <a href="${a.url}" class="bell-item" onclick="closeBell()">
                         <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;
                              background:${a.color}18;border:1px solid ${a.color}44;
@@ -1010,12 +1059,69 @@
                             <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px;line-height:1.4;">${a.body}</div>
                         </div>
                         <div style="font-size:16px;color:rgba(255,255,255,0.2);flex-shrink:0;">›</div>
-                    </a>`).join('');
+                    </a>`;
+                }).join('');
             })
             .catch(() => {
                 document.getElementById('bell-list').innerHTML =
                     '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;">Failed to load alerts</div>';
             });
+        }
+
+        // ── Staff Request: full-screen modal ──────────────────────────────────
+        function openStaffRequestModal(a) {
+            closeBell();
+            const m = document.getElementById('staffReqModal');
+            document.getElementById('srm-name').textContent  = a.request_name;
+            document.getElementById('srm-email').textContent = a.request_email;
+            document.getElementById('srm-role').textContent  = (a.request_role || '').toUpperCase();
+            document.getElementById('srm-msg').textContent   = a.request_message || '(no message)';
+            document.getElementById('srm-accept').onclick    = () => handleStaffRequest(a.request_id, 'accept', document.getElementById('srm-accept'));
+            document.getElementById('srm-reject').onclick    = () => handleStaffRequest(a.request_id, 'reject', document.getElementById('srm-reject'));
+            m.style.display = 'flex';
+            requestAnimationFrame(() => m.style.opacity = '1');
+        }
+
+        function closeStaffReqModal() {
+            const m = document.getElementById('staffReqModal');
+            m.style.opacity = '0';
+            setTimeout(() => { m.style.display = 'none'; }, 200);
+        }
+
+        function handleStaffRequest(id, action, btn) {
+            if (btn) { btn.disabled = true; btn.textContent = '…'; }
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const url = action === 'accept'
+                ? `/dashboard/staff-requests/${id}/accept`
+                : `/dashboard/staff-requests/${id}/reject`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                closeStaffReqModal();
+                showInlineToast(data.message || data.error, action === 'accept' ? '#22c55e' : '#ef4444');
+                loadBellAlerts(); // refresh bell
+            })
+            .catch(() => {
+                showInlineToast('Action failed. Please try again.', '#ef4444');
+                if (btn) { btn.disabled = false; btn.textContent = action === 'accept' ? '✓ ACCEPT' : '✕ REJECT'; }
+            });
+        }
+
+        function showInlineToast(msg, color) {
+            const el = document.createElement('div');
+            el.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);
+                z-index:99999;background:#141414;border:1px solid ${color}55;
+                color:${color};padding:12px 24px;border-radius:12px;
+                font-family:Rajdhani,sans-serif;font-size:14px;font-weight:700;
+                letter-spacing:1px;box-shadow:0 8px 32px rgba(0,0,0,0.5);
+                animation:atToastIn .3s ease;white-space:nowrap;`;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => { el.style.animation='atToastOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3500);
         }
 
         function pollBellDot() {
@@ -1150,6 +1256,83 @@
     @keyframes atToastOut { to{opacity:0;transform:translateX(40px) scale(.95)} }
     @keyframes atToastBar { from{width:100%} to{width:0%} }
     </style>
+
+    {{-- ── Staff Request Full-Screen Review Modal (superadmin only) ─────────── --}}
+    @if(Auth::guard('admin')->user()->role === 'superadmin')
+    <div id="staffReqModal" style="
+        display:none; opacity:0; transition:opacity .2s;
+        position:fixed; inset:0; z-index:99000;
+        background:rgba(0,0,0,0.75); backdrop-filter:blur(4px);
+        align-items:center; justify-content:center; padding:20px;
+    " onclick="if(event.target===this)closeStaffReqModal()">
+        <div style="
+            background:#141414; border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px; width:100%; max-width:460px;
+            box-shadow:0 30px 80px rgba(0,0,0,0.7);
+            overflow:hidden; font-family:Rajdhani,sans-serif;
+        ">
+            <div style="height:3px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);"></div>
+            <div style="padding:28px 32px 32px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+                    <div>
+                        <div style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35);margin-bottom:3px;">STAFF ACCESS REQUEST</div>
+                        <div style="font-size:20px;font-weight:800;letter-spacing:1px;color:#a78bfa;" id="srm-name">—</div>
+                    </div>
+                    <button onclick="closeStaffReqModal()" style="
+                        width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);
+                        background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);
+                        font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+                    ">×</button>
+                </div>
+
+                <div style="display:grid;gap:12px;margin-bottom:22px;">
+                    <div style="display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
+                        <div style="font-size:20px;width:36px;text-align:center;">📧</div>
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">EMAIL</div>
+                            <div style="font-size:14px;font-weight:600;color:#fff;" id="srm-email">—</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
+                        <div style="font-size:20px;width:36px;text-align:center;">🎭</div>
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">REQUESTED ROLE</div>
+                            <div style="font-size:14px;font-weight:700;color:#a78bfa;letter-spacing:2px;" id="srm-role">—</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
+                        <div style="font-size:20px;width:36px;text-align:center;">💬</div>
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">MESSAGE</div>
+                            <div style="font-size:13px;color:rgba(255,255,255,0.6);font-style:italic;" id="srm-msg">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <button id="srm-reject" style="
+                        padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);
+                        background:rgba(239,68,68,0.08);color:#ef4444;
+                        font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
+                        letter-spacing:2px;cursor:pointer;transition:all .2s;
+                    " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
+                       onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+                        ✕ REJECT
+                    </button>
+                    <button id="srm-accept" style="
+                        padding:13px;border-radius:12px;border:none;
+                        background:#22c55e;color:#fff;
+                        font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
+                        letter-spacing:2px;cursor:pointer;transition:all .2s;
+                    " onmouseover="this.style.background='#16a34a'"
+                       onmouseout="this.style.background='#22c55e'">
+                        ✓ ACCEPT &amp; CREATE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
 </body>
 </html>

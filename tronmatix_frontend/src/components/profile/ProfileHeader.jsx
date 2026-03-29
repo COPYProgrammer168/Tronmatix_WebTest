@@ -82,7 +82,7 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
             }}>
               {user?.avatar ? (
                 <img
-                  src={user.avatar.startsWith('http') ? user.avatar : null}
+                  src={user.avatar}
                   alt={user?.username}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}

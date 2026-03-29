@@ -147,6 +147,7 @@ export default function UserProfilePage() {
                 VIP_GOAL={VIP_GOAL}
                 onSaved={handleProfileSaved}
                 notify={notify}
+                dark={dark}
               />
             )}
             {tab === 'locations' && <LocationsTab notify={notify} />}

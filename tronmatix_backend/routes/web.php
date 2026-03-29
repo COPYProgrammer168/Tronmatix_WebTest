@@ -9,6 +9,7 @@ use App\Http\Controllers\Dashboard\StaffController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StaffRequestController;
 
 // ── Redirect root ─────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('dashboard.index'));
@@ -21,6 +22,10 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/login',    [AdminAuthController::class, 'login'])->name('login.post');
         Route::get('/register',  [AdminAuthController::class, 'showRegister'])->name('register');
         Route::post('/register', [AdminAuthController::class, 'register'])->name('register.post');
+
+        // ── Staff Access Request (public — for staff who aren't admins yet) ──
+        Route::get('/request-access',  [StaffRequestController::class, 'showForm'])->name('request-access');
+        Route::post('/request-access', [StaffRequestController::class, 'submit'])->name('request-access.submit');
     });
 
 // ── Protected Dashboard Routes ────────────────────────────────────────────────
@@ -71,8 +76,11 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::put('/settings/permissions', [SettingsController::class, 'updatePermissions'])->name('settings.permissions');
         Route::get('/notifications',        [SettingsController::class, 'notifications'])->name('notifications');
 
+        // ── Staff Requests (superadmin only — enforced in controller) ─────────
+        Route::post('/staff-requests/{id}/accept', [StaffRequestController::class, 'accept'])->name('staff-requests.accept');
+        Route::post('/staff-requests/{id}/reject', [StaffRequestController::class, 'reject'])->name('staff-requests.reject');
+
         // ── Admin Profile ─────────────────────────────────────────────────────
-        // NOTE: use POST (not PUT) for profile update — required for file uploads (multipart/form-data)
         Route::get('/profile',            [ProfileController::class, 'show'])->name('profile');
         Route::post('/profile',           [ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password',   [ProfileController::class, 'updatePassword'])->name('profile.password');

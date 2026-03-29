@@ -1,29 +1,5 @@
 <?php
 
-// database/migrations/2026_03_16_000001_fix_banner_video_type_constraint.php
-//
-// WHY THIS EXISTS
-// ───────────────
-// The previous migration used ->enum() + ->after() which behave differently
-// on PostgreSQL vs MySQL:
-//
-//   ->after('image')   → silently IGNORED on PostgreSQL (MySQL-only feature).
-//                         The columns were added to the end of the table, which
-//                         is fine — column order doesn't affect functionality.
-//
-//   ->enum([...])      → on PostgreSQL, Laravel creates the column as
-//                         character varying(255) + a CHECK constraint.
-//                         If the CHECK constraint is missing (visible in the DB
-//                         viewer as plain varchar with no constraint), this
-//                         migration recreates it safely.
-//
-// HOW TO RUN
-// ──────────
-//   php artisan migrate
-//
-// It is safe to run multiple times — the constraint is dropped first, then
-// re-added, so duplicate-constraint errors cannot occur.
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

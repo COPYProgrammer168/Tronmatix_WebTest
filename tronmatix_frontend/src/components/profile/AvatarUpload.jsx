@@ -8,10 +8,7 @@ export default function AvatarUpload({ user, onUpdated, notify }) {
   const [preview,   setPreview]   = useState(null)
   const fileRef = useRef(null)
 
-  const avatarUrl = preview
-    || (user?.avatar
-      ? (user.avatar.startsWith('http') ? user.avatar : null)
-      : null)
+  const avatarUrl = preview || user?.avatar || null
 
   const initials = (user?.username || user?.name || '?')
     .charAt(0).toUpperCase()
