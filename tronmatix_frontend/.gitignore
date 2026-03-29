@@ -20,18 +20,6 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# ── Laravel Backend ───────────────────────────────────────────────────────────
-tronmatix_backend/vendor/
-tronmatix_backend/node_modules/
-tronmatix_backend/storage/logs/
-tronmatix_backend/storage/framework/cache/
-tronmatix_backend/storage/framework/sessions/
-tronmatix_backend/storage/framework/views/
-tronmatix_backend/bootstrap/cache/
-tronmatix_backend/public/storage/
-tronmatix_backend/public/hot
-tronmatix_backend/public/build/
-
 # ── Vite/React Frontend ───────────────────────────────────────────────────────
 tronmatix_frontend/node_modules/
 tronmatix_frontend/.vite/

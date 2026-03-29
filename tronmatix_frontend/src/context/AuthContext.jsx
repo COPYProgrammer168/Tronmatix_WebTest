@@ -1,24 +1,25 @@
 // src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import axios, { clearAuthStorage } from '../lib/axios'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import api, { clearAuthStorage } from '../lib/axios'
 
 const AuthContext = createContext(null)
 
-axios.defaults.withCredentials = false
-axios.defaults.headers.common['Accept']       = 'application/json'
-axios.defaults.headers.common['Content-Type'] = 'application/json'
+const USER_KEY  = 'tronmatix_user'
+const TOKEN_KEY = 'token'
 
-const USER_KEY = 'tronmatix_user'
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// Check token expiry from JWT payload — 30s clock-skew buffer
+// Sanctum tokens are opaque (not JWT) — no expiry embedded in them.
+// The only reliable expiry check is a 401 from the server.
+// We keep this guard only as a last-resort sanity check for actual JWTs.
 function isTokenExpired(token) {
   try {
-    const base64Url = token.split('.')[1]
-    if (!base64Url) return true
-    const json = JSON.parse(atob(base64Url.replace(/-/g, '+').replace(/_/g, '/')))
+    const parts = token.split('.')
+    if (parts.length !== 3) return false // opaque Sanctum token — not a JWT
+    const json = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
     return json.exp ? json.exp * 1000 < Date.now() - 30_000 : false
   } catch {
-    return true
+    return false // parse failed → assume valid, let server decide
   }
 }
 
@@ -43,28 +44,36 @@ function saveUser(user) {
   else       localStorage.removeItem(USER_KEY)
 }
 
-// Normalize API response shapes: { data: user }, { user: user }, or just user
+// Normalize API response shapes: { data: user }, { user: user }, or flat user
 function extractUser(responseData) {
   if (!responseData) return null
-  if (responseData.data && responseData.data.id) return responseData.data
-  if (responseData.user && responseData.user.id) return responseData.user
-  if (responseData.id) return responseData
+  if (responseData.data?.id) return responseData.data
+  if (responseData.user?.id) return responseData.user
+  if (responseData.id)       return responseData
   return null
 }
 
+// ── Provider ──────────────────────────────────────────────────────────────────
+
 export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(() => loadCachedUser())
-  const [token,   setToken]   = useState(() => localStorage.getItem('token'))
+  const [token,   setToken]   = useState(() => localStorage.getItem(TOKEN_KEY))
   const [loading, setLoading] = useState(false)
   const [ready,   setReady]   = useState(false)
 
+  // Ref so interceptors & effects always read the latest value without stale closures
+  const tokenRef = useRef(token)
+
   const applyToken = useCallback((t) => {
+    tokenRef.current = t
     if (t) {
-      localStorage.setItem('token', t)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${t}`
+      localStorage.setItem(TOKEN_KEY, t)
+      // Keep the axios instance header in sync — the request interceptor also
+      // reads localStorage, so this is belt-and-suspenders for the initial mount.
+      api.defaults.headers.common['Authorization'] = `Bearer ${t}`
     } else {
-      localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
+      localStorage.removeItem(TOKEN_KEY)
+      delete api.defaults.headers.common['Authorization']
     }
     setToken(t)
   }, [])
@@ -81,55 +90,69 @@ export function AuthProvider({ children }) {
     clearAuthStorage()
   }, [applyToken, applyUser])
 
-  // Restore session on mount
+  // ── Restore session on mount ───────────────────────────────────────────────
+  // Strategy:
+  //  1. Immediately show cached user (no flicker — already in useState init).
+  //  2. Try to refresh from /api/auth/me in the background.
+  //  3. On 401 → clear (token revoked server-side).
+  //  4. On NETWORK ERROR → keep cached user (no internet ≠ logged out).
   useEffect(() => {
-    if (!token) { setReady(true); return }
+    const storedToken = localStorage.getItem(TOKEN_KEY)
 
-    if (isTokenExpired(token)) {
+    if (!storedToken) {
+      setReady(true)
+      return
+    }
+
+    // Expired JWT (rare with Sanctum opaque tokens, but guard anyway)
+    if (isTokenExpired(storedToken)) {
       clearSession()
       setReady(true)
       return
     }
 
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    // Ensure header is set before the /me request fires
+    api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
+    tokenRef.current = storedToken
 
-    axios.get('/api/auth/me')
+    api.get('/api/auth/me')
       .then(res => {
         const fresh = extractUser(res.data)
         if (fresh) applyUser(fresh)
+        // else: /me returned unexpected shape — keep cached user
       })
       .catch((err) => {
-        if (err.response?.status === 401) clearSession()
-        // Network errors: keep cached user — don't log out on bad connection
+        if (err.response?.status === 401) {
+          // Token revoked or expired server-side → force logout
+          clearSession()
+        }
+        // FIX: Network/timeout errors → do NOT clear session.
+        // User is still logged in — they just have no internet right now.
+        // err.isNetworkError is set by the axios interceptor in axios.js
       })
       .finally(() => setReady(true))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await axios.get('/api/auth/me')
+      const res   = await api.get('/api/auth/me')
       const fresh = extractUser(res.data)
       if (fresh) applyUser(fresh)
       return fresh
     } catch { return null }
   }, [applyUser])
 
-  // ── LOGIN ───────────────────────────────────────────────────────────────────
-  // Accepts username OR email. The backend does case-insensitive lookup on both.
+  // ── LOGIN ─────────────────────────────────────────────────────────────────
   const login = useCallback(async (usernameOrEmail, password) => {
     setLoading(true)
     try {
-      const isEmail = usernameOrEmail.includes('@')
-      const payload = isEmail
-        ? { username: usernameOrEmail, password }  // backend accepts email in the username field
-        : { username: usernameOrEmail, password }
-
-      const res = await axios.post('/api/auth/login', payload)
+      // Backend accepts email in the `username` field (case-insensitive lookup)
+      const res = await api.post('/api/auth/login', { username: usernameOrEmail, password })
 
       const t = res.data?.token ?? res.data?.data?.token
       const u = extractUser(res.data)
 
-      if (!t || !u) throw new Error('Unexpected login response')
+      if (!t || !u) throw new Error('Unexpected login response shape')
 
       applyToken(t)
       applyUser(u)
@@ -148,20 +171,16 @@ export function AuthProvider({ children }) {
     }
   }, [applyToken, applyUser])
 
-  // ── REGISTER ─────────────────────────────────────────────────────────────────
-  // Returns the registered email so the caller can prefill the login form.
-  // No token is returned by the backend — user must log in explicitly.
+  // ── REGISTER ──────────────────────────────────────────────────────────────
   const register = useCallback(async (username, email, password, confirm) => {
     setLoading(true)
     try {
-      await axios.post('/api/auth/register', {
+      await api.post('/api/auth/register', {
         username,
         email,
         password,
         password_confirmation: confirm,
       })
-      // Return the email so AuthModal can prefill the login form.
-      // The user's Gmail address becomes the login credential automatically.
       return { success: true, email }
     } catch (e) {
       const data = e.response?.data
@@ -177,31 +196,27 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────────
+  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
   const forgotPassword = useCallback(async (email) => {
     setLoading(true)
     try {
-      const res = await axios.post('/api/auth/forgot-password', { email })
-      // Backend always returns the same message to prevent email enumeration
+      const res = await api.post('/api/auth/forgot-password', { email })
       const msg = res.data?.message || 'If that email is registered, a reset link has been sent.'
       return { success: true, message: msg }
     } catch (e) {
       const data = e.response?.data
       let msg = 'Failed to send reset email. Please try again.'
-      if (data?.errors?.email) {
-        msg = data.errors.email[0]
-      } else if (data?.message) {
-        msg = data.message
-      }
+      if (data?.errors?.email) msg = data.errors.email[0]
+      else if (data?.message)  msg = data.message
       return { success: false, message: msg }
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // ── LOGOUT ───────────────────────────────────────────────────────────────────
+  // ── LOGOUT ────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
-    try { await axios.post('/api/auth/logout') } catch { /* ignore */ }
+    try { await api.post('/api/auth/logout') } catch { /* ignore — clear locally anyway */ }
     clearSession()
   }, [clearSession])
 

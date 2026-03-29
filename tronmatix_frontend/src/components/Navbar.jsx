@@ -75,6 +75,25 @@ function ThemeToggle() {
   )
 }
 
+/* ── Reusable icon button — FIX: use inline style only, no Tailwind hover ── */
+// Tailwind hover: classes conflict with inline style={{ color }} overrides.
+// All hover color changes use onMouseEnter/onMouseLeave exclusively.
+function IconBtn({ onClick, className = '', style = {}, children, title }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`relative p-2 transition-colors ${className}`}
+      style={{ ...style, color: hovered ? '#F97316' : style.color }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+    </button>
+  )
+}
+
 /* ── Reusable Dropdown ───────────────────────────────────────────────────── */
 function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, slugify }) {
   const isNested = typeof item.sub[0] === 'object'
@@ -151,7 +170,7 @@ export default function Navbar({ onAuthOpen }) {
   const [search, setSearch]         = useState('')
   const [userMenu, setUserMenu]     = useState(false)
   const [scrolled, setScrolled]     = useState(false)
-  const { user, logout, ready } = useAuth()
+  const { user, logout, ready }     = useAuth()
   const { items, setCartOpen }      = useCart()
   const { favorites }               = useFavorites()
   const { dark }                    = useTheme()
@@ -200,8 +219,90 @@ export default function Navbar({ onAuthOpen }) {
 
   const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub, slugify }
 
-  /* shared icon-button style helpers */
-  const iconBtn = (extra = '') => `relative p-2 transition-colors ${extra}`
+  /* ── User Avatar Block (reusable in both bars) ──────────────────────────── */
+  const UserAvatar = ({ size = 10, fontSize = 16 }) => (
+    <div
+      className={`w-${size} h-${size} rounded-full flex-shrink-0 overflow-hidden`}
+      style={{ border: '2px solid #F97316', background: '#F97316' }}>
+      {user?.avatar ? (
+        <img
+          src={user.avatar}
+          alt={user.username}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+        />
+      ) : null}
+      <div style={{
+        display: user?.avatar ? 'none' : 'flex',
+        width: '100%', height: '100%',
+        alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontWeight: 900, fontSize,
+      }}>
+        {(user?.username || user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+      </div>
+    </div>
+  )
+
+  /* ── User Dropdown Menu (reusable) ──────────────────────────────────────── */
+  const UserDropdown = ({ menuRef }) => (
+    <div ref={menuRef} className="relative">
+      <button
+        onClick={() => { if (!ready) return; user ? setUserMenu(p => !p) : onAuthOpen?.('login') }}
+        className="flex flex-col items-center gap-0.5 px-1 transition-colors"
+        style={{ color: textColor }}
+        disabled={!ready}>
+        {!ready ? (
+          <div className="w-7 h-7 rounded-full animate-pulse" style={{ background: dark ? '#374151' : '#e5e7eb' }} />
+        ) : user ? (
+          <>
+            <UserAvatar size={10} fontSize={16} />
+            <span className="font-bold max-w-[64px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
+              {user.username || user.name || 'User'}
+            </span>
+          </>
+        ) : (
+          /* FIX: person icon — use inline color only, no Tailwind hover conflict */
+          <span
+            style={{ color: textColor, display: 'inline-flex', transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+            onMouseLeave={e => e.currentTarget.style.color = textColor}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </span>
+        )}
+      </button>
+
+      {ready && user && userMenu && (
+        <div className="absolute right-0 top-full mt-2 rounded-lg shadow-xl w-48 py-2 z-[200] border"
+          style={{ background: ddBg, borderColor: ddBorder }}>
+          {[
+            { label: '👤 My Profile', path: '/profile' },
+            { label: '📦 My Orders',  path: '/orders'  },
+          ].map(({ label, path }) => (
+            <button key={path}
+              className="w-full flex items-center gap-2 px-4 py-2 transition-colors text-left"
+              style={{ fontSize: 15, color: textColor }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
+              onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
+              onClick={() => { setUserMenu(false); navigate(path) }}>
+              {label}
+            </button>
+          ))}
+          <hr style={{ borderColor: ddBorder, margin: '4px 0' }} />
+          <button
+            onClick={() => { logout(); setUserMenu(false) }}
+            className="w-full text-left px-4 py-2 text-red-500 transition-colors"
+            style={{ fontSize: 15 }}
+            onMouseEnter={e => e.currentTarget.style.background = ddHover}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            🚪 Logout
+          </button>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <header ref={headerRef} className="sticky top-0 z-50"
@@ -243,98 +344,111 @@ export default function Navbar({ onAuthOpen }) {
             </ul>
           </nav>
 
-          {/* Right icons compact */}
+          {/* Right icons compact — FIX: use IconBtn for consistent hover */}
           <div className="flex items-center gap-1 ml-auto flex-shrink-0">
             <ThemeToggle />
-            <button onClick={() => navigate('/favorites')} className={iconBtn('hidden lg:flex')}
-              style={{ color: textColor }}
-              onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
-              onMouseLeave={e => e.currentTarget.style.color = textColor}>
-              <svg className="w-5 h-5" fill={favorites.length > 0 ? '#F97316' : 'none'} stroke={favorites.length > 0 ? '#F97316' : 'currentColor'} strokeWidth={2} viewBox="0 0 24 24">
+
+            {/* Favorites */}
+            <IconBtn
+              onClick={() => navigate('/favorites')}
+              className="hidden lg:flex"
+              style={{ color: textColor }}>
+              <svg className="w-5 h-5"
+                fill={favorites.length > 0 ? '#F97316' : 'none'}
+                stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
+                strokeWidth={2} viewBox="0 0 24 24">
                 <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
               </svg>
-              {favorites.length > 0 && <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>{favorites.length}</span>}
-            </button>
-            <button onClick={() => setCartOpen(true)} className={iconBtn('hidden lg:flex')}
-              style={{ color: textColor }}
-              onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
-              onMouseLeave={e => e.currentTarget.style.color = textColor}>
+              {favorites.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
+                  {favorites.length}
+                </span>
+              )}
+            </IconBtn>
+
+            {/* Cart */}
+            <IconBtn
+              onClick={() => setCartOpen(true)}
+              className="hidden lg:flex"
+              style={{ color: textColor }}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              {totalQty > 0 && <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>{totalQty}</span>}
-            </button>
+              {totalQty > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
+                  {totalQty}
+                </span>
+              )}
+            </IconBtn>
 
-            {/* Compact user */}
-            <div className="relative hidden md:block" ref={compactUserMenuRef}>
-              <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors"
+            {/* User (compact) */}
+            <div className="relative" ref={compactUserMenuRef}>
+              <button
+                className="flex items-center gap-1 px-1 py-2 transition-colors"
                 style={{ color: textColor }}
-                onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
-                onMouseLeave={e => e.currentTarget.style.color = textColor}
+                onMouseEnter={e => { if (!user) e.currentTarget.style.color = '#F97316' }}
+                onMouseLeave={e => { if (!user) e.currentTarget.style.color = textColor }}
                 onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>
                 {user ? (
                   <>
-                    <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
-                      style={{ border: '2px solid #F97316', background: '#F97316' }}>
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.username}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
-                      ) : null}
-                      <div style={{
-                        display: user.avatar ? 'none' : 'flex',
-                        width: '100%', height: '100%',
-                        alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontWeight: 900, fontSize: 15
-                      }}>
-                        {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
-                      </div>
-                    </div>
+                    <UserAvatar size={9} fontSize={15} />
                     <span className="font-bold hidden lg:block max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
                       {user.username || user.name}
                     </span>
                   </>
                 ) : (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                   </svg>
                 )}
               </button>
+
               {user && userMenu && (
                 <div className="absolute right-0 top-full mt-1 rounded-lg shadow-xl w-44 py-1 z-[200] border"
                   style={{ background: ddBg, borderColor: ddBorder }}>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
-                    style={{ fontSize: 14, color: textColor }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
-                    onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
-                    onClick={() => { setUserMenu(false); navigate('/profile') }}>👤 My Profile</button>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
-                    style={{ fontSize: 14, color: textColor }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
-                    onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
-                    onClick={() => { setUserMenu(false); navigate('/orders') }}>📦 My Orders</button>
+                  {[
+                    { label: '👤 My Profile', path: '/profile' },
+                    { label: '📦 My Orders',  path: '/orders'  },
+                  ].map(({ label, path }) => (
+                    <button key={path}
+                      className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
+                      style={{ fontSize: 14, color: textColor }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
+                      onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
+                      onClick={() => { setUserMenu(false); navigate(path) }}>
+                      {label}
+                    </button>
+                  ))}
                   <hr style={{ borderColor: ddBorder, margin: '2px 0' }} />
-                  <button onClick={() => { logout(); setUserMenu(false) }}
+                  <button
+                    onClick={() => { logout(); setUserMenu(false) }}
                     className="w-full text-left px-3 py-2 text-red-500 font-semibold transition-colors"
                     style={{ fontSize: 14 }}
                     onMouseEnter={e => e.currentTarget.style.background = ddHover}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>🚪 Logout</button>
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    🚪 Logout
+                  </button>
                 </div>
               )}
             </div>
 
-            {/* Mobile-only cart */}
-            <button onClick={() => setCartOpen(true)} className={iconBtn('md:hidden')}
-              style={{ color: textColor }}
-              onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
-              onMouseLeave={e => e.currentTarget.style.color = textColor}>
+            {/* Mobile cart */}
+            <IconBtn onClick={() => setCartOpen(true)} className="md:hidden" style={{ color: textColor }}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              {totalQty > 0 && <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>{totalQty}</span>}
-            </button>
-            {/* Tablet + Mobile hamburger — visible on all screens < lg when compact bar is shown (scrolled) */}
+              {totalQty > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
+                  {totalQty}
+                </span>
+              )}
+            </IconBtn>
+
+            {/* Hamburger */}
             <button className="lg:hidden p-2 transition-colors" style={{ color: textColor }}
+              onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+              onMouseLeave={e => e.currentTarget.style.color = textColor}
               onClick={() => setMobileOpen(!mobileOpen)}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileOpen
@@ -390,90 +504,47 @@ export default function Navbar({ onAuthOpen }) {
               </div>
             </form>
 
-            {/* Right icons */}
+            {/* Right icons — FIX: use IconBtn to avoid Tailwind hover conflict */}
             <div className="flex items-center gap-1.5 ml-auto">
               <ThemeToggle />
-              <button onClick={() => navigate('/favorites')} className={iconBtn('hidden md:flex hover:text-primary')} style={{ color: textColor }}>
-                <svg className="w-6 h-6" fill={favorites.length > 0 ? '#F97316' : 'none'} stroke={favorites.length > 0 ? '#F97316' : 'currentColor'} strokeWidth={2} viewBox="0 0 24 24">
+
+              {/* Favorites */}
+              <IconBtn
+                onClick={() => navigate('/favorites')}
+                className="hidden md:flex"
+                style={{ color: textColor }}>
+                <svg className="w-6 h-6"
+                  fill={favorites.length > 0 ? '#F97316' : 'none'}
+                  stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
+                  strokeWidth={2} viewBox="0 0 24 24">
                   <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                 </svg>
-                {favorites.length > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>{favorites.length}</span>}
-              </button>
-              <button onClick={() => setCartOpen(true)} className={iconBtn('hover:text-primary')} style={{ color: textColor }}>
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
+                    {favorites.length}
+                  </span>
+                )}
+              </IconBtn>
+
+              {/* Cart */}
+              <IconBtn onClick={() => setCartOpen(true)} style={{ color: textColor }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                {totalQty > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>{totalQty}</span>}
-              </button>
-
-              {/* User button */}
-              <div className="relative block" ref={userMenuRef}>
-                <button
-                  onClick={() => { if (!ready) return; user ? setUserMenu(p => !p) : onAuthOpen?.('login') }}
-                  className="flex flex-col items-center gap-0.5 hover:text-primary transition-colors px-1"
-                  style={{ color: textColor }}
-                  disabled={!ready}>
-                  {!ready ? (
-                    <div className="w-7 h-7 rounded-full animate-pulse" style={{ background: dark ? '#374151' : '#e5e7eb' }} />
-                  ) : user ? (
-                    <>
-                      <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
-                        style={{ border: '2px solid #F97316', background: '#F97316' }}>
-                        {user.avatar ? (
-                          <img 
-                            src={user.avatar} 
-                            alt={user.username}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            onError={e => { 
-                              e.target.style.display = 'none'; 
-                              e.target.nextSibling.style.display = 'flex'; 
-                            }} 
-                          />
-                        ) : null}
-                        <div style={{ 
-                          display: user.avatar ? 'none' : 'flex', 
-                          width: '100%', height: '100%',
-                          alignItems: 'center', justifyContent: 'center', 
-                          color: '#fff', fontWeight: 900, fontSize: 16 
-                        }}>
-                          {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
-                        </div>
-                      </div>
-                      <span className="font-bold max-w-[64px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
-                        {user.username || user.name || 'User'}
-                      </span>
-                    </>
-                  ) : (
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  )}
-                </button>
-                {ready && user && userMenu && (
-                  <div className="absolute right-0 top-full mt-2 rounded-lg shadow-xl w-48 py-2 z-[200] border"
-                    style={{ background: ddBg, borderColor: ddBorder }}>
-                    <button className="w-full flex items-center gap-2 px-4 py-2 transition-colors text-left"
-                      style={{ fontSize: 15, color: textColor }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
-                      onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
-                      onClick={() => { setUserMenu(false); navigate('/profile') }}>👤 My Profile</button>
-                    <button className="w-full flex items-center gap-2 px-4 py-2 transition-colors text-left"
-                      style={{ fontSize: 15, color: textColor }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
-                      onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
-                      onClick={() => { setUserMenu(false); navigate('/orders') }}>📦 My Orders</button>
-                    <hr style={{ borderColor: ddBorder, margin: '4px 0' }} />
-                    <button onClick={() => { logout(); setUserMenu(false) }}
-                      className="w-full text-left px-4 py-2 text-red-500 transition-colors" style={{ fontSize: 15 }}
-                      onMouseEnter={e => e.currentTarget.style.background = ddHover}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>🚪 Logout</button>
-                  </div>
+                {totalQty > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
+                    {totalQty}
+                  </span>
                 )}
-              </div>
+              </IconBtn>
 
-              {/* Mobile/tablet hamburger — visible on all non-desktop (< lg) screens when scrolled */}
+              {/* User (full bar) */}
+              <UserDropdown menuRef={userMenuRef} />
+
+              {/* Hamburger */}
               <button className="lg:hidden p-2 transition-colors" style={{ color: textColor }}
+                onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                onMouseLeave={e => e.currentTarget.style.color = textColor}
                 onClick={() => setMobileOpen(!mobileOpen)}>
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {mobileOpen
@@ -488,17 +559,12 @@ export default function Navbar({ onAuthOpen }) {
         {/* ── DESKTOP / TABLET NAV BAR ── */}
         <nav className="hidden md:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
           <div className="max-w-[1280px] mx-auto px-2 flex items-center">
-
-            {/* Tablet hamburger removed from full bar — it appears in the compact (scrolled) bar instead */}
-
-            {/* Nav items — fluid sizing to fit all items */}
             <ul className="hidden lg:flex items-center justify-center flex-1 flex-wrap">
               {navItems.map(item => (
                 <li key={item.label} className="relative">
                   <div className="flex items-center"
                     onMouseEnter={() => item.sub && setOpenDrop(item.label)}
                     onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
-                    {/* Label — navigates to "all products" for that category */}
                     <Link
                       to={item.categories
                         ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
@@ -530,7 +596,7 @@ export default function Navbar({ onAuthOpen }) {
         </nav>
       </div>
 
-      {/* ══════════ MOBILE DRAWER — always outside scroll containers ════════ */}
+      {/* ══════════ MOBILE DRAWER ════════════════════════════════════════════ */}
       {mobileOpen && (
         <div className="lg:hidden border-t max-h-[85vh] overflow-y-auto"
           style={{ background: navBg, borderColor: navBorder }}>
@@ -552,7 +618,6 @@ export default function Navbar({ onAuthOpen }) {
             {navItems.map(item => (
               <div key={item.label} className="border-b" style={{ borderColor: navBorder }}>
                 <div className="flex items-center justify-between px-5 py-3.5 select-none">
-                  {/* Label — always navigates to the category page */}
                   <span
                     className="font-bold tracking-wide cursor-pointer hover:text-primary transition-colors flex-1"
                     style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 16, color: textColor }}
@@ -565,7 +630,6 @@ export default function Navbar({ onAuthOpen }) {
                     }}>
                     {item.label}
                   </span>
-                  {/* Chevron — expands sub-list only */}
                   {item.sub
                     ? <button
                         className="p-1.5 rounded transition-colors"
@@ -589,7 +653,9 @@ export default function Navbar({ onAuthOpen }) {
                     {item.sub.map(sub => {
                       const isObj = typeof sub === 'object'
                       const label = isObj ? sub.label : sub
-                      const path  = isObj ? `/category/${slugify(item.label)}/${slugify(sub.label)}` : `/category/${slugify(item.label)}/${slugify(sub)}`
+                      const path  = isObj
+                        ? `/category/${slugify(item.label)}/${slugify(sub.label)}`
+                        : `/category/${slugify(item.label)}/${slugify(sub)}`
                       return (
                         <Link key={label} to={path}
                           className="block px-8 py-1.5 font-semibold hover:text-primary transition-colors"

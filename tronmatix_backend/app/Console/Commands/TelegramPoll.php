@@ -2,16 +2,16 @@
 
 // app/Console/Commands/TelegramPoll.php
 // ─────────────────────────────────────────────────────────────────────────────
-// LOCAL DEVELOPMENT ONLY — replaces webhook with long-polling.
-// No HTTPS needed. No ngrok needed.
+// Polling mode — works for both local dev AND production (Render).
 //
 // Usage:
 //   php artisan telegram:poll
-//   php artisan telegram:poll --timeout=30
-//   php artisan telegram:poll --limit=10
+//   php artisan telegram:poll --timeout=25 --limit=10
 //
-// Stop with Ctrl+C
+// Supports graceful shutdown via SIGTERM (Render redeploy) and SIGINT (Ctrl+C).
 // ─────────────────────────────────────────────────────────────────────────────
+
+declare(ticks=1); // Required for pcntl_signal to fire between PHP opcodes
 
 namespace App\Console\Commands;
 
@@ -25,10 +25,13 @@ class TelegramPoll extends Command
         {--timeout=20 : Long-poll timeout in seconds (max 50)}
         {--limit=10   : Max updates per request}';
 
-    protected $description = '[LOCAL DEV] Poll Telegram for updates — no HTTPS/webhook needed';
+    protected $description = 'Poll Telegram for updates (polling mode — local dev & production)';
 
     private string $token;
     private string $apiBase;
+
+    // FIX: flag to break the poll loop on SIGTERM/SIGINT
+    private bool $running = true;
 
     public function handle(TelegramBotService $bot): int
     {
@@ -40,13 +43,26 @@ class TelegramPoll extends Command
             return self::FAILURE;
         }
 
+        // ── FIX: Register signal handlers so Render SIGTERM exits cleanly ─────
+        // Without this, the old instance keeps polling → Error 409 on new deploy.
+        if (extension_loaded('pcntl')) {
+            pcntl_signal(SIGTERM, function () {
+                $this->warn('[telegram-poll] SIGTERM received — stopping gracefully...');
+                $this->running = false;
+            });
+            pcntl_signal(SIGINT, function () {
+                $this->warn('[telegram-poll] SIGINT received — stopping...');
+                $this->running = false;
+            });
+        }
+
         $timeout = min(50, (int) $this->option('timeout'));
         $limit   = (int) $this->option('limit');
         $offset  = 0;
 
-        // ── Delete any existing webhook so polling works ───────────────────────
+        // ── FIX: Only deleteWebhook once at startup, not on every loop restart ─
         $del = Http::timeout(10)->withoutVerifying()
-            ->post("{$this->apiBase}/deleteWebhook", ['drop_pending_updates' => true])
+            ->post("{$this->apiBase}/deleteWebhook", ['drop_pending_updates' => false])
             ->json();
 
         if ($del['ok'] ?? false) {
@@ -55,11 +71,11 @@ class TelegramPoll extends Command
             $this->warn('Could not clear webhook: ' . json_encode($del));
         }
 
-        $this->info("🤖 Polling @tronmatix_notification_bot  (Ctrl+C to stop)");
+        $this->info('🤖 Polling @tronmatix_notification_bot  (Ctrl+C to stop)');
         $this->info(str_repeat('─', 50));
 
         // ── Poll loop ─────────────────────────────────────────────────────────
-        while (true) {
+        while ($this->running) {
             try {
                 $res = Http::timeout($timeout + 5)
                     ->withoutVerifying()
@@ -71,6 +87,11 @@ class TelegramPoll extends Command
                     ])
                     ->json();
 
+                // Check signal again after long-poll returns
+                if (! $this->running) {
+                    break;
+                }
+
                 if (! ($res['ok'] ?? false)) {
                     $this->warn('Telegram error: ' . json_encode($res));
                     sleep(3);
@@ -80,6 +101,10 @@ class TelegramPoll extends Command
                 $updates = $res['result'] ?? [];
 
                 foreach ($updates as $update) {
+                    if (! $this->running) {
+                        break 2; // Exit both foreach and while
+                    }
+
                     // Advance offset past this update
                     $offset = $update['update_id'] + 1;
 
@@ -106,9 +131,15 @@ class TelegramPoll extends Command
                 }
 
             } catch (\Throwable $e) {
+                if (! $this->running) {
+                    break;
+                }
                 $this->warn('Poll error: ' . $e->getMessage());
                 sleep(3);
             }
         }
+
+        $this->info('[telegram-poll] Exited cleanly.');
+        return self::SUCCESS;
     }
 }
