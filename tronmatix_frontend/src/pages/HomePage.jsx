@@ -193,7 +193,7 @@ export default function HomePage() {
               <Link to={detailLink}
                 className="inline-flex items-center gap-2 font-bold px-6 py-3 rounded-lg transition-all hover:scale-105 hover:opacity-90"
                 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 15, letterSpacing: 1, background: hasMedia ? '#fff' : txtColor, color: hasMedia ? '#111' : bgColor, textDecoration: 'none' }}>
-                VIEW DETAIL
+                VIEW PRODUCT
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useDiscount } from '../context/DiscountContext'
 import { useFavorites } from '../context/FavoritesContext'
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext'
 import ProductCard from '../components/ProductCard'
 import axios from '../lib/axios'
 
@@ -14,10 +14,6 @@ function resolveImage(path) {
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   return LARAVEL_URL + (path.startsWith('/') ? path : '/' + path)
 }
-
-const mockRelated = Array(5).fill(null).map((_, i) => ({
-  id: 200 + i, name: 'PC BUILD', price: 3199 + i * 50, image: null,
-}))
 
 function Stars({ rating = 0 }) {
   return (
@@ -39,15 +35,20 @@ export default function ProductDetailPage() {
   const { addItem } = useCart()
   const { dark } = useTheme()
   const { toggleFavorite, isFavorite } = useFavorites()
-  const { discount, getItemDiscounts, bestDiscountForItem, calcDiscount } = useDiscount()
+  const { discount, getItemDiscounts, bestDiscountForItem } = useDiscount()
   const [product, setProduct] = useState(null)
   const [related, setRelated] = useState([])
+  const [loading, setLoading] = useState(true)
   const [imgIdx, setImgIdx]   = useState(0)
   const [qty, setQty]         = useState(1)
   const [added, setAdded]     = useState(false)
 
   useEffect(() => {
     setImgIdx(0); setQty(1); setAdded(false)
+    setLoading(true)
+    setProduct(null)
+    setRelated([])
+
     axios.get(`/api/products/${id}`)
       .then(res => {
         const p       = res.data?.data ?? res.data
@@ -58,44 +59,50 @@ export default function ProductDetailPage() {
         }
 
         setProduct(p)
-        setRelated(
-          relData.length > 0
-            ? relData.map(r => ({
-                ...r,
-                // use all_images if present, else fall back to image string
-                image: (r.all_images?.[0]) ?? r.image
-              }))
-            : mockRelated
-        )
+
+        // FIX: only use real related data — no mock fallback
+        if (relData.length > 0) {
+          setRelated(relData.map(r => ({
+            ...r,
+            image: (r.all_images?.[0]) ?? r.image
+          })))
+        }
       })
       .catch(() => {
-        setProduct({ id, name: 'PC BUILD BUDGET 3K FOR GAMING', price: 3000, description: 'AMD RYZEN 9950X3D\nRTX5080', stock: 10, rating: 4.5, brand: 'AMD', category: 'PC BUILD', image: null })
-        setRelated(mockRelated)
+        // On error: show error state, no mock data
+        setProduct(null)
       })
+      .finally(() => setLoading(false))
   }, [id])
 
-  if (!product) return (
+  if (loading) return (
     <div className="flex justify-center py-20">
       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"/>
     </div>
   )
 
-  // Use all_images (synced from model accessor above), fall back to single image
+  if (!product) return (
+    <div className="flex flex-col items-center py-24 gap-4" style={{ color: dark ? '#9ca3af' : '#6b7280' }}>
+      <div style={{ fontSize: 48 }}>😕</div>
+      <p style={{ fontSize: 18, color: dark ? '#f9fafb' : '#1f2937' }}>Product not found.</p>
+      <a href="/" className="text-primary font-bold hover:underline">← Back to home</a>
+    </div>
+  )
+
   const rawImages = (product.images?.length ? product.images : (product.image ? [product.image] : [null]))
   const images    = rawImages.map(img => resolveImage(img))
   const inStock   = (product.stock ?? 99) > 0
   const maxQty    = product.stock ?? 99
 
-  // ── Discount calculation for this product ──────────────────────────────────
-  const itemDiscounts     = product ? getItemDiscounts(product) : []
+  const itemDiscounts     = getItemDiscounts(product)
   const productDiscounted = itemDiscounts.length > 0
-  const bestDiscount      = product ? bestDiscountForItem(product) : null
-  const singleDiscount    = bestDiscount && product
+  const bestDiscount      = bestDiscountForItem(product)
+  const singleDiscount    = bestDiscount
     ? (bestDiscount.type === 'percentage'
         ? product.price * bestDiscount.value / 100
         : Math.min(bestDiscount.value, product.price))
     : 0
-  const discountedPrice   = Math.max(0, (product?.price ?? 0) - singleDiscount)
+  const discountedPrice = Math.max(0, (product?.price ?? 0) - singleDiscount)
 
   function handleAddToCart() {
     for (let i = 0; i < qty; i++) addItem(product)
@@ -103,22 +110,27 @@ export default function ProductDetailPage() {
     setTimeout(() => setAdded(false), 2000)
   }
 
+  const bg      = dark ? '#111827' : '#fff'
+  const cardBg  = dark ? '#1f2937' : '#f9fafb'
+  const textCol = dark ? '#f9fafb' : '#1f2937'
+  const subCol  = dark ? '#9ca3af' : '#6b7280'
+
   return (
-    <div className="max-w-[1280px] mx-auto px-4 py-8 bg-white dark:bg-gray-900" style={{ background: dark ? '#111827' : '#fff', minHeight: '60vh' }}>
+    <div className="max-w-[1280px] mx-auto px-4 py-8" style={{ background: bg, minHeight: '60vh' }}>
 
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 flex-wrap mb-6 text-gray-400" style={{ fontSize: 13 }}>
+      <div className="flex items-center gap-2 flex-wrap mb-6" style={{ fontSize: 13, color: subCol }}>
         <a href="/" className="hover:text-primary">Home</a>
         {product.category && <>
           <span>›</span>
           <a href={`/category/${product.category?.toLowerCase()}`} className="hover:text-primary capitalize">{product.category}</a>
         </>}
         <span>›</span>
-        <span className="text-gray-700 font-semibold">{product.name}</span>
+        <span className="font-semibold" style={{ color: textCol }}>{product.name}</span>
       </div>
 
       {/* Main card */}
-      <div className="flex flex-col md:flex-row gap-8 mb-12 rounded-2xl p-6 shadow-sm" style={{ background: dark ? '#1f2937' : '#f9fafb' }}>
+      <div className="flex flex-col md:flex-row gap-8 mb-12 rounded-2xl p-6 shadow-sm" style={{ background: cardBg }}>
 
         {/* Image gallery */}
         <div className="flex-1 flex flex-col gap-3">
@@ -128,7 +140,7 @@ export default function ProductDetailPage() {
                 className="max-h-72 max-w-full object-contain transition-opacity duration-300"
                 onError={e => { e.target.style.display = 'none' }} />
             ) : (
-              <div className="flex flex-col items-center text-gray-600">
+              <div className="flex flex-col items-center" style={{ color: subCol }}>
                 <svg className="w-16 h-16 mb-2" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 19.5h18M3 4.5h18"/>
                 </svg>
@@ -136,7 +148,7 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Discount badges on image — one per active discount, respects badge_config */}
+            {/* Discount badges */}
             {productDiscounted && (
               <div className="absolute top-3 left-3 flex flex-col gap-1.5" style={{ zIndex: 2 }}>
                 {itemDiscounts.map((d, idx) => {
@@ -154,27 +166,18 @@ export default function ProductDetailPage() {
                   const shadowStyle = bc ? {} : d.source === 'public'
                     ? { boxShadow: '0 3px 12px rgba(124,58,237,0.55)' }
                     : { boxShadow: '0 3px 12px rgba(249,115,22,0.55)' }
-
                   return (
                     <div key={idx}>
                       <div className="flex items-center gap-1.5 font-black rounded-full shadow-lg"
-                        style={{
-                          fontSize: 13, letterSpacing: 0.5, padding: '5px 14px',
-                          color: badgeColor, ...bgStyle, ...shadowStyle,
-                        }}>
+                        style={{ fontSize: 13, letterSpacing: 0.5, padding: '5px 14px', color: badgeColor, ...bgStyle, ...shadowStyle }}>
                         {badgeIcon} {badgeText}
                         {d.source === 'code' && !bc && (
                           <span style={{ fontSize: 10, opacity: 0.8 }}> ({d.code})</span>
                         )}
                       </div>
-                      {/* Savings sub-badge — skip when admin set a custom badge text */}
                       {!bc && (
                         <div className="font-black rounded-full mt-1"
-                          style={{
-                            fontSize: 11, padding: '3px 12px',
-                            background: 'rgba(34,197,94,0.18)', color: '#22c55e',
-                            border: '1px solid rgba(34,197,94,0.4)', width: 'fit-content',
-                          }}>
+                          style={{ fontSize: 11, padding: '3px 12px', background: 'rgba(34,197,94,0.18)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.4)', width: 'fit-content' }}>
                           save ${(d.type === 'percentage'
                             ? product.price * d.value / 100
                             : Math.min(d.value, product.price)).toFixed(2)} each
@@ -193,6 +196,8 @@ export default function ProductDetailPage() {
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow hover:text-primary text-xl z-10">›</button>
             </>)}
           </div>
+
+          {/* Thumbnail strip */}
           {images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
               {images.map((img, i) => (
@@ -209,22 +214,22 @@ export default function ProductDetailPage() {
         {/* Info */}
         <div className="flex-1 flex flex-col">
           {product.brand && (
-            <div className="font-semibold mb-1 tracking-widest uppercase" style={{ fontSize: 15, color: dark ? '#9ca3af' : '#6b7280' }}>{product.brand}</div>
+            <div className="font-semibold mb-1 tracking-widest uppercase" style={{ fontSize: 15, color: subCol }}>{product.brand}</div>
           )}
-          <h1 className="text-primary font-black text-gray-900 mb-2 leading-tight"
-            style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 'clamp(20px,3vw,30px)' }}>
+          <h1 className="font-black mb-2 leading-tight"
+            style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 'clamp(20px,3vw,30px)', color: '#F97316' }}>
             {product.name}
           </h1>
           {product.rating > 0 && <div className="mb-3"><Stars rating={product.rating}/></div>}
 
-          {/* Price with discount */}
+          {/* Price */}
           <div className="mb-4">
             {productDiscounted ? (
               <div className="flex items-end gap-3 flex-wrap">
                 <div className="text-primary font-black" style={{ fontSize: 32 }}>
                   ${discountedPrice.toFixed(2)}
                 </div>
-                <div className="text-gray-400 line-through" style={{ fontSize: 20 }}>
+                <div className="line-through" style={{ fontSize: 20, color: dark ? '#6b7280' : '#9ca3af' }}>
                   ${Number(product.price).toFixed(2)}
                 </div>
               </div>
@@ -234,7 +239,6 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Active discount info banners — one per matching discount */}
             {productDiscounted && itemDiscounts.map((d, idx) => (
               <div key={idx} className="mt-3 flex items-center gap-3 rounded-xl px-4 py-3 flex-wrap"
                 style={{
@@ -245,11 +249,7 @@ export default function ProductDetailPage() {
                 }}>
                 <span className="text-3xl" style={{ lineHeight: 1 }}>🏷</span>
                 <div>
-                  <div className="font-black" style={{
-                    fontSize: 14,
-                    color: d.source === 'public' ? '#a78bfa' : '#F97316',
-                    letterSpacing: 0.5,
-                  }}>
+                  <div className="font-black" style={{ fontSize: 14, color: d.source === 'public' ? '#a78bfa' : '#F97316', letterSpacing: 0.5 }}>
                     {d.source === 'code'
                       ? <>Code <span style={{ fontFamily: 'monospace', letterSpacing: 2, fontSize: 15 }}>{d.code}</span> — </>
                       : <>Sale — </>}
@@ -268,6 +268,7 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             ))}
+
             {discount && !productDiscounted && (
               <div className="mt-2 inline-flex items-center gap-2 rounded-full px-4 py-1.5"
                 style={{ background: dark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${dark ? '#374151' : '#e5e7eb'}` }}>
@@ -283,21 +284,22 @@ export default function ProductDetailPage() {
               {product.description}
             </p>
           )}
+
           <div className="flex items-center gap-2 mb-5">
             <span className={`w-2.5 h-2.5 rounded-full ${inStock ? 'bg-green-500' : 'bg-red-400'}`}/>
             <span className={`font-bold text-sm ${inStock ? 'text-green-600' : 'text-red-500'}`}>
               {inStock ? `In Stock${product.stock ? ` (${product.stock} left)` : ''}` : 'Out of Stock'}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-3 flex-wrap mt-auto">
             <div className="flex items-center rounded-lg overflow-hidden" style={{ border: `1px solid ${dark ? '#4b5563' : '#d1d5db'}` }}>
               <button onClick={() => setQty(q => Math.max(1,q-1))}
-                className="w-10 h-10 flex items-center justify-center font-bold text-lg transition-colors"
+                className="w-10 h-10 flex items-center justify-center font-bold text-lg"
                 style={{ color: dark ? '#9ca3af' : '#4b5563', background: dark ? '#374151' : '#f3f4f6' }}>−</button>
               <span className="w-10 text-center font-bold" style={{ fontSize: 16, color: dark ? '#f9fafb' : '#6b7280', background: dark ? '#1f2937' : '#fff' }}>{qty}</span>
               <button onClick={() => setQty(q => Math.min(maxQty,q+1))}
-                className="w-10 h-10 flex items-center justify-center font-bold text-lg transition-colors"
+                className="w-10 h-10 flex items-center justify-center font-bold text-lg"
                 style={{ color: dark ? '#9ca3af' : '#4b5563', background: dark ? '#374151' : '#f3f4f6' }}>+</button>
             </div>
             <button onClick={handleAddToCart} disabled={!inStock}
@@ -307,16 +309,13 @@ export default function ProductDetailPage() {
               {added ? '✓ ADDED!' : '🛒 ADD TO CART'}
             </button>
 
-            {/* Favorite button */}
             <button
               onClick={() => toggleFavorite(product)}
               title={isFavorite(product.id) ? 'Remove from favorites' : 'Add to favorites'}
               className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-lg border-2 transition-all hover:scale-110 active:scale-95
-                ${isFavorite(product.id)
-                  ? 'border-primary bg-orange-50'
-                  : 'border-gray-300 bg-white hover:border-primary'}`} style={{ background: dark ? '#111827' : '#fff' }}
-            >
-              <svg className="w-6 h-6 transition-all" viewBox="0 0 24 24"
+                ${isFavorite(product.id) ? 'border-primary' : 'border-gray-300 hover:border-primary'}`}
+              style={{ background: dark ? '#111827' : '#fff' }}>
+              <svg className="w-6 h-6" viewBox="0 0 24 24"
                 fill={isFavorite(product.id) ? '#F97316' : 'none'}
                 stroke={isFavorite(product.id) ? '#F97316' : '#9ca3af'}
                 strokeWidth={2}>
@@ -325,7 +324,6 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          {/* Qty total with discount */}
           {productDiscounted && qty > 1 && (
             <div className="mt-3 p-3 rounded-xl flex justify-between items-center"
               style={{ background: dark ? 'rgba(22,163,74,0.1)' : '#f0fdf4', border: `1px solid ${dark ? 'rgba(22,163,74,0.3)' : '#bbf7d0'}` }}>
@@ -336,10 +334,10 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Related */}
+      {/* ── FIX: Related products — horizontal scroll, show ALL, display product names ── */}
       {related.length > 0 && (
         <div>
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <div className="flex-1 h-px" style={{ background: dark ? '#374151' : '#e5e7eb' }}/>
             <h2 className="font-black tracking-widest whitespace-nowrap"
               style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, color: dark ? '#f9fafb' : '#374151' }}>
@@ -347,12 +345,52 @@ export default function ProductDetailPage() {
             </h2>
             <div className="flex-1 h-px" style={{ background: dark ? '#374151' : '#e5e7eb' }}/>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {related.map((r, i) => <ProductCard key={r.id || i} product={r}/>)}
+
+          {/* Horizontal scroll container — shows all products without truncation */}
+          <div
+            className="flex gap-4 overflow-x-auto pb-3"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 transparent' }}>
+            {related.map((r, i) => (
+              <div key={r.id || i} className="flex-shrink-0" style={{ width: 200 }}>
+                {/* Mini product card with visible name */}
+                <a href={`/product/${r.id}`}
+                  className="block rounded-xl overflow-hidden transition-shadow"
+                  style={{
+                    background: dark ? '#1f2937' : '#f9fafb',
+                    border: `1px solid ${dark ? '#374151' : '#e5e7eb'}`,
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 20px rgba(249,115,22,0.18)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'}>
+                  <div className="flex items-center justify-center" style={{ height: 130, background: dark ? '#111827' : '#fff' }}>
+                    {resolveImage(r.image) ? (
+                      <img src={resolveImage(r.image)} alt={r.name}
+                        className="h-24 object-contain"
+                        onError={e => { e.target.style.display = 'none' }} />
+                    ) : (
+                      <span style={{ fontSize: 36 }}>📦</span>
+                    )}
+                  </div>
+                  <div className="p-2.5">
+                    {/* FIX: show full product name, no truncation */}
+                    <p className="font-bold leading-tight mb-1.5"
+                      style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 14, color: dark ? '#f9fafb' : '#1f2937' }}>
+                      {r.name}
+                    </p>
+                    {r.price && (
+                      <p className="font-black text-primary" style={{ fontSize: 15 }}>
+                        ${Number(r.price).toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                </a>
+              </div>
+            ))}
           </div>
+
           {product.category && (
-            <div className="flex justify-end mt-4">
-              <a href={`/category/${product.category.toLowerCase().replace(' ', '-')}`}
+            <div className="flex justify-end mt-3">
+              <a href={`/category/${product.category.toLowerCase().replace(/\s+/g, '-')}`}
                 className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
                 View all {product.category} →
               </a>

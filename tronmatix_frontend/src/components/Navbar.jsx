@@ -6,6 +6,15 @@ import { useFavorites } from '../context/FavoritesContext'
 import { useTheme } from '../context/ThemeContext'
 import logo from '../assets/logo.png'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// slugify must match CategoryPage exactly.
+// CategoryPage uses `sub.replace(/-/g, ' ')` to get the label from the URL.
+// So slug = label.toLowerCase().replace(/\s+/g, '-') and
+// label = slug.replace(/-/g, ' ').toUpperCase() — they round-trip correctly
+// as long as the original label has no special chars other than spaces.
+// ─────────────────────────────────────────────────────────────────────────────
+const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
+
 const navItems = [
   { label: 'HOME', path: '/' },
   {
@@ -75,9 +84,7 @@ function ThemeToggle() {
   )
 }
 
-/* ── Reusable icon button — FIX: use inline style only, no Tailwind hover ── */
-// Tailwind hover: classes conflict with inline style={{ color }} overrides.
-// All hover color changes use onMouseEnter/onMouseLeave exclusively.
+/* ── Icon button (avoids Tailwind hover vs inline color conflict) ─────────── */
 function IconBtn({ onClick, className = '', style = {}, children, title }) {
   const [hovered, setHovered] = useState(false)
   return (
@@ -94,8 +101,8 @@ function IconBtn({ onClick, className = '', style = {}, children, title }) {
   )
 }
 
-/* ── Reusable Dropdown ───────────────────────────────────────────────────── */
-function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, slugify }) {
+/* ── Desktop dropdown panel ─────────────────────────────────────────────── */
+function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub }) {
   const isNested = typeof item.sub[0] === 'object'
   return (
     <div className="absolute top-full left-0 shadow-2xl z-[200] py-2 min-w-[210px]"
@@ -178,10 +185,12 @@ export default function Navbar({ onAuthOpen }) {
   const headerRef          = useRef(null)
   const userMenuRef        = useRef(null)
   const compactUserMenuRef = useRef(null)
+  const drawerRef          = useRef(null)
 
   const totalQty = items.reduce((s, i) => s + i.qty, 0)
-  const slugify  = s => s.toLowerCase().replace(/\s+/g, '-')
 
+  // FIX 2: All nav colors use reactive variables — they re-compute on every render
+  // so dark/light toggle is reflected immediately without any stale closures.
   const navBg        = dark ? '#111827' : '#ffffff'
   const navBorder    = dark ? '#1f2937' : '#e5e7eb'
   const textColor    = dark ? '#f9fafb' : '#1f2937'
@@ -191,6 +200,11 @@ export default function Navbar({ onAuthOpen }) {
   const ddBg         = dark ? '#1f2937' : '#ffffff'
   const ddBorder     = dark ? '#374151' : '#e5e7eb'
   const ddHover      = dark ? '#374151' : '#f3f4f6'
+  // FIX 2: mobile drawer background explicitly tied to dark state
+  const drawerBg     = dark ? '#111827' : '#ffffff'
+  const drawerBorder = dark ? '#1f2937' : '#e5e7eb'
+  const drawerItemBg = dark ? '#1f2937' : '#f8fafc'
+  const drawerSubBg  = dark ? '#0f172a' : '#f1f5f9'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -198,6 +212,7 @@ export default function Navbar({ onAuthOpen }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handler = e => {
       if (headerRef.current && !headerRef.current.contains(e.target)) {
@@ -211,26 +226,29 @@ export default function Navbar({ onAuthOpen }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  // FIX 3: Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
+
   const handleSearch = e => {
     e.preventDefault()
     const q = search.trim()
     if (q) { navigate(`/category/search?q=${encodeURIComponent(q)}`); setSearch(''); setMobileOpen(false) }
   }
 
-  const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub, slugify }
+  const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub }
 
-  /* ── User Avatar Block (reusable in both bars) ──────────────────────────── */
+  /* ── User Avatar ──────────────────────────────────────────────────────────── */
   const UserAvatar = ({ size = 10, fontSize = 16 }) => (
     <div
       className={`w-${size} h-${size} rounded-full flex-shrink-0 overflow-hidden`}
       style={{ border: '2px solid #F97316', background: '#F97316' }}>
       {user?.avatar ? (
-        <img
-          src={user.avatar}
-          alt={user.username}
+        <img src={user.avatar} alt={user.username}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
-        />
+          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
       ) : null}
       <div style={{
         display: user?.avatar ? 'none' : 'flex',
@@ -243,7 +261,7 @@ export default function Navbar({ onAuthOpen }) {
     </div>
   )
 
-  /* ── User Dropdown Menu (reusable) ──────────────────────────────────────── */
+  /* ── Desktop User Dropdown ────────────────────────────────────────────────── */
   const UserDropdown = ({ menuRef }) => (
     <div ref={menuRef} className="relative">
       <button
@@ -261,7 +279,6 @@ export default function Navbar({ onAuthOpen }) {
             </span>
           </>
         ) : (
-          /* FIX: person icon — use inline color only, no Tailwind hover conflict */
           <span
             style={{ color: textColor, display: 'inline-flex', transition: 'color 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
@@ -323,9 +340,13 @@ export default function Navbar({ onAuthOpen }) {
                 <li key={item.label} className="relative flex-shrink-0">
                   <div onMouseEnter={() => item.sub && setOpenDrop(item.label)}
                     onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
-                    <Link to={item.path}
-                      className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap transition-colors"
-                      style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 13, color: textColor }}
+                    {/* FIX 2: use inline style color tied to textColor — not Tailwind class */}
+                    <Link
+                      to={item.categories
+                        ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
+                        : item.path}
+                      className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
+                      style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 13, color: textColor, transition: 'color 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                       onMouseLeave={e => e.currentTarget.style.color = textColor}
                       onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
@@ -344,15 +365,11 @@ export default function Navbar({ onAuthOpen }) {
             </ul>
           </nav>
 
-          {/* Right icons compact — FIX: use IconBtn for consistent hover */}
+          {/* Right icons compact */}
           <div className="flex items-center gap-1 ml-auto flex-shrink-0">
             <ThemeToggle />
 
-            {/* Favorites */}
-            <IconBtn
-              onClick={() => navigate('/favorites')}
-              className="hidden lg:flex"
-              style={{ color: textColor }}>
+            <IconBtn onClick={() => navigate('/favorites')} className="hidden lg:flex" style={{ color: textColor }}>
               <svg className="w-5 h-5"
                 fill={favorites.length > 0 ? '#F97316' : 'none'}
                 stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
@@ -366,11 +383,7 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </IconBtn>
 
-            {/* Cart */}
-            <IconBtn
-              onClick={() => setCartOpen(true)}
-              className="hidden lg:flex"
-              style={{ color: textColor }}>
+            <IconBtn onClick={() => setCartOpen(true)} className="hidden lg:flex" style={{ color: textColor }}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -381,11 +394,10 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </IconBtn>
 
-            {/* User (compact) */}
             <div className="relative" ref={compactUserMenuRef}>
               <button
-                className="flex items-center gap-1 px-1 py-2 transition-colors"
-                style={{ color: textColor }}
+                className="flex items-center gap-1 px-1 py-2"
+                style={{ color: textColor, transition: 'color 0.15s' }}
                 onMouseEnter={e => { if (!user) e.currentTarget.style.color = '#F97316' }}
                 onMouseLeave={e => { if (!user) e.currentTarget.style.color = textColor }}
                 onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>
@@ -423,7 +435,7 @@ export default function Navbar({ onAuthOpen }) {
                   <hr style={{ borderColor: ddBorder, margin: '2px 0' }} />
                   <button
                     onClick={() => { logout(); setUserMenu(false) }}
-                    className="w-full text-left px-3 py-2 text-red-500 font-semibold transition-colors"
+                    className="w-full text-left px-3 py-2 text-red-500 font-semibold"
                     style={{ fontSize: 14 }}
                     onMouseEnter={e => e.currentTarget.style.background = ddHover}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -433,7 +445,6 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </div>
 
-            {/* Mobile cart */}
             <IconBtn onClick={() => setCartOpen(true)} className="md:hidden" style={{ color: textColor }}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -445,15 +456,12 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </IconBtn>
 
-            {/* Hamburger */}
-            <button className="lg:hidden p-2 transition-colors" style={{ color: textColor }}
+            <button className="lg:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
               onMouseLeave={e => e.currentTarget.style.color = textColor}
-              onClick={() => setMobileOpen(!mobileOpen)}>
+              onClick={() => setMobileOpen(true)}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileOpen
-                  ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
@@ -471,7 +479,6 @@ export default function Navbar({ onAuthOpen }) {
               <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 90 }} />
             </Link>
 
-            {/* Phone + socials */}
             <div className="hidden md:flex flex-col items-start ml-2 flex-shrink-0">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
@@ -483,20 +490,21 @@ export default function Navbar({ onAuthOpen }) {
                 </div>
               </div>
               <div className="flex gap-3 mt-1.5 ml-7">
-                <a href="https://www.facebook.com/TronmatixComputer?_rdc=1&_rdr#" className="hover:text-primary transition-colors" style={{ color: subTextColor }}><FacebookIcon /></a>
-                <a href="https://t.me/+VZScFi_U95PsFk0M"                          className="hover:text-primary transition-colors" style={{ color: subTextColor }}><TelegramIcon /></a>
-                <a href="https://www.tiktok.com/@tronmatixcomputer"                className="hover:text-primary transition-colors" style={{ color: subTextColor }}><TikTokIcon /></a>
+                <a href="https://www.facebook.com/TronmatixComputer?_rdc=1&_rdr#" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color='#F97316'} onMouseLeave={e => e.currentTarget.style.color=subTextColor}><FacebookIcon /></a>
+                <a href="https://t.me/+VZScFi_U95PsFk0M" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color='#F97316'} onMouseLeave={e => e.currentTarget.style.color=subTextColor}><TelegramIcon /></a>
+                <a href="https://www.tiktok.com/@tronmatixcomputer" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color='#F97316'} onMouseLeave={e => e.currentTarget.style.color=subTextColor}><TikTokIcon /></a>
               </div>
             </div>
 
-            {/* Search */}
             <form onSubmit={handleSearch} className="flex-1 hidden md:flex mx-3">
               <div className="relative w-full max-w-md">
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
-                  className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none focus:border-primary transition-colors"
+                  className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none transition-colors"
                   style={{ fontSize: 15, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }}
                 />
-                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-primary transition-colors" style={{ color: subTextColor }}>
+                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}
+                  onMouseEnter={e => e.currentTarget.style.color='#F97316'}
+                  onMouseLeave={e => e.currentTarget.style.color=subTextColor}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -504,15 +512,10 @@ export default function Navbar({ onAuthOpen }) {
               </div>
             </form>
 
-            {/* Right icons — FIX: use IconBtn to avoid Tailwind hover conflict */}
             <div className="flex items-center gap-1.5 ml-auto">
               <ThemeToggle />
 
-              {/* Favorites */}
-              <IconBtn
-                onClick={() => navigate('/favorites')}
-                className="hidden md:flex"
-                style={{ color: textColor }}>
+              <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
                 <svg className="w-6 h-6"
                   fill={favorites.length > 0 ? '#F97316' : 'none'}
                   stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
@@ -526,7 +529,6 @@ export default function Navbar({ onAuthOpen }) {
                 )}
               </IconBtn>
 
-              {/* Cart */}
               <IconBtn onClick={() => setCartOpen(true)} style={{ color: textColor }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -538,28 +540,26 @@ export default function Navbar({ onAuthOpen }) {
                 )}
               </IconBtn>
 
-              {/* User (full bar) */}
               <UserDropdown menuRef={userMenuRef} />
 
-              {/* Hamburger */}
-              <button className="lg:hidden p-2 transition-colors" style={{ color: textColor }}
+              {/* FIX 3: Hamburger only OPENS — close is the ✕ inside the drawer */}
+              <button className="lg:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                 onMouseLeave={e => e.currentTarget.style.color = textColor}
-                onClick={() => setMobileOpen(!mobileOpen)}>
+                onClick={() => setMobileOpen(true)}>
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {mobileOpen
-                    ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
             </div>
           </div>
         </div>
 
-        {/* ── DESKTOP / TABLET NAV BAR ── */}
-        <nav className="hidden md:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
+        {/* ── DESKTOP NAV BAR ── */}
+        {/* FIX 2: background explicitly uses navBg variable, not a Tailwind class */}
+        <nav className="hidden lg:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
           <div className="max-w-[1280px] mx-auto px-2 flex items-center">
-            <ul className="hidden lg:flex items-center justify-center flex-1 flex-wrap">
+            <ul className="flex items-center justify-center flex-1 flex-wrap">
               {navItems.map(item => (
                 <li key={item.label} className="relative">
                   <div className="flex items-center"
@@ -569,12 +569,14 @@ export default function Navbar({ onAuthOpen }) {
                       to={item.categories
                         ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
                         : item.path}
-                      className="flex items-center gap-0.5 border-b-2 border-transparent transition-all whitespace-nowrap font-bold tracking-wide"
+                      className="flex items-center gap-0.5 border-b-2 border-transparent whitespace-nowrap font-bold tracking-wide"
                       style={{
                         fontFamily: 'Rajdhani, sans-serif',
                         fontSize: 'clamp(12px, 1.35vw, 17px)',
                         padding: 'clamp(10px, 1.2vw, 20px) clamp(6px, 0.8vw, 18px)',
+                        // FIX 2: color driven by reactive textColor variable
                         color: textColor,
+                        transition: 'color 0.15s, border-color 0.15s',
                       }}
                       onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.borderBottomColor = '#F97316' }}
                       onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.borderBottomColor = 'transparent' }}
@@ -596,133 +598,178 @@ export default function Navbar({ onAuthOpen }) {
         </nav>
       </div>
 
-      {/* ══════════ MOBILE DRAWER ════════════════════════════════════════════ */}
+      {/* ══════════ FIX 3: MOBILE SLIDE DRAWER (slides from right) ═════════ */}
+      {/* Overlay */}
       {mobileOpen && (
-        <div className="lg:hidden border-t max-h-[85vh] overflow-y-auto"
-          style={{ background: navBg, borderColor: navBorder }}>
+        <div
+          className="fixed inset-0 z-[90]"
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-          <form onSubmit={handleSearch} className="p-3 border-b" style={{ borderColor: navBorder }}>
-            <div className="relative">
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..."
-                className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none focus:border-primary transition-colors"
-                style={{ fontSize: 16, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }} />
-              <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 hover:text-primary" style={{ color: subTextColor }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-            </div>
-          </form>
+      {/* Drawer panel slides in from the right */}
+      <div
+        ref={drawerRef}
+        className="fixed top-0 right-0 h-full z-[100] flex flex-col"
+        style={{
+          width: 'min(320px, 85vw)',
+          background: drawerBg,
+          boxShadow: '-4px 0 32px rgba(0,0,0,0.35)',
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+          overflowY: 'auto',
+        }}>
 
-          <div>
-            {navItems.map(item => (
-              <div key={item.label} className="border-b" style={{ borderColor: navBorder }}>
-                <div className="flex items-center justify-between px-5 py-3.5 select-none">
-                  <span
-                    className="font-bold tracking-wide cursor-pointer hover:text-primary transition-colors flex-1"
-                    style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 16, color: textColor }}
-                    onClick={() => {
-                      const dest = item.categories
-                        ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
-                        : item.path
-                      navigate(dest)
-                      setMobileOpen(false)
-                    }}>
-                    {item.label}
-                  </span>
-                  {item.sub
-                    ? <button
-                        className="p-1.5 rounded transition-colors"
-                        onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
-                        <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${mobileSub === item.label ? 'rotate-180' : ''}`} fill="none" stroke={textColor} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                  }
-                </div>
-                {item.sub && mobileSub === item.label && (
-                  <div className="pb-2" style={{ background: dark ? '#0f172a' : '#f1f5f9' }}>
-                    <Link
-                      to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                      className="block px-8 py-2 font-bold text-primary border-b mb-1"
-                      style={{ fontSize: 14, borderColor: dark ? '#1e293b' : '#e2e8f0' }}
-                      onClick={() => setMobileOpen(false)}>ALL {item.label}</Link>
-                    {item.sub.map(sub => {
-                      const isObj = typeof sub === 'object'
-                      const label = isObj ? sub.label : sub
-                      const path  = isObj
-                        ? `/category/${slugify(item.label)}/${slugify(sub.label)}`
-                        : `/category/${slugify(item.label)}/${slugify(sub)}`
-                      return (
-                        <Link key={label} to={path}
-                          className="block px-8 py-1.5 font-semibold hover:text-primary transition-colors"
-                          style={{ fontSize: 14, color: subTextColor }}
-                          onClick={() => setMobileOpen(false)}>{label}</Link>
-                      )
-                    })}
+        {/* ── Drawer header: Profile + Theme on top ── */}
+        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+          style={{ borderBottom: `1px solid ${drawerBorder}`, background: drawerBg }}>
+
+          {/* Profile section */}
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
+                style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.username}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>
+                    {(user.username || user.name || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-
-          <div className="p-4 border-t" style={{ borderColor: navBorder }}>
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-semibold" style={{ fontSize: 15, color: textColor }}>{dark ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
-              <ThemeToggle />
-            </div>
-            {user ? (
               <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full flex-shrink-0 overflow-hidden"
-                    style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.username}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
-                    ) : null}
-                    <div style={{
-                      display: user.avatar ? 'none' : 'flex',
-                      width: '100%', height: '100%',
-                      alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontWeight: 900, fontSize: 20
-                    }}>
-                      {(user.username || user.name || user.email || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-black" style={{ fontSize: 16, color: '#F97316' }}>{user.username || user.name || 'User'}</div>
-                    <div style={{ fontSize: 12, color: subTextColor }}>Logged in</div>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1.5 mb-3">
-                  {[{ to: '/profile', label: '👤 My Profile' }, { to: '/orders', label: '📦 My Orders' }, { to: '/favorites', label: '❤️ My Favorites' }].map(({ to, label }) => (
-                    <Link key={to} to={to} onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold transition-colors"
-                      style={{ fontSize: 14, color: textColor, border: `1px solid ${navBorder}` }}
-                      onMouseEnter={e => e.currentTarget.style.background = ddHover}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{label}</Link>
-                  ))}
-                </div>
-                <button onClick={() => { logout(); setMobileOpen(false) }}
-                  className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg hover:bg-red-50 transition-colors" style={{ fontSize: 15 }}>
-                  🚪 Logout
-                </button>
+                <div className="font-black" style={{ fontSize: 15, color: '#F97316' }}>{user.username || user.name}</div>
+                <div style={{ fontSize: 11, color: subTextColor }}>Logged in</div>
               </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
-                  className="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors" style={{ fontSize: 16 }}>LOGIN</button>
-                <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
-                  className="flex-1 font-bold py-3 rounded-lg transition-colors border-2 border-primary" style={{ fontSize: 16, color: '#F97316' }}>REGISTER</button>
-              </div>
-            )}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
+                className="bg-primary text-white px-4 py-1.5 rounded-lg font-bold" style={{ fontSize: 14 }}>
+                LOGIN
+              </button>
+              <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
+                className="border-2 border-primary px-4 py-1.5 rounded-lg font-bold" style={{ fontSize: 14, color: '#F97316' }}>
+                REGISTER
+              </button>
+            </div>
+          )}
+
+          {/* Right side: theme toggle + close */}
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
+              style={{ background: dark ? '#374151' : '#f3f4f6', color: textColor, fontSize: 18 }}>
+              ✕
+            </button>
           </div>
         </div>
-      )}
+
+        {/* ── Mobile search ── */}
+        <form onSubmit={handleSearch} className="px-4 py-3 flex-shrink-0" style={{ borderBottom: `1px solid ${drawerBorder}` }}>
+          <div className="relative">
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..."
+              className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
+              style={{ fontSize: 15, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }} />
+            <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        {/* ── Nav items ── */}
+        <div className="flex-1 overflow-y-auto">
+          {navItems.map(item => (
+            <div key={item.label} style={{ borderBottom: `1px solid ${drawerBorder}` }}>
+              <div className="flex items-center justify-between px-4 py-3.5 select-none">
+                <span
+                  className="font-bold tracking-wide cursor-pointer flex-1"
+                  style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 16, color: textColor, transition: 'color 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.color='#F97316'}
+                  onMouseLeave={e => e.currentTarget.style.color=textColor}
+                  onClick={() => {
+                    const dest = item.categories
+                      ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
+                      : item.path
+                    navigate(dest)
+                    setMobileOpen(false)
+                  }}>
+                  {item.label}
+                </span>
+                {item.sub
+                  ? <button
+                      className="p-1.5 rounded"
+                      style={{ background: 'transparent' }}
+                      onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
+                      <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${mobileSub === item.label ? 'rotate-180' : ''}`}
+                        fill="none" stroke={textColor} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                }
+              </div>
+              {item.sub && mobileSub === item.label && (
+                <div className="pb-2" style={{ background: drawerSubBg }}>
+                  <Link
+                    to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+                    className="block px-8 py-2 font-bold text-primary border-b mb-1"
+                    style={{ fontSize: 14, borderColor: drawerBorder }}
+                    onClick={() => setMobileOpen(false)}>ALL {item.label}</Link>
+                  {item.sub.map(sub => {
+                    const isObj  = typeof sub === 'object'
+                    const label  = isObj ? sub.label : sub
+                    const path   = `/category/${slugify(item.label)}/${slugify(label)}`
+                    return (
+                      <Link key={label} to={path}
+                        className="block px-8 py-1.5 font-semibold"
+                        style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.color='#F97316'}
+                        onMouseLeave={e => e.currentTarget.style.color=subTextColor}
+                        onClick={() => setMobileOpen(false)}>{label}</Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Profile actions at bottom ── */}
+        {user && (
+          <div className="flex-shrink-0 p-4" style={{ borderTop: `1px solid ${drawerBorder}` }}>
+            <div className="flex flex-col gap-1.5 mb-3">
+              {[{ to: '/profile', label: '👤 My Profile' }, { to: '/orders', label: '📦 My Orders' }, { to: '/favorites', label: '❤️ My Favorites' }].map(({ to, label }) => (
+                <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
+                  style={{ fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = ddHover}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>{label}</Link>
+              ))}
+            </div>
+            <button onClick={() => { logout(); setMobileOpen(false) }}
+              className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg" style={{ fontSize: 15 }}>
+              🚪 Logout
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Slide animation keyframe */}
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%) }
+          to   { transform: translateX(0) }
+        }
+      `}</style>
     </header>
   )
 }
