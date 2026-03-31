@@ -334,7 +334,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* ── FIX: Related products — horizontal scroll, show ALL, display product names ── */}
+      {/* ── Related products — horizontal scroll, show ALL, display product names ── */}
       {related.length > 0 && (
         <div>
           <div className="flex items-center gap-4 mb-4">
@@ -346,44 +346,13 @@ export default function ProductDetailPage() {
             <div className="flex-1 h-px" style={{ background: dark ? '#374151' : '#e5e7eb' }}/>
           </div>
 
-          {/* Horizontal scroll container — shows all products without truncation */}
+          {/* Horizontal scroll container — uses the real ProductCard component */}
           <div
             className="flex gap-4 overflow-x-auto pb-3"
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 transparent' }}>
             {related.map((r, i) => (
-              <div key={r.id || i} className="flex-shrink-0" style={{ width: 200 }}>
-                {/* Mini product card with visible name */}
-                <a href={`/product/${r.id}`}
-                  className="block rounded-xl overflow-hidden transition-shadow"
-                  style={{
-                    background: dark ? '#1f2937' : '#f9fafb',
-                    border: `1px solid ${dark ? '#374151' : '#e5e7eb'}`,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 20px rgba(249,115,22,0.18)'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'}>
-                  <div className="flex items-center justify-center" style={{ height: 130, background: dark ? '#111827' : '#fff' }}>
-                    {resolveImage(r.image) ? (
-                      <img src={resolveImage(r.image)} alt={r.name}
-                        className="h-24 object-contain"
-                        onError={e => { e.target.style.display = 'none' }} />
-                    ) : (
-                      <span style={{ fontSize: 36 }}>📦</span>
-                    )}
-                  </div>
-                  <div className="p-2.5">
-                    {/* FIX: show full product name, no truncation */}
-                    <p className="font-bold leading-tight mb-1.5"
-                      style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 14, color: dark ? '#f9fafb' : '#1f2937' }}>
-                      {r.name}
-                    </p>
-                    {r.price && (
-                      <p className="font-black text-primary" style={{ fontSize: 15 }}>
-                        ${Number(r.price).toFixed(2)}
-                      </p>
-                    )}
-                  </div>
-                </a>
+              <div key={r.id || i} className="flex-shrink-0" style={{ width: 220 }}>
+                <ProductCard product={r} />
               </div>
             ))}
           </div>
