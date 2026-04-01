@@ -82,12 +82,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Telegram user connect/disconnect
     Route::prefix('telegram')->group(function () {
-        Route::get('/connect-url',    [TelegramController::class, 'connectUrl']);
+        // ── User-facing (Sanctum-protected) ──────────────────────────────────
+        // FIX: /connect-url was pointing to TelegramController::connectUrl()
+        //      which does NOT exist → 404. Frontend calls POST /connect + GET /status.
+        Route::post('/connect',       [TelegramController::class, 'connect']);       // FIX: was missing
         Route::post('/disconnect',    [TelegramController::class, 'disconnect']);
+        Route::get('/status',         [TelegramController::class, 'status']);        // FIX: was missing → 404
+        Route::post('/test-message',  [TelegramController::class, 'testMessage']);   // FIX: was missing
 
-        // Bot setup — admin only
-        Route::post('/setup-webhook', [TelegramBotController::class, 'setupWebhook']);
-        Route::get('/webhook-info',   [TelegramBotController::class, 'webhookInfo']);
-        Route::post('/set-commands',  [TelegramBotController::class, 'setCommands']);
+        // ── Bot admin setup ───────────────────────────────────────────────────
+        Route::post('/setup-webhook',  [TelegramBotController::class, 'setupWebhook']);
+        Route::post('/delete-webhook', [TelegramBotController::class, 'deleteWebhook']); // FIX: new — fixes 409 conflict
+        Route::get('/webhook-info',    [TelegramBotController::class, 'webhookInfo']);
+        Route::post('/set-commands',   [TelegramBotController::class, 'setCommands']);
     });
 });

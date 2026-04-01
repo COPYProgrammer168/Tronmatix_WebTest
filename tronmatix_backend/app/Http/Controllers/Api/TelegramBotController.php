@@ -63,6 +63,25 @@ class TelegramBotController extends Controller
         ]);
     }
 
+    // ── POST /api/telegram/delete-webhook  (protected) ────────────────────────
+    // FIX: Resolves 409 "Conflict: terminated by other getUpdates request"
+    // Call this whenever you need to stop polling mode and switch to webhook,
+    // or to clear a stale webhook registration before re-registering.
+    public function deleteWebhook(): JsonResponse
+    {
+        $result = $this->bot->deleteWebhook();
+
+        Log::info('[UserBot] deleteWebhook called', ['result' => $result]);
+
+        return response()->json([
+            'success' => $result['ok'] ?? false,
+            'message' => $result['ok'] ?? false
+                ? 'Webhook deleted. Bot is now in polling-free state. Call setup-webhook to re-register.'
+                : 'Failed to delete webhook.',
+            'result'  => $result,
+        ]);
+    }
+
     // ── GET /api/telegram/webhook-info  (protected) ───────────────────────────
     public function webhookInfo(): JsonResponse
     {

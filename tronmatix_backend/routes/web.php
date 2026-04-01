@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\Dashboard\BannerController;
+use App\Http\Controllers\Dashboard\TelegramAdminController;
 use App\Http\Controllers\Dashboard\DiscountController as DashboardDiscountController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\ProfileController;
@@ -87,6 +88,12 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::put('/profile/password',   [ProfileController::class, 'updatePassword'])->name('profile.password');
         Route::put('/profile/role',       [ProfileController::class, 'updateRole'])->name('profile.role');
         Route::delete('/profile/avatar',  [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
+
+        // ── Telegram Bot Admin (superadmin — webhook management) ──────────────
+        // Fixes 409 conflict: use delete-webhook first, then setup-webhook
+        Route::post('/telegram/setup-webhook',  [TelegramAdminController::class, 'setupWebhook'])->name('telegram.setup-webhook');
+        Route::post('/telegram/delete-webhook', [TelegramAdminController::class, 'deleteWebhook'])->name('telegram.delete-webhook');
+        Route::get('/telegram/webhook-info',    [TelegramAdminController::class, 'webhookInfo'])->name('telegram.webhook-info');
 
         // ── Staff ─────────────────────────────────────────────────────────────
         Route::get('/staff',               [StaffController::class, 'index'])->name('staff');
