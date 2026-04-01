@@ -4,21 +4,17 @@ import ProductCard from '../components/ProductCard'
 import { useTheme } from '../context/ThemeContext'
 import axios from '../lib/axios'
 
-const PAGE_SIZE = 12
-
 export function CategoryPage() {
   const { category, sub } = useParams()
   const [searchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
   const { dark } = useTheme()
 
-  const qParam    = searchParams.get('q') || ''
+  const qParam    = (searchParams.get('q') || '').toLowerCase()
   const sortParam = searchParams.get('sort') || ''
   const isSearch  = Boolean(qParam)
 
-  // Human-friendly sort labels shown in the header
   const SORT_LABELS = {
     newest:      'NEW PRODUCTS',
     'price-asc': 'LOWEST PRICE',
@@ -27,12 +23,7 @@ export function CategoryPage() {
     rating:      'TOP RATED',
   }
 
-  // Derive the page title:
-  // /search?sort=newest  → "NEW PRODUCTS"
-  // /search?q=ryzen      → 'SEARCH: "RYZEN"'
-  // /category/cpu        → "CPU"
-  // /category/monitor/monitor-42inch → "MONITOR 42INCH"
-  const rawSlug = sub || category || ''
+  const rawSlug   = sub || category || ''
   const slugLabel = rawSlug.replace(/-/g, ' ').toUpperCase()
 
   const label = isSearch
@@ -47,49 +38,44 @@ export function CategoryPage() {
   const bg      = dark ? '#111827' : '#fff'
   const text    = dark ? '#f9fafb' : '#1f2937'
   const textSub = dark ? '#9ca3af' : '#6b7280'
-  const border  = dark ? '#374151' : '#e5e7eb'
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    setPage(1)
     setProducts([])
 
-    const sortParam = searchParams.get('sort') || 'default'
+    const sortVal  = searchParams.get('sort') || 'default'
     const catsParam = searchParams.get('cats')
 
-    // Build API params for this category
     const buildParams = () => {
-      // Search mode
-      if (isSearch) return { search: qParam, per_page: 48, page: 1, sort: sortParam }
-
-      // "all" slug or no category — return everything, just apply sort
+      if (isSearch) return { search: qParam, per_page: 999, page: 1, sort: sortVal }
       const slug = (sub || category || '').toLowerCase()
-      if (!slug || slug === 'all') return { per_page: 48, page: 1, sort: sortParam }
-
-      // Multi-category via ?cats= URL param (from navbar subcategory links)
-      if (catsParam) return { cats: catsParam, per_page: 48, page: 1, sort: sortParam }
-
-      // Single category slug
+      if (!slug || slug === 'all') return { per_page: 999, page: 1, sort: sortVal }
+      if (catsParam) return { cats: catsParam, per_page: 999, page: 1, sort: sortVal }
       const catName = slug.replace(/-/g, ' ')
-      return { category: catName, per_page: 48, page: 1, sort: sortParam }
+      return { category: catName, per_page: 999, page: 1, sort: sortVal }
     }
 
     axios.get('/api/products', { params: buildParams() })
       .then(res => {
         if (cancelled) return
         const d = res.data.data ?? res.data ?? []
-        // Never fall back to MOCK — show real empty state instead
-        setProducts(Array.isArray(d) ? d : [])
+        let items = Array.isArray(d) ? d : []
+        if (isSearch && qParam && items.length > 0) {
+          items = items.filter(p =>
+            (p.name || '').toLowerCase().includes(qParam) ||
+            (p.category || '').toLowerCase().includes(qParam) ||
+            (p.brand || '').toLowerCase().includes(qParam) ||
+            (p.description || '').toLowerCase().includes(qParam)
+          )
+        }
+        setProducts(items)
       })
       .catch(() => { if (!cancelled) setProducts([]) })
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
   }, [category, sub, searchParams])
-
-  const totalPages = Math.ceil(products.length / PAGE_SIZE)
-  const paged      = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 py-6" style={{ background: bg, minHeight: '60vh' }}>
@@ -130,7 +116,7 @@ export function CategoryPage() {
           <p className="mb-4" style={{ fontSize: 15, color: textSub }}>
             {isSearch && products.length === 0
               ? `No results found for "${qParam}"`
-              : `Showing ${paged.length} of ${products.length} product${products.length !== 1 ? 's' : ''}`}
+              : `Showing ${products.length} product${products.length !== 1 ? 's' : ''}`}
           </p>
 
           {isSearch && products.length === 0 && (
@@ -143,30 +129,7 @@ export function CategoryPage() {
 
           {products.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {paged.map((p, i) => <ProductCard key={p.id || i} product={p} />)}
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <button onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo(0,0) }}
-                disabled={page === 1}
-                className="px-4 py-2 rounded font-bold hover:border-primary hover:text-primary disabled:opacity-40 transition-colors"
-                style={{ border: `1px solid ${border}`, color: text, fontSize: 15 }}>‹ Prev</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                <button key={n} onClick={() => { setPage(n); window.scrollTo(0,0) }}
-                  className="w-10 h-10 rounded font-bold transition-colors"
-                  style={{
-                    fontSize: 15,
-                    background: page === n ? '#F97316' : 'transparent',
-                    color: page === n ? '#fff' : text,
-                    border: `1px solid ${page === n ? '#F97316' : border}`,
-                  }}>{n}</button>
-              ))}
-              <button onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo(0,0) }}
-                disabled={page === totalPages}
-                className="px-4 py-2 rounded font-bold hover:border-primary hover:text-primary disabled:opacity-40 transition-colors"
-                style={{ border: `1px solid ${border}`, color: text, fontSize: 15 }}>Next ›</button>
+              {products.map((p, i) => <ProductCard key={p.id || i} product={p} />)}
             </div>
           )}
         </>

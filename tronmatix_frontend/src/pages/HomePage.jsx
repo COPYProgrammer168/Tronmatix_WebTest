@@ -300,14 +300,14 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Product grid — desktop: 5 cols × 2 rows = 10 items */}
+            {/* Product grid — desktop: 5 cols × 1 row = 5 items */}
             <div className="hidden lg:grid lg:grid-cols-5 gap-4">
               {loading
-                ? Array(10).fill(null).map((_, i) => (
+                ? Array(5).fill(null).map((_, i) => (
                     <div key={i} className="rounded-xl animate-pulse" style={{ height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
                   ))
                 : catItems.length > 0
-                  ? catItems.map((p, i) => <ProductCard key={p.id || i} product={p} />)
+                  ? catItems.slice(0, 5).map((p, i) => <ProductCard key={p.id || i} product={p} />)
                   : (
                     <div className="col-span-full py-10 text-center" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>
                       <div style={{ fontSize: 32, marginBottom: 6 }}>📦</div>
@@ -330,18 +330,18 @@ export default function HomePage() {
                 display: 'grid',
                 gridTemplateRows: 'repeat(2, auto)',
                 gridAutoFlow: 'column',
-                gridAutoColumns: '200px',
+                gridAutoColumns: '160px',
                 gap: '10px',
                 width: 'max-content',
               }}>
                 {loading
                   ? Array(10).fill(null).map((_, i) => (
                       <div key={i} className="rounded-xl animate-pulse"
-                        style={{ width: 200, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
+                        style={{ width: 160, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
                     ))
                   : catItems.length > 0
                     ? catItems.map((p, i) => (
-                        <div key={p.id || i} style={{ width: 200 }}>
+                        <div key={p.id || i} style={{ width: 160 }}>
                           <ProductCard product={p} />
                         </div>
                       ))
