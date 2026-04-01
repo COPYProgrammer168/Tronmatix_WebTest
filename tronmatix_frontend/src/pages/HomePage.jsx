@@ -40,7 +40,8 @@ export default function HomePage() {
   const [loading, setLoading]   = useState(true)
   const [newProducts, setNewProducts] = useState([])
   const [catPage, setCatPage]         = useState({})   // { CPU: 1, RAM: 1, ... }
-  const newProdRef                    = useRef(null)    // ref for new-products scroll container
+  const newProdRef = useRef(null)
+  const catRefs   = useRef({})
   const { dark } = useTheme()
 
   const bg      = dark ? '#111827' : '#fff'
@@ -269,7 +270,7 @@ export default function HomePage() {
           </div>
           {/* Horizontal scroll row */}
           <div ref={newProdRef}
-            className="flex gap-4 overflow-x-auto pb-2"
+            className="new-prod-scroll flex gap-4 overflow-x-auto pb-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <style>{`.new-prod-scroll::-webkit-scrollbar{display:none}`}</style>
             {newProducts.map((p, i) => (
@@ -283,16 +284,30 @@ export default function HomePage() {
 
       {/* CATEGORY ROWS */}
       {categories.map(cat => {
-        const catData   = products[cat]
-        const catItems  = catData?.items ?? []
-        const catTotal  = catData?.total ?? 0
-        const catSlug   = cat.toLowerCase().replace(/ /g, '-')
+        const catData  = products[cat]
+        const catItems = catData?.items ?? []
+        const catSlug  = cat.toLowerCase().replace(/ /g, '-')
+        const scrollId = cat.replace(/ /g, '-')
 
         return (
           <div key={cat} className="max-w-[1280px] mx-auto px-4 mb-10">
             {/* Row header */}
             <div className="flex items-center mb-5">
               <div className="flex-1 h-12 rounded-l" style={{ background: headerL }} />
+              {/* Scroll arrows — desktop only */}
+              <div className="hidden lg:flex gap-1 mr-2">
+                {['‹','›'].map((a, i) => (
+                  <button key={i}
+                    onClick={() => {
+                      const el = catRefs.current[cat]
+                      if (el) el.scrollBy({ left: i === 0 ? -600 : 600, behavior: 'smooth' })
+                    }}
+                    className="w-8 h-8 flex items-center justify-center font-bold transition-colors rounded"
+                    style={{ border: `1px solid ${navBrd}`, color: text, background: navBtn, fontSize: 16 }}>
+                    {a}
+                  </button>
+                ))}
+              </div>
               <Link to={`/category/${catSlug}`}
                 className="bg-primary text-white font-bold px-10 py-3 hover:bg-orange-600 transition-colors"
                 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, letterSpacing: 2, clipPath: 'polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)' }}>
@@ -300,16 +315,31 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Product grid — desktop: 5 cols × 1 row = 5 items */}
-            <div className="hidden lg:grid lg:grid-cols-5 gap-4">
+            {/* Scrollbar styles */}
+            <style>{`
+              .cat-scroll-${scrollId}::-webkit-scrollbar { height: 4px; }
+              .cat-scroll-${scrollId}::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
+              .cat-scroll-${scrollId}::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
+            `}</style>
+
+            {/* Desktop: single-row horizontal scroll with arrow nav */}
+            <div
+              ref={el => { catRefs.current[cat] = el }}
+              className={`hidden lg:flex gap-4 overflow-x-auto pb-2 cat-scroll-${scrollId}`}
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)', WebkitOverflowScrolling: 'touch' }}>
               {loading
                 ? Array(5).fill(null).map((_, i) => (
-                    <div key={i} className="rounded-xl animate-pulse" style={{ height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
+                    <div key={i} className="rounded-xl animate-pulse flex-shrink-0"
+                      style={{ width: 220, height: 280, background: dark ? '#1f2937' : '#f3f4f6' }} />
                   ))
                 : catItems.length > 0
-                  ? catItems.slice(0, 5).map((p, i) => <ProductCard key={p.id || i} product={p} />)
+                  ? catItems.map((p, i) => (
+                      <div key={p.id || i} style={{ minWidth: 220, maxWidth: 220, flexShrink: 0 }}>
+                        <ProductCard product={p} />
+                      </div>
+                    ))
                   : (
-                    <div className="col-span-full py-10 text-center" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>
+                    <div className="py-10 text-center w-full" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>
                       <div style={{ fontSize: 32, marginBottom: 6 }}>📦</div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>No {cat} products yet</div>
                     </div>
@@ -317,14 +347,9 @@ export default function HomePage() {
               }
             </div>
 
-            {/* Product row — mobile & tablet: 2-row scroll + orange scrollbar (like ProductDetail) */}
-            <style>{`
-              .cat-scroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar { height: 4px; }
-              .cat-scroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
-              .cat-scroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
-            `}</style>
+            {/* Mobile & tablet: 2-row horizontal scroll */}
             <div
-              className={`lg:hidden overflow-x-auto cat-scroll-${cat.replace(/ /g,'-')}`}
+              className={`lg:hidden overflow-x-auto cat-scroll-${scrollId}`}
               style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)', WebkitOverflowScrolling: 'touch', paddingBottom: 6 }}>
               <div style={{
                 display: 'grid',
@@ -355,7 +380,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Footer row — View all only, no pagination */}
+            {/* Footer — View all */}
             <div className="flex justify-end mt-3">
               <Link to={`/category/${catSlug}`}
                 className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>

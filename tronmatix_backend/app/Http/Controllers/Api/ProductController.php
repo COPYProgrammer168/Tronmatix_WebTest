@@ -32,12 +32,12 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
         if ($request->filled('search')) {
-            $term = '%'.$request->search.'%';
+            $term = '%'.strtolower($request->search).'%';
             $query->where(fn ($q) => $q
-                ->where('name', 'LIKE', $term)
-                ->orWhere('category', 'LIKE', $term)
-                ->orWhere('brand', 'LIKE', $term)
-                ->orWhere('description', 'LIKE', $term)
+                ->whereRaw('LOWER(name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(category) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(brand) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(description) LIKE ?', [$term])
             );
         }
 
@@ -58,7 +58,7 @@ class ProductController extends Controller
             default      => $query->latest(),
         };
 
-        $perPage = min((int) $request->input('per_page', 12), 100);
+        $perPage = min((int) $request->input('per_page', 12), 999);
         $products = $query->paginate($perPage);
 
         // use model's getAllImagesAttribute() (appended) instead of re-parsing JSON manually
