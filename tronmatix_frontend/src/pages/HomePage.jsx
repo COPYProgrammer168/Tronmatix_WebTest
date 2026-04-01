@@ -303,7 +303,7 @@ export default function HomePage() {
             {/* Product grid — desktop: 5 cols × 2 rows = 10 items */}
             <div className="hidden lg:grid lg:grid-cols-5 gap-4">
               {loading
-                ? Array(10).fill(null).map((_, i) => (
+                ? Array(5).fill(null).map((_, i) => (
                     <div key={i} className="rounded-xl animate-pulse" style={{ height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
                   ))
                 : catItems.length > 0
