@@ -82,8 +82,8 @@ export default function HomePage() {
   const fetchCatPage = async (cat, page) => {
     const subs = CAT_SUBS[cat] ?? [cat]
     const params = subs.length > 1
-      ? { cats: subs.join(','), per_page: 6, page }
-      : { category: subs[0],   per_page: 6, page }
+      ? { cats: subs.join(','), per_page: 10, page }
+      : { category: subs[0],   per_page: 10, page }
     try {
       const res   = await axios.get('/api/products', { params })
       const raw   = res.data
@@ -286,8 +286,6 @@ export default function HomePage() {
         const catData   = products[cat]
         const catItems  = catData?.items ?? []
         const catTotal  = catData?.total ?? 0
-        const page      = catPage[cat] ?? 1
-        const totalPages = Math.ceil(catTotal / 6)
         const catSlug   = cat.toLowerCase().replace(/ /g, '-')
 
         return (
@@ -302,10 +300,10 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Product grid — desktop only */}
-            <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {/* Product grid — desktop: 5 cols × 2 rows = 10 items */}
+            <div className="hidden lg:grid lg:grid-cols-5 gap-4">
               {loading
-                ? Array(6).fill(null).map((_, i) => (
+                ? Array(10).fill(null).map((_, i) => (
                     <div key={i} className="rounded-xl animate-pulse" style={{ height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
                   ))
                 : catItems.length > 0
@@ -319,10 +317,15 @@ export default function HomePage() {
               }
             </div>
 
-            {/* Product row — mobile & tablet: 2-row horizontal scroll grid */}
-            <div className="lg:hidden overflow-x-auto pb-2"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-              <style>{`.cat-hscroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar{display:none}`}</style>
+            {/* Product row — mobile & tablet: 2-row scroll + orange scrollbar (like ProductDetail) */}
+            <style>{`
+              .cat-scroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar { height: 4px; }
+              .cat-scroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
+              .cat-scroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
+            `}</style>
+            <div
+              className={`lg:hidden overflow-x-auto cat-scroll-${cat.replace(/ /g,'-')}`}
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)', WebkitOverflowScrolling: 'touch', paddingBottom: 6 }}>
               <div style={{
                 display: 'grid',
                 gridTemplateRows: 'repeat(2, auto)',
@@ -330,10 +333,9 @@ export default function HomePage() {
                 gridAutoColumns: '200px',
                 gap: '10px',
                 width: 'max-content',
-                paddingBottom: 4,
               }}>
                 {loading
-                  ? Array(6).fill(null).map((_, i) => (
+                  ? Array(10).fill(null).map((_, i) => (
                       <div key={i} className="rounded-xl animate-pulse"
                         style={{ width: 200, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
                     ))
@@ -344,7 +346,7 @@ export default function HomePage() {
                         </div>
                       ))
                     : (
-                      <div className="py-8 text-center" style={{ gridColumn: 'span 3', color: dark ? '#6b7280' : '#9ca3af' }}>
+                      <div className="py-8 text-center" style={{ gridColumn: 'span 5', color: dark ? '#6b7280' : '#9ca3af' }}>
                         <div style={{ fontSize: 28, marginBottom: 4 }}>📦</div>
                         <div style={{ fontSize: 12, fontWeight: 600 }}>No {cat} products yet</div>
                       </div>
@@ -353,49 +355,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Pagination row */}
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center gap-2">
-                <button
-                  disabled={loading || page <= 1}
-                  onClick={() => {
-                    const p = page - 1
-                    setCatPage(prev => ({ ...prev, [cat]: p }))
-                    fetchCatPage(cat, p)
-                  }}
-                  className="w-8 h-8 flex items-center justify-center font-bold transition-colors rounded disabled:opacity-30"
-                  style={{ border: `1px solid ${navBrd}`, color: text, background: navBtn, fontSize: 16 }}>‹</button>
-                {totalPages > 1 && (
-                  <span style={{ fontSize: 12, color: dark ? '#9ca3af' : '#6b7280' }}>
-                    {/* Mobile: show compact dot indicators when totalPages ≤ 4; otherwise show n/total */}
-                    <span className="hidden lg:inline">{page} / {totalPages}</span>
-                    <span className="inline lg:hidden" style={{ display:'inline-flex', gap: 4 }}>
-                      {totalPages <= 4
-                        ? Array(totalPages).fill(null).map((_, idx) => (
-                            <span key={idx} style={{
-                              width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
-                              background: idx + 1 === page ? '#F97316' : (dark ? '#4b5563' : '#d1d5db')
-                            }} />
-                          ))
-                        : <>{page}/{totalPages}</>
-                      }
-                    </span>
-                  </span>
-                )}
-                <button
-                  disabled={loading || page >= totalPages || totalPages === 0}
-                  onClick={() => {
-                    const p = page + 1
-                    setCatPage(prev => ({ ...prev, [cat]: p }))
-                    fetchCatPage(cat, p)
-                  }}
-                  className="w-8 h-8 flex items-center justify-center font-bold transition-colors rounded disabled:opacity-30"
-                  style={{ border: `1px solid ${navBrd}`, color: text, background: navBtn, fontSize: 16 }}>›</button>
-              </div>
+            {/* Footer row — View all only, no pagination */}
+            <div className="flex justify-end mt-3">
               <Link to={`/category/${catSlug}`}
                 className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
-                <span className="hidden sm:inline">View all {cat} →</span>
-                <span className="inline sm:hidden">View all →</span>
+                View all {cat} →
               </Link>
             </div>
           </div>

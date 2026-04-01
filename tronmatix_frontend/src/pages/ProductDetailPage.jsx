@@ -347,9 +347,14 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Horizontal scroll container — uses the real ProductCard component */}
+          <style>{`
+            .related-scroll::-webkit-scrollbar { height: 4px; }
+            .related-scroll::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
+            .related-scroll::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
+          `}</style>
           <div
-            className="flex gap-4 overflow-x-auto pb-3"
-            style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 transparent' }}>
+            className="related-scroll flex gap-4 overflow-x-auto pb-3"
+            style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)' }}>
             {related.map((r, i) => (
               <div key={r.id || i} className="flex-shrink-0" style={{ width: 220 }}>
                 <ProductCard product={r} />
