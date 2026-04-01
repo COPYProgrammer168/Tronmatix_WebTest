@@ -236,7 +236,17 @@
 
                     <td>
                         @if($order->discount_amount > 0)
-                            @if($order->discount_code)
+                            @php
+                                $dBadge = $order->discount?->badge_config;
+                            @endphp
+                            @if($dBadge && !empty($dBadge['text']))
+                                <div style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:800; letter-spacing:0.5px;
+                                    background:{{ $dBadge['bg'] ?? 'rgba(249,115,22,0.15)' }};
+                                    border:1px solid {{ $dBadge['border'] ?? 'rgba(249,115,22,0.4)' }};
+                                    color:{{ $dBadge['color'] ?? '#F97316' }};">
+                                    {{ $dBadge['icon'] ?? '🏷️' }} {{ $dBadge['text'] }}
+                                </div>
+                            @elseif($order->discount_code)
                                 <span style="font-family:monospace; font-size:11px; color:#4ade80; font-weight:700;
                                     background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2);
                                     border-radius:4px; padding:1px 6px;">{{ $order->discount_code }}</span>

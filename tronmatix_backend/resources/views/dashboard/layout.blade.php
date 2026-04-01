@@ -29,7 +29,7 @@
             background: var(--dark);
             color: #fff;
             min-height: 100vh;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         /* ── Sidebar ──────────────────────────────────────────────────────────── */
@@ -81,7 +81,7 @@
         }
 
         .nav-section-label {
-            font-size: 13px;
+            font-size: 11px;
             letter-spacing: 3px;
             color: rgba(255,255,255,0.5);
             padding: 16px 20px 5px;
@@ -97,7 +97,7 @@
             padding: 11px 20px;
             color: rgba(255,255,255,0.55);
             text-decoration: none;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             letter-spacing: 1px;
             transition: all 0.2s;
@@ -275,7 +275,7 @@
         /* FIX: card-title was wrongly using padding:20px — it sits INSIDE
            card-header which already has its own padding. */
         .card-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 700;
             letter-spacing: 1.5px;
         }
@@ -370,7 +370,7 @@
         thead th {
             text-align: left;
             padding: 12px 16px;
-            font-size: 12px;
+            font-size: 14px;
             letter-spacing: 2px;
             color: rgba(255,255,255,0.5);
             border-bottom: 1px solid rgba(255,255,255,0.07);
@@ -383,7 +383,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: rgba(255,255,255,0.8);
             vertical-align: middle;
-            font-size: 14px;
+            font-size: 17px;
         }
 
         tbody tr:last-child td { border-bottom: none; }
@@ -619,9 +619,9 @@
             .chart-grid-2 { grid-template-columns: 1fr; }
             .card-header { flex-direction: column; align-items: flex-start; }
             .topbar { padding: 0 14px; }
-            table { font-size: 13px; }
-            thead th { padding: 10px 10px; font-size: 10px; }
-            tbody td  { padding: 10px 10px; }
+            table { font-size: 14px; }
+            thead th { padding: 10px 10px; font-size: 11px; }
+            tbody td  { padding: 10px 10px; font-size: 14px; }
         }
 
         @media (max-width: 480px) {

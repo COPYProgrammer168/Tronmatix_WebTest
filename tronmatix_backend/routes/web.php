@@ -2,14 +2,15 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\Dashboard\BannerController;
+use App\Http\Controllers\Dashboard\DiscountController as DashboardDiscountController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Dashboard\StaffController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffRequestController;
+use Illuminate\Support\Facades\Route;
 
 // ── Redirect root ─────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('dashboard.index'));
@@ -56,11 +57,11 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role');
 
         // ── Discounts ─────────────────────────────────────────────────────────
-        Route::get('/discounts',                    [DashboardController::class, 'discounts'])->name('discounts');
-        Route::post('/discounts',                   [DashboardController::class, 'discountsStore'])->name('discounts.store');
-        Route::put('/discounts/{discount}',         [DashboardController::class, 'discountsUpdate'])->name('discounts.update');
-        Route::delete('/discounts/{discount}',      [DashboardController::class, 'discountsDestroy'])->name('discounts.destroy');
-        Route::patch('/discounts/{discount}/badge', [DashboardController::class, 'discountsSaveBadge'])->name('discounts.badge');
+        Route::get('/discounts',                    [DashboardController::class,         'discounts'])->name('discounts');
+        Route::post('/discounts',                   [DashboardDiscountController::class, 'store'])->name('discounts.store');
+        Route::put('/discounts/{discount}',         [DashboardDiscountController::class, 'update'])->name('discounts.update');
+        Route::delete('/discounts/{discount}',      [DashboardDiscountController::class, 'destroy'])->name('discounts.destroy');
+        Route::patch('/discounts/{discount}/badge', [DashboardDiscountController::class, 'saveBadge'])->name('discounts.badge');
 
         // ── Banners ───────────────────────────────────────────────────────────
         Route::get('/banners',                   [BannerController::class, 'index'])->name('banners');

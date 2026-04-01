@@ -14,7 +14,7 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with(['user', 'items', 'location'])  // ← location eager-loaded
+        $orders = Order::with(['user', 'items', 'location', 'discount'])  // ← discount eager-loaded for badge display
             ->latest()
             ->paginate(20);
 
@@ -23,7 +23,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'items', 'location']);
+        $order->load(['user', 'items', 'location', 'discount']);
 
         return view('dashboard.orders-show', compact('order'));
     }

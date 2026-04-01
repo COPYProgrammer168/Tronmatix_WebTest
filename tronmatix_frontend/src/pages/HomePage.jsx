@@ -241,8 +241,8 @@ export default function HomePage() {
                 style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 22, color: text }}>
                 NEW PRODUCTS
               </span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.3)', letterSpacing: 1 }}>
+              <span className="inline-flex items-center justify-center font-bold px-3 rounded-full"
+                style={{ background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.3)', letterSpacing: 1, fontSize: 11, height: 22, lineHeight: 1 }}>
                 JUST ADDED
               </span>
             </div>
@@ -302,8 +302,8 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Product grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {/* Product grid — desktop only */}
+            <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {loading
                 ? Array(6).fill(null).map((_, i) => (
                     <div key={i} className="rounded-xl animate-pulse" style={{ height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
@@ -311,13 +311,46 @@ export default function HomePage() {
                 : catItems.length > 0
                   ? catItems.map((p, i) => <ProductCard key={p.id || i} product={p} />)
                   : (
-                    // Empty state — no mock fallback
                     <div className="col-span-full py-10 text-center" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>
                       <div style={{ fontSize: 32, marginBottom: 6 }}>📦</div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>No {cat} products yet</div>
                     </div>
                   )
               }
+            </div>
+
+            {/* Product row — mobile & tablet: 2-row horizontal scroll grid */}
+            <div className="lg:hidden overflow-x-auto pb-2"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+              <style>{`.cat-hscroll-${cat.replace(/ /g,'-')}::-webkit-scrollbar{display:none}`}</style>
+              <div style={{
+                display: 'grid',
+                gridTemplateRows: 'repeat(2, auto)',
+                gridAutoFlow: 'column',
+                gridAutoColumns: '200px',
+                gap: '10px',
+                width: 'max-content',
+                paddingBottom: 4,
+              }}>
+                {loading
+                  ? Array(6).fill(null).map((_, i) => (
+                      <div key={i} className="rounded-xl animate-pulse"
+                        style={{ width: 200, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
+                    ))
+                  : catItems.length > 0
+                    ? catItems.map((p, i) => (
+                        <div key={p.id || i} style={{ width: 200 }}>
+                          <ProductCard product={p} />
+                        </div>
+                      ))
+                    : (
+                      <div className="py-8 text-center" style={{ gridColumn: 'span 3', color: dark ? '#6b7280' : '#9ca3af' }}>
+                        <div style={{ fontSize: 28, marginBottom: 4 }}>📦</div>
+                        <div style={{ fontSize: 12, fontWeight: 600 }}>No {cat} products yet</div>
+                      </div>
+                    )
+                }
+              </div>
             </div>
 
             {/* Pagination row */}
@@ -333,8 +366,20 @@ export default function HomePage() {
                   className="w-8 h-8 flex items-center justify-center font-bold transition-colors rounded disabled:opacity-30"
                   style={{ border: `1px solid ${navBrd}`, color: text, background: navBtn, fontSize: 16 }}>‹</button>
                 {totalPages > 1 && (
-                  <span style={{ fontSize: 13, color: dark ? '#9ca3af' : '#6b7280' }}>
-                    {page} / {totalPages}
+                  <span style={{ fontSize: 12, color: dark ? '#9ca3af' : '#6b7280' }}>
+                    {/* Mobile: show compact dot indicators when totalPages ≤ 4; otherwise show n/total */}
+                    <span className="hidden lg:inline">{page} / {totalPages}</span>
+                    <span className="inline lg:hidden" style={{ display:'inline-flex', gap: 4 }}>
+                      {totalPages <= 4
+                        ? Array(totalPages).fill(null).map((_, idx) => (
+                            <span key={idx} style={{
+                              width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
+                              background: idx + 1 === page ? '#F97316' : (dark ? '#4b5563' : '#d1d5db')
+                            }} />
+                          ))
+                        : <>{page}/{totalPages}</>
+                      }
+                    </span>
                   </span>
                 )}
                 <button
@@ -348,8 +393,9 @@ export default function HomePage() {
                   style={{ border: `1px solid ${navBrd}`, color: text, background: navBtn, fontSize: 16 }}>›</button>
               </div>
               <Link to={`/category/${catSlug}`}
-                className="text-primary font-bold hover:underline" style={{ fontSize: 18 }}>
-                View all {cat} →
+                className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
+                <span className="hidden sm:inline">View all {cat} →</span>
+                <span className="inline sm:hidden">View all →</span>
               </Link>
             </div>
           </div>
