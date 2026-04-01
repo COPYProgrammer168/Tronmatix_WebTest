@@ -287,22 +287,23 @@ export default function HomePage() {
         const catData  = products[cat]
         const catItems = catData?.items ?? []
         const catSlug  = cat.toLowerCase().replace(/ /g, '-')
-        const scrollId = cat.replace(/ /g, '-')
+        const scrollId = 'cat-' + cat.replace(/ /g, '-')
 
         return (
           <div key={cat} className="max-w-[1280px] mx-auto px-4 mb-10">
+
             {/* Row header */}
-            <div className="flex items-center mb-5">
+            <div className="flex items-center mb-4">
               <div className="flex-1 h-12 rounded-l" style={{ background: headerL }} />
-              {/* Scroll arrows — desktop only */}
+              {/* Arrow buttons — desktop */}
               <div className="hidden lg:flex gap-1 mr-2">
                 {['‹','›'].map((a, i) => (
                   <button key={i}
                     onClick={() => {
                       const el = catRefs.current[cat]
-                      if (el) el.scrollBy({ left: i === 0 ? -600 : 600, behavior: 'smooth' })
+                      if (el) el.scrollBy({ left: i === 0 ? -500 : 500, behavior: 'smooth' })
                     }}
-                    className="w-8 h-8 flex items-center justify-center font-bold transition-colors rounded"
+                    className="w-8 h-8 flex items-center justify-center font-bold rounded transition-colors"
                     style={{ border: `1px solid ${navBrd}`, color: text, background: navBtn, fontSize: 16 }}>
                     {a}
                   </button>
@@ -317,68 +318,64 @@ export default function HomePage() {
 
             {/* Scrollbar styles */}
             <style>{`
-              .cat-scroll-${scrollId}::-webkit-scrollbar { height: 4px; }
-              .cat-scroll-${scrollId}::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
-              .cat-scroll-${scrollId}::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
+              .${scrollId}::-webkit-scrollbar { height: 4px; }
+              .${scrollId}::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
+              .${scrollId}::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
             `}</style>
 
-            {/* Desktop: single-row horizontal scroll with arrow nav */}
-            <div
-              ref={el => { catRefs.current[cat] = el }}
-              className={`hidden lg:flex gap-4 overflow-x-auto pb-2 cat-scroll-${scrollId}`}
-              style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)', WebkitOverflowScrolling: 'touch' }}>
-              {loading
-                ? Array(5).fill(null).map((_, i) => (
-                    <div key={i} className="rounded-xl animate-pulse flex-shrink-0"
-                      style={{ width: 220, height: 280, background: dark ? '#1f2937' : '#f3f4f6' }} />
-                  ))
-                : catItems.length > 0
-                  ? catItems.map((p, i) => (
-                      <div key={p.id || i} style={{ minWidth: 220, maxWidth: 220, flexShrink: 0 }}>
-                        <ProductCard product={p} />
-                      </div>
-                    ))
-                  : (
-                    <div className="py-10 text-center w-full" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>
-                      <div style={{ fontSize: 32, marginBottom: 6 }}>📦</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>No {cat} products yet</div>
-                    </div>
-                  )
-              }
-            </div>
-
-            {/* Mobile & tablet: 2-row horizontal scroll */}
-            <div
-              className={`lg:hidden overflow-x-auto cat-scroll-${scrollId}`}
-              style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)', WebkitOverflowScrolling: 'touch', paddingBottom: 6 }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateRows: 'repeat(2, auto)',
-                gridAutoFlow: 'column',
-                gridAutoColumns: '160px',
-                gap: '10px',
-                width: 'max-content',
-              }}>
-                {loading
-                  ? Array(10).fill(null).map((_, i) => (
-                      <div key={i} className="rounded-xl animate-pulse"
-                        style={{ width: 160, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
-                    ))
-                  : catItems.length > 0
-                    ? catItems.map((p, i) => (
-                        <div key={p.id || i} style={{ width: 160 }}>
+            {catItems.length === 0 && !loading ? (
+              <div className="py-8 text-center" style={{ color: dark ? '#6b7280' : '#9ca3af' }}>
+                <div style={{ fontSize: 28, marginBottom: 4 }}>📦</div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>No {cat} products yet</div>
+              </div>
+            ) : (
+              <>
+                {/* ── Desktop: single-row horizontal scroll ── */}
+                <div
+                  ref={el => { catRefs.current[cat] = el }}
+                  className={`hidden lg:flex gap-4 overflow-x-auto pb-3 ${scrollId}`}
+                  style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)' }}>
+                  {loading
+                    ? Array(6).fill(null).map((_, i) => (
+                        <div key={i} className="rounded-xl animate-pulse flex-shrink-0"
+                          style={{ width: 210, height: 300, background: dark ? '#1f2937' : '#f3f4f6' }} />
+                      ))
+                    : catItems.map((p, i) => (
+                        <div key={p.id || i} style={{ minWidth: 210, maxWidth: 210, flexShrink: 0 }}>
                           <ProductCard product={p} />
                         </div>
                       ))
-                    : (
-                      <div className="py-8 text-center" style={{ gridColumn: 'span 5', color: dark ? '#6b7280' : '#9ca3af' }}>
-                        <div style={{ fontSize: 28, marginBottom: 4 }}>📦</div>
-                        <div style={{ fontSize: 12, fontWeight: 600 }}>No {cat} products yet</div>
-                      </div>
-                    )
-                }
-              </div>
-            </div>
+                  }
+                </div>
+
+                {/* ── Mobile & tablet: 2-row horizontal scroll ── */}
+                <div
+                  className={`lg:hidden overflow-x-auto pb-2 ${scrollId}`}
+                  style={{ scrollbarWidth: 'thin', scrollbarColor: '#F97316 rgba(249,115,22,0.10)', WebkitOverflowScrolling: 'touch' }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateRows: 'repeat(2, auto)',
+                    gridAutoFlow: 'column',
+                    gridAutoColumns: '148px',
+                    gap: '8px',
+                    width: 'max-content',
+                    paddingBottom: 2,
+                  }}>
+                    {loading
+                      ? Array(8).fill(null).map((_, i) => (
+                          <div key={i} className="rounded-xl animate-pulse"
+                            style={{ width: 148, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
+                        ))
+                      : catItems.map((p, i) => (
+                          <div key={p.id || i} style={{ width: 148 }}>
+                            <ProductCard product={p} />
+                          </div>
+                        ))
+                    }
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Footer — View all */}
             <div className="flex justify-end mt-3">
