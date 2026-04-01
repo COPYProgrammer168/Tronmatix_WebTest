@@ -234,7 +234,7 @@ export default function Navbar({ onAuthOpen }) {
 
   const handleSearch = e => {
     e.preventDefault()
-    const q = search.trim()
+    const q = search.trim().toLowerCase()
     if (q) { navigate(`/category/search?q=${encodeURIComponent(q)}`); setSearch(''); setMobileOpen(false) }
   }
 
