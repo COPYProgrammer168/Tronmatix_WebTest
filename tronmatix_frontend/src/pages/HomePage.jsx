@@ -356,7 +356,7 @@ export default function HomePage() {
                     display: 'grid',
                     gridTemplateRows: 'repeat(2, auto)',
                     gridAutoFlow: 'column',
-                    gridAutoColumns: '148px',
+                    gridAutoColumns: '200px',
                     gap: '8px',
                     width: 'max-content',
                     paddingBottom: 2,
@@ -364,10 +364,10 @@ export default function HomePage() {
                     {loading
                       ? Array(8).fill(null).map((_, i) => (
                           <div key={i} className="rounded-xl animate-pulse"
-                            style={{ width: 148, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
+                            style={{ width: 200, height: 220, background: dark ? '#1f2937' : '#f3f4f6' }} />
                         ))
                       : catItems.map((p, i) => (
-                          <div key={p.id || i} style={{ width: 148 }}>
+                          <div key={p.id || i} style={{ width: 200 }}>
                             <ProductCard product={p} />
                           </div>
                         ))
