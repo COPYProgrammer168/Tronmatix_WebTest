@@ -19,9 +19,16 @@ class ProductController extends Controller
         $query = Product::query();
 
         // 'all' is a special slug meaning no category filter — show everything
-        if ($request->filled('category') && strtolower($request->category) !== 'all') {
+        // Also support category[] array param (sent by HomePage for multi-sub categories like MONITOR)
+        if ($request->has('category') && is_array($request->input('category'))) {
+            $cats = array_values(array_filter(array_map('strtolower', $request->input('category'))));
+            if (count($cats) > 0) {
+                $query->whereIn(DB::raw('LOWER(category)'), $cats);
+            }
+        } elseif ($request->filled('category') && strtolower($request->category) !== 'all') {
             $query->whereRaw('LOWER(category) = ?', [strtolower($request->category)]);
         }
+
         if ($request->filled('brand')) {
             $query->where('brand', $request->brand);
         }
