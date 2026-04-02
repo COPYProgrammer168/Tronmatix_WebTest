@@ -109,7 +109,7 @@ class AuthController extends Controller
         // FIX: Check ban BEFORE clearing the rate limiter.
         // Previously, a banned user who knew their password would clear the
         // limiter on every attempt, bypassing brute-force protection entirely.
-        if ($user->isBanned()) {
+        if ($user->is_banned) {
             // Still count this as a hit so ban-testing is rate limited too
             RateLimiter::hit($throttleKey, 60);
 
@@ -166,9 +166,8 @@ class AuthController extends Controller
         try {
             // ── Fetch user info from Google ───────────────────────────────────
             $googleResponse = Http::timeout(10)
-                ->get('https://www.googleapis.com/oauth2/v3/userinfo', [
-                    'access_token' => $request->access_token,
-                ]);
+                ->withToken($request->access_token)
+                ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 
             if (! $googleResponse->ok()) {
                 Log::channel('security')->warning('Auth: Google userinfo call failed', [
@@ -227,7 +226,7 @@ class AuthController extends Controller
             }
 
             // ── Guard: banned users cannot sign in via Google either ───────────
-            if ($user->isBanned()) {
+            if ($user->is_banned) {
                 Log::channel('security')->notice('Auth: banned user Google login attempt', [
                     'user_id' => $user->id,
                     'ip'      => $request->ip(),
