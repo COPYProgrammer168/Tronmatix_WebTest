@@ -94,14 +94,19 @@ export default function HomePage() {
   const fetchCatPage = async (cat, page) => {
     const subs = CAT_SUBS[cat] ?? [cat]
 
-    // Build params — if multiple subs, send as array so backend can use whereIn
-    // Laravel reads `category[]` as an array automatically.
-    const params = subs.length > 1
-      ? { 'category[]': subs, per_page: 10, page }
-      : { category: subs[0],  per_page: 10, page }
+    // Build URLSearchParams so array values are properly serialized as
+    // repeated keys: category[]=X&category[]=Y — Laravel reads these correctly.
+    const qs = new URLSearchParams()
+    if (subs.length > 1) {
+      subs.forEach(s => qs.append('category[]', s))
+    } else {
+      qs.append('category', subs[0])
+    }
+    qs.append('per_page', 10)
+    qs.append('page', page)
 
     try {
-      const res   = await axios.get('/api/products', { params })
+      const res   = await axios.get(`/api/products?${qs.toString()}`)
       const raw   = res.data
       const items = Array.isArray(raw) ? raw : (raw?.data ?? [])
       const total = raw?.total ?? items.length
@@ -119,7 +124,9 @@ export default function HomePage() {
       const pages = {}
       categories.forEach(cat => { pages[cat] = 1 })
       setCatPage(pages)
-      await Promise.all(categories.map(cat => fetchCatPage(cat, 1)))
+      // Use allSettled so one failing category (e.g. 500 on MONITOR)
+      // never blocks the rest from rendering.
+      await Promise.allSettled(categories.map(cat => fetchCatPage(cat, 1)))
       setPageLoading(false)
     }
     init()
