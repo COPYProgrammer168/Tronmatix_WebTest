@@ -23,7 +23,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
   const isLogin    = mode === 'login'
   const isRegister = mode === 'register'
   const isForgot   = mode === 'forgot'
-  const showSocial = isLogin || isRegister
+  const showSocial = isLogin
 
   const c = {
     modalBg:       dark ? '#1f2937' : '#ffffff',
