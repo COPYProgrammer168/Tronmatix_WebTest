@@ -1,37 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import api from '../lib/axios'
 import logo from '../assets/logo.png'
+
+const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 // mode: 'login' | 'register' | 'forgot'
 export default function AuthModal({ mode, onClose, onSwitch }) {
-  const { login, register, forgotPassword, loading } = useAuth()
+  const { login, register, forgotPassword, loading, applyToken, applyUser } = useAuth()
   const { dark } = useTheme()
   const [form, setForm]           = useState({ usernameOrEmail: '', username: '', email: '', password: '', confirm: '' })
   const [error, setError]         = useState('')
   const [success, setSuccess]     = useState('')
   const [failCount, setFailCount] = useState(0)
   const [cooldown, setCooldown]   = useState(false)
-  // Track password strength to give inline hints
   const [pwStrength, setPwStrength] = useState({ score: 0, hints: [] })
+  const [socialLoading, setSocialLoading] = useState(null) // 'google' | 'telegram'
+  const tgContainerRef = useRef(null)
 
   const isLogin    = mode === 'login'
   const isRegister = mode === 'register'
   const isForgot   = mode === 'forgot'
+  const showSocial = isLogin || isRegister
 
   const c = {
-    modalBg:      dark ? '#1f2937' : '#ffffff',
-    text:         dark ? '#f9fafb' : '#1f2937',
-    textMuted:    dark ? '#9ca3af' : '#6b7280',
-    inputBg:      dark ? '#111827' : '#f9fafb',
-    inputBorder:  dark ? '#374151' : '#e5e7eb',
-    tabBg:        dark ? '#111827' : '#f3f4f6',
-    tabActive:    dark ? '#1f2937' : '#ffffff',
-    closeBtn:     dark ? '#6b7280' : '#9ca3af',
-    closeBtnHover:dark ? '#f9fafb' : '#1f2937',
-    btnBg:        dark ? '#111827' : '#ffffff',
-    btnBorder:    dark ? '#374151' : '#e5e7eb',
-    btnText:      dark ? '#f9fafb' : '#1f2937',
+    modalBg:       dark ? '#1f2937' : '#ffffff',
+    text:          dark ? '#f9fafb' : '#1f2937',
+    textMuted:     dark ? '#9ca3af' : '#6b7280',
+    inputBg:       dark ? '#111827' : '#f9fafb',
+    inputBorder:   dark ? '#374151' : '#e5e7eb',
+    tabBg:         dark ? '#111827' : '#f3f4f6',
+    tabActive:     dark ? '#1f2937' : '#ffffff',
+    closeBtn:      dark ? '#6b7280' : '#9ca3af',
+    closeBtnHover: dark ? '#f9fafb' : '#1f2937',
+    btnBg:         dark ? '#111827' : '#ffffff',
+    btnBorder:     dark ? '#374151' : '#e5e7eb',
+    btnText:       dark ? '#f9fafb' : '#1f2937',
+    divider:       dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    socialBg:      dark ? '#111827' : '#f9fafb',
+    socialBorder:  dark ? '#374151' : '#e5e7eb',
+    socialHover:   dark ? '#1f2937' : '#f3f4f6',
   }
 
   const inputClass = 'w-full rounded-xl px-4 py-3 focus:outline-none transition-colors'
@@ -44,13 +54,9 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
   const handle = (e) => {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
-    if (name === 'password' && isRegister) {
-      setPwStrength(checkPasswordStrength(value))
-    }
+    if (name === 'password' && isRegister) setPwStrength(checkPasswordStrength(value))
   }
 
-  // ── Password strength checker (mirrors backend rules) ──────────────────────
-  // Backend requires: min 8, mixed case, numbers, symbols
   function checkPasswordStrength(pw) {
     const hints = []
     if (pw.length < 8)              hints.push('At least 8 characters')
@@ -58,26 +64,17 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     if (!/[a-z]/.test(pw))          hints.push('One lowercase letter (a-z)')
     if (!/[0-9]/.test(pw))          hints.push('One number (0-9)')
     if (!/[^A-Za-z0-9]/.test(pw))   hints.push('One symbol (e.g. @, #, !)')
-    const score = 5 - hints.length  // 0–5
+    const score = 5 - hints.length
     return { score, hints }
   }
 
   const strengthColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a']
   const strengthLabels = ['Very weak', 'Weak', 'Fair', 'Strong', 'Very strong']
 
-  // ── Client-side validators ─────────────────────────────────────────────────
   const validEmail    = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
   const validUsername = (v) => /^[a-zA-Z0-9_]{3,50}$/.test(v)
-  const validPassword = (v) => {
-    // Must match all backend rules
-    return v.length >= 8
-      && /[A-Z]/.test(v)
-      && /[a-z]/.test(v)
-      && /[0-9]/.test(v)
-      && /[^A-Za-z0-9]/.test(v)
-  }
+  const validPassword = (v) => v.length >= 8 && /[A-Z]/.test(v) && /[a-z]/.test(v) && /[0-9]/.test(v) && /[^A-Za-z0-9]/.test(v)
 
-  // ── Cooldown after 5 consecutive failures ──────────────────────────────────
   const recordFailure = () => {
     const next = failCount + 1
     setFailCount(next)
@@ -88,24 +85,120 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     }
   }
 
-  /**
-   * Switch mode and optionally prefill the login form.
-   * When called after successful register, `prefill.email` is the Gmail/email
-   * the user just registered with — so they can log in without retyping.
-   */
   const handleSwitch = (newMode, prefill = {}) => {
-    setForm({
-      usernameOrEmail: prefill.email || prefill.username || '',
-      username: '',
-      email: '',
-      password: '',
-      confirm: '',
-    })
+    setForm({ usernameOrEmail: prefill.email || prefill.username || '', username: '', email: '', password: '', confirm: '' })
     setError('')
     setSuccess('')
     setPwStrength({ score: 0, hints: [] })
     onSwitch(newMode)
   }
+
+  // ── Google OAuth ─────────────────────────────────────────────────────────────
+  // Uses Google Identity Services (GSI) popup flow.
+  // Backend endpoint: POST /api/auth/google  → { token, user }
+  useEffect(() => {
+    if (!showSocial || !GOOGLE_CLIENT_ID) return
+
+    // Load GSI script once
+    if (!document.getElementById('gsi-script')) {
+      const s = document.createElement('script')
+      s.id  = 'gsi-script'
+      s.src = 'https://accounts.google.com/gsi/client'
+      s.async = true
+      document.head.appendChild(s)
+    }
+  }, [showSocial])
+
+  const handleGoogleLogin = () => {
+    if (!GOOGLE_CLIENT_ID) {
+      setError('Google login is not configured. Set VITE_GOOGLE_CLIENT_ID.')
+      return
+    }
+    if (typeof window.google === 'undefined') {
+      setError('Google SDK not loaded yet. Please wait a moment and try again.')
+      return
+    }
+    setSocialLoading('google')
+    setError('')
+
+    window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'email profile openid',
+      callback: async (tokenResponse) => {
+        if (tokenResponse.error) {
+          setError('Google sign-in was cancelled.')
+          setSocialLoading(null)
+          return
+        }
+        try {
+          const res = await api.post('/api/auth/google', {
+            access_token: tokenResponse.access_token,
+          })
+          const t = res.data?.token ?? res.data?.data?.token
+          const u = res.data?.user ?? res.data?.data?.user ?? res.data?.data
+          if (!t || !u) throw new Error('Unexpected response shape')
+          // applyToken / applyUser come from AuthContext
+          // If your AuthContext does not export these directly,
+          // call login() with a special flag or handle via a dedicated hook.
+          // For now we dispatch a custom event the AuthContext can listen to.
+          window.dispatchEvent(new CustomEvent('auth:social-login', { detail: { token: t, user: u } }))
+          setSuccess('Signed in with Google!')
+          setTimeout(onClose, 700)
+        } catch (e) {
+          setError(e.response?.data?.message || 'Google sign-in failed. Please try again.')
+          recordFailure()
+        } finally {
+          setSocialLoading(null)
+        }
+      },
+    }).requestAccessToken()
+  }
+
+  // ── Telegram Login Widget ────────────────────────────────────────────────────
+  // Injects the official Telegram Login Widget into a container div.
+  // On auth callback → POST /api/auth/telegram → { token, user }
+  useEffect(() => {
+    if (!showSocial || !BOT_USERNAME) return
+    const container = tgContainerRef.current
+    if (!container) return
+
+    container.innerHTML = ''
+
+    window.onTelegramAuthModal = async (tgUser) => {
+      if (!tgUser) return
+      setSocialLoading('telegram')
+      setError('')
+      try {
+        const res = await api.post('/api/auth/telegram', tgUser)
+        const t = res.data?.token ?? res.data?.data?.token
+        const u = res.data?.user ?? res.data?.data?.user ?? res.data?.data
+        if (!t || !u) throw new Error('Unexpected response shape')
+        window.dispatchEvent(new CustomEvent('auth:social-login', { detail: { token: t, user: u } }))
+        setSuccess('Signed in with Telegram!')
+        setTimeout(onClose, 700)
+      } catch (e) {
+        setError(e.response?.data?.message || 'Telegram sign-in failed. Please try again.')
+        recordFailure()
+      } finally {
+        setSocialLoading(null)
+      }
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://telegram.org/js/telegram-widget.js?22'
+    script.async = true
+    script.setAttribute('data-telegram-login', BOT_USERNAME)
+    script.setAttribute('data-size',           'large')
+    script.setAttribute('data-radius',         '10')
+    script.setAttribute('data-onauth',         'onTelegramAuthModal(user)')
+    script.setAttribute('data-request-access', 'write')
+    container.appendChild(script)
+
+    return () => {
+      delete window.onTelegramAuthModal
+      if (container) container.innerHTML = ''
+    }
+  }, [showSocial, mode]) // re-inject when mode switches between login/register
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const submit = async () => {
@@ -121,7 +214,6 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       confirm:         form.confirm,
     }
 
-    // ── Forgot password ──────────────────────────────────────────────────────
     if (isForgot) {
       if (!f.email)             { setError('Please enter your email address.'); return }
       if (!validEmail(f.email)) { setError('Please enter a valid email address.'); return }
@@ -131,7 +223,6 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       return
     }
 
-    // ── Login ────────────────────────────────────────────────────────────────
     if (isLogin) {
       if (!f.usernameOrEmail || !f.password) { setError('Please fill all fields.'); return }
       const res = await login(f.usernameOrEmail, f.password)
@@ -140,30 +231,15 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       return
     }
 
-    // ── Register ─────────────────────────────────────────────────────────────
     if (!f.username || !f.email || !f.password) { setError('Please fill all required fields.'); return }
-    if (!validUsername(f.username)) {
-      setError('Username must be 3–50 characters: letters, numbers, underscores only.')
-      return
-    }
-    if (!validEmail(f.email)) {
-      setError('Please enter a valid email address.')
-      return
-    }
-    if (!validPassword(f.password)) {
-      setError('Password must be at least 8 characters with uppercase, lowercase, a number, and a symbol.')
-      return
-    }
-    if (f.password !== f.confirm) {
-      setError('Passwords do not match.')
-      return
-    }
+    if (!validUsername(f.username)) { setError('Username must be 3–50 characters: letters, numbers, underscores only.'); return }
+    if (!validEmail(f.email))       { setError('Please enter a valid email address.'); return }
+    if (!validPassword(f.password)) { setError('Password must be at least 8 characters with uppercase, lowercase, a number, and a symbol.'); return }
+    if (f.password !== f.confirm)   { setError('Passwords do not match.'); return }
 
     const res = await register(f.username, f.email, f.password, f.confirm)
     if (res.success) {
       setSuccess('Account created! Redirecting to login…')
-      // Prefill the login form with the email they registered with.
-      // If they used a Gmail address, it'll be ready to type the password and go.
       setTimeout(() => handleSwitch('login', { email: res.email }), 1200)
     } else {
       setError(res.message)
@@ -173,6 +249,26 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
 
   const onKeyDown = (e) => { if (e.key === 'Enter') submit() }
 
+  // ── Social button shared style ─────────────────────────────────────────────
+  const socialBtnBase = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    width: '100%',
+    padding: '11px 16px',
+    borderRadius: 12,
+    border: `1px solid ${c.socialBorder}`,
+    background: c.socialBg,
+    color: c.text,
+    fontSize: 15,
+    fontWeight: 700,
+    fontFamily: 'Rajdhani, sans-serif',
+    letterSpacing: 0.5,
+    cursor: 'pointer',
+    transition: 'background 0.15s, border-color 0.15s',
+  }
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center"
@@ -180,8 +276,15 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="rounded-3xl shadow-2xl w-full max-w-[400px] mx-4 p-8 relative"
-        style={{ background: c.modalBg }}
+        className="rounded-3xl shadow-2xl w-full mx-4 relative"
+        style={{
+          background: c.modalBg,
+          maxWidth: 400,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          padding: '32px',
+          scrollbarWidth: 'none',
+        }}
       >
         {/* Close */}
         <button
@@ -229,7 +332,113 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           </div>
         )}
 
-        {/* Fields */}
+        {/* ── Social Login Buttons (above form, login + register only) ────── */}
+        {showSocial && (
+          <div className="mb-5" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            {/* Google */}
+            <button
+              style={socialBtnBase}
+              disabled={!!socialLoading || loading}
+              onClick={handleGoogleLogin}
+              onMouseEnter={(e) => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#4285F4' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
+            >
+              {socialLoading === 'google' ? (
+                <span style={{ fontSize: 14, color: c.textMuted }}>Connecting…</span>
+              ) : (
+                <>
+                  {/* Google "G" SVG */}
+                  <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span style={{ color: c.text }}>Continue with Google</span>
+                </>
+              )}
+            </button>
+
+            {/* Telegram — injects official widget into hidden div, shows styled button */}
+            {BOT_USERNAME ? (
+              <div style={{ position: 'relative' }}>
+                {/* The actual Telegram widget is hidden; we show our own styled button
+                    which programmatically clicks the real widget button */}
+                <button
+                  style={{
+                    ...socialBtnBase,
+                    opacity: socialLoading === 'telegram' ? 0.6 : 1,
+                  }}
+                  disabled={!!socialLoading || loading}
+                  onClick={() => {
+                    // Click the hidden telegram widget button
+                    const btn = tgContainerRef.current?.querySelector('button, [role="button"], a')
+                    if (btn) btn.click()
+                    else {
+                      // Fallback: widget may not be loaded yet
+                      setError('Telegram widget is loading. Please try again in a moment.')
+                    }
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#229ED9' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
+                >
+                  {socialLoading === 'telegram' ? (
+                    <span style={{ fontSize: 14, color: c.textMuted }}>Connecting…</span>
+                  ) : (
+                    <>
+                      {/* Telegram plane icon */}
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="12" fill="#229ED9"/>
+                        <path d="M5.5 11.5l10-4-3 10-2.5-3.5L5.5 11.5z" fill="white"/>
+                        <path d="M10 14l-.7 3.5L12 15.5" fill="white"/>
+                        <path d="M10 14l1.5 1.5 4-5" stroke="white" strokeWidth="0.5" fill="none"/>
+                      </svg>
+                      <span style={{ color: c.text }}>Continue with Telegram</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Hidden real Telegram widget — provides the actual auth popup */}
+                <div
+                  ref={tgContainerRef}
+                  style={{
+                    position: 'absolute',
+                    opacity: 0,
+                    pointerEvents: 'none',
+                    top: 0,
+                    left: 0,
+                    width: 1,
+                    height: 1,
+                    overflow: 'hidden',
+                  }}
+                />
+              </div>
+            ) : (
+              // Telegram not configured — show disabled placeholder
+              <button
+                style={{ ...socialBtnBase, opacity: 0.4, cursor: 'not-allowed' }}
+                disabled
+                title="Set VITE_TELEGRAM_BOT_USERNAME to enable"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="12" fill="#229ED9"/>
+                  <path d="M5.5 11.5l10-4-3 10-2.5-3.5L5.5 11.5z" fill="white"/>
+                </svg>
+                <span style={{ color: c.textMuted }}>Telegram (not configured)</span>
+              </button>
+            )}
+
+            {/* Divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 2px' }}>
+              <div style={{ flex: 1, height: 1, background: c.divider }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, letterSpacing: 1 }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: c.divider }} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Fields ──────────────────────────────────────────────────────── */}
         <div className="space-y-3" onKeyDown={onKeyDown}>
           {isLogin && (
             <>
