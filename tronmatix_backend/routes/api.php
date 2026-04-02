@@ -9,8 +9,10 @@ use App\Http\Controllers\Api\CheckPaymentController;
 use App\Http\Controllers\Api\DeliveryScheduleController;
 use App\Http\Controllers\Api\DiscountController;
 use App\Http\Controllers\Api\GenerateKhqrController;
+use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\TelegramAuthController;   // ← ADD: social login (was missing)
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\TelegramBotController;
 use App\Http\Controllers\Api\TelegramController;
@@ -23,6 +25,10 @@ Route::post('/auth/login',           [AuthController::class, 'login']);
 Route::post('/auth/register',        [AuthController::class, 'register']);
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/auth/reset-password',  [AuthController::class, 'resetPassword']);
+
+// Social auth — public (returns token + is_new_user flag)
+Route::post('/auth/google',          [GoogleAuthController::class, 'handleCallback']);
+Route::post('/auth/telegram',        [TelegramAuthController::class, 'handleCallback']); // ← ADD: was missing, AuthModal.jsx calls this
 
 Route::get('/products',              [ProductController::class, 'index']);
 Route::get('/products/{id}',         [ProductController::class, 'show']);
@@ -57,8 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Payment
     Route::post('/payment/generate-qr',    [GenerateKhqrController::class, 'generate']);
-    // FIX: verify is GET — it reads payment state (polling), does not mutate.
-    // Frontend polls: GET /api/payment/verify?order_id=123
     Route::get('/payment/verify',          [CheckPaymentController::class, 'verify']);
     Route::post('/payment/confirm-manual', [CheckPaymentController::class, 'confirmManual']);
 
@@ -72,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // User profile + saved locations
     Route::get('/user/profile',            [UserProfileController::class, 'show']);
     Route::put('/user/profile',            [UserProfileController::class, 'update']);
+    Route::post('/user/profile/complete',  [UserProfileController::class, 'completeProfile']);
     Route::get('/user/stats',              [UserProfileController::class, 'stats']);
     Route::post('/user/avatar',            [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/user/avatar',          [UserProfileController::class, 'removeAvatar']);
@@ -80,19 +85,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/locations/{id}',     [UserProfileController::class, 'updateLocation']);
     Route::delete('/user/locations/{id}',  [UserProfileController::class, 'destroyLocation']);
 
-    // Telegram user connect/disconnect
+    // Telegram user connect/disconnect (requires login — different from social login above)
     Route::prefix('telegram')->group(function () {
-        // ── User-facing (Sanctum-protected) ──────────────────────────────────
-        // FIX: /connect-url was pointing to TelegramController::connectUrl()
-        //      which does NOT exist → 404. Frontend calls POST /connect + GET /status.
-        Route::post('/connect',       [TelegramController::class, 'connect']);       // FIX: was missing
+        Route::post('/connect',       [TelegramController::class, 'connect']);
         Route::post('/disconnect',    [TelegramController::class, 'disconnect']);
-        Route::get('/status',         [TelegramController::class, 'status']);        // FIX: was missing → 404
-        Route::post('/test-message',  [TelegramController::class, 'testMessage']);   // FIX: was missing
+        Route::get('/status',         [TelegramController::class, 'status']);
+        Route::post('/test-message',  [TelegramController::class, 'testMessage']);
 
-        // ── Bot admin setup ───────────────────────────────────────────────────
         Route::post('/setup-webhook',  [TelegramBotController::class, 'setupWebhook']);
-        Route::post('/delete-webhook', [TelegramBotController::class, 'deleteWebhook']); // FIX: new — fixes 409 conflict
+        Route::post('/delete-webhook', [TelegramBotController::class, 'deleteWebhook']);
         Route::get('/webhook-info',    [TelegramBotController::class, 'webhookInfo']);
         Route::post('/set-commands',   [TelegramBotController::class, 'setCommands']);
     });

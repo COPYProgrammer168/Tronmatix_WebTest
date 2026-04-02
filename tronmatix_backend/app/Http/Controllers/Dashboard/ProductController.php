@@ -5,27 +5,33 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\AdminSetting;
 use App\Models\Product;
-use App\Traits\StorageHelper;
+use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    use StorageHelper;
+    public function __construct(
+        private readonly ImageStorageService $storage
+    ) {}
 
     public function index(Request $request)
     {
         $query = Product::query();
 
         if ($request->filled('search')) {
-            $term = '%'.$request->search.'%';
+            $term = '%' . $request->search . '%';
             $query->where(fn($q) => $q
                 ->where('name', 'LIKE', $term)
                 ->orWhere('category', 'LIKE', $term)
                 ->orWhere('brand', 'LIKE', $term));
         }
-        if ($request->filled('category')) $query->where('category', $request->category);
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
 
         $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
+
         if ($request->filled('stock')) {
             match ($request->stock) {
                 'out'   => $query->where('stock', '<=', 0),
@@ -34,6 +40,7 @@ class ProductController extends Controller
                 default => null,
             };
         }
+
         if ($request->filled('filter')) {
             match ($request->filter) {
                 'hot'      => $query->where('is_hot', true),
@@ -43,6 +50,7 @@ class ProductController extends Controller
         }
 
         $products = $query->latest()->paginate(20)->withQueryString();
+
         return view('dashboard.products', compact('products'));
     }
 
@@ -55,7 +63,9 @@ class ProductController extends Controller
     {
         $validated           = $this->validateProduct($request);
         $validated['images'] = $this->buildImagesArray($request);
+
         Product::create($validated);
+
         return redirect()->route('dashboard.products')->with('success', 'Product created.');
     }
 
@@ -69,45 +79,51 @@ class ProductController extends Controller
         $validated = $this->validateProduct($request, $product);
 
         if ($request->boolean('remove_image')) {
-            foreach ($product->all_images as $img) $this->deleteStorageFile($img);
+            // Delete all existing images from storage
+            $this->storage->deleteMany($product->all_images);
             $validated['images'] = [];
             $validated['image']  = null;
         } else {
-            $all = $this->buildImagesArray($request);
-            $validated['images'] = empty($all) ? $product->all_images : $all;
+            $uploaded = $this->buildImagesArray($request);
+            // Keep existing images if no new ones were provided
+            $validated['images'] = empty($uploaded) ? $product->all_images : $uploaded;
         }
 
         $product->update($validated);
+
         return redirect()->route('dashboard.products')->with('success', 'Product updated.');
     }
 
     public function destroy(Product $product)
     {
-        foreach ($product->all_images as $img) $this->deleteStorageFile($img);
+        $this->storage->deleteMany($product->all_images);
         $product->delete();
+
         return redirect()->route('dashboard.products')->with('success', 'Product deleted.');
     }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
 
     private function buildImagesArray(Request $request): array
     {
         $result = [];
 
-        // Keep existing (already S3 URLs or legacy paths)
+        // 1. Keep existing paths/URLs already stored (passed back from the form)
         foreach ((array) $request->input('existing_images', []) as $path) {
             $path = trim((string) $path);
             if ($path !== '') $result[] = $path;
         }
 
-        // Upload new files to S3/R2
+        // 2. Upload new files
         if ($request->hasFile('image_files')) {
             foreach ((array) $request->file('image_files') as $file) {
                 if ($file && $file->isValid()) {
-                    $result[] = $this->storeFile($file, 'products');
+                    $result[] = $this->storage->store($file, 'products');
                 }
             }
         }
 
-        // External URLs
+        // 3. Accept externally-hosted URLs (user-pasted CDN links, etc.)
         foreach ((array) $request->input('image_urls', []) as $url) {
             $url = trim((string) $url);
             if ($url !== '') $result[] = $url;
@@ -137,8 +153,13 @@ class ProductController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_hot']      = $request->boolean('is_hot');
 
-        unset($validated['image_files'], $validated['image_urls'],
-              $validated['existing_images'], $validated['remove_image']);
+        // Remove fields handled separately — not written directly to DB
+        unset(
+            $validated['image_files'],
+            $validated['image_urls'],
+            $validated['existing_images'],
+            $validated['remove_image'],
+        );
 
         return $validated;
     }

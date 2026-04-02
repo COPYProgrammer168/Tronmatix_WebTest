@@ -1,16 +1,169 @@
+// src/components/AuthModal.jsx
+//
+// Handles: Login, Register, Forgot Password, Google OAuth, Telegram OAuth
+// After Google/Telegram sign-in for NEW users → shows ProfileSetupModal (username + phone)
+
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import api from '../lib/axios'
 import logo from '../assets/logo.png'
 
-const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+const BOT_USERNAME    = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID     || ''
 
-// mode: 'login' | 'register' | 'forgot'
-export default function AuthModal({ mode, onClose, onSwitch }) {
-  const { login, register, forgotPassword, loading, applyToken, applyUser } = useAuth()
+// ─────────────────────────────────────────────────────────────────────────────
+// ProfileSetupModal — shown after Google/Telegram login for new users
+// ─────────────────────────────────────────────────────────────────────────────
+export function ProfileSetupModal({ onClose }) {
+  const { completeProfile, loading, user } = useAuth()
   const { dark } = useTheme()
+
+  const [username, setUsername] = useState(user?.username || '')
+  const [phone,    setPhone]    = useState(user?.phone    || '')
+  const [error,    setError]    = useState('')
+  const [saving,   setSaving]   = useState(false)
+
+  const c = {
+    bg:      dark ? '#1f2937' : '#ffffff',
+    text:    dark ? '#f9fafb' : '#1f2937',
+    muted:   dark ? '#9ca3af' : '#6b7280',
+    inputBg: dark ? '#111827' : '#f9fafb',
+    border:  dark ? '#374151' : '#e5e7eb',
+  }
+
+  const inputStyle = (err) => ({
+    width: '100%', boxSizing: 'border-box',
+    padding: '12px 16px', borderRadius: 12, outline: 'none',
+    fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 600,
+    background: c.inputBg, color: c.text,
+    border: `1.5px solid ${err ? '#ef4444' : c.border}`,
+    transition: 'border-color 0.2s',
+  })
+
+  const handleSave = async () => {
+    setError('')
+    const u = username.trim()
+    if (!u) { setError('Username is required.'); return }
+    if (!/^[a-zA-Z0-9_]{3,50}$/.test(u)) {
+      setError('Username must be 3–50 characters: letters, numbers, underscores only.')
+      return
+    }
+    setSaving(true)
+    const res = await completeProfile(u, phone.trim() || null)
+    setSaving(false)
+    if (res.success) onClose()
+    else setError(res.message)
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
+    >
+      <div
+        className="rounded-3xl shadow-2xl w-full mx-4 relative"
+        style={{ background: c.bg, maxWidth: 400, padding: '36px 32px' }}
+      >
+        {/* Header */}
+        <div className="flex flex-col items-center mb-8">
+          <img src={logo} alt="Tronmatix" className="h-12 mb-4" />
+          <div style={{ fontSize: 28, marginBottom: 6 }}>👋</div>
+          <h2
+            className="font-black text-center"
+            style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, color: c.text, letterSpacing: 2 }}
+          >
+            ALMOST THERE!
+          </h2>
+          <p className="text-center mt-2" style={{ fontSize: 14, color: c.muted, lineHeight: 1.6 }}>
+            Set your username to complete your profile.<br />
+            <span style={{ fontSize: 12 }}>Phone is optional.</span>
+          </p>
+        </div>
+
+        {/* Username */}
+        <div className="mb-4">
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: 2, color: c.muted, marginBottom: 8 }}>
+            USERNAME *
+          </label>
+          <input
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            placeholder="e.g. john_doe123"
+            autoFocus
+            style={inputStyle(!!error && !username.trim())}
+            onFocus={e => { e.target.style.borderColor = '#F97316' }}
+            onBlur={e => { e.target.style.borderColor = error ? '#ef4444' : c.border }}
+            onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+          />
+          <p style={{ fontSize: 12, color: c.muted, marginTop: 5 }}>
+            Letters, numbers, underscores only. 3–50 characters.
+          </p>
+        </div>
+
+        {/* Phone */}
+        <div className="mb-6">
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: 2, color: c.muted, marginBottom: 8 }}>
+            PHONE / TEL <span style={{ fontWeight: 400, color: c.muted }}>(optional)</span>
+          </label>
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 15, pointerEvents: 'none' }}>📞</span>
+            <input
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="0xx xxx xxx"
+              style={{ ...inputStyle(false), paddingLeft: 40 }}
+              onFocus={e => { e.target.style.borderColor = '#F97316' }}
+              onBlur={e => { e.target.style.borderColor = c.border }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+            />
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <p className="text-red-500 text-center mb-4" style={{ fontSize: 14 }}>{error}</p>
+        )}
+
+        {/* Save button */}
+        <button
+          onClick={handleSave}
+          disabled={saving || loading}
+          className="w-full py-3 rounded-full font-black tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            fontFamily: 'Rajdhani, sans-serif',
+            fontSize: 17,
+            background: 'linear-gradient(135deg, #F97316, #ea580c)',
+            color: '#fff',
+            border: 'none',
+            boxShadow: '0 4px 20px rgba(249,115,22,0.35)',
+            cursor: saving ? 'wait' : 'pointer',
+          }}
+        >
+          {saving ? '⏳ SAVING...' : '✓ SAVE & CONTINUE'}
+        </button>
+
+        {/* Skip */}
+        <button
+          onClick={onClose}
+          className="w-full mt-3 font-semibold transition-colors"
+          style={{ fontSize: 13, color: c.muted, background: 'none', border: 'none', cursor: 'pointer' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#F97316' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >
+          Skip for now →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AuthModal — Login / Register / Forgot Password
+// ─────────────────────────────────────────────────────────────────────────────
+export default function AuthModal({ mode, onClose, onSwitch }) {
+  const { login, register, forgotPassword, googleLogin, loading } = useAuth()
+  const { dark } = useTheme()
+
   const [form, setForm]           = useState({ usernameOrEmail: '', username: '', email: '', password: '', confirm: '' })
   const [error, setError]         = useState('')
   const [success, setSuccess]     = useState('')
@@ -26,22 +179,22 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
   const showSocial = isLogin
 
   const c = {
-    modalBg:       dark ? '#1f2937' : '#ffffff',
-    text:          dark ? '#f9fafb' : '#1f2937',
-    textMuted:     dark ? '#9ca3af' : '#6b7280',
-    inputBg:       dark ? '#111827' : '#f9fafb',
-    inputBorder:   dark ? '#374151' : '#e5e7eb',
-    tabBg:         dark ? '#111827' : '#f3f4f6',
-    tabActive:     dark ? '#1f2937' : '#ffffff',
-    closeBtn:      dark ? '#6b7280' : '#9ca3af',
-    closeBtnHover: dark ? '#f9fafb' : '#1f2937',
-    btnBg:         dark ? '#111827' : '#ffffff',
-    btnBorder:     dark ? '#374151' : '#e5e7eb',
-    btnText:       dark ? '#f9fafb' : '#1f2937',
-    divider:       dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-    socialBg:      dark ? '#111827' : '#f9fafb',
-    socialBorder:  dark ? '#374151' : '#e5e7eb',
-    socialHover:   dark ? '#1f2937' : '#f3f4f6',
+    modalBg:      dark ? '#1f2937' : '#ffffff',
+    text:         dark ? '#f9fafb' : '#1f2937',
+    textMuted:    dark ? '#9ca3af' : '#6b7280',
+    inputBg:      dark ? '#111827' : '#f9fafb',
+    inputBorder:  dark ? '#374151' : '#e5e7eb',
+    tabBg:        dark ? '#111827' : '#f3f4f6',
+    tabActive:    dark ? '#1f2937' : '#ffffff',
+    closeBtn:     dark ? '#6b7280' : '#9ca3af',
+    closeBtnHov:  dark ? '#f9fafb' : '#1f2937',
+    btnBg:        dark ? '#111827' : '#ffffff',
+    btnBorder:    dark ? '#374151' : '#e5e7eb',
+    btnText:      dark ? '#f9fafb' : '#1f2937',
+    divider:      dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    socialBg:     dark ? '#111827' : '#f9fafb',
+    socialBorder: dark ? '#374151' : '#e5e7eb',
+    socialHover:  dark ? '#1f2937' : '#f3f4f6',
   }
 
   const inputClass = 'w-full rounded-xl px-4 py-3 focus:outline-none transition-colors'
@@ -59,13 +212,12 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
 
   function checkPasswordStrength(pw) {
     const hints = []
-    if (pw.length < 8)              hints.push('At least 8 characters')
-    if (!/[A-Z]/.test(pw))          hints.push('One uppercase letter (A-Z)')
-    if (!/[a-z]/.test(pw))          hints.push('One lowercase letter (a-z)')
-    if (!/[0-9]/.test(pw))          hints.push('One number (0-9)')
-    if (!/[^A-Za-z0-9]/.test(pw))   hints.push('One symbol (e.g. @, #, !)')
-    const score = 5 - hints.length
-    return { score, hints }
+    if (pw.length < 8)             hints.push('At least 8 characters')
+    if (!/[A-Z]/.test(pw))         hints.push('One uppercase letter')
+    if (!/[a-z]/.test(pw))         hints.push('One lowercase letter')
+    if (!/[0-9]/.test(pw))         hints.push('One number')
+    if (!/[^A-Za-z0-9]/.test(pw))  hints.push('One symbol')
+    return { score: 5 - hints.length, hints }
   }
 
   const strengthColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a']
@@ -93,31 +245,29 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     onSwitch(newMode)
   }
 
-  // ── Google OAuth ─────────────────────────────────────────────────────────────
-  // Uses Google Identity Services (GSI) popup flow.
-  // Backend endpoint: POST /api/auth/google  → { token, user }
+  // ── Load GSI script once ──────────────────────────────────────────────────
   useEffect(() => {
     if (!showSocial || !GOOGLE_CLIENT_ID) return
-
-    // Load GSI script once
     if (!document.getElementById('gsi-script')) {
-      const s = document.createElement('script')
-      s.id  = 'gsi-script'
-      s.src = 'https://accounts.google.com/gsi/client'
-      s.async = true
+      const s    = document.createElement('script')
+      s.id       = 'gsi-script'
+      s.src      = 'https://accounts.google.com/gsi/client'
+      s.async    = true
       document.head.appendChild(s)
     }
   }, [showSocial])
 
+  // ── Google Login ──────────────────────────────────────────────────────────
   const handleGoogleLogin = () => {
     if (!GOOGLE_CLIENT_ID) {
-      setError('Google login is not configured. Set VITE_GOOGLE_CLIENT_ID.')
+      setError('Google login is not configured. Set VITE_GOOGLE_CLIENT_ID in .env.')
       return
     }
     if (typeof window.google === 'undefined') {
-      setError('Google SDK not loaded yet. Please wait a moment and try again.')
+      setError('Google SDK is still loading. Please try again in a moment.')
       return
     }
+
     setSocialLoading('google')
     setError('')
 
@@ -130,33 +280,25 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           setSocialLoading(null)
           return
         }
-        try {
-          const res = await api.post('/api/auth/google', {
-            access_token: tokenResponse.access_token,
-          })
-          const t = res.data?.token ?? res.data?.data?.token
-          const u = res.data?.user ?? res.data?.data?.user ?? res.data?.data
-          if (!t || !u) throw new Error('Unexpected response shape')
-          // applyToken / applyUser come from AuthContext
-          // If your AuthContext does not export these directly,
-          // call login() with a special flag or handle via a dedicated hook.
-          // For now we dispatch a custom event the AuthContext can listen to.
-          window.dispatchEvent(new CustomEvent('auth:social-login', { detail: { token: t, user: u } }))
+
+        // ✅ Use googleLogin from AuthContext — clean, centralized, handles is_new_user
+        const res = await googleLogin(tokenResponse.access_token)
+
+        setSocialLoading(null)
+
+        if (res.success) {
           setSuccess('Signed in with Google!')
-          setTimeout(onClose, 700)
-        } catch (e) {
-          setError(e.response?.data?.message || 'Google sign-in failed. Please try again.')
+          // Close modal after brief delay — ProfileSetupModal shows if isNewUser
+          setTimeout(onClose, 600)
+        } else {
+          setError(res.message)
           recordFailure()
-        } finally {
-          setSocialLoading(null)
         }
       },
     }).requestAccessToken()
   }
 
-  // ── Telegram Login Widget ────────────────────────────────────────────────────
-  // Injects the official Telegram Login Widget into a container div.
-  // On auth callback → POST /api/auth/telegram → { token, user }
+  // ── Telegram Widget ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!showSocial || !BOT_USERNAME) return
     const container = tgContainerRef.current
@@ -169,11 +311,15 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       setSocialLoading('telegram')
       setError('')
       try {
+        const { default: api } = await import('../lib/axios')
         const res = await api.post('/api/auth/telegram', tgUser)
-        const t = res.data?.token ?? res.data?.data?.token
-        const u = res.data?.user ?? res.data?.data?.user ?? res.data?.data
+        const t = res.data?.token
+        const u = res.data?.user
         if (!t || !u) throw new Error('Unexpected response shape')
-        window.dispatchEvent(new CustomEvent('auth:social-login', { detail: { token: t, user: u } }))
+        // Dispatch event — AuthContext listener handles applyToken/applyUser/is_new_user
+        window.dispatchEvent(new CustomEvent('auth:social-login', {
+          detail: { token: t, user: u, isNewUser: !!res.data?.is_new_user }
+        }))
         setSuccess('Signed in with Telegram!')
         setTimeout(onClose, 700)
       } catch (e) {
@@ -198,7 +344,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       delete window.onTelegramAuthModal
       if (container) container.innerHTML = ''
     }
-  }, [showSocial, mode]) // re-inject when mode switches between login/register
+  }, [showSocial, mode])
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const submit = async () => {
@@ -234,7 +380,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     if (!f.username || !f.email || !f.password) { setError('Please fill all required fields.'); return }
     if (!validUsername(f.username)) { setError('Username must be 3–50 characters: letters, numbers, underscores only.'); return }
     if (!validEmail(f.email))       { setError('Please enter a valid email address.'); return }
-    if (!validPassword(f.password)) { setError('Password must be at least 8 characters with uppercase, lowercase, a number, and a symbol.'); return }
+    if (!validPassword(f.password)) { setError('Password must be at least 8 characters with uppercase, lowercase, number, and symbol.'); return }
     if (f.password !== f.confirm)   { setError('Passwords do not match.'); return }
 
     const res = await register(f.username, f.email, f.password, f.confirm)
@@ -249,24 +395,12 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
 
   const onKeyDown = (e) => { if (e.key === 'Enter') submit() }
 
-  // ── Social button shared style ─────────────────────────────────────────────
   const socialBtnBase = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    width: '100%',
-    padding: '11px 16px',
-    borderRadius: 12,
-    border: `1px solid ${c.socialBorder}`,
-    background: c.socialBg,
-    color: c.text,
-    fontSize: 15,
-    fontWeight: 700,
-    fontFamily: 'Rajdhani, sans-serif',
-    letterSpacing: 0.5,
-    cursor: 'pointer',
-    transition: 'background 0.15s, border-color 0.15s',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+    width: '100%', padding: '11px 16px', borderRadius: 12,
+    border: `1px solid ${c.socialBorder}`, background: c.socialBg, color: c.text,
+    fontSize: 15, fontWeight: 700, fontFamily: 'Rajdhani, sans-serif',
+    letterSpacing: 0.5, cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s',
   }
 
   return (
@@ -277,22 +411,15 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     >
       <div
         className="rounded-3xl shadow-2xl w-full mx-4 relative"
-        style={{
-          background: c.modalBg,
-          maxWidth: 400,
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          padding: '32px',
-          scrollbarWidth: 'none',
-        }}
+        style={{ background: c.modalBg, maxWidth: 400, maxHeight: '90vh', overflowY: 'auto', padding: '32px', scrollbarWidth: 'none' }}
       >
         {/* Close */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-xl font-bold transition-colors"
           style={{ color: c.closeBtn }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = c.closeBtnHover }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = c.closeBtn }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.closeBtnHov }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.closeBtn }}
         >✕</button>
 
         {/* Logo */}
@@ -304,17 +431,14 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
         {!isForgot && (
           <div className="flex rounded-full p-1 mb-6" style={{ background: c.tabBg }}>
             {[['login', 'LOGIN'], ['register', 'REGISTER']].map(([val, label]) => (
-              <button
-                key={val}
-                onClick={() => handleSwitch(val)}
+              <button key={val} onClick={() => handleSwitch(val)}
                 className="flex-1 py-2 rounded-full font-bold tracking-wider transition-all"
                 style={{
                   fontFamily: 'Rajdhani, sans-serif', fontSize: 18,
                   background: mode === val ? c.tabActive : 'transparent',
                   color: mode === val ? '#F97316' : c.textMuted,
                   boxShadow: mode === val ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
-                }}
-              >{label}</button>
+                }}>{label}</button>
             ))}
           </div>
         )}
@@ -332,7 +456,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           </div>
         )}
 
-        {/* ── Social Login Buttons (above form, login + register only) ────── */}
+        {/* Social buttons */}
         {showSocial && (
           <div className="mb-5" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
@@ -341,86 +465,57 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
               style={socialBtnBase}
               disabled={!!socialLoading || loading}
               onClick={handleGoogleLogin}
-              onMouseEnter={(e) => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#4285F4' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
+              onMouseEnter={e => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#4285F4' }}
+              onMouseLeave={e => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
             >
               {socialLoading === 'google' ? (
                 <span style={{ fontSize: 14, color: c.textMuted }}>Connecting…</span>
               ) : (
                 <>
-                  {/* Google "G" SVG */}
-                  <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="20" height="20" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  <span style={{ color: c.text }}>Continue with Google</span>
+                  <span>Continue with Google</span>
                 </>
               )}
             </button>
 
-            {/* Telegram — injects official widget into hidden div, shows styled button */}
+            {/* Telegram */}
             {BOT_USERNAME ? (
               <div style={{ position: 'relative' }}>
-                {/* The actual Telegram widget is hidden; we show our own styled button
-                    which programmatically clicks the real widget button */}
                 <button
-                  style={{
-                    ...socialBtnBase,
-                    opacity: socialLoading === 'telegram' ? 0.6 : 1,
-                  }}
+                  style={{ ...socialBtnBase, opacity: socialLoading === 'telegram' ? 0.6 : 1 }}
                   disabled={!!socialLoading || loading}
                   onClick={() => {
-                    // Click the hidden telegram widget button
                     const btn = tgContainerRef.current?.querySelector('button, [role="button"], a')
                     if (btn) btn.click()
-                    else {
-                      // Fallback: widget may not be loaded yet
-                      setError('Telegram widget is loading. Please try again in a moment.')
-                    }
+                    else setError('Telegram widget is loading. Please try again in a moment.')
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#229ED9' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
+                  onMouseEnter={e => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#229ED9' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
                 >
                   {socialLoading === 'telegram' ? (
                     <span style={{ fontSize: 14, color: c.textMuted }}>Connecting…</span>
                   ) : (
                     <>
-                      {/* Telegram plane icon */}
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="12" r="12" fill="#229ED9"/>
                         <path d="M5.5 11.5l10-4-3 10-2.5-3.5L5.5 11.5z" fill="white"/>
                         <path d="M10 14l-.7 3.5L12 15.5" fill="white"/>
                         <path d="M10 14l1.5 1.5 4-5" stroke="white" strokeWidth="0.5" fill="none"/>
                       </svg>
-                      <span style={{ color: c.text }}>Continue with Telegram</span>
+                      <span>Continue with Telegram</span>
                     </>
                   )}
                 </button>
-
-                {/* Hidden real Telegram widget — provides the actual auth popup */}
-                <div
-                  ref={tgContainerRef}
-                  style={{
-                    position: 'absolute',
-                    opacity: 0,
-                    pointerEvents: 'none',
-                    top: 0,
-                    left: 0,
-                    width: 1,
-                    height: 1,
-                    overflow: 'hidden',
-                  }}
-                />
+                <div ref={tgContainerRef}
+                  style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', top: 0, left: 0, width: 1, height: 1, overflow: 'hidden' }} />
               </div>
             ) : (
-              // Telegram not configured — show disabled placeholder
-              <button
-                style={{ ...socialBtnBase, opacity: 0.4, cursor: 'not-allowed' }}
-                disabled
-                title="Set VITE_TELEGRAM_BOT_USERNAME to enable"
-              >
+              <button style={{ ...socialBtnBase, opacity: 0.4, cursor: 'not-allowed' }} disabled>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="12" fill="#229ED9"/>
                   <path d="M5.5 11.5l10-4-3 10-2.5-3.5L5.5 11.5z" fill="white"/>
@@ -438,73 +533,42 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           </div>
         )}
 
-        {/* ── Fields ──────────────────────────────────────────────────────── */}
+        {/* Fields */}
         <div className="space-y-3" onKeyDown={onKeyDown}>
           {isLogin && (
             <>
-              <input
-                name="usernameOrEmail"
-                placeholder="Username or Email"
-                value={form.usernameOrEmail}
-                onChange={handle}
+              <input name="usernameOrEmail" placeholder="Username or Email"
+                value={form.usernameOrEmail} onChange={handle}
                 autoComplete="username email"
-                className={inputClass} style={inputStyle} {...focusHandlers}
-              />
-              <input
-                name="password"
-                type="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handle}
+                className={inputClass} style={inputStyle} {...focusHandlers} />
+              <input name="password" type="password" placeholder="Password"
+                value={form.password} onChange={handle}
                 autoComplete="current-password"
-                className={inputClass} style={inputStyle} {...focusHandlers}
-              />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
             </>
           )}
 
           {isRegister && (
             <>
-              <input
-                name="username"
-                placeholder="Username"
-                value={form.username}
-                onChange={handle}
+              <input name="username" placeholder="Username"
+                value={form.username} onChange={handle}
                 autoComplete="username"
-                className={inputClass} style={inputStyle} {...focusHandlers}
-              />
-              <input
-                name="email"
-                type="email"
-                placeholder="Email (Gmail or any address)"
-                value={form.email}
-                onChange={handle}
+                className={inputClass} style={inputStyle} {...focusHandlers} />
+              <input name="email" type="email" placeholder="Email address"
+                value={form.email} onChange={handle}
                 autoComplete="email"
-                className={inputClass} style={inputStyle} {...focusHandlers}
-              />
-              <input
-                name="password"
-                type="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handle}
+                className={inputClass} style={inputStyle} {...focusHandlers} />
+              <input name="password" type="password" placeholder="Password"
+                value={form.password} onChange={handle}
                 autoComplete="new-password"
-                className={inputClass} style={inputStyle} {...focusHandlers}
-              />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
 
-              {/* Password strength meter */}
               {form.password.length > 0 && (
                 <div>
                   <div className="flex gap-1 mb-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className="h-1 flex-1 rounded-full transition-all"
-                        style={{
-                          background: i <= pwStrength.score
-                            ? strengthColors[pwStrength.score - 1]
-                            : (dark ? '#374151' : '#e5e7eb'),
-                        }}
-                      />
+                    {[1,2,3,4,5].map(i => (
+                      <div key={i} className="h-1 flex-1 rounded-full transition-all"
+                        style={{ background: i <= pwStrength.score ? strengthColors[pwStrength.score - 1] : (dark ? '#374151' : '#e5e7eb') }} />
                     ))}
                   </div>
                   {pwStrength.score < 5 && (
@@ -513,45 +577,33 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
                       Still need: {pwStrength.hints.join(', ')}
                     </p>
                   )}
-                  {pwStrength.score === 5 && (
-                    <p style={{ fontSize: 12, color: '#16a34a' }}>Strong password ✓</p>
-                  )}
+                  {pwStrength.score === 5 && <p style={{ fontSize: 12, color: '#16a34a' }}>Strong password ✓</p>}
                 </div>
               )}
 
-              <input
-                name="confirm"
-                type="password"
-                placeholder="Confirm Password"
-                value={form.confirm}
-                onChange={handle}
+              <input name="confirm" type="password" placeholder="Confirm Password"
+                value={form.confirm} onChange={handle}
                 autoComplete="new-password"
-                className={inputClass} style={inputStyle} {...focusHandlers}
-              />
+                className={inputClass} style={inputStyle} {...focusHandlers} />
             </>
           )}
 
           {isForgot && (
-            <input
-              name="email"
-              type="email"
-              placeholder="Your email address"
-              value={form.email}
-              onChange={handle}
+            <input name="email" type="email" placeholder="Your email address"
+              value={form.email} onChange={handle}
               autoComplete="email"
-              className={inputClass} style={inputStyle} {...focusHandlers}
-            />
+              className={inputClass} style={inputStyle} {...focusHandlers} />
           )}
         </div>
 
         {/* Forgot link */}
         {isLogin && (
           <div className="flex justify-end mt-2">
-            <button
-              onClick={() => handleSwitch('forgot')}
+            <button onClick={() => handleSwitch('forgot')}
               className="font-semibold hover:underline"
-              style={{ fontSize: 14, color: '#F97316' }}
-            >Forgot password?</button>
+              style={{ fontSize: 14, color: '#F97316' }}>
+              Forgot password?
+            </button>
           </div>
         )}
 
@@ -566,31 +618,20 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           className="w-full mt-5 rounded-full py-3 font-bold transition-all shadow disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             fontFamily: 'Rajdhani, sans-serif', fontSize: 18,
-            background: c.btnBg,
-            border: `1px solid ${c.btnBorder}`,
-            color: c.btnText,
+            background: c.btnBg, border: `1px solid ${c.btnBorder}`, color: c.btnText,
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background  = '#F97316'
-            e.currentTarget.style.borderColor = '#F97316'
-            e.currentTarget.style.color       = '#ffffff'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background  = c.btnBg
-            e.currentTarget.style.borderColor = c.btnBorder
-            e.currentTarget.style.color       = c.btnText
-          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F97316'; e.currentTarget.style.borderColor = '#F97316'; e.currentTarget.style.color = '#fff' }}
+          onMouseLeave={e => { e.currentTarget.style.background = c.btnBg;   e.currentTarget.style.borderColor = c.btnBorder; e.currentTarget.style.color = c.btnText }}
         >
           {loading ? '…' : isForgot ? 'Send Reset Link' : isLogin ? 'Login' : 'Register'}
         </button>
 
         {isForgot && (
-          <button
-            onClick={() => handleSwitch('login')}
+          <button onClick={() => handleSwitch('login')}
             className="w-full mt-3 font-semibold transition-colors"
             style={{ fontSize: 14, color: c.textMuted }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#F97316' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = c.textMuted }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#F97316' }}
+            onMouseLeave={e => { e.currentTarget.style.color = c.textMuted }}
           >← Back to Login</button>
         )}
       </div>

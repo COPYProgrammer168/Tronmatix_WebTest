@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('username')->unique();
             $table->string('password'); // hashed at submission
-            $table->enum('requested_role', ['admin', 'editor', 'seller','Delivery', 'viewer'])->default('viewer');
+            $table->enum('requested_role', ['admin', 'editor', 'seller', 'viewer'])->default('viewer');
             $table->text('message')->nullable(); // optional note from requester
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->foreignId('reviewed_by')->nullable()->constrained('admins')->nullOnDelete();

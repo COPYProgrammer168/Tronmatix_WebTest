@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Traits\StorageHelper;
+use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
-    use StorageHelper;
+    public function __construct(
+        private readonly ImageStorageService $storage
+    ) {}
 
     public function show()
     {
@@ -26,22 +27,21 @@ class ProfileController extends Controller
 
         $data = $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|email|max:255|unique:admins,email,'.$admin->id,
-            'username' => 'nullable|string|max:100|unique:admins,username,'.$admin->id,
+            'email'    => 'required|email|max:255|unique:admins,email,' . $admin->id,
+            'username' => 'nullable|string|max:100|unique:admins,username,' . $admin->id,
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
-            // Delete old avatar
-            $this->deleteStorageFile($admin->avatar);
-
-            // Store new avatar and get URL
-            $file     = $request->file('avatar');
-            $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-            $data['avatar'] = $this->storeFileAs($file, 'avatars/admins', $filename);
+            // Delete old avatar first, then store the new one
+            $this->storage->delete($admin->avatar);
+            $data['avatar'] = $this->storage->store($request->file('avatar'), 'avatars/admins');
         }
 
-        if (!isset($data['avatar'])) unset($data['avatar']);
+        // Don't overwrite avatar if no new file was uploaded
+        if (!isset($data['avatar'])) {
+            unset($data['avatar']);
+        }
 
         $admin->update(array_filter($data, fn($v) => $v !== null));
 
@@ -53,7 +53,8 @@ class ProfileController extends Controller
     {
         /** @var \App\Models\Admin $admin */
         $admin = Auth::guard('admin')->user();
-        $this->deleteStorageFile($admin->avatar);
+
+        $this->storage->delete($admin->avatar);
         $admin->update(['avatar' => null]);
 
         return redirect()->route('dashboard.profile')
@@ -67,7 +68,9 @@ class ProfileController extends Controller
 
         $request->validate([
             'current_password' => ['required', function ($attr, $value, $fail) use ($admin) {
-                if (!Hash::check($value, $admin->password)) $fail('The current password is incorrect.');
+                if (!Hash::check($value, $admin->password)) {
+                    $fail('The current password is incorrect.');
+                }
             }],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
@@ -83,12 +86,14 @@ class ProfileController extends Controller
         /** @var \App\Models\Admin $admin */
         $admin = Auth::guard('admin')->user();
 
-        if (!$admin->isSuperAdmin()) abort(403, 'Only superadmins can change roles.');
+        if (!$admin->isSuperAdmin()) {
+            abort(403, 'Only superadmins can change roles.');
+        }
 
         $request->validate(['role' => 'required|in:superadmin,admin,editor']);
         $admin->update(['role' => $request->role]);
 
         return redirect()->route('dashboard.profile')
-            ->with('success', 'Role updated to '.strtoupper($request->role).'.');
+            ->with('success', 'Role updated to ' . strtoupper($request->role) . '.');
     }
 }

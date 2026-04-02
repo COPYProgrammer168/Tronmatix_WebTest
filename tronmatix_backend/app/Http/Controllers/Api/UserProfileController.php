@@ -1,5 +1,7 @@
 <?php
 
+// app/Http/Controllers/Api/UserProfileController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -7,16 +9,17 @@ use App\Models\AdminSetting;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\UserLocation;
-use App\Traits\StorageHelper;
+use App\Services\ImageStorageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class UserProfileController extends Controller
 {
-    use StorageHelper;
+    public function __construct(
+        private readonly ImageStorageService $storage
+    ) {}
 
     public function show(): JsonResponse
     {
@@ -29,18 +32,41 @@ class UserProfileController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'username' => 'nullable|string|max:255|unique:users,username,'.$user->id,
+            'username' => 'nullable|string|max:255|unique:users,username,' . $user->id,
             'phone'    => 'nullable|string|max:30',
         ]);
 
         $toUpdate = array_filter([
             'username' => $validated['username'] ?? null,
             'phone'    => $validated['phone'] ?? null,
-        ], fn ($v) => $v !== null);
+        ], fn($v) => $v !== null);
 
-        if (! empty($toUpdate)) {
+        if (!empty($toUpdate)) {
             $user->update($toUpdate);
         }
+
+        return response()->json(['success' => true, 'data' => $this->userPayload($user->fresh())]);
+    }
+
+    // ── POST /api/user/profile/complete ──────────────────────────────────────
+    // Called after Google/Telegram OAuth for new users to set username + phone.
+    public function completeProfile(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'username' => 'required|string|min:3|max:50|unique:users,username,' . $user->id . '|regex:/^[a-zA-Z0-9_]+$/',
+            'phone'    => 'nullable|string|max:30',
+        ], [
+            'username.regex' => 'Username may only contain letters, numbers, and underscores.',
+        ]);
+
+        $user->update(array_filter([
+            'username' => $validated['username'],
+            'phone'    => $validated['phone'] ?? null,
+            'name'     => $validated['username'], // sync name too
+        ], fn($v) => $v !== null));
 
         return response()->json(['success' => true, 'data' => $this->userPayload($user->fresh())]);
     }
@@ -55,18 +81,9 @@ class UserProfileController extends Controller
             'avatar' => 'required|file|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        $file     = $request->file('avatar');
-        $uuidName = Str::uuid().'.'.$file->getClientOriginalExtension();
-
-        // Delete old avatar from S3/R2 or local
-        if ($user->avatar) {
-            $this->deleteStorageFile($user->avatar);
-        }
-
-        // FIX: Use StorageHelper — auto-detects S3/R2 (production) or local (dev)
-        // Replaces the manual disk check + Storage::disk('s3')->putFileAs() pattern
-        // which caused PHP0418 error (url() not on Filesystem contract)
-        $avatarUrl = $this->storeFileAs($file, 'avatars/users', $uuidName);
+        // Delete old avatar, store new one
+        $this->storage->delete($user->avatar);
+        $avatarUrl = $this->storage->store($request->file('avatar'), 'avatars/users');
 
         $user->update(['avatar' => $avatarUrl]);
 
@@ -83,7 +100,7 @@ class UserProfileController extends Controller
         $user = Auth::user();
 
         if ($user->avatar) {
-            $this->deleteStorageFile($user->avatar);
+            $this->storage->delete($user->avatar);
             $user->update(['avatar' => null]);
         }
 
@@ -119,8 +136,8 @@ class UserProfileController extends Controller
 
         $userId   = Auth::id();
         $location = DB::transaction(function () use ($validated, $userId) {
-            $isDefault = ! empty($validated['is_default'])
-                || ! UserLocation::where('user_id', $userId)->exists();
+            $isDefault = !empty($validated['is_default'])
+                || !UserLocation::where('user_id', $userId)->exists();
 
             if ($isDefault) {
                 UserLocation::where('user_id', $userId)->update(['is_default' => false]);
@@ -128,11 +145,11 @@ class UserProfileController extends Controller
 
             return UserLocation::create([
                 ...$validated,
-                'user_id'     => $userId,
-                'country'     => $validated['country'] ?? 'Cambodia',
-                'is_default'  => $isDefault,
-                'lat'         => $validated['lat'] ?? null,
-                'lng'         => $validated['lng'] ?? null,
+                'user_id'    => $userId,
+                'country'    => $validated['country'] ?? 'Cambodia',
+                'is_default' => $isDefault,
+                'lat'        => $validated['lat'] ?? null,
+                'lng'        => $validated['lng'] ?? null,
                 'map_address' => $validated['map_address'] ?? null,
             ]);
         });
@@ -157,7 +174,7 @@ class UserProfileController extends Controller
             'map_address' => 'nullable|string|max:1000',
         ]);
 
-        if (! empty($validated['is_default'])) {
+        if (!empty($validated['is_default'])) {
             $location->setAsDefault();
             unset($validated['is_default']);
         }

@@ -138,7 +138,7 @@
 
             {{-- Video preview --}}
             @if($b->video && $b->video_type === 'upload')
-                <video src="{{ $b->video }}" muted loop autoplay playsinline
+                <video src="{{ storage_url($b->video) }}" muted loop autoplay playsinline
                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.5;"></video>
             @elseif($b->video && in_array($b->video_type, ['youtube','vimeo','facebook']))
                 {{-- Static thumbnail placeholder — iframes can't autoplay in card previews --}}
@@ -156,7 +156,7 @@
 
             {{-- Image overlay --}}
             @if($b->image)
-                <img src="{{ $b->image }}" alt="{{ $b->title }}"
+                <img src="{{ storage_url($b->image) }}" alt="{{ $b->title }}"
                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.55;">
                 {{-- GIF badge --}}
                 @if(str_ends_with(strtolower($b->image), '.gif'))
@@ -238,10 +238,10 @@
                     @js($b->badge ?? ''),
                     @js($b->bg_color ?? '#111111'),
                     @js($b->text_color ?? '#F97316'),
-                    @js($b->image ?? ''),
+                    @js($b->image ? storage_url($b->image) : ''),
                     {{ $b->order }},
                     {{ $b->active ? 'true' : 'false' }},
-                    @js($b->video ?? ''),
+                    @js($b->video ? storage_url($b->video) : ''),
                     @js($b->video_type ?? '')
                 )" class="btn btn-outline btn-sm">EDIT</button>
                 <form method="POST" action="{{ route('dashboard.banners.destroy', $b) }}"

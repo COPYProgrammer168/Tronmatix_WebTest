@@ -7,13 +7,21 @@ import { LocationProvider } from "./context/LocationContext";
 import { DiscountProvider } from "./context/DiscountContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useTheme } from "./context/ThemeContext";
+import { useAuth } from "./context/AuthContext";
+
 // Eager — present on every page, must load immediately
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartSlider from "./components/CartSlider";
 import SupportChat from "./components/SupportChat";
+
 // AuthModal is lazy — only needed when the user clicks login
-const AuthModal = lazy(() => import("./components/AuthModal"));
+// ProfileSetupModal is also exported from the same chunk
+const AuthModal          = lazy(() => import("./components/AuthModal"));
+const ProfileSetupModal  = lazy(() =>
+  import("./components/AuthModal").then((m) => ({ default: m.ProfileSetupModal }))
+);
+
 // Pages — each becomes its own chunk, downloaded only when navigated to
 const HomePage          = lazy(() => import("./pages/HomePage"));
 const CartPage          = lazy(() => import("./pages/CartPage"));
@@ -44,6 +52,11 @@ function AppContent() {
   const [authMode, setAuthMode] = useState(null);
   const { dark } = useTheme();
 
+  // ── Post-OAuth profile completion modal ────────────────────────────────────
+  // Shown globally (outside the route tree) so it overlays any page.
+  // AuthContext sets needsProfileSetup=true when Google/Telegram creates a new user.
+  const { needsProfileSetup, setNeedsProfileSetup } = useAuth();
+
   return (
     <div
       className="min-h-screen flex flex-col transition-colors duration-300"
@@ -55,6 +68,8 @@ function AppContent() {
       <Navbar onAuthOpen={(mode) => setAuthMode(mode)} />
       <CartSlider />
       <SupportChat />
+
+      {/* Login / Register / Forgot Password modal */}
       {authMode && (
         <Suspense fallback={null}>
           <AuthModal
@@ -64,6 +79,14 @@ function AppContent() {
           />
         </Suspense>
       )}
+
+      {/* Global post-OAuth profile setup modal (username + phone for new Google/Telegram users) */}
+      {needsProfileSetup && (
+        <Suspense fallback={null}>
+          <ProfileSetupModal onClose={() => setNeedsProfileSetup(false)} />
+        </Suspense>
+      )}
+
       <main className="flex-1">
         <Suspense fallback={<PageSpinner />}>
           <Routes>

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
@@ -147,6 +148,123 @@ class AuthController extends Controller
         ]);
     }
 
+    // ── Google OAuth ──────────────────────────────────────────────────────────
+    // Called by AuthContext.jsx → POST /api/auth/google
+    // Expects: { access_token: "<Google OAuth2 access token>" }
+    //
+    // Flow:
+    //   1. Exchange access_token for Google user info via userinfo endpoint
+    //   2. Find existing user by google_id, then fall back to email
+    //   3. Create a new user if none found (is_new_user = true)
+    //   4. Issue a Sanctum token and return user payload
+    public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'access_token' => 'required|string|max:2048',
+        ]);
+
+        try {
+            // ── Fetch user info from Google ───────────────────────────────────
+            $googleResponse = Http::timeout(10)
+                ->get('https://www.googleapis.com/oauth2/v3/userinfo', [
+                    'access_token' => $request->access_token,
+                ]);
+
+            if (! $googleResponse->ok()) {
+                Log::channel('security')->warning('Auth: Google userinfo call failed', [
+                    'ip'     => $request->ip(),
+                    'status' => $googleResponse->status(),
+                ]);
+                return response()->json([
+                    'message' => 'Invalid or expired Google token. Please try again.',
+                ], 401);
+            }
+
+            $gUser    = $googleResponse->json();
+            $googleId = $gUser['sub']     ?? null;
+            $email    = isset($gUser['email']) ? strtolower(trim($gUser['email'])) : null;
+            $name     = $gUser['name']    ?? null;
+            $avatar   = $gUser['picture'] ?? null;
+
+            if (! $googleId || ! $email) {
+                return response()->json([
+                    'message' => 'Could not retrieve account details from Google.',
+                ], 422);
+            }
+
+            // ── Find or create the user ───────────────────────────────────────
+            $user = User::where('google_id', $googleId)->first()
+                ?? User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+            $isNewUser = false;
+
+            if ($user) {
+                // Link google_id if this email already existed without it
+                $updates = [];
+                if (! $user->google_id) {
+                    $updates['google_id'] = $googleId;
+                }
+                // Backfill avatar only when user has none
+                if ($avatar && ! $user->avatar) {
+                    $updates['avatar'] = $avatar;
+                }
+                if (! empty($updates)) {
+                    $user->update($updates);
+                }
+            } else {
+                $isNewUser = true;
+                $username  = $this->generateGoogleUsername($name ?? $email);
+
+                $user = User::create([
+                    'name'      => $name     ?? $username,
+                    'username'  => $username,
+                    'email'     => $email,
+                    'password'  => Hash::make(Str::random(32)), // unusable random password
+                    'avatar'    => $avatar,
+                    'google_id' => $googleId,
+                    'role'      => 'customer',
+                ]);
+            }
+
+            // ── Guard: banned users cannot sign in via Google either ───────────
+            if ($user->isBanned()) {
+                Log::channel('security')->notice('Auth: banned user Google login attempt', [
+                    'user_id' => $user->id,
+                    'ip'      => $request->ip(),
+                ]);
+                return response()->json([
+                    'message' => 'Your account has been suspended. Please contact support.',
+                ], 403);
+            }
+
+            // ── Issue token (one session at a time) ───────────────────────────
+            $user->tokens()->delete();
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            Log::channel('security')->info('Auth: Google login success', [
+                'user_id'    => $user->id,
+                'is_new'     => $isNewUser,
+                'ip'         => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'token'       => $token,
+                'user'        => $this->userPayload($user),
+                'is_new_user' => $isNewUser,
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::channel('security')->error('Auth: Google login exception', [
+                'ip'    => $request->ip(),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'message' => 'Google sign-in failed. Please try again.',
+            ], 500);
+        }
+    }
+
     // ── Forgot password ───────────────────────────────────────────────────────
     public function forgotPassword(Request $request)
     {
@@ -243,5 +361,35 @@ class AuthController extends Controller
             'role'      => $user->role ?? 'customer',
             'is_banned' => $user->is_banned ?? false,
         ];
+    }
+
+    /**
+     * Derive a unique, slug-safe username from a Google display name or email.
+     *
+     * "John Doe"        → "john_doe"  (or "john_doe_2" if taken)
+     * "alice@gmail.com" → "alice"
+     */
+    private function generateGoogleUsername(string $base): string
+    {
+        // Strip email domain if an email was passed
+        if (str_contains($base, '@')) {
+            $base = explode('@', $base)[0];
+        }
+
+        // Keep only safe characters, collapse spaces/separators to underscore
+        $base = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', $base));
+        $base = trim($base, '_');
+
+        // Truncate to 40 chars so the suffix "_{n}" still fits within 50
+        $base = substr($base, 0, 40) ?: 'user';
+
+        // Ensure uniqueness
+        $candidate = $base;
+        $i         = 1;
+        while (User::whereRaw('LOWER(username) = ?', [$candidate])->exists()) {
+            $candidate = $base . '_' . $i++;
+        }
+
+        return $candidate;
     }
 }

@@ -1,90 +1,129 @@
 <?php
 
 // app/Traits/StorageHelper.php
-// Shared trait for all controllers that upload files to S3/R2 or local storage.
+//
+// Used by DashboardController (and any other controller that needs to
+// store / delete files without injecting ImageStorageService directly).
+//
+// Methods mirrored from ImageStorageService so both code paths stay in sync.
 
 namespace App\Traits;
 
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 trait StorageHelper
 {
-    /**
-     * Returns 's3' if FILESYSTEM_DISK=s3, otherwise 'public' (local dev).
-     */
-    protected function storageDisk(): string
-    {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
-    }
+    // ── Public-facing helpers (called by DashboardController methods) ──────────
 
     /**
-     * Store a file and return its public URL.
-     *
-     * FIX: Storage::disk('s3')->url() does NOT exist in Flysystem v3.
-     * Instead use Storage::disk('s3')->temporaryUrl() or build URL manually
-     * from AWS_URL env var + the stored path.
-     *
-     * For public R2/S3 buckets, the URL is: AWS_URL + '/' + path
+     * Upload a file and return the DB-ready path.
+     *   Local  → "/storage/products/uuid.jpg"
+     *   Cloud  → "https://pub-xxx.r2.dev/products/uuid.jpg"
      */
-    protected function storeFile($file, string $folder): string
+    protected function storeFile(UploadedFile $file, string $folder = 'products'): ?string
     {
-        $disk = $this->storageDisk();
-        $path = $file->store($folder, $disk);
+        try {
+            $ext      = strtolower($file->getClientOriginalExtension()) ?: 'jpg';
+            $filename = Str::uuid() . '.' . $ext;
+            $path     = $folder . '/' . $filename;
 
-        return $this->storageUrl($disk, $path);
-    }
+            if ($this->storageUsingCloud()) {
+                Storage::disk('s3')->putFileAs(
+                    dirname($path),
+                    $file,
+                    basename($path),
+                    ['visibility' => 'public']
+                );
 
-    /**
-     * Store a file with a specific filename and return its public URL.
-     */
-    protected function storeFileAs($file, string $folder, string $filename): string
-    {
-        $disk = $this->storageDisk();
-        $path = $file->storeAs($folder, $filename, $disk);
-
-        return $this->storageUrl($disk, $path);
-    }
-
-    /**
-     * Build the correct public URL for a stored file.
-     *
-     * S3/R2:  uses AWS_URL env var (e.g. https://pub-xxx.r2.dev) + path
-     * Local:  uses /storage/ prefix
-     */
-    protected function storageUrl(string $disk, string $path): string
-    {
-        if ($disk === 's3') {
-            // R2/S3 public URL = AWS_URL + '/' + path
-            $baseUrl = rtrim(config('filesystems.disks.s3.url', env('AWS_URL', '')), '/');
-            return $baseUrl . '/' . ltrim($path, '/');
-        }
-
-        // Local public disk
-        return '/storage/' . ltrim($path, '/');
-    }
-
-    /**
-     * Delete a file from storage.
-     * Handles: S3/R2 full URLs, local /storage/ paths, null.
-     */
-    protected function deleteStorageFile(?string $url): void
-    {
-        if (!$url) return;
-
-        $disk = $this->storageDisk();
-
-        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
-            // Extract storage key from full URL
-            if ($disk === 's3') {
-                $baseUrl = rtrim(config('filesystems.disks.s3.url', env('AWS_URL', '')), '/');
-                if ($baseUrl && str_starts_with($url, $baseUrl)) {
-                    $key = ltrim(substr($url, strlen($baseUrl)), '/');
-                    if ($key) Storage::disk('s3')->delete($key);
-                }
+                /** @var FilesystemAdapter $disk */
+                $disk = Storage::disk('s3');
+                return $disk->url($path);
             }
-        } elseif (str_starts_with($url, '/storage/')) {
-            // Legacy local storage path
-            Storage::disk('public')->delete(str_replace('/storage/', '', $url));
+
+            Storage::disk('public')->putFileAs(dirname($path), $file, basename($path));
+            return '/storage/' . $path;
+
+        } catch (\Throwable $e) {
+            Log::warning('[StorageHelper] storeFile failed', [
+                'folder' => $folder,
+                'error'  => $e->getMessage(),
+            ]);
+            return null;
         }
+    }
+
+    /**
+     * Delete a file by its DB path.
+     * Silently skips paths that don't belong to this app's storage.
+     */
+    protected function deleteStorageFile(?string $dbPath): void
+    {
+        if (!$dbPath || trim($dbPath) === '') return;
+
+        try {
+            if ($this->storageUsingCloud()) {
+                if (!$this->storageIsOurCloudUrl($dbPath)) return;
+                $key = $this->storageCloudPathToKey($dbPath);
+                if ($key) Storage::disk('s3')->delete($key);
+            } else {
+                // Never delete an external URL from local disk
+                if (Str::startsWith($dbPath, ['http://', 'https://'])) return;
+                $relative = $this->storageLocalPathToRelative($dbPath);
+                if ($relative) Storage::disk('public')->delete($relative);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[StorageHelper] deleteStorageFile failed', [
+                'path'  => $dbPath,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    // ── Private helpers ────────────────────────────────────────────────────────
+    // Prefixed with "storage" to avoid clashing with any method the consuming
+    // controller may define with short names like usingCloud().
+
+    private function storageUsingCloud(): bool
+    {
+        return !in_array(config('filesystems.default', 'public'), ['public', 'local']);
+    }
+
+    private function storageIsOurCloudUrl(string $url): bool
+    {
+        $base = config('filesystems.disks.s3.url')
+            ?: config('filesystems.disks.s3.endpoint', '');
+
+        return $base && Str::startsWith($url, rtrim($base, '/'));
+    }
+
+    private function storageCloudPathToKey(string $url): ?string
+    {
+        $base = rtrim(
+            config('filesystems.disks.s3.url')
+                ?: config('filesystems.disks.s3.endpoint', ''),
+            '/'
+        );
+
+        if ($base && Str::startsWith($url, $base)) {
+            return ltrim(substr($url, strlen($base)), '/');
+        }
+
+        return ltrim(parse_url($url, PHP_URL_PATH) ?? '', '/');
+    }
+
+    private function storageLocalPathToRelative(string $path): ?string
+    {
+        if (Str::startsWith($path, '/storage/')) {
+            return substr($path, strlen('/storage/'));
+        }
+        // Bare relative path (legacy): "products/abc.jpg"
+        if (!Str::startsWith($path, ['/', 'http'])) {
+            return $path;
+        }
+        return null;
     }
 }

@@ -20,7 +20,7 @@ import axios from 'axios';
 // Base Axios instance
 // -----------------------------------------------------------------------
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
 
   // CRITICAL: Send session cookie on every cross-origin request
   withCredentials: true,
@@ -50,7 +50,7 @@ const api = axios.create({
 export async function initCsrf() {
   try {
     await axios.get(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/sanctum/csrf-cookie`,
+      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/sanctum/csrf-cookie`,
       { withCredentials: true }
     );
   } catch (error) {
@@ -112,19 +112,16 @@ api.interceptors.response.use(
  * Clears local auth state and redirects to login.
  */
 function handleSessionExpiry(message) {
-  // Clear only known auth-related storage — never bluntly wipe all sessionStorage
-  localStorage.removeItem('user')
-  localStorage.removeItem('token')
-  localStorage.removeItem('tronmatix_user')
+  // Clear any local auth state (adapt to your state management)
+  localStorage.removeItem('user'); // Only non-sensitive flags — NEVER store tokens here
+  sessionStorage.clear();
 
-  // Dispatch a global event so the AuthContext / auth store can react
-  window.dispatchEvent(new CustomEvent('session:expired', { detail: { message } }))
+  // Dispatch a global event so your auth store can react
+  window.dispatchEvent(new CustomEvent('session:expired', { detail: { message } }));
 
-  // Only hard-redirect if already on a protected path and not already heading to home
-  const protectedPaths = ['/orders', '/profile', '/checkout', '/cart']
-  const onProtected = protectedPaths.some((p) => window.location.pathname.startsWith(p))
-  if (onProtected && !window.location.pathname.includes('/login')) {
-    window.location.replace('/')
+  // Redirect to login
+  if (!window.location.pathname.includes('/login')) {
+    window.location.href = `/login?reason=session_expired`;
   }
 }
 

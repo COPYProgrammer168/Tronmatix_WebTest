@@ -35,13 +35,13 @@ class DatabaseSeeder extends Seeder
         // ── Run seeders in dependency order ───────────────────────────────────
         $this->call([
             AdminSeeder::class,
-            BannerSeeder::class,
-            ProductSeeder::class,           // products must exist before discounts
-            UserSeeder::class,
-            UserLocationSeeder::class,      // after UserSeeder
-            OrderSeeder::class,             // after UserLocationSeeder
-            DiscountSeeder::class,          // FIX: was missing — seeds all discount codes
-            DeliveryScheduleSeeder::class,  // FIX: was missing — seeds Mon–Sat time slots
+            // BannerSeeder::class,
+            // ProductSeeder::class,           // products must exist before discounts
+            // UserSeeder::class,
+            // UserLocationSeeder::class,      // after UserSeeder
+            // OrderSeeder::class,             // after UserLocationSeeder
+            // DiscountSeeder::class,          // FIX: was missing — seeds all discount codes
+            // DeliveryScheduleSeeder::class,  // FIX: was missing — seeds Mon–Sat time slots
         ]);
     }
 }
