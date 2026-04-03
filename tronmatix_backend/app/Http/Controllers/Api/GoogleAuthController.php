@@ -66,44 +66,58 @@ class GoogleAuthController extends Controller
         // ── Find or create user ────────────────────────────────────────────────
         $isNewUser = false;
 
-        // 1. Try to find by google_id (returning user)
-        $user = User::where('google_id', $googleId)->first();
+        try {
+            Log::info('[GoogleAuth] Starting DB lookup', ['googleId' => $googleId, 'email' => $email]);
 
-        // 2. Try to find by email (existing account — link Google to it)
-        if (!$user) {
-            $user = User::where('email', strtolower($email))->first();
-            if ($user) {
-                // Link Google to existing account
-                $user->update(['google_id' => $googleId]);
-                if (!$user->avatar && $avatar) {
-                    $user->update(['avatar' => $avatar]);
+            // 1. Try to find by google_id (returning user)
+            $user = User::where('google_id', $googleId)->first();
+            Log::info('[GoogleAuth] google_id lookup done', ['found' => !!$user]);
+
+            // 2. Try to find by email (existing account — link Google to it)
+            if (!$user) {
+                $user = User::where('email', strtolower($email))->first();
+                Log::info('[GoogleAuth] email lookup done', ['found' => !!$user]);
+                if ($user) {
+                    $user->update(['google_id' => $googleId]);
+                    if (!$user->avatar && $avatar) {
+                        $user->update(['avatar' => $avatar]);
+                    }
                 }
             }
-        }
 
-        // 3. Create new user
-        if (!$user) {
-            $isNewUser = true;
+            // 3. Create new user
+            if (!$user) {
+                $isNewUser = true;
+                $baseUsername = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', $name ?? Str::before($email, '@')));
+                $baseUsername = Str::limit($baseUsername, 20, '') ?: 'user';
+                $username     = $this->uniqueUsername($baseUsername);
+                Log::info('[GoogleAuth] Creating new user', ['username' => $username]);
+                $user = User::create([
+                    'name'      => $name ?? $username,
+                    'username'  => $username,
+                    'email'     => strtolower($email),
+                    'password'  => Hash::make(Str::random(32)),
+                    'google_id' => $googleId,
+                    'avatar'    => $avatar,
+                    'role'      => 'customer',
+                ]);
+                Log::info('[GoogleAuth] User created', ['id' => $user->id]);
+            }
 
-            // Generate a unique username from name or email prefix
-            $baseUsername = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', $name ?? Str::before($email, '@')));
-            $baseUsername = Str::limit($baseUsername, 20, '') ?: 'user';
-            $username     = $this->uniqueUsername($baseUsername);
+            // Revoke old tokens, issue fresh one
+            Log::info('[GoogleAuth] Creating token for user', ['id' => $user->id]);
+            $user->tokens()->delete();
+            $token = $user->createToken('auth_token')->plainTextToken;
+            Log::info('[GoogleAuth] Token created successfully');
 
-            $user = User::create([
-                'name'      => $name ?? $username,
-                'username'  => $username,
-                'email'     => strtolower($email),
-                'password'  => Hash::make(Str::random(32)), // random — Google users don't use passwords
-                'google_id' => $googleId,
-                'avatar'    => $avatar,
-                'role'      => 'customer',
+        } catch (\Throwable $e) {
+            Log::error('[GoogleAuth] DB/Token error', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ]);
+            return response()->json(['message' => 'Server error: ' . $e->getMessage()], 500);
         }
-
-        // Revoke old tokens, issue fresh one
-        $user->tokens()->delete();
-        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success'      => true,
