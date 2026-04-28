@@ -1,13 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>Tronmatix Admin — @yield('title', 'Dashboard')</title>
+    <title>Tronmatix Admin — @yield('title', __('dashboard.nav.dashboard'))</title>
+
+    {{-- English font --}}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    {{-- Khmer font — KantumruyPro via Google Fonts CDN (variable weight, display=swap) --}}
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet" />
+
+    {{-- Local fallback: place KantumruyPro.ttf in /public/fonts/ --}}
+    <style>
+        @font-face {
+            font-family: 'KantumruyPro';
+            src: url('../fonts/KantumruyPro.ttf') format('truetype');
+            font-weight: 100 700;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        /* ── i18n typography vars ────────────────────────────────────────────── */
+        :root {
+            --font-en: 'Rajdhani', sans-serif;
+            --font-kh: 'KantumruyPro', 'KantumruyPro', 'Noto Sans Khmer', sans-serif;
+            --lh-en: 1.5;
+            --lh-kh: 1.5;    /* Khmer needs tall line-height for diacritics above/below */
+        }
+
+        /* Apply Khmer font when lang=km is set on <html> */
+        :lang(km) body,
+        :lang(km) .nav-item,
+        :lang(km) .card-title,
+        :lang(km) thead th,
+        :lang(km) tbody td,
+        :lang(km) .btn,
+        :lang(km) .form-label,
+        :lang(km) .stat-label,
+        :lang(km) .topbar-title,
+        :lang(km) .badge,
+        :lang(km) .input,
+        :lang(km) .nav-section-label {
+            font-family: var(--font-kh) !important;
+            line-height: var(--lh-kh);
+        }
+
+        /* Buttons need auto height so Khmer text doesn't clip */
+        :lang(km) .btn {
+            height: auto;
+            min-height: 38px;
+            padding-top: 7px;
+            padding-bottom: 7px;
+        }
+
+        /* Table cells need extra vertical room for diacritics */
+        :lang(km) thead th,
+        :lang(km) tbody td {
+            padding-top: 14px;
+            padding-bottom: 14px;
+        }
+
+        /* Smooth language swap fade */
+        .lang-fading { opacity: 0 !important; transition: opacity 0.15s ease !important; }
+    </style>
+
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -15,28 +75,86 @@
             padding: 0;
         }
 
+        /* ── Design tokens — Dark theme (default) ───────────────────────────── */
         :root {
             --orange:    #F97316;
-            --dark:      #0A0A0A;
-            --dark-800:  #111111;
-            --dark-700:  #1A1A1A;
-            --dark-600:  #222222;
             --sidebar-w: 240px;
+
+            /* Surface layers */
+            --bg:        #0A0A0A;
+            --surface:   #111111;
+            --surface-2: #1A1A1A;
+            --surface-3: #222222;
+
+            /* Text */
+            --text:         #FFFFFF;
+            --text-muted:   rgba(255,255,255,0.55);
+            --text-faint:   rgba(255,255,255,0.30);
+            --text-xfaint:  rgba(255,255,255,0.20);
+
+            /* Borders */
+            --border:       rgba(255,255,255,0.07);
+            --border-faint: rgba(255,255,255,0.04);
+            --border-input: rgba(255,255,255,0.10);
+
+            /* Interactive states */
+            --hover-bg:     rgba(255,255,255,0.04);
+            --active-bg:    rgba(249,115,22,0.08);
+            --overlay:      rgba(0,0,0,0.75);
+
+            /* Components */
+            --toggle-off:   rgba(255,255,255,0.10);
+            --bell-bg:      rgba(255,255,255,0.06);
+            --bell-border:  rgba(255,255,255,0.10);
+            --dropdown-bg:  #141414;
+            --modal-bg:     #141414;
+            --chart-badge:  rgba(255,255,255,0.05);
+            --scrollbar:    rgba(255,255,255,0.08);
+        }
+
+        /* ── Light theme ─────────────────────────────────────────────────────── */
+        [data-theme="light"] {
+            --bg:        #F1F5F9;
+            --surface:   #FFFFFF;
+            --surface-2: #F8FAFC;
+            --surface-3: #E2E8F0;
+
+            --text:         #0F172A;
+            --text-muted:   rgba(15,23,42,0.60);
+            --text-faint:   rgba(15,23,42,0.40);
+            --text-xfaint:  rgba(15,23,42,0.25);
+
+            --border:       rgba(15,23,42,0.08);
+            --border-faint: rgba(15,23,42,0.04);
+            --border-input: rgba(15,23,42,0.15);
+
+            --hover-bg:     rgba(15,23,42,0.04);
+            --active-bg:    rgba(249,115,22,0.08);
+            --overlay:      rgba(0,0,0,0.50);
+
+            --toggle-off:   rgba(15,23,42,0.12);
+            --bell-bg:      rgba(15,23,42,0.05);
+            --bell-border:  rgba(15,23,42,0.12);
+            --dropdown-bg:  #FFFFFF;
+            --modal-bg:     #FFFFFF;
+            --chart-badge:  rgba(15,23,42,0.06);
+            --scrollbar:    rgba(15,23,42,0.08);
         }
 
         body {
             font-family: 'Rajdhani', sans-serif;
-            background: var(--dark);
-            color: #fff;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             font-size: 17px;
+            transition: background 0.2s, color 0.2s;
         }
 
         /* ── Sidebar ──────────────────────────────────────────────────────────── */
         .sidebar {
             width: var(--sidebar-w);
-            background: var(--dark-800);
-            border-right: 1px solid rgba(255,255,255,0.06);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -50,7 +168,7 @@
             align-items: center;
             gap: 12px;
             padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
 
@@ -64,11 +182,12 @@
             font-size: 17px;
             font-weight: 700;
             letter-spacing: 2px;
-            color: #fff;
+            color: var(--text);
         }
 
         .brand-sub {
             font-size: 11px;
+            font-weight: 700;
             letter-spacing: 4px;
             color: var(--orange);
         }
@@ -81,10 +200,9 @@
         }
 
         .nav-section-label {
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: rgba(255,255,255,0.5);
-            padding: 16px 20px 5px;
+            font-size: 15px;
+            color: var(--text-faint);
+            padding: 8px 20px 5px;
             text-transform: uppercase;
             font-weight: 700;
             margin-top: 4px;
@@ -95,23 +213,22 @@
             align-items: center;
             gap: 10px;
             padding: 11px 20px;
-            color: rgba(255,255,255,0.55);
+            color: var(--text-muted);
             text-decoration: none;
             font-size: 15px;
             font-weight: 600;
-            letter-spacing: 1px;
             transition: all 0.2s;
             border-left: 3px solid transparent;
         }
 
         .nav-item:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            background: var(--hover-bg);
         }
 
         .nav-item.active {
             color: var(--orange);
-            background: rgba(249,115,22,0.08);
+            background: var(--active-bg);
             border-left-color: var(--orange);
         }
 
@@ -124,9 +241,9 @@
         /* ── Sidebar footer ───────────────────────────────────────────────────── */
         .sidebar-footer {
             padding: 14px 20px;
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-top: 1px solid var(--border);
             font-size: 12px;
-            color: rgba(255,255,255,0.2);
+            color: var(--text-xfaint);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -156,8 +273,8 @@
         /* ── Topbar ───────────────────────────────────────────────────────────── */
         .topbar {
             height: 60px;
-            background: var(--dark-800);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -189,11 +306,11 @@
         .hamburger {
             display: none;
             background: none;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--border-input);
             border-radius: 8px;
             padding: 7px;
             cursor: pointer;
-            color: rgba(255,255,255,0.7);
+            color: var(--text-muted);
             transition: all 0.2s;
         }
 
@@ -244,7 +361,7 @@
         .admin-name {
             font-size: 14px;
             font-weight: 600;
-            color: rgba(255,255,255,0.8);
+            color: var(--text-muted);
             white-space: nowrap;
         }
 
@@ -256,15 +373,15 @@
 
         /* ── Cards ────────────────────────────────────────────────────────────── */
         .card {
-            background: var(--dark-800);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 14px;
             overflow: hidden;
         }
 
         .card-header {
             padding: 16px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -272,15 +389,11 @@
             gap: 8px;
         }
 
-        /* FIX: card-title was wrongly using padding:20px — it sits INSIDE
-           card-header which already has its own padding. */
         .card-title {
             font-size: 17px;
             font-weight: 700;
-            letter-spacing: 1.5px;
         }
 
-        /* FIX: card-body was missing — referenced by orders-show, products-form, etc. */
         .card-body {
             padding: 20px;
         }
@@ -294,8 +407,8 @@
         }
 
         .stat-card {
-            background: var(--dark-800);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 14px;
             padding: 18px;
             display: flex;
@@ -334,9 +447,8 @@
         }
 
         .stat-label {
-            font-size: 11px;
-            color: rgba(255,255,255,0.4);
-            letter-spacing: 1px;
+            font-size: 13px;
+            color: var(--text);
             margin-top: 4px;
         }
 
@@ -350,8 +462,8 @@
 
         .chart-badge {
             font-size: 12px;
-            color: rgba(255,255,255,0.35);
-            background: rgba(255,255,255,0.05);
+            color: var(--text);
+            background: var(--chart-badge);
             padding: 3px 10px;
             border-radius: 20px;
             letter-spacing: 1px;
@@ -371,23 +483,22 @@
             text-align: left;
             padding: 12px 16px;
             font-size: 14px;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.5);
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
             white-space: nowrap;
             font-weight: 700;
         }
 
         tbody td {
             padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.8);
+            border-bottom: 1px solid var(--border-faint);
+            color: var(--text-muted);
             vertical-align: middle;
             font-size: 17px;
         }
 
         tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: rgba(255,255,255,0.02); }
+        tbody tr:hover td { background: var(--hover-bg); }
 
         /* ── Badges ───────────────────────────────────────────────────────────── */
         .badge {
@@ -408,7 +519,7 @@
         .badge-delivered { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.3); }
         .badge-cancelled { background: rgba(239,68,68,0.15);  color: #EF4444; border: 1px solid rgba(239,68,68,0.3); }
         .badge-orange    { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
-        .badge-gray      { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
+        .badge-gray      { background: var(--hover-bg); color: var(--text-faint); border: 1px solid var(--border-input); }
         .badge-seller    { background: rgba(16,185,129,0.15);  color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
 
         /* ── Buttons ──────────────────────────────────────────────────────────── */
@@ -418,7 +529,7 @@
             gap: 6px;
             padding: 9px 18px;
             border-radius: 8px;
-            font-family: 'Rajdhani', sans-serif;
+            font-family: 'Rajdhani', var(--font-kh), sans-serif;
             font-size: 14px;
             font-weight: 700;
             letter-spacing: 1px;
@@ -435,8 +546,8 @@
 
         .btn-outline {
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.15);
-            color: rgba(255,255,255,0.7);
+            border: 1px solid var(--border-input);
+            color: var(--text-muted);
         }
         .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
 
@@ -456,27 +567,26 @@
             display: block;
             font-size: 12px;
             letter-spacing: 1.5px;
-            color: rgba(255,255,255,0.4);
+            color: var(--text-faint);
             margin-bottom: 7px;
             font-weight: 700;
         }
 
-        /* FIX: was always orange — default to subtle, orange only on focus */
         .form-control {
             width: 100%;
-            background: var(--dark-700);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--surface-2);
+            border: 1px solid var(--border-input);
             border-radius: 10px;
             padding: 10px 14px;
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
+            color: var(--text);
+            font-family: 'Rajdhani', var(--font-kh), sans-serif;
             font-size: 15px;
             outline: none;
             transition: border-color 0.2s;
         }
         .form-control:focus  { border-color: var(--orange); }
-        .form-control::placeholder { color: rgba(255,255,255,0.25); }
-        .form-control option { background: #1A1A1A; }
+        .form-control::placeholder { color: var(--text-faint); }
+        .form-control option { background: var(--surface-2); color: var(--text); }
 
         .form-grid-2 {
             display: grid;
@@ -493,7 +603,7 @@
         .toggle-slider {
             position: absolute;
             inset: 0;
-            background: rgba(255,255,255,0.1);
+            background: var(--toggle-off);
             border-radius: 22px;
             cursor: pointer;
             transition: 0.3s;
@@ -549,8 +659,8 @@
             font-size: 14px;
             font-weight: 600;
             text-decoration: none;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.6);
+            border: 1px solid var(--border-input);
+            color: var(--text-muted);
             transition: all 0.2s;
         }
         .pagination a:hover       { border-color: var(--orange); color: var(--orange); }
@@ -562,7 +672,7 @@
             height: 40px;
             object-fit: cover;
             border-radius: 8px;
-            background: rgba(255,255,255,0.05);
+            background: var(--hover-bg);
             flex-shrink: 0;
         }
 
@@ -586,16 +696,201 @@
             transition: all 0.2s;
         }
         .admin-profile-link:hover {
-            background: rgba(249,115,22,0.08);
+            background: var(--active-bg);
             border-color: rgba(249,115,22,0.3);
         }
         .admin-profile-link:hover .admin-avatar { box-shadow: 0 0 0 2px var(--orange); }
         .admin-profile-link:hover .admin-name   { color: var(--orange); }
         .admin-profile-link.active-profile {
-            background: rgba(249,115,22,0.08);
+            background: var(--active-bg);
             border-color: rgba(249,115,22,0.3);
         }
         .admin-profile-link.active-profile .admin-name { color: var(--orange); }
+
+        /* ── Sidebar language toggle ─────────────────────────────────────────── */
+        .sidebar-lang-toggle {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border);
+            display: none; /* hidden on desktop, shown on mobile/tablet */
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .sidebar-lt-wrap {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bell-bg);
+            border: 1.5px solid var(--bell-border);
+            border-radius: 999px;
+            padding: 3px;
+            gap: 2px;
+        }
+        .sidebar-lt-btn {
+            font-size: 11px;
+        }
+        @media (max-width: 768px) {
+            .sidebar-lang-toggle { display: flex; }
+            #lang-toggle { display: none !important; }
+        }
+
+        /* ── Language Toggle ──────────────────────────────────────────────────── */
+        #lang-toggle {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bell-bg);
+            border: 1.5px solid var(--bell-border);
+            border-radius: 999px;
+            padding: 3px;
+            gap: 2px;
+            cursor: default;
+            flex-shrink: 0;
+        }
+        .lt-btn {
+            padding: 4px 11px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .lt-btn:hover { color: var(--text); }
+        .lt-btn.active {
+            background: var(--orange);
+            color: #fff;
+        }
+        .lt-btn.km-btn { font-family: var(--font-kh); font-size: 11px; }
+
+        /* ══════════════════════════════════════════════════════════════════════
+           LIGHT THEME OVERRIDES
+        ══════════════════════════════════════════════════════════════════════ */
+        [data-theme="light"] body { color: #0F172A; }
+        [data-theme="light"] .card { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] .stat-card { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] .stat-value { color: #0F172A; }
+        [data-theme="light"] .stat-label { color: rgba(15,23,42,0.45); }
+        [data-theme="light"] .sidebar { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] .topbar  { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] .topbar-title { color: #0F172A; }
+        [data-theme="light"] .nav-item { color: rgba(15,23,42,0.55); }
+        [data-theme="light"] .nav-item:hover { color: #0F172A; background: rgba(15,23,42,0.04); }
+        [data-theme="light"] .nav-section-label { color: rgba(15,23,42,0.40); }
+        [data-theme="light"] .brand-name { color: #0F172A; }
+        [data-theme="light"] .sidebar-footer { color: rgba(15,23,42,0.30); }
+        [data-theme="light"] .card-header { border-color: rgba(15,23,42,0.07); }
+        [data-theme="light"] .card-title  { color: #0F172A; }
+        [data-theme="light"] thead th  { color: rgba(15,23,42,0.55); border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] tbody td  { color: rgba(15,23,42,0.7);  border-color: rgba(15,23,42,0.04); }
+        [data-theme="light"] tbody tr:hover td { background: rgba(15,23,42,0.02); }
+        [data-theme="light"] .btn-outline { border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.65); background: transparent; }
+        [data-theme="light"] .btn-outline:hover { border-color: #F97316; color: #F97316; }
+        [data-theme="light"] .form-control { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
+        [data-theme="light"] .form-control::placeholder { color: rgba(15,23,42,0.35); }
+        [data-theme="light"] .form-control option { background: #fff; color: #0F172A; }
+        [data-theme="light"] .form-label { color: rgba(15,23,42,0.45); }
+        [data-theme="light"] .badge-gray { background: rgba(15,23,42,0.06); color: rgba(15,23,42,0.55); border-color: rgba(15,23,42,0.12); }
+        [data-theme="light"] .toggle-slider { background: rgba(15,23,42,0.12); }
+        [data-theme="light"] .pagination a,
+        [data-theme="light"] .pagination span { border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.6); background: #fff; }
+        [data-theme="light"] .pagination a:hover { border-color: #F97316; color: #F97316; }
+        [data-theme="light"] .admin-name { color: rgba(15,23,42,0.65); }
+        [data-theme="light"] .hamburger { border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.5); }
+        [data-theme="light"] .chart-badge { color: rgba(15,23,42,0.45); background: rgba(15,23,42,0.05); }
+        [data-theme="light"] .filter-bar { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] .filter-input { background: #F8FAFC; border-color: rgba(15,23,42,0.12); color: #0F172A; }
+        [data-theme="light"] .filter-input::placeholder { color: rgba(15,23,42,0.35); }
+        [data-theme="light"] .filter-select { background: #F8FAFC; border-color: rgba(15,23,42,0.12); color: #0F172A; }
+        [data-theme="light"] .filter-tab { border-color: rgba(15,23,42,0.12); color: rgba(15,23,42,0.55); }
+        [data-theme="light"] .filter-tab:hover { border-color: #F97316; color: #F97316; }
+        [data-theme="light"] .filter-tab.active { background: rgba(249,115,22,0.08); border-color: #F97316; color: #F97316; }
+        [data-theme="light"] .count-pill { background: rgba(15,23,42,0.07); }
+        [data-theme="light"] .filter-tab.active .count-pill { background: rgba(249,115,22,0.18); }
+        [data-theme="light"] .search-input { background: #F8FAFC; border-color: rgba(15,23,42,0.12); color: #0F172A; }
+        [data-theme="light"] .search-input::placeholder { color: rgba(15,23,42,0.35); }
+        [data-theme="light"] .role-select { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
+        [data-theme="light"] .flash-toast { background: #FFFFFF; border-color: rgba(15,23,42,0.12); color: #0F172A; }
+        [data-theme="light"] .s-card-title { color: #0F172A; }
+        [data-theme="light"] .s-card-sub   { color: rgba(15,23,42,0.45); }
+        [data-theme="light"] .s-label { color: rgba(15,23,42,0.85); }
+        [data-theme="light"] .s-desc  { color: rgba(15,23,42,0.45); }
+        [data-theme="light"] .s-divider { background: rgba(15,23,42,0.06); }
+        [data-theme="light"] .s-sub { background: rgba(249,115,22,0.04); border-color: rgba(249,115,22,0.15); }
+        [data-theme="light"] .s-sub-label { color: rgba(15,23,42,0.45); }
+        [data-theme="light"] .s-input { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
+        [data-theme="light"] .s-input option { background: #fff; color: #0F172A; }
+        [data-theme="light"] .s-num-input { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
+        [data-theme="light"] .ts-track { background: rgba(15,23,42,0.12); border-color: rgba(15,23,42,0.12); }
+        [data-theme="light"] .perm-check.perm-off { background: rgba(15,23,42,0.03); border-color: rgba(15,23,42,0.15); }
+        [data-theme="light"] .perm-toggle:hover .perm-check.perm-off { border-color: rgba(15,23,42,0.3); background: rgba(15,23,42,0.06); }
+        [data-theme="light"] .role-card { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
+        [data-theme="light"] .role-card-desc { color: rgba(15,23,42,0.40); }
+        [data-theme="light"] .role-filter { border-color: rgba(15,23,42,0.12); color: rgba(15,23,42,0.55); background: transparent; }
+        [data-theme="light"] .role-filter.active { background: rgba(249,115,22,0.08) !important; border-color: rgba(249,115,22,0.4) !important; color: #F97316 !important; }
+        [data-theme="light"] .gallery-thumb { background: #F8FAFC; border-color: rgba(15,23,42,0.12); }
+        [data-theme="light"] .gallery-add-slot { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.35); }
+        [data-theme="light"] .gallery-add-slot:hover { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.03); }
+        [data-theme="light"] [style*="background:#1a1a1a"],
+        [data-theme="light"] [style*="background: #1a1a1a"] { background: #FFFFFF !important; }
+        [data-theme="light"] [style*="background:#141414"],
+        [data-theme="light"] [style*="background: #141414"] { background: #F8FAFC !important; }
+        [data-theme="light"] [style*="background:#111111"],
+        [data-theme="light"] [style*="background: #111111"],
+        [data-theme="light"] [style*="background:#111"],
+        [data-theme="light"] [style*="background: #111"] { background: #F1F5F9 !important; }
+        [data-theme="light"] [style*="background:#0A0A0A"],
+        [data-theme="light"] [style*="background:#0d0d0d"],
+        [data-theme="light"] [style*="background:#0b0b0b"] { background: #E2E8F0 !important; }
+        [data-theme="light"] [style*="color:#fff"]:not(.btn-orange):not([class*="badge-"]):not([style*="background:#F97316"]):not([style*="background:linear-gradient"]) { color: #0F172A !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.8)"]  { color: rgba(15,23,42,0.80) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.7)"]  { color: rgba(15,23,42,0.70) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.6)"]  { color: rgba(15,23,42,0.60) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.55)"] { color: rgba(15,23,42,0.60) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.5)"]  { color: rgba(15,23,42,0.55) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.45)"] { color: rgba(15,23,42,0.50) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.4)"]  { color: rgba(15,23,42,0.45) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.35)"] { color: rgba(15,23,42,0.40) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.3)"]  { color: rgba(15,23,42,0.35) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.25)"] { color: rgba(15,23,42,0.30) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.2)"]  { color: rgba(15,23,42,0.25) !important; }
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.15)"] { color: rgba(15,23,42,0.20) !important; }
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.07)"]  { border-color: rgba(15,23,42,0.08) !important; }
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]   { border-color: rgba(15,23,42,0.10) !important; }
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.12)"]  { border-color: rgba(15,23,42,0.12) !important; }
+        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.1)"] { border-color: rgba(15,23,42,0.12) !important; }
+        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.12)"]{ border-color: rgba(15,23,42,0.14) !important; }
+        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.06)"]{ border-color: rgba(15,23,42,0.08) !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.03)"] { background: rgba(15,23,42,0.025) !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03)  !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.05)"] { background: rgba(15,23,42,0.04)  !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05)  !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.07)"] { background: rgba(15,23,42,0.05)  !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.08)"] { background: rgba(15,23,42,0.06)  !important; }
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.1)"]  { background: rgba(15,23,42,0.07)  !important; }
+        [data-theme="light"] #bell-dropdown { background: #FFFFFF; border-color: rgba(15,23,42,0.10); box-shadow: 0 20px 60px rgba(15,23,42,0.12); }
+        [data-theme="light"] .bell-item:hover { background: rgba(15,23,42,0.03); }
+        [data-theme="light"] .bell-item { border-color: rgba(15,23,42,0.05); }
+        [data-theme="light"] #staffReqModal > div { background: #FFFFFF; border-color: rgba(15,23,42,0.10); }
+        [data-theme="light"] .popup-box { background: #FFFFFF; border-color: rgba(15,23,42,0.10); }
+        [data-theme="light"] .product-thumb { background: rgba(15,23,42,0.04); }
+        [data-theme="light"] #bell-list::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.12); }
+        [data-theme="light"] #avatar-preview-wrap { border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.05); }
+        [data-theme="light"] .alert-success { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.25); }
+        [data-theme="light"] .alert-error   { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }
+        [data-theme="light"] #bannerModal > div { background: #FFFFFF; }
+        [data-theme="light"] #catDropdown { background: #FFFFFF; border-color: rgba(249,115,22,0.3); }
+        [data-theme="light"] #couponModal > div,
+        [data-theme="light"] #badgeModal > div { background: #FFFFFF; }
+        [data-theme="light"] .orders-search-input { background: #F8FAFC !important; border-color: rgba(15,23,42,0.14) !important; color: #0F172A !important; }
+        [data-theme="light"] .orders-search-input::placeholder { color: rgba(15,23,42,0.35) !important; }
+        [data-theme="light"] .orders-clear-btn { background: rgba(15,23,42,0.05) !important; color: rgba(15,23,42,0.50) !important; border-color: rgba(15,23,42,0.12) !important; }
+        [data-theme="light"] .order-status-tab-inactive { background: rgba(15,23,42,0.05) !important; color: rgba(15,23,42,0.55) !important; border-color: rgba(15,23,42,0.12) !important; }
+        [data-theme="light"] input[type="month"] { background: #F8FAFC !important; border-color: rgba(15,23,42,0.14) !important; color: #0F172A !important; }
+        [data-theme="light"] #lang-toggle { background: rgba(15,23,42,0.05); border-color: rgba(15,23,42,0.12); }
+        [data-theme="light"] .lt-btn { color: #000; }
+        [data-theme="light"] .lt-btn.active { background: var(--orange); color: #fff; }
 
         /* ══════════════════════════════════════════════════════════════════════
            RESPONSIVE
@@ -632,25 +927,33 @@
             .stat-value { font-size: 20px; }
             .card-header { padding: 12px 14px; }
             .card-body   { padding: 14px; }
+            #lang-toggle { display: none; }
         }
     </style>
 
     @stack('styles')
+
+    {{-- Apply saved theme before paint to prevent flash --}}
+    <script>
+        (function() {
+            var t = localStorage.getItem('tronmatix_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 
 <body>
 
-    {{-- ── Sidebar overlay (mobile) ───────────────────────────────────────────── --}}
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    {{-- ── Sidebar overlay (mobile) ──────────────────────────────────────────── --}}
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" style="background: var(--overlay);"></div>
 
-    {{-- ── Sidebar ─────────────────────────────────────────────────────────────── --}}
+    {{-- ── Sidebar ────────────────────────────────────────────────────────────── --}}
     <aside class="sidebar" id="sidebar">
 
         {{-- Logo --}}
         <div class="sidebar-logo">
             <a href="{{ route('dashboard.index') }}" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
-                {{-- Inline SVG logo — no file dependency, always renders --}}
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
                   <defs>
                     <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" style="stop-color:#FFB020"/>
@@ -667,28 +970,26 @@
             </a>
         </div>
 
-        {{-- ── Navigation — ALL items are inside this <nav> ─────────────────────── --}}
+        {{-- Navigation --}}
         <nav class="sidebar-nav">
 
-            {{-- MAIN --}}
-            <div class="nav-section-label">Main</div>
+            <div class="nav-section-label">{{ __('dashboard.common.main') }}</div>
             <a href="{{ route('dashboard.index') }}"
                class="nav-item {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
                     <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
                 </svg>
-                DASHBOARD
+                {{ strtoupper(__('dashboard.nav.dashboard')) }}
             </a>
 
-            {{-- CATALOG --}}
-            <div class="nav-section-label">Catalog</div>
+            <div class="nav-section-label">{{ __('dashboard.common.catalog') }}</div>
             <a href="{{ route('dashboard.products') }}"
                class="nav-item {{ request()->routeIs('dashboard.products*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
                 </svg>
-                PRODUCTS
+                {{ strtoupper(__('dashboard.nav.products')) }}
             </a>
             <a href="{{ route('dashboard.banners') }}"
                class="nav-item {{ request()->routeIs('dashboard.banners*') ? 'active' : '' }}">
@@ -696,22 +997,20 @@
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <path d="M3 9h18M9 21V9"/>
                 </svg>
-                BANNERS
+                {{ strtoupper(__('dashboard.nav.banners')) }}
             </a>
 
-            {{-- SALES --}}
-            <div class="nav-section-label">Sales</div>
+            <div class="nav-section-label">{{ __('dashboard.common.sales') }}</div>
             <a href="{{ route('dashboard.orders') }}"
                class="nav-item {{ request()->routeIs('dashboard.orders*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
                     <rect x="9" y="3" width="6" height="4" rx="1"/>
                 </svg>
-                ORDERS
+                {{ strtoupper(__('dashboard.nav.orders')) }}
             </a>
 
-            {{-- USERS --}}
-            <div class="nav-section-label">Users</div>
+            <div class="nav-section-label">{{ __('dashboard.common.catalog') == 'catalog' ? 'Users' : __('dashboard.nav.users') }}</div>
             <a href="{{ route('dashboard.users') }}"
                class="nav-item {{ request()->routeIs('dashboard.users*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -719,33 +1018,41 @@
                     <circle cx="9" cy="7" r="4"/>
                     <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
                 </svg>
-                USERS
+                {{ strtoupper(__('dashboard.nav.users')) }}
             </a>
 
-            {{-- PROMOTIONS --}}
-            <div class="nav-section-label">Promotions</div>
+            <div class="nav-section-label">{{ __('dashboard.common.promotions') }}</div>
             <a href="{{ route('dashboard.discounts') }}"
                class="nav-item {{ request()->routeIs('dashboard.discounts*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
                     <line x1="7" y1="7" x2="7.01" y2="7"/>
                 </svg>
-                DISCOUNTS
+                {{ strtoupper(__('dashboard.nav.discounts')) }}
             </a>
 
-            {{-- SYSTEM --}}
-            <div class="nav-section-label">System</div>
+            <div class="nav-section-label">{{ __('dashboard.common.system') }}</div>
+            <a href="{{ route('dashboard.report') }}"
+               class="nav-item {{ request()->routeIs('dashboard.report*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                {{ strtoupper(__('dashboard.nav.reports')) }}
+            </a>
             <a href="{{ route('dashboard.settings') }}"
                class="nav-item {{ request()->routeIs('dashboard.settings*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
                 </svg>
-                SETTINGS
+                {{ strtoupper(__('dashboard.nav.settings')) }}
             </a>
 
-            {{-- Staff & Permissions — visible only to admin / superadmin --}}
-            @php $adminRole = Auth::guard('admin')->user()->role ?? 'viewer'; @endphp
+            @php $adminRole = (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor'; @endphp
             @if(in_array($adminRole, ['admin','superadmin']))
             <a href="{{ route('dashboard.staff') }}"
                class="nav-item {{ request()->routeIs('dashboard.staff*') ? 'active' : '' }}">
@@ -757,21 +1064,31 @@
                     <line x1="19" y1="8" x2="19" y2="14"/>
                     <line x1="22" y1="11" x2="16" y2="11"/>
                 </svg>
-                STAFF &amp; ROLES
+                {{ strtoupper(__('dashboard.nav.staff')) }}
             </a>
             @endif
 
         </nav>
-        {{-- ── End nav ──────────────────────────────────────────────────────────── --}}
+
+        {{-- Language toggle in sidebar (visible on mobile/tablet) --}}
+        <div class="sidebar-lang-toggle">
+            <span style="font-size:11px; font-weight:700; color:var(--text-faint);">LANGUAGE</span>
+            <div class="sidebar-lt-wrap">
+                <button class="lt-btn sidebar-lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
+                        onclick="setAppLang('en')" type="button" data-lang="en">EN</button>
+                <button class="lt-btn km-btn sidebar-lt-btn {{ app()->getLocale() === 'km' ? 'active' : '' }}"
+                        onclick="setAppLang('km')" type="button" data-lang="km">ខ្មែរ</button>
+            </div>
+        </div>
 
         {{-- Sidebar footer --}}
         <div class="sidebar-footer">
-            <span>Tronmatix © 2025</span>
-            <span>v1.0.0</span>
+            <span>{{ __('dashboard.common.copyright') }}</span>
+            <span>{{ __('dashboard.common.version') }}</span>
         </div>
     </aside>
 
-    {{-- ── Main ─────────────────────────────────────────────────────────────────── --}}
+    {{-- ── Main ──────────────────────────────────────────────────────────────── --}}
     <div class="main">
 
         {{-- Topbar --}}
@@ -784,73 +1101,95 @@
                         <line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>
                 </button>
-                <span class="topbar-title">@yield('title', 'DASHBOARD')</span>
+                <span class="topbar-title">@yield('title', strtoupper(__('dashboard.nav.dashboard')))</span>
             </div>
 
             <div class="topbar-right">
+
+                {{-- ── Language Toggle ────────────────────────────────────────── --}}
+                <div id="lang-toggle">
+                    <button class="lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
+                            onclick="setAppLang('en')" type="button" title="English" data-lang="en">EN</button>
+                    <button class="lt-btn km-btn {{ app()->getLocale() === 'km' ? 'active' : '' }}"
+                            onclick="setAppLang('km')" type="button" title="ភាសាខ្មែរ" data-lang="km">ខ្មែរ</button>
+                </div>
+
+                {{-- Theme toggle --}}
+                <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark theme" style="
+                    background:var(--bell-bg); border:1.5px solid var(--bell-border);
+                    border-radius:10px; width:40px; height:40px;
+                    display:flex; align-items:center; justify-content:center;
+                    cursor:pointer; transition:all .2s; font-size:18px;
+                " onmouseover="this.style.borderColor='#F97316'"
+                   onmouseout="this.style.borderColor=''">
+                    <span id="theme-icon">☀️</span>
+                </button>
+
                 {{-- Notification bell --}}
                 <div style="position:relative;" id="bell-wrapper">
                     <button id="bell-btn" onclick="toggleBell()" style="
-                        position:relative; background:rgba(255,255,255,0.06);
-                        border:1.5px solid rgba(255,255,255,0.1); border-radius:10px;
+                        position:relative; background:var(--bell-bg);
+                        border:1.5px solid var(--bell-border); border-radius:10px;
                         width:40px; height:40px; display:flex; align-items:center; justify-content:center;
                         cursor:pointer; transition:all .2s; font-size:18px;
                     " onmouseover="this.style.borderColor='#F97316'"
-                       onmouseout="if(!bellOpen)this.style.borderColor='rgba(255,255,255,0.1)'">
+                       onmouseout="if(!bellOpen)this.style.borderColor=''">
                         🔔
                         <span id="bell-dot" style="
                             display:none; position:absolute; top:6px; right:6px;
                             width:10px; height:10px; border-radius:50%;
-                            background:#F97316; border:2px solid #111;
+                            background:#F97316; border:2px solid var(--surface);
                             animation:bellPulse 1.8s ease infinite;
                         "></span>
                     </button>
 
                     <div id="bell-dropdown" style="
                         display:none; position:fixed; top:60px; right:12px; z-index:500;
-                        width:min(340px, calc(100vw - 24px)); background:#141414;
-                        border:1px solid rgba(255,255,255,0.1);
-                        border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.6);
+                        width:min(340px, calc(100vw - 24px)); background:var(--dropdown-bg);
+                        border:1px solid var(--border);
+                        border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.25);
                         overflow:hidden;
                     ">
-                        <div style="padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.07);
+                        <div style="padding:14px 18px; border-bottom:1px solid var(--border);
                              display:flex; align-items:center; justify-content:space-between;">
-                            <span style="font-size:13px; font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.6);">ALERTS</span>
+                            <span style="font-size:13px; font-weight:800; letter-spacing:2px; color:var(--text-muted);">
+                                {{ strtoupper(__('dashboard.common.alerts')) }}
+                            </span>
                             <a href="{{ route('dashboard.settings') }}" style="font-size:11px; color:rgba(249,115,22,0.6);
                                 text-decoration:none; letter-spacing:1px;"
                                onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(249,115,22,0.6)'">
-                                ⚙ SETTINGS
+                                ⚙ {{ strtoupper(__('dashboard.nav.settings')) }}
                             </a>
                         </div>
                         <div id="bell-list" style="max-height:min(320px, calc(100vh - 160px)); overflow-y:auto; padding:8px 0;">
-                            <div style="padding:24px; text-align:center; color:rgba(255,255,255,0.25); font-family:Rajdhani,sans-serif;">
+                            <div style="padding:24px; text-align:center; color:var(--text-faint); font-family:Rajdhani,sans-serif;">
                                 <div style="font-size:24px; margin-bottom:6px;">⏳</div>
                                 Loading…
                             </div>
                         </div>
-                        <div style="padding:10px 18px; border-top:1px solid rgba(255,255,255,0.07); text-align:center;">
-                            <a href="{{ route('dashboard.settings') }}" style="font-size:12px; color:rgba(255,255,255,0.3);
+                        <div style="padding:10px 18px; border-top:1px solid var(--border); text-align:center;">
+                            <a href="{{ route('dashboard.settings') }}" style="font-size:12px; color:var(--text-faint);
                                 text-decoration:none; letter-spacing:1px;"
-                               onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">
-                                View All Settings →
+                               onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
+                                {{ __('dashboard.settings.store') }} →
                             </a>
                         </div>
                     </div>
                 </div>
 
                 <span class="topbar-badge">
-                    {{ strtoupper(Auth::guard('admin')->user()->role ?? 'ADMIN') }}
+                    {{ strtoupper((Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'STAFF') }}
                 </span>
 
                 @php
-                    $_topbarAdmin = Auth::guard('admin')->user();
-                    $_topbarAvatar = $_topbarAdmin->avatar
+                    $_topbarAdmin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+                    $_topbarAvatar = $_topbarAdmin?->avatar
                         ? (Str::startsWith($_topbarAdmin->avatar, ['http://','https://'])
                             ? $_topbarAdmin->avatar
                             : asset('storage/' . $_topbarAdmin->avatar))
                         : null;
                 @endphp
-                <a href="{{ route('dashboard.profile') }}" class="admin-profile-link" title="My Profile">
+                <a href="{{ route('dashboard.profile') }}" class="admin-profile-link" title="{{ __('dashboard.profile.editProfile') }}">
                     <div class="admin-avatar">
                         @if($_topbarAvatar)
                             <img src="{{ $_topbarAvatar }}"
@@ -870,15 +1209,14 @@
 
                 <form method="POST" action="{{ route('dashboard.logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-danger btn-sm">LOGOUT</button>
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        {{ __('dashboard.common.logout') }}
+                    </button>
                 </form>
             </div>
         </header>
 
-        {{-- ── Flash messages
-             FIX: only show layout flash when the page hasn't declared its own
-             (pages that show floating toasts use @section('suppress_flash') @endsection)
-        --}}
+        {{-- Flash messages --}}
         @unless(View::hasSection('suppress_flash'))
             @if(session('success'))
                 <div style="padding: 14px 24px 0;">
@@ -899,7 +1237,7 @@
 
     </div>
 
-    {{-- ── Sidebar JS ───────────────────────────────────────────────────────────── --}}
+    {{-- ── Sidebar JS ───────────────────────────────────────────────────────── --}}
     <script>
         function openSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -923,7 +1261,6 @@
             if (e.key === 'Escape') closeSidebar();
         });
 
-        // Highlight profile link on profile page
         (function() {
             var link = document.querySelector('.admin-profile-link');
             if (link && window.location.pathname.includes('/dashboard/profile')) {
@@ -934,7 +1271,7 @@
 
     @stack('scripts')
 
-    {{-- ── Notification Bell ────────────────────────────────────────────────────── --}}
+    {{-- ── Notification Bell ─────────────────────────────────────────────────── --}}
     <style>
         @keyframes bellPulse {
             0%,100% { transform:scale(1);   opacity:1; }
@@ -945,14 +1282,14 @@
             to   { opacity:1; transform:translateY(0)    scale(1); }
         }
         #bell-list::-webkit-scrollbar { width:4px; }
-        #bell-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+        #bell-list::-webkit-scrollbar-thumb { background:var(--scrollbar); border-radius:2px; }
         .bell-item {
             display:flex; align-items:flex-start; gap:12px;
             padding:11px 18px; text-decoration:none;
-            transition:background .15s; border-bottom:1px solid rgba(255,255,255,0.04);
+            transition:background .15s; border-bottom:1px solid var(--border-faint);
         }
         .bell-item:last-child { border-bottom:none; }
-        .bell-item:hover { background:rgba(255,255,255,0.04); }
+        .bell-item:hover { background:var(--hover-bg); }
     </style>
 
     <script>
@@ -975,12 +1312,24 @@
         function closeBell() {
             bellOpen = false;
             document.getElementById('bell-dropdown').style.display = 'none';
-            document.getElementById('bell-btn').style.borderColor  = 'rgba(255,255,255,0.1)';
+            document.getElementById('bell-btn').style.borderColor  = '';
         }
 
         document.addEventListener('click', function(e) {
             if (bellOpen && !document.getElementById('bell-wrapper').contains(e.target)) closeBell();
         });
+
+        // i18n strings for bell (PHP passes to JS)
+        var _i18n = {
+            noAlerts:     '{{ __("dashboard.common.noAlerts") }}',
+            allClear:     '{{ __("dashboard.common.allClear") }}',
+            failedAlerts: '{{ __("dashboard.common.failedAlerts") }}',
+            alertsTitle:  '{{ strtoupper(__("dashboard.common.alerts")) }}',
+            staffAccess:  '{{ __("dashboard.common.staffAccess") }}',
+            review:       '{{ strtoupper(__("dashboard.btn.view")) }}',
+            accept:       '✓ {{ strtoupper(__("dashboard.btn.confirm")) }}',
+            reject:       '✕ {{ strtoupper(__("dashboard.btn.delete")) }}',
+        };
 
         function loadBellAlerts() {
             fetch('{{ route('dashboard.notifications') }}', {
@@ -988,13 +1337,18 @@
             })
             .then(r => r.json())
             .then(data => {
-                const list = document.getElementById('bell-list');
+                const list   = document.getElementById('bell-list');
+                const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+                const mutedColor  = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(15,23,42,0.45)';
+                const faintColor  = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(15,23,42,0.30)';
+                const arrowColor  = isDark ? 'rgba(255,255,255,0.2)'  : 'rgba(15,23,42,0.25)';
+
                 if (!data.alerts || data.alerts.length === 0) {
                     list.innerHTML = `
                         <div style="padding:28px; text-align:center; font-family:Rajdhani,sans-serif;">
                             <div style="font-size:30px; margin-bottom:8px;">🎉</div>
-                            <div style="color:#22c55e; font-weight:700; font-size:14px; letter-spacing:1px;">All Clear!</div>
-                            <div style="color:rgba(255,255,255,0.3); font-size:12px; margin-top:4px;">No alerts right now</div>
+                            <div style="color:#22c55e; font-weight:700; font-size:14px; letter-spacing:1px;">${_i18n.allClear}</div>
+                            <div style="color:${mutedColor}; font-size:12px; margin-top:4px;">${_i18n.noAlerts}</div>
                         </div>`;
                     return;
                 }
@@ -1011,14 +1365,13 @@
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
                                          color:${a.color};letter-spacing:.5px;">${a.title}</div>
-                                    <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px;line-height:1.4;">${a.body}</div>
-                                    ${a.request_message ? `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:3px;font-style:italic;">"${a.request_message}"</div>` : ''}
+                                    <div style="font-size:12px;color:${mutedColor};margin-top:2px;line-height:1.4;">${a.body}</div>
+                                    ${a.request_message ? `<div style="font-size:11px;color:${faintColor};margin-top:3px;font-style:italic;">"${a.request_message}"</div>` : ''}
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;padding-left:48px;">
                                 <button onclick="openStaffRequestModal(${JSON.stringify(a).replace(/"/g,'&quot;')})"
-                                    style="flex:1;padding:7px 0;border-radius:8px;border:none;
-                                           background:#a78bfa22;border:1px solid #a78bfa44;
+                                    style="flex:1;padding:7px 0;border-radius:8px;background:#a78bfa22;border:1px solid #a78bfa44;
                                            color:#a78bfa;font-family:Rajdhani,sans-serif;font-size:11px;
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
                                     onmouseover="this.style.background='#a78bfa33'"
@@ -1026,8 +1379,7 @@
                                     👁 REVIEW
                                 </button>
                                 <button onclick="handleStaffRequest(${a.request_id},'accept',this)"
-                                    style="flex:1;padding:7px 0;border-radius:8px;border:none;
-                                           background:#22c55e22;border:1px solid #22c55e44;
+                                    style="flex:1;padding:7px 0;border-radius:8px;background:#22c55e22;border:1px solid #22c55e44;
                                            color:#22c55e;font-family:Rajdhani,sans-serif;font-size:11px;
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
                                     onmouseover="this.style.background='#22c55e33'"
@@ -1035,8 +1387,7 @@
                                     ✓ ACCEPT
                                 </button>
                                 <button onclick="handleStaffRequest(${a.request_id},'reject',this)"
-                                    style="flex:1;padding:7px 0;border-radius:8px;border:none;
-                                           background:#ef444422;border:1px solid #ef444444;
+                                    style="flex:1;padding:7px 0;border-radius:8px;background:#ef444422;border:1px solid #ef444444;
                                            color:#ef4444;font-family:Rajdhani,sans-serif;font-size:11px;
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
                                     onmouseover="this.style.background='#ef444433'"
@@ -1056,19 +1407,20 @@
                         <div style="flex:1;min-width:0;">
                             <div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
                                  color:${a.color};letter-spacing:.5px;">${a.title}</div>
-                            <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px;line-height:1.4;">${a.body}</div>
+                            <div style="font-size:12px;color:${mutedColor};margin-top:2px;line-height:1.4;">${a.body}</div>
                         </div>
-                        <div style="font-size:16px;color:rgba(255,255,255,0.2);flex-shrink:0;">›</div>
+                        <div style="font-size:16px;color:${arrowColor};flex-shrink:0;">›</div>
                     </a>`;
                 }).join('');
             })
             .catch(() => {
+                const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+                const failColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.4)';
                 document.getElementById('bell-list').innerHTML =
-                    '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;">Failed to load alerts</div>';
+                    `<div style="padding:20px;text-align:center;color:${failColor};font-size:13px;">${_i18n.failedAlerts}</div>`;
             });
         }
 
-        // ── Staff Request: full-screen modal ──────────────────────────────────
         function openStaffRequestModal(a) {
             closeBell();
             const m = document.getElementById('staffReqModal');
@@ -1103,7 +1455,7 @@
             .then(data => {
                 closeStaffReqModal();
                 showInlineToast(data.message || data.error, action === 'accept' ? '#22c55e' : '#ef4444');
-                loadBellAlerts(); // refresh bell
+                loadBellAlerts();
             })
             .catch(() => {
                 showInlineToast('Action failed. Please try again.', '#ef4444');
@@ -1113,30 +1465,18 @@
 
         function showInlineToast(msg, color) {
             const el = document.createElement('div');
+            const modalBg = getComputedStyle(document.documentElement).getPropertyValue('--modal-bg').trim() || '#141414';
             el.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);
-                z-index:99999;background:#141414;border:1px solid ${color}55;
+                z-index:99999;background:${modalBg};border:1px solid ${color}55;
                 color:${color};padding:12px 24px;border-radius:12px;
                 font-family:Rajdhani,sans-serif;font-size:14px;font-weight:700;
-                letter-spacing:1px;box-shadow:0 8px 32px rgba(0,0,0,0.5);
+                letter-spacing:1px;box-shadow:0 8px 32px rgba(0,0,0,0.25);
                 animation:atToastIn .3s ease;white-space:nowrap;`;
             el.textContent = msg;
             document.body.appendChild(el);
             setTimeout(() => { el.style.animation='atToastOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3500);
         }
 
-        function pollBellDot() {
-            fetch('{{ route('dashboard.notifications') }}', {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('bell-dot').style.display = (data.count > 0) ? 'block' : 'none';
-            })
-            .catch(() => {});
-        }
-
-        // ── Alert toast system ────────────────────────────────────────────────
-        // Track seen alert IDs in localStorage to avoid re-showing same alert
         function getSeenAlerts() {
             try { return JSON.parse(localStorage.getItem('seen_alerts') || '[]'); }
             catch { return []; }
@@ -1149,12 +1489,18 @@
         function showAlertToast(alert) {
             const id = 'atst_' + Date.now() + Math.random().toString(36).slice(2);
             const colors = {
-                '#22c55e': { bg: '#0b1f0e', border: 'rgba(34,197,94,0.4)',  text: '#22c55e' },
-                '#F97316': { bg: '#1f0e03', border: 'rgba(249,115,22,0.4)', text: '#F97316' },
-                '#ef4444': { bg: '#1f0808', border: 'rgba(239,68,68,0.4)',  text: '#ef4444' },
-                '#3b82f6': { bg: '#080f1f', border: 'rgba(59,130,246,0.4)', text: '#3b82f6' },
+                '#22c55e': { bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.35)',  text: '#22c55e' },
+                '#F97316': { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.35)', text: '#F97316' },
+                '#ef4444': { bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.35)',  text: '#ef4444' },
+                '#3b82f6': { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.35)', text: '#3b82f6' },
             };
             const c = colors[alert.color] || colors['#F97316'];
+            const modalBg = getComputedStyle(document.documentElement).getPropertyValue('--modal-bg').trim() || '#141414';
+            const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+            const bodyTextColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(15,23,42,0.55)';
+            const closeBtnBg    = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)';
+            const closeBtnBorder= isDark ? 'rgba(255,255,255,0.1)'  : 'rgba(15,23,42,0.12)';
+            const closeBtnColor = isDark ? 'rgba(255,255,255,0.3)'  : 'rgba(15,23,42,0.4)';
 
             const el = document.createElement('div');
             el.id = id;
@@ -1162,19 +1508,19 @@
                 position:fixed; top:24px; right:24px; z-index:99999;
                 display:flex; align-items:flex-start; gap:12px;
                 padding:14px 18px; border-radius:16px; max-width:340px;
-                background:${c.bg}; border:1px solid ${c.border};
-                box-shadow:0 16px 48px rgba(0,0,0,0.6);
+                background:${modalBg}; border:1px solid ${c.border};
+                box-shadow:0 16px 48px rgba(0,0,0,0.25);
                 font-family:Rajdhani,sans-serif;
                 animation:atToastIn .4s cubic-bezier(0.34,1.4,0.64,1);
                 cursor:pointer; transition:transform .15s, box-shadow .15s;
             `;
-            el.onmouseenter = () => { el.style.transform='translateY(-2px)'; el.style.boxShadow='0 20px 60px rgba(0,0,0,0.7)'; };
-            el.onmouseleave = () => { el.style.transform=''; el.style.boxShadow='0 16px 48px rgba(0,0,0,0.6)'; };
+            el.onmouseenter = () => { el.style.transform='translateY(-2px)'; el.style.boxShadow='0 20px 60px rgba(0,0,0,0.3)'; };
+            el.onmouseleave = () => { el.style.transform=''; el.style.boxShadow='0 16px 48px rgba(0,0,0,0.25)'; };
             el.onclick = () => { if (alert.url) window.location.href = alert.url; };
 
             el.innerHTML = `
                 <div style="width:40px;height:40px;border-radius:12px;flex-shrink:0;
-                     background:${c.text}18;border:1px solid ${c.border};
+                     background:${c.bg};border:1px solid ${c.border};
                      display:flex;align-items:center;justify-content:center;font-size:20px;">
                     ${alert.icon}
                 </div>
@@ -1182,13 +1528,13 @@
                     <div style="font-size:13px;font-weight:800;color:${c.text};letter-spacing:1px;margin-bottom:2px;">
                         ${alert.title}
                     </div>
-                    <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.4;">
+                    <div style="font-size:12px;color:${bodyTextColor};line-height:1.4;">
                         ${alert.body}
                     </div>
                 </div>
                 <button onclick="event.stopPropagation();dismissAlertToast('${id}')"
-                    style="flex-shrink:0;width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.06);
-                           border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);
+                    style="flex-shrink:0;width:24px;height:24px;border-radius:6px;background:${closeBtnBg};
+                           border:1px solid ${closeBtnBorder};color:${closeBtnColor};
                            font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
                 <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;overflow:hidden;">
                     <div style="height:100%;background:${c.text};animation:atToastBar 6s linear forwards;border-radius:inherit;"></div>
@@ -1197,7 +1543,6 @@
             el.style.position = 'fixed';
             document.body.appendChild(el);
 
-            // Stack multiple toasts
             const toasts = document.querySelectorAll('[id^="atst_"]');
             toasts.forEach((t, i) => {
                 if (t.id !== id) t.style.top = (24 + (toasts.length - 1 - i) * 80) + 'px';
@@ -1224,7 +1569,6 @@
 
                 if (!data.alerts || data.alerts.length === 0) return;
 
-                // Show toast for any NEW alerts not yet seen
                 const seen    = getSeenAlerts();
                 const current = data.alerts.map(a => a.id || a.title + a.body);
                 const newAlerts = data.alerts.filter(a => {
@@ -1234,21 +1578,63 @@
 
                 newAlerts.forEach(a => showAlertToast(a));
 
-                // Mark all current alerts as seen
                 const allSeen = [...new Set([...seen, ...current])].slice(-50);
                 markAlertsSeen(allSeen);
             })
             .catch(() => {});
         }
 
-        // Poll every 15 seconds for fast alert delivery
         pollBellDot();
         setInterval(pollBellDot, 15000);
 
-        // Reset seen alerts when bell is opened so user sees them in dropdown
-        document.getElementById('bell-btn').addEventListener('click', function() {
-            // Don't reset seen — just open the dropdown
-        });
+        function applyTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            document.body.classList.toggle('theme-light', t === 'light');
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = t === 'light' ? '🌙' : '☀️';
+            if (window.__updateChartTheme) window.__updateChartTheme(t);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('tronmatix_theme', next);
+            applyTheme(next);
+        }
+
+        (function() {
+            const t = localStorage.getItem('tronmatix_theme') || 'dark';
+            applyTheme(t);
+        })();
+
+        // ── Language switcher ───────────────────────────────────────────────
+        function setAppLang(lang) {
+            const currentLang = document.documentElement.lang || 'en';
+            if (currentLang === lang) return;
+
+            // Update toggle button active state immediately
+            document.querySelectorAll('.lt-btn').forEach(function(btn) {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Smooth fade out
+            document.body.style.transition = 'opacity 0.18s ease';
+            document.body.style.opacity = '0';
+
+            // Save preference to localStorage + cookie so middleware picks it up
+            localStorage.setItem('app_lang', lang);
+            document.cookie = 'app_lang=' + lang + ';path=/;max-age=31536000;SameSite=Lax';
+
+            // Hit the lang route (sets session) then reload current page
+            fetch('/lang/' + lang, { method: 'GET', credentials: 'same-origin' })
+                .then(function() {
+                    // Reload current URL so blade re-renders with new locale
+                    window.location.reload();
+                })
+                .catch(function() {
+                    window.location.href = '/lang/' + lang;
+                });
+        }
     </script>
 
     <style>
@@ -1257,54 +1643,60 @@
     @keyframes atToastBar { from{width:100%} to{width:0%} }
     </style>
 
-    {{-- ── Staff Request Full-Screen Review Modal (superadmin only) ─────────── --}}
-    @if(Auth::guard('admin')->user()->role === 'superadmin')
+    {{-- Staff Request Modal (superadmin only) --}}
+    @if((Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role === 'superadmin')
     <div id="staffReqModal" style="
         display:none; opacity:0; transition:opacity .2s;
         position:fixed; inset:0; z-index:99000;
-        background:rgba(0,0,0,0.75); backdrop-filter:blur(4px);
+        background:var(--overlay); backdrop-filter:blur(4px);
         align-items:center; justify-content:center; padding:20px;
     " onclick="if(event.target===this)closeStaffReqModal()">
         <div style="
-            background:#141414; border:1px solid rgba(255,255,255,0.1);
+            background:var(--modal-bg); border:1px solid var(--border);
             border-radius:20px; width:100%; max-width:460px;
-            box-shadow:0 30px 80px rgba(0,0,0,0.7);
+            box-shadow:0 30px 80px rgba(0,0,0,0.4);
             overflow:hidden; font-family:Rajdhani,sans-serif;
         ">
             <div style="height:3px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);"></div>
             <div style="padding:28px 32px 32px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
                     <div>
-                        <div style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35);margin-bottom:3px;">STAFF ACCESS REQUEST</div>
+                        <div style="font-size:11px;letter-spacing:3px;color:var(--text-faint);margin-bottom:3px;">
+                            {{ strtoupper(__('dashboard.common.staffAccess')) }}
+                        </div>
                         <div style="font-size:20px;font-weight:800;letter-spacing:1px;color:#a78bfa;" id="srm-name">—</div>
                     </div>
                     <button onclick="closeStaffReqModal()" style="
-                        width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);
-                        background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);
+                        width:36px;height:36px;border-radius:10px;border:1px solid var(--border-input);
+                        background:var(--hover-bg);color:var(--text-muted);
                         font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
                     ">×</button>
                 </div>
 
                 <div style="display:grid;gap:12px;margin-bottom:22px;">
-                    <div style="display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
                         <div style="font-size:20px;width:36px;text-align:center;">📧</div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">EMAIL</div>
-                            <div style="font-size:14px;font-weight:600;color:#fff;" id="srm-email">—</div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                                {{ strtoupper(__('dashboard.form.email')) }}
+                            </div>
+                            <div style="font-size:14px;font-weight:600;color:var(--text);" id="srm-email">—</div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
-                        <div style="font-size:20px;width:36px;text-align:center;">🎭</div>
+                    <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
+                        <div style="font-size:20px;width:36px;text-align:center;">👤</div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">REQUESTED ROLE</div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                                {{ strtoupper(__('dashboard.access.yourRole')) }}
+                            </div>
                             <div style="font-size:14px;font-weight:700;color:#a78bfa;letter-spacing:2px;" id="srm-role">—</div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
                         <div style="font-size:20px;width:36px;text-align:center;">💬</div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">MESSAGE</div>
-                            <div style="font-size:13px;color:rgba(255,255,255,0.6);font-style:italic;" id="srm-msg">—</div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">MESSAGE</div>
+                            <div style="font-size:13px;color:var(--text-muted);font-style:italic;" id="srm-msg">—</div>
                         </div>
                     </div>
                 </div>
@@ -1317,7 +1709,7 @@
                         letter-spacing:2px;cursor:pointer;transition:all .2s;
                     " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
                        onmouseout="this.style.background='rgba(239,68,68,0.08)'">
-                        ✕ REJECT
+                        ✕ {{ strtoupper(__('dashboard.btn.cancel')) }}
                     </button>
                     <button id="srm-accept" style="
                         padding:13px;border-radius:12px;border:none;
@@ -1326,7 +1718,7 @@
                         letter-spacing:2px;cursor:pointer;transition:all .2s;
                     " onmouseover="this.style.background='#16a34a'"
                        onmouseout="this.style.background='#22c55e'">
-                        ✓ ACCEPT &amp; CREATE
+                        ✓ {{ strtoupper(__('dashboard.btn.confirm')) }}
                     </button>
                 </div>
             </div>

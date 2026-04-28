@@ -1,69 +1,71 @@
 <?php
 
-// bootstrap/app.php
-
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // HandleCors MUST be the very first middleware ─────────────────
-        // Laravel 11 removed auto-registration of HandleCors.
-        // OPTIONS preflight must be handled BEFORE any auth/session middleware,
-        // otherwise preflight returns 401/419 with no CORS headers → browser blocks.
-        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
-        $middleware->prepend(\Illuminate\Http\Middleware\TrustProxies::class);
+        // Exclude all /api/* routes from CSRF verification (protected by Bearer token instead)
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
 
-        // ── Trust Render's reverse proxy (fixes HTTPS detection) ──────────────
-        $middleware->trustProxies(at: '*', headers:
-            \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
-            \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
-            \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
-            \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
-        );
+        // Sanctum for API token authentication
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ]);
 
-        // ── Exclude /api/* from CSRF — API uses Bearer token ──────────────────
-        $middleware->validateCsrfTokens(except: ['api/*']);
-
+        // Middleware aliases
         $middleware->alias([
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-            'auth'     => \Illuminate\Auth\Middleware\Authenticate::class,
-            'guest'    => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
+            'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+            'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
         ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
+        // Return JSON for API errors
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated.',
+                ], Response::HTTP_UNAUTHORIZED);
             }
         });
 
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $e->errors()], 422);
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $e->errors(),
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
         });
 
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Not found.'], 404);
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resource not found.',
+                ], Response::HTTP_NOT_FOUND);
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e, Request $request) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['success' => false, 'message' => 'Method not allowed.'], 405);
-            }
-        });
+    })
+    ->withMiddleware(function ($m) {
+        $m->web(append: [\App\Http\Middleware\SetLocale::class]);
     })
     ->create();

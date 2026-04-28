@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import { useTheme } from '../context/ThemeContext'
+import { useLang } from '../context/LanguageContext'
 import axios from '../lib/axios'
 
 export function CategoryPage() {
@@ -10,26 +11,28 @@ export function CategoryPage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const { dark } = useTheme()
+  const { t, isKhmer } = useLang()
 
   const qParam    = (searchParams.get('q') || '').toLowerCase()
   const sortParam = searchParams.get('sort') || ''
   const isSearch  = Boolean(qParam)
 
+  // Sort labels stay English for display (product names are English from DB)
   const SORT_LABELS = {
-    newest:      'NEW PRODUCTS',
-    'price-asc': 'LOWEST PRICE',
-    'price-desc':'HIGHEST PRICE',
-    name:        'A – Z',
-    rating:      'TOP RATED',
+    newest:      isKhmer ? 'ផលិតផលថ្មី'    : 'NEW PRODUCTS',
+    'price-asc': isKhmer ? 'តម្លៃទាបបំផុត' : 'LOWEST PRICE',
+    'price-desc':isKhmer ? 'តម្លៃខ្ពស់បំផុត': 'HIGHEST PRICE',
+    name:        isKhmer ? 'A – Z'          : 'A – Z',
+    rating:      isKhmer ? 'ពិន្ទុខ្ពស់'   : 'TOP RATED',
   }
 
   const rawSlug   = sub || category || ''
   const slugLabel = rawSlug.replace(/-/g, ' ').toUpperCase()
 
   const label = isSearch
-    ? `SEARCH: "${qParam.toUpperCase()}"`
+    ? (isKhmer ? `ស្វែងរក: "${qParam.toUpperCase()}"` : `SEARCH: "${qParam.toUpperCase()}"`)
     : (!rawSlug || rawSlug === 'all')
-      ? (SORT_LABELS[sortParam] || 'ALL PRODUCTS')
+      ? (SORT_LABELS[sortParam] || t('common.allProducts'))
       : slugLabel
 
   const parentLabel = (category || '').replace(/-/g, ' ').toUpperCase()
@@ -44,7 +47,7 @@ export function CategoryPage() {
     setLoading(true)
     setProducts([])
 
-    const sortVal  = searchParams.get('sort') || 'default'
+    const sortVal   = searchParams.get('sort') || 'default'
     const catsParam = searchParams.get('cats')
 
     const buildParams = () => {
@@ -81,10 +84,10 @@ export function CategoryPage() {
     <div className="max-w-[1280px] mx-auto px-4 py-6" style={{ background: bg, minHeight: '60vh' }}>
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-4" style={{ fontSize: 14, color: textSub }}>
-        <Link to="/" className="hover:text-primary">HOME</Link>
+        <Link to="/" className="hover:text-primary">{t('nav.home')}</Link>
         <span>›</span>
         {isSearch ? (
-          <span className="text-primary font-bold">SEARCH RESULTS</span>
+          <span className="text-primary font-bold">{t('common.searchResults')}</span>
         ) : sub ? (
           <>
             <Link to={parentPath} className="hover:text-primary">{parentLabel}</Link>
@@ -96,14 +99,14 @@ export function CategoryPage() {
         )}
       </div>
 
-      {/* Header */}
+      {/* Header banner */}
       <div className="flex items-center mb-6">
         <div className="flex-1 h-12 rounded-l" style={{ background: dark ? '#374151' : '#000' }} />
         <div className="bg-primary text-white font-bold px-10 py-3 uppercase"
-          style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 20, letterSpacing: 2 }}>
+          style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif', fontSize: 20, letterSpacing: isKhmer ? 0 : 2 }}>
           {isSearch
-            ? (qParam ? `🔍 ${qParam.toUpperCase()}` : '🔍 SEARCH')
-            : (label || 'ALL PRODUCTS')}
+            ? (qParam ? `🔍 ${qParam.toUpperCase()}` : `🔍 ${t('common.search')}`)
+            : (label || t('common.allProducts'))}
         </div>
       </div>
 
@@ -113,17 +116,23 @@ export function CategoryPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4" style={{ fontSize: 15, color: textSub }}>
+          <p className="mb-4" style={{ fontFamily: 'KantumruyPro, Rajdhani, sans-serif', fontSize: 15, color: textSub }}>
             {isSearch && products.length === 0
-              ? `No results found for "${qParam}"`
-              : `Showing ${products.length} product${products.length !== 1 ? 's' : ''}`}
+              ? `${t('common.searchNo')} "${qParam}"`
+              : products.length === 1
+                ? t('common.showingProducts', { count: products.length })
+                : t('common.showingProductsPlural', { count: products.length })}
           </p>
 
           {isSearch && products.length === 0 && (
             <div className="flex flex-col items-center py-20 gap-4" style={{ color: textSub }}>
               <div style={{ fontSize: 48 }}>🔍</div>
-              <p style={{ fontSize: 18 }}>We couldn't find anything matching <strong style={{ color: text }}>"{qParam}"</strong></p>
-              <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>← Back to home</Link>
+              <p style={{ fontFamily: 'KantumruyPro, Rajdhani, sans-serif', fontSize: 18 }}>
+                {t('common.searchNo')} <strong style={{ color: text }}>"{qParam}"</strong>
+              </p>
+              <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
+                {t('common.backToHome')}
+              </Link>
             </div>
           )}
 

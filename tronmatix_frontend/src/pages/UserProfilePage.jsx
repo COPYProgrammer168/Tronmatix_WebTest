@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { useLang } from '../context/LanguageContext'
 import axiosClient from '../lib/axios'
 
 import Toast         from '../components/profile/Toast'
@@ -15,39 +16,28 @@ const VIP_GOAL = 1000
 export default function UserProfilePage() {
   const { user: authUser, refreshUser } = useAuth()
   const { dark } = useTheme()
+  const { t }   = useLang()
   const navigate = useNavigate()
 
   const [tab,        setTab]        = useState('profile')
   const [toast,      setToast]      = useState({ msg: '', type: 'success' })
   const [totalSpent, setTotalSpent] = useState(null)
-
-  // ── Fresh user data fetched directly from API ─────────────────────────────
-  // This ensures username/email are ALWAYS populated even if AuthContext
-  // user object was loaded from cache with missing fields.
   const [profileUser, setProfileUser] = useState(authUser)
 
   const notify = (msg, type = 'success') => setToast({ msg, type })
 
-  // Redirect if not logged in
   useEffect(() => { if (!authUser) navigate('/') }, [authUser])
 
-  // Fetch fresh profile from API on mount — fixes blank username/email
   useEffect(() => {
     if (!authUser) return
     axiosClient.get('/api/user/profile')
       .then(res => {
         const fresh = res.data?.data ?? res.data
-        if (fresh && fresh.id) {
-          setProfileUser(fresh)
-        }
+        if (fresh && fresh.id) setProfileUser(fresh)
       })
-      .catch(() => {
-        // Fallback to auth user if profile API fails
-        setProfileUser(authUser)
-      })
+      .catch(() => setProfileUser(authUser))
   }, [authUser?.id])
 
-  // Fetch spending stats
   useEffect(() => {
     if (!authUser) return
     axiosClient.get('/api/user/stats')
@@ -72,13 +62,9 @@ export default function UserProfilePage() {
   }, [authUser?.id])
 
   const handleProfileSaved = async (updatedFields) => {
-    // If avatar was updated directly, merge immediately for instant header update
-    if (updatedFields) {
-      setProfileUser(prev => ({ ...prev, ...updatedFields }))
-    }
+    if (updatedFields) setProfileUser(prev => ({ ...prev, ...updatedFields }))
     const fresh = await refreshUser?.()
     if (fresh) setProfileUser(fresh)
-    // Also re-fetch from /api/user/profile to ensure all fields up to date
     axiosClient.get('/api/user/profile')
       .then(res => {
         const data = res.data?.data ?? res.data
@@ -89,7 +75,6 @@ export default function UserProfilePage() {
 
   if (!authUser) return null
 
-  // Use profileUser (fresh from API) with authUser as fallback
   const displayUser = profileUser || authUser
 
   const bg      = dark ? '#0f172a' : '#F5F5F5'
@@ -97,10 +82,14 @@ export default function UserProfilePage() {
   const border  = dark ? '#374151' : '#f3f4f6'
   const tabText = dark ? '#9ca3af' : '#6B7280'
 
+  const TABS = [
+    { key: 'profile',   label: t('profile.myProfile') },
+    { key: 'locations', label: t('profile.myLocations') },
+  ]
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
         @keyframes slideIn   { from { opacity:0; transform:translateX(20px) } to { opacity:1; transform:none } }
         @keyframes modalIn   { from { opacity:0; transform:scale(0.95) translateY(10px) } to { opacity:1; transform:none } }
         @keyframes fadeUp    { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:none } }
@@ -113,7 +102,7 @@ export default function UserProfilePage() {
 
       <Toast msg={toast.msg} type={toast.type} onDone={() => setToast({ msg: '', type: 'success' })} />
 
-      <div style={{ minHeight: '100vh', background: bg, fontFamily: 'Rajdhani, sans-serif', paddingBottom: 60 }}>
+      <div style={{ minHeight: '100vh', background: bg, fontFamily: 'Kh_Jrung_Thom, Rajdhani, sans-serif', paddingBottom: 60 }}>
         <ProfileHeader user={displayUser} totalSpent={totalSpent} VIP_GOAL={VIP_GOAL} />
 
         <div style={{ maxWidth: 720, margin: '15px auto 0', padding: '0 16px' }}>
@@ -121,26 +110,24 @@ export default function UserProfilePage() {
             background: cardBg,
             borderRadius: 20,
             boxShadow: dark ? '0 8px 40px rgba(0,0,0,0.4)' : '0 8px 40px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}>
             {/* Tab bar */}
             <div style={{ display: 'flex', borderBottom: `1px solid ${border}` }}>
-              {[
-                { key: 'profile',   label: '👤 My Profile' },
-                { key: 'locations', label: '📍 My Locations' },
-              ].map(t => (
-                <button key={t.key} className="tab-btn" onClick={() => setTab(t.key)} style={{
+              {TABS.map(tb => (
+                <button key={tb.key} className="tab-btn" onClick={() => setTab(tb.key)} style={{
                   flex: 1, padding: '18px 0', border: 'none', cursor: 'pointer',
-                  background: 'none', fontFamily: 'Rajdhani, sans-serif',
-                  fontSize: 16, fontWeight: 700, letterSpacing: 1,
-                  color: tab === t.key ? '#F97316' : tabText,
-                  borderBottom: tab === t.key ? '2.5px solid #F97316' : '2.5px solid transparent',
+                  background: 'none',
+                  fontFamily: 'Kh_Jrung_Thom, Rajdhani, sans-serif',
+                  fontSize: 16, fontWeight: 700, letterSpacing: 0,
+                  color: tab === tb.key ? '#F97316' : tabText,
+                  borderBottom: tab === tb.key ? '2.5px solid #F97316' : '2.5px solid transparent',
                   transition: 'all 0.2s',
-                }}>{t.label}</button>
+                }}>{tb.label}</button>
               ))}
             </div>
 
-            {tab === 'profile'   && (
+            {tab === 'profile' && (
               <ProfileTab
                 user={displayUser}
                 totalSpent={totalSpent}

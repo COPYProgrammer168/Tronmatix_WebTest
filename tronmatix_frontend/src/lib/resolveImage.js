@@ -3,12 +3,17 @@
 // Resolves a DB image path to a usable URL in the frontend.
 //
 // DB values come in two shapes:
-//   Local  : "/storage/products/abc123.webp"   → prefix with VITE_API_URL
+//   Local  : "/storage/products/abc123.webp"   → prefix with backend URL
 //   Cloud  : "https://bucket.r2.dev/img.webp"  → use as-is
 //   Legacy : "storage/products/img.jpg"         → normalize to /storage/... then prefix
 //   External paste: "https://cdn.example.com/img.png" → use as-is
+//
+// BACKEND_URL priority:
+//   1. VITE_API_URL from .env  (explicit override — useful for cross-origin prod)
+//   2. window.location.origin  (auto-detects ngrok / localhost / any domain — no .env change needed)
 
-const BACKEND_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const VITE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const BACKEND_URL = VITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 /**
  * Resolve a DB image path to a full URL the browser can load.

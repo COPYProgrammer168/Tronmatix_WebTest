@@ -1,59 +1,245 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ─────────────────────────────────────────────────────────────────────────
+   @font-face BEFORE @tailwind base — required so Tailwind preflight
+   doesn't override custom font registration
+───────────────────────────────────────────────────────────────────────── */
 
+/* English / branding */
 @font-face {
   font-family: 'HurstBagod';
   src: url('/src/assets/HurstBagod.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
+/* Khmer heading — bold, display, titles */
+@font-face {
+  font-family: 'Kh_Jrung_Thom';
+  src: url('/src/assets/Kh_Jrung_Thom.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Khmer body — readable UI text, inputs, labels */
+@font-face {
+  font-family: 'KantumruyPro';
+  src: url('/src/assets/KantumruyPro.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CSS variables
+───────────────────────────────────────────────────────────────────────── */
+:root {
+  --font-en-heading: 'HurstBagod', 'Rajdhani', sans-serif;
+  --font-en-body:    'Rajdhani', sans-serif;
+  --font-kh-heading: 'Kh_Jrung_Thom', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --font-kh-body:    'KantumruyPro', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --lh-kh-body:    1.95;
+  --lh-kh-heading: 1.65;
+  --lh-kh-btn:     1.6;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Base reset
+───────────────────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
-
 html { font-size: 16px; }
-
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--font-en-body);
   background: #ffffff;
   color: #111;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar */
+/* ─────────────────────────────────────────────────────────────────────────
+   KHMER MODE — activated by body.lang-km (set by LanguageContext)
+───────────────────────────────────────────────────────────────────────── */
+body.lang-km {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-synthesis: none;
+}
+
+body.lang-km h1,
+body.lang-km h2,
+body.lang-km h3,
+body.lang-km h4,
+body.lang-km h5,
+body.lang-km h6 {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+}
+
+/* Elements with inline Rajdhani/HurstBagod → switch to Kh_Jrung_Thom */
+body.lang-km [style*="Rajdhani"],
+body.lang-km [style*="HurstBagod"] {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Elements with inline KantumruyPro → stay as body font */
+body.lang-km [style*="KantumruyPro"] {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Elements with inline Kh_Jrung_Thom → heading font */
+body.lang-km [style*="Kh_Jrung_Thom"] {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Buttons */
+body.lang-km button:not(.banner-dot),
+body.lang-km [role="button"] {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-btn) !important;
+}
+
+/* Buttons that contain text / have padding — but NOT icon/dot buttons */
+body.lang-km button:not(.banner-dot):not(.icon-btn-bare) {
+  min-height: 40px;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* Banner dot indicators must stay tiny regardless of language */
+body.lang-km .banner-dot {
+  min-height: unset !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-family: inherit !important;
+  line-height: 1 !important;
+}
+
+/* ── NUCLEAR: inputs/textareas — highest specificity to beat Tailwind ── */
+body.lang-km input,
+body.lang-km textarea,
+body.lang-km select,
+body.lang-km input::placeholder,
+body.lang-km textarea::placeholder {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body) !important;
+}
+
+:is(body.lang-km) :is(input, textarea, select),
+:is(body.lang-km) :is(input, textarea, select):focus {
+  font-family: var(--font-kh-body) !important;
+  line-height: 1.95 !important;
+}
+
+/* Labels */
+body.lang-km label {
+  font-family: var(--font-kh-body) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: var(--lh-kh-body) !important;
+}
+
+/* Nav */
+body.lang-km nav a,
+body.lang-km nav span,
+body.lang-km nav button {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Badges / pills */
+body.lang-km .badge,
+body.lang-km span[style*="borderRadius"],
+body.lang-km span[style*="border-radius"] {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-btn) !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* Product cards */
+body.lang-km .product-card h3,
+body.lang-km .product-card button {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+
+body.lang-km a { font-family: inherit; letter-spacing: 0; }
+
+body.lang-km .line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Banner classes */
+body.lang-km .banner-title {
+  font-family: var(--font-kh-heading) !important;
+  line-height: 1.65 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+body.lang-km .banner-subtitle {
+  font-family: var(--font-kh-body) !important;
+  line-height: 1.8 !important;
+  letter-spacing: 0 !important;
+}
+body.lang-km .banner-btn {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+body.lang-km .cat-label {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+body.lang-km .section-heading {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Scrollbar
+───────────────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #111; }
 ::-webkit-scrollbar-thumb { background: #F97316; border-radius: 3px; }
 
-/* Animations */
+/* ─────────────────────────────────────────────────────────────────────────
+   Animations
+───────────────────────────────────────────────────────────────────────── */
 .modal-overlay { animation: fadeIn 0.2s ease; }
-.modal-box { animation: slideUp 0.3s ease; }
+.modal-box     { animation: slideUp 0.3s ease; }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes pulse { from { opacity: 0.4; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+@keyframes spin    { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse   { from { opacity: 0.4; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
 
-/* Product card hover reveal ADD TO CART */
-.product-card:hover .cart-hover-btn {
-  opacity: 1;
-  transform: translateY(0);
-}
-.cart-hover-btn {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 0.2s ease;
-}
+/* Product card hover */
+.product-card:hover .cart-hover-btn { opacity: 1; transform: translateY(0); }
+.cart-hover-btn { opacity: 0; transform: translateY(8px); transition: all 0.2s ease; }
 
-/* Responsive helpers */
 @media (max-width: 768px) {
-  .product-card .cart-hover-btn {
-    opacity: 1;
-    transform: none;
-  }
+  .product-card .cart-hover-btn { opacity: 1; transform: none; }
 }

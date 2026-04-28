@@ -12,35 +12,35 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     // ── Valid order statuses ──────────────────────────────────────────────────
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_CONFIRMED = 'confirmed';
-
+    public const STATUS_PENDING    = 'pending';
+    public const STATUS_CONFIRMED  = 'confirmed';
     public const STATUS_PROCESSING = 'processing';
+    public const STATUS_SHIPPED    = 'shipped';
+    public const STATUS_DELIVERED  = 'delivered';
+    public const STATUS_CANCELLED  = 'cancelled';
 
-    public const STATUS_SHIPPED = 'shipped';
-
-    public const STATUS_DELIVERED = 'delivered';
-
-    public const STATUS_CANCELLED = 'cancelled';
+    // ── Valid fulfillment types ───────────────────────────────────────────────
+    public const FULFILLMENT_DELIVERY = 'delivery';
+    public const FULFILLMENT_PICKUP   = 'pickup';
 
     // ── Mass assignable ───────────────────────────────────────────────────────
     protected $fillable = [
         'order_id',
         'user_id',
         'status',
+        'fulfillment_type',      // ← NEW: 'delivery' | 'pickup'
         'payment_method',
         'payment_status',
         'payment_ref',
         'subtotal',
-        'discount_id',          // FK → discounts
+        'discount_id',
         'discount_code',
         'discount_amount',
         'delivery',
         'tax',
         'total',
-        'location_id',          // FIX [1]: FK → user_locations — was missing
-        'shipping',             // JSON snapshot {name, phone, address, city, country, note}
+        'location_id',
+        'shipping',              // JSON snapshot {name, phone, address, city, country, note}
         'delivery_date',
         'delivery_time_slot',
         'delivery_confirmed_at',
@@ -48,14 +48,14 @@ class Order extends Model
 
     // ── Casts ─────────────────────────────────────────────────────────────────
     protected $casts = [
-        'shipping' => 'array',
-        'subtotal' => 'float',
-        'discount_amount' => 'float',
-        'delivery' => 'float',
-        'tax' => 'float',
-        'total' => 'float',
-        'delivery_date' => 'date',
-        'delivery_confirmed_at' => 'datetime',
+        'shipping'             => 'array',
+        'subtotal'             => 'float',
+        'discount_amount'      => 'float',
+        'delivery'             => 'float',
+        'tax'                  => 'float',
+        'total'                => 'float',
+        'delivery_date'        => 'date',
+        'delivery_confirmed_at'=> 'datetime',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────
@@ -75,19 +75,16 @@ class Order extends Model
         return $this->hasMany(Payment::class)->latest();
     }
 
-    // FIX [2]: discount() relationship — DiscountController uses $order->discount
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
     }
 
-    // FIX [3]: location() relationship — order-show blade uses $order->location
     public function location(): BelongsTo
     {
         return $this->belongsTo(UserLocation::class, 'location_id');
     }
 
-    // FIX [4]: activePayment() — used by payment controllers to get current payment
     public function activePayment(): HasOne
     {
         return $this->hasOne(Payment::class)->whereNotIn('status', [
@@ -108,10 +105,9 @@ class Order extends Model
     {
         parent::boot();
 
-        // Auto-generate readable order_id on create
         static::creating(function (Order $order) {
             if (empty($order->order_id)) {
-                $order->order_id = 'TRX-'.strtoupper(substr(uniqid(), -8));
+                $order->order_id = 'TRX-' . strtoupper(substr(uniqid(), -8));
             }
             if (empty($order->status)) {
                 $order->status = self::STATUS_CONFIRMED;
@@ -119,18 +115,17 @@ class Order extends Model
             if (empty($order->payment_status)) {
                 $order->payment_status = 'pending';
             }
+            // Default fulfillment_type to 'delivery' if not set
+            if (empty($order->fulfillment_type)) {
+                $order->fulfillment_type = self::FULFILLMENT_DELIVERY;
+            }
         });
 
-        // FIX [5]: VIP threshold now reads from AdminSetting instead of hardcoded 1000
         static::saved(function (Order $order) {
-            if (! $order->user_id) {
-                return;
-            }
+            if (! $order->user_id) return;
 
             $user = User::find($order->user_id);
-            if (! $user || $user->role !== 'customer') {
-                return;
-            }
+            if (! $user || $user->role !== 'customer') return;
 
             $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
@@ -145,6 +140,16 @@ class Order extends Model
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    public function isPickup(): bool
+    {
+        return ($this->fulfillment_type ?? self::FULFILLMENT_DELIVERY) === self::FULFILLMENT_PICKUP;
+    }
+
+    public function isDelivery(): bool
+    {
+        return ! $this->isPickup();
+    }
 
     public function isDelivered(): bool
     {
@@ -171,7 +176,6 @@ class Order extends Model
         return $this->payment_status === 'paid';
     }
 
-    /** Total quantity of items in this order */
     public function totalQty(): int
     {
         return $this->items->sum('qty');
@@ -181,13 +185,13 @@ class Order extends Model
     public function statusBadge(): array
     {
         return match ($this->status) {
-            self::STATUS_PENDING => ['label' => '⏳ PENDING',    'color' => '#eab308'],
-            self::STATUS_CONFIRMED => ['label' => '✅ CONFIRMED',  'color' => '#3b82f6'],
+            self::STATUS_PENDING    => ['label' => '⏳ PENDING',    'color' => '#eab308'],
+            self::STATUS_CONFIRMED  => ['label' => '✅ CONFIRMED',  'color' => '#3b82f6'],
             self::STATUS_PROCESSING => ['label' => '⚙️ PROCESSING', 'color' => '#8b5cf6'],
-            self::STATUS_SHIPPED => ['label' => '🚚 SHIPPED',    'color' => '#F97316'],
-            self::STATUS_DELIVERED => ['label' => '📦 DELIVERED',  'color' => '#22c55e'],
-            self::STATUS_CANCELLED => ['label' => '❌ CANCELLED',  'color' => '#ef4444'],
-            default => ['label' => strtoupper($this->status), 'color' => '#fff'],
+            self::STATUS_SHIPPED    => ['label' => '🚚 SHIPPED',    'color' => '#F97316'],
+            self::STATUS_DELIVERED  => ['label' => '📦 DELIVERED',  'color' => '#22c55e'],
+            self::STATUS_CANCELLED  => ['label' => '❌ CANCELLED',  'color' => '#ef4444'],
+            default                 => ['label' => strtoupper($this->status), 'color' => '#fff'],
         };
     }
 }

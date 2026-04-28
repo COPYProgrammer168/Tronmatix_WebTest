@@ -12,10 +12,10 @@
 
 /* ── Inline role select ──────────────────────────────────────────────────── */
 .role-select {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--dark-700);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -32,18 +32,18 @@
 .role-select[data-role="reseller"] { color: #3B82F6; border-color: rgba(59,130,246,0.5); }
 .role-select[data-role="banned"]   { color: #EF4444; border-color: rgba(239,68,68,0.5); }
 /* Option colors in dropdown list */
-.role-select option[value="customer"] { color: #9CA3AF; background: #1a1a1a; }
-.role-select option[value="vip"]      { color: #F97316; background: #1a1a1a; }
-.role-select option[value="reseller"] { color: #3B82F6; background: #1a1a1a; }
-.role-select option[value="banned"]   { color: #EF4444; background: #1a1a1a; }
+.role-select option[value="customer"] { color: #9CA3AF; background: var(--dark-900); }
+.role-select option[value="vip"]      { color: #F97316; background: var(--dark-900); }
+.role-select option[value="reseller"] { color: #3B82F6; background: var(--dark-900); }
+.role-select option[value="banned"]   { color: #EF4444; background: var(--dark-900); }
 
 /* ── Filter tabs ─────────────────────────────────────────────────────────── */
 .filter-tab {
     padding: 6px 14px;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--border);
     background: transparent;
-    color: rgba(255,255,255,0.5);
+    color: var(--text-muted);
     font-family: 'Rajdhani', sans-serif;
     font-size: 13px;
     font-weight: 700;
@@ -58,15 +58,15 @@
 }
 .filter-tab:hover               { border-color: var(--orange); color: var(--orange); }
 .filter-tab.active              { background: rgba(249,115,22,0.12); border-color: var(--orange); color: var(--orange); }
-.count-pill                     { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
+.count-pill                     { background: var(--dark-700); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
 .filter-tab.active .count-pill  { background: rgba(249,115,22,0.2); }
 
 /* ── Search ──────────────────────────────────────────────────────────────── */
 .search-input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark-700);
+    border: 1px solid var(--border);
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
     font-size: 15px;
     padding: 8px 16px 8px 38px;
@@ -75,7 +75,7 @@
     transition: border-color 0.2s;
 }
 .search-input:focus             { border-color: var(--orange); }
-.search-input::placeholder      { color: rgba(255,255,255,0.25); }
+.search-input::placeholder      { color: var(--text-muted); }
 
 /* ── VIP progress bar ────────────────────────────────────────────────────── */
 .vip-bar-fill {
@@ -87,17 +87,17 @@
 }
 
 /* ── Table hover ─────────────────────────────────────────────────────────── */
-tbody tr:hover td { background: rgba(255,255,255,0.02); }
+tbody tr:hover td { background: var(--dark-700); }
 
 /* ── Flash toast ─────────────────────────────────────────────────────────── */
 .flash-toast {
     position: fixed; bottom: 28px; right: 28px; z-index: 9999;
     display: flex; align-items: center; gap: 10px;
-    background: #18181b; border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark-800); border: 1px solid var(--border);
     border-radius: 12px; padding: 12px 18px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600;
-    color: #fff; opacity: 0; transform: translateY(8px);
+    color: var(--text-primary); opacity: 0; transform: translateY(8px);
     transition: opacity 0.25s, transform 0.25s;
     pointer-events: none;
 }
@@ -500,7 +500,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 <div id="user-info-modal" style="display:none; position:fixed; inset:0; z-index:9999;
     background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
     align-items:center; justify-content:center; padding:16px;">
-    <div style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
+    <div id="user-info-card" style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
                 background:linear-gradient(145deg,#141414,#1a1a1a);
                 border:1px solid rgba(255,255,255,0.1);
                 box-shadow:0 32px 80px rgba(0,0,0,0.7);
@@ -823,6 +823,35 @@ if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
 </style>
 
 <style>
+
+/* ── User Info Modal – light theme ──────────────────────────────────────── */
+[data-theme="light"] #user-info-modal { background: rgba(15,23,42,0.55); }
+[data-theme="light"] #user-info-card {
+    background: linear-gradient(145deg,#FFFFFF,#F8FAFC) !important;
+    border-color: rgba(15,23,42,0.10) !important;
+    box-shadow: 0 32px 80px rgba(15,23,42,0.18) !important;
+}
+[data-theme="light"] #user-info-card [style*="color:rgba(255,255,255,0.7)"] { color: rgba(15,23,42,0.65) !important; }
+[data-theme="light"] #user-info-card [style*="color:rgba(255,255,255,0.35)"] { color: rgba(15,23,42,0.40) !important; }
+[data-theme="light"] #user-info-card [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] #user-info-card [style*="color:#fff"] { color: #0F172A !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(255,255,255,0.03)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+[data-theme="light"] #user-info-card [style*="border:1px solid rgba(255,255,255,0.07)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] #user-info-card [style*="border:1px solid rgba(255,255,255,0.1)"] { border-color: rgba(15,23,42,0.10) !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(255,255,255,0.08)"] { background: rgba(15,23,42,0.07) !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(249,115,22,0.06)"] { background: rgba(249,115,22,0.05) !important; }
+[data-theme="light"] #user-info-card button[onclick*="closeUserInfo"] {
+    background: rgba(15,23,42,0.05) !important;
+    border-color: rgba(15,23,42,0.12) !important;
+    color: rgba(15,23,42,0.45) !important;
+}
+[data-theme="light"] #user-info-card [style*="border:1px dashed rgba(249,115,22,0.25)"] {
+    border-color: rgba(249,115,22,0.30) !important;
+    background: rgba(249,115,22,0.04) !important;
+}
+/* VIP progress track */
+[data-theme="light"] #ui-vip-bar { box-shadow: 0 0 6px rgba(249,115,22,0.20); }
 /* ── Users stats grid responsive ─────────────────────────────────────────── */
 .users-stats-grid {
     grid-template-columns: repeat(6, 1fr) !important;
@@ -866,5 +895,42 @@ if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
         margin-left: 0 !important;
     }
 }
+
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+body.theme-light .filter-tab               { border-color: #d1d5db; color: #6b7280; }
+body.theme-light .filter-tab:hover         { border-color: var(--orange); color: var(--orange); }
+body.theme-light .filter-tab.active        { border-color: var(--orange); color: var(--orange); }
+body.theme-light .count-pill               { background: #e5e7eb; color: #374151; }
+body.theme-light .filter-tab.active .count-pill { background: rgba(249,115,22,0.15); color: var(--orange); }
+body.theme-light .search-input             { background: #f9fafb; border-color: #d1d5db; color: #111827; }
+body.theme-light .search-input::placeholder{ color: #9ca3af; }
+body.theme-light .role-select              { background: #f9fafb; border-color: #d1d5db; color: #111827; }
+body.theme-light tbody tr:hover td         { background: #f3f4f6; }
+body.theme-light .flash-toast             { background: #fff; border-color: #e5e7eb; color: #111827; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+body.theme-light .vip-bar-fill             { box-shadow: 0 0 6px rgba(249,115,22,0.25); }
+
+/* Table cell text colors in light theme */
+body.theme-light #user-info-modal > div   { background: #fff !important; border-color: #e5e7eb !important; }
+body.theme-light #user-info-modal [style*="rgba(255,255,255,0.03)"] { background: #f9fafb !important; border-color: #e5e7eb !important; }
+body.theme-light #user-info-modal [style*="rgba(255,255,255,0.07)"] { border-color: #e5e7eb !important; }
+body.theme-light #user-info-modal [style*="color:rgba(255,255,255,0.35)"] { color: #9ca3af !important; }
+body.theme-light #user-info-modal [style*="color:#fff"] { color: #111827 !important; }
+body.theme-light #user-info-modal [style*="color:rgba(255,255,255,0.7)"] { color: #374151 !important; }
+body.theme-light #user-info-modal [style*="color:rgba(255,255,255,0.4)"] { color: #6b7280 !important; }
+body.theme-light #user-info-modal button[onclick*="closeUserInfo"] { background: #f3f4f6 !important; border-color: #d1d5db !important; color: #6b7280 !important; }
+body.theme-light #user-info-modal [style*="rgba(255,255,255,0.08)"] { background: #e5e7eb !important; }
+
+/* Table inline text colors */
+body.theme-light table td[style*="color:rgba(255,255,255"] { color: #6b7280 !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.3)"] { color: #9ca3af !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.25)"] { color: #9ca3af !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.5)"] { color: #6b7280 !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.4)"] { color: #9ca3af !important; }
+body.theme-light table [style*="color:#fff"] { color: #111827 !important; }
+body.theme-light [style*="background:rgba(255,255,255,0.08)"] { background: #e5e7eb !important; }
+
+/* VIP progress bar track */
+body.theme-light [style*="background:rgba(255,255,255,0.08)"][style*="height:4px"] { background: #e5e7eb !important; }
+body.theme-light [style*="background:rgba(255,255,255,0.08)"][style*="height:6px"] { background: #e5e7eb !important; }
 </style>
 @endpush

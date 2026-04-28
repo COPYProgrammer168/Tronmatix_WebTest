@@ -1026,4 +1026,59 @@ function syncActiveVisual() {
 </script>
 
 @endif
+
+@push('styles')
+<style>
+/* ── Discounts – light theme ──────────────────────────────────────────────── */
+[data-theme="light"] #couponModal > div,
+[data-theme="light"] #badgeModal  > div {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.10) !important;
+    box-shadow: 0 32px 80px rgba(15,23,42,0.16) !important;
+}
+[data-theme="light"] #couponModal input,
+[data-theme="light"] #couponModal select,
+[data-theme="light"] #badgeModal input,
+[data-theme="light"] #badgeModal select {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.14) !important;
+    color: #0F172A !important;
+}
+[data-theme="light"] #couponModal [style*="color:rgba(255,255,255,0.4)"],
+[data-theme="light"] #badgeModal  [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] #couponModal [style*="color:rgba(255,255,255,0.3)"],
+[data-theme="light"] #badgeModal  [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] #couponModal [style*="color:rgba(255,255,255,0.5)"],
+[data-theme="light"] #badgeModal  [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] #couponModal [style*="background:rgba(255,255,255,0.04)"],
+[data-theme="light"] #badgeModal  [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] #couponModal [style*="border-bottom:1px solid rgba(255,255,255"],
+[data-theme="light"] #badgeModal  [style*="border-bottom:1px solid rgba(255,255,255"] {
+    border-bottom-color: rgba(15,23,42,0.08) !important;
+}
+/* Discount code cards */
+[data-theme="light"] .discount-card {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] .discount-card [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] .discount-card [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] .discount-card [style*="background:rgba(255,255,255,0.05)"],
+[data-theme="light"] .discount-card [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.04) !important; }
+[data-theme="light"] .discount-card [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+/* Stats strip */
+[data-theme="light"] .discount-stat [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+/* Filter tabs */
+[data-theme="light"] .discount-filter-tab {
+    border-color: rgba(15,23,42,0.12) !important;
+    color: rgba(15,23,42,0.55) !important;
+}
+[data-theme="light"] .discount-filter-tab.active {
+    background: rgba(249,115,22,0.08) !important;
+    border-color: #F97316 !important;
+    color: #F97316 !important;
+}
+</style>
+@endpush
+
 @endsection

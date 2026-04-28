@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->string('avatar')->nullable();
-            $table->enum('role', ['superadmin', 'admin', 'editor', 'seller', 'delivery', 'viewer'])->default('admin');
+            $table->enum('role', ['superadmin', 'admin', 'editor'])->default('admin');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_pending')->default(false);
             $table->text('request_note')->nullable();

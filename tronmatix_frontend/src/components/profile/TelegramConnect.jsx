@@ -13,10 +13,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import axiosClient from '../../lib/axios'
+import { useLang } from '../../context/LanguageContext'
 
 const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
 
 export default function TelegramConnect({ user, dark, onUpdate, notify }) {
+  const { t, isKhmer } = useLang()
+  const tgFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
   const [status,     setStatus]     = useState(null)
   const [loading,    setLoading]    = useState(true)
   const [actionBusy, setActionBusy] = useState(false)
@@ -124,13 +127,13 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${c.cardBorder}`, background: dark ? '#0F172A' : '#FFFFFF' }}>
         <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>✈️</div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: 1, color: c.text, fontFamily: 'Rajdhani,sans-serif' }}>TELEGRAM NOTIFICATIONS</div>
-          <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>Get order updates directly in Telegram</div>
+          <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, color: c.text, fontFamily: tgFont }}>{isKhmer ? t('telegram.title') : 'TELEGRAM NOTIFICATIONS'}</div>
+          <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
         </div>
         <div style={{ marginLeft: 'auto' }}>
           {loading
-            ? <span style={{ fontSize: 11, fontWeight: 700, color: c.muted, background: dark ? '#1F2937' : '#F3F4F6', padding: '4px 10px', borderRadius: 20 }}>LOADING...</span>
-            : <StatusBadge connected={!!status?.connected} />
+            ? <span style={{ fontSize: 11, fontWeight: 700, color: c.muted, background: dark ? '#1F2937' : '#F3F4F6', padding: '4px 10px', borderRadius: 20 }}>{isKhmer ? t('common.loading') : 'LOADING...'}</span>
+            : <StatusBadge connected={!!status?.connected} isKhmer={isKhmer} t={t} />
           }
         </div>
       </div>
@@ -138,9 +141,9 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
       {/* Body */}
       <div style={{ padding: '18px 20px' }}>
         {loading ? <Skeleton dark={dark} /> : status?.connected
-          ? <ConnectedView status={status} dark={dark} c={c} busy={actionBusy} testSent={testSent} onDisconnect={handleDisconnect} onTest={handleTest} />
+          ? <ConnectedView status={status} dark={dark} c={c} busy={actionBusy} testSent={testSent} onDisconnect={handleDisconnect} onTest={handleTest} isKhmer={isKhmer} t={t} />
           : <NotConnectedView
-              dark={dark} c={c} busy={actionBusy}
+              dark={dark} c={c} busy={actionBusy} isKhmer={isKhmer} t={t}
               showSwitch={showSwitch}
               onClickSwitch={() => setShowSwitch(true)}
               onRefresh={handleRefresh}
@@ -152,17 +155,19 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 }
 
 // ── NotConnectedView ──────────────────────────────────────────────────────────
-function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh }) {
+function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh, isKhmer = false, t = (k) => k }) {
   return (
     <div>
       <p style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
-        Connect your Telegram to receive real-time order updates, receipts, shipping alerts, and delivery confirmations.
+        {isKhmer ? t('telegram.connectDesc') : 'Connect your Telegram to receive real-time order updates, receipts, shipping alerts, and delivery confirmations.'}
       </p>
 
       {/* Why connect */}
       <div style={{ padding: '12px 14px', borderRadius: 10, marginBottom: 16, background: dark ? 'rgba(34,153,221,0.07)' : 'rgba(34,153,221,0.05)', border: '1px dashed rgba(34,153,221,0.25)' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#229ED9', letterSpacing: 2, marginBottom: 8 }}>WHY CONNECT?</div>
-        {['🔔 Instant notifications — no app refresh needed', '🧾 Automatic order receipts after checkout', '🚚 Shipping & delivery alerts', '🔒 Secure — we only send, never read your messages']
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#229ED9', letterSpacing: isKhmer ? 0 : 2, marginBottom: 8 }}>{isKhmer ? t('telegram.whyConnect') : 'WHY CONNECT?'}</div>
+        {(isKhmer
+          ? [t('telegram.benefit1'), t('telegram.benefit2'), t('telegram.benefit3'), t('telegram.benefit4')]
+          : ['🔔 Instant notifications — no app refresh needed', '🧾 Automatic order receipts after checkout', '🚚 Shipping & delivery alerts', '🔒 Secure — we only send, never read your messages'])
           .map(b => <div key={b} style={{ fontSize: 12, color: c.text, marginBottom: 5, fontWeight: 600 }}>{b}</div>)}
       </div>
 
@@ -170,19 +175,19 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh 
       {showSwitch && (
         <div style={{ padding: '14px 16px', borderRadius: 12, marginBottom: 14, background: dark ? 'rgba(249,115,22,0.08)' : 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.3)' }}>
           <div style={{ fontSize: 12, fontWeight: 800, color: '#F97316', letterSpacing: 1, marginBottom: 12 }}>
-            📋 HOW TO SWITCH ACCOUNT
+            📋 {isKhmer ? t('telegram.howToSwitch') : 'HOW TO SWITCH ACCOUNT'}
           </div>
 
           {/* Option A — Telegram App (recommended) */}
           <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: dark ? 'rgba(34,197,94,0.06)' : 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.2)' }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#16A34A', letterSpacing: 1, marginBottom: 6 }}>✅ OPTION A — Telegram App (easiest)</div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#16A34A', letterSpacing: isKhmer ? 0 : 1, marginBottom: 6 }}>✅ {isKhmer ? t('telegram.optionA') : 'OPTION A — Telegram App (easiest)'}</div>
             {['1️⃣  Open Telegram on your phone or desktop', '2️⃣  Tap ☰ menu → Switch Account → pick account', '3️⃣  Come back here → click Refresh Widget'].map(s =>
               <div key={s} style={{ fontSize: 12, color: c.text, marginBottom: 4, fontWeight: 600 }}>{s}</div>)}
           </div>
 
           {/* Option B — web.telegram.org (use <a> tag, never window.open) */}
           <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: dark ? 'rgba(34,158,217,0.06)' : 'rgba(34,158,217,0.04)', border: '1px solid rgba(34,158,217,0.2)' }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#229ED9', letterSpacing: 1, marginBottom: 6 }}>🌐 OPTION B — Telegram Web</div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#229ED9', letterSpacing: isKhmer ? 0 : 1, marginBottom: 6 }}>🌐 {isKhmer ? t('telegram.optionB') : 'OPTION B — Telegram Web'}</div>
             {['1️⃣  Click the link below to open Telegram Web', '2️⃣  Click ☰ → Settings → Log Out', '3️⃣  Log in with your other account', '4️⃣  Come back here → click Refresh Widget'].map(s =>
               <div key={s} style={{ fontSize: 12, color: c.text, marginBottom: 4, fontWeight: 600 }}>{s}</div>)}
             {/* FIX: use <a> not window.open — browser won't block <a> */}
@@ -201,15 +206,15 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh 
             </a>
           </div>
 
-          <button onClick={onRefresh} style={{ width: '100%', padding: '10px 0', borderRadius: 10, background: 'linear-gradient(135deg,#F97316,#ea580c)', border: 'none', color: '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 800, letterSpacing: 1, cursor: 'pointer' }}>
-            🔄 Refresh Widget — I've Switched Account
+          <button onClick={onRefresh} style={{ width: '100%', padding: '10px 0', borderRadius: 10, background: 'linear-gradient(135deg,#F97316,#ea580c)', border: 'none', color: '#fff', fontFamily: isKhmer ? 'KantumruyPro,Khmer OS,sans-serif' : 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, cursor: 'pointer' }}>
+            🔄 {isKhmer ? t('telegram.refreshWidget') : "Refresh Widget — I've Switched Account"}
           </button>
         </div>
       )}
 
       {/* Widget */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        <div style={{ fontSize: 11, color: c.muted, fontWeight: 600, letterSpacing: 1, marginBottom: 4 }}>CLICK BELOW TO CONNECT</div>
+        <div style={{ fontSize: 11, color: c.muted, fontWeight: 600, letterSpacing: isKhmer ? 0 : 1, marginBottom: 4 }}>{isKhmer ? t('telegram.clickToConnect') : 'CLICK BELOW TO CONNECT'}</div>
 
         <div id="tg-widget-container" style={{ minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: busy ? 0.5 : 1, pointerEvents: busy ? 'none' : 'auto' }} />
 
@@ -224,10 +229,10 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh 
             <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
             <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
           </svg>
-          Log in with a different account
+          {isKhmer ? t('telegram.loginDifferent') : 'Log in with a different account'}
         </button>
         <p style={{ fontSize: 10, color: c.muted, textAlign: 'center', margin: '2px 0 0' }}>
-          Switch account in Telegram app, then click Refresh
+          {isKhmer ? t('telegram.switchHint') : 'Switch account in Telegram app, then click Refresh'}
         </p>
       </div>
     </div>
@@ -235,7 +240,7 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh 
 }
 
 // ── ConnectedView ─────────────────────────────────────────────────────────────
-function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest }) {
+function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, isKhmer = false, t = (k) => k }) {
   const connectedAt = status.connected_at
     ? new Date(status.connected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
     : null
@@ -247,15 +252,17 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest }
           <div style={{ fontSize: 15, fontWeight: 800, color: c.text, fontFamily: 'Rajdhani,sans-serif' }}>
             {status.telegram_username ? `@${status.telegram_username}` : 'Telegram Account'}
           </div>
-          {connectedAt && <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>Connected since {connectedAt}</div>}
+          {connectedAt && <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>{isKhmer ? `${t('telegram.connectedSince')} ${connectedAt}` : `Connected since ${connectedAt}`}</div>}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20, fontFamily: 'Rajdhani,sans-serif' }}>ACTIVE</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20, fontFamily: isKhmer ? 'KantumruyPro,Khmer OS,sans-serif' : 'Rajdhani,sans-serif' }}>{isKhmer ? t('telegram.active') : 'ACTIVE'}</div>
       </div>
 
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: c.muted, letterSpacing: 2, marginBottom: 8 }}>YOU'LL RECEIVE</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: c.muted, letterSpacing: isKhmer ? 0 : 2, marginBottom: 8 }}>{isKhmer ? t('telegram.youllReceive') : "YOU'LL RECEIVE"}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          {[['🧾','Order receipts'],['✅','Order confirmed'],['🚚','Shipped alerts'],['🎉','Delivery confirmation'],['🚫','Cancellation updates'],['💳','Payment status']]
+          {(isKhmer
+            ? [['🧾',t('telegram.notif1')],['✅',t('telegram.notif2')],['🚚',t('telegram.notif3')],['🎉',t('telegram.notif4')],['🚫',t('telegram.notif5')],['💳',t('telegram.notif6')]]
+            : [['🧾','Order receipts'],['✅','Order confirmed'],['🚚','Shipped alerts'],['🎉','Delivery confirmation'],['🚫','Cancellation updates'],['💳','Payment status']])
             .map(([icon, label]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: c.text }}>
                 <span>{icon}</span><span style={{ fontWeight: 600 }}>{label}</span>
@@ -266,23 +273,23 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest }
 
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={onTest} disabled={busy} style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: testSent ? 'rgba(34,197,94,0.1)' : 'linear-gradient(135deg,#229ED9,#0088cc)', border: testSent ? '1px solid rgba(34,197,94,0.3)' : 'none', color: testSent ? '#16A34A' : '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}>
-          {testSent ? '✅ SENT!' : busy ? '...' : '📨 TEST MESSAGE'}
+          {testSent ? `✅ ${isKhmer ? t('telegram.sent') : 'SENT!'}` : busy ? '...' : `📨 ${isKhmer ? t('telegram.testMessage') : 'TEST MESSAGE'}`}
         </button>
         <button onClick={onDisconnect} disabled={busy} style={{ padding: '10px 16px', borderRadius: 10, background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-          DISCONNECT
+          {isKhmer ? t('telegram.disconnect') : 'DISCONNECT'}
         </button>
       </div>
     </div>
   )
 }
 
-function StatusBadge({ connected }) {
+function StatusBadge({ connected, isKhmer = false, t = (k) => k }) {
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1, background: connected ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.08)', border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.25)'}`, color: connected ? '#16A34A' : '#DC2626', fontFamily: 'Rajdhani,sans-serif' }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1, background: connected ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.08)', border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.25)'}`, color: connected ? '#16A34A' : '#DC2626', fontFamily: isKhmer ? 'KantumruyPro,Khmer OS,sans-serif' : 'Rajdhani,sans-serif' }}>
       <span style={{ fontSize: 8 }}>●</span>
-      {connected ? 'CONNECTED ✅' : 'NOT CONNECTED ❌'}
+      {connected ? (isKhmer ? t('telegram.connected') : 'CONNECTED ✅') : (isKhmer ? t('telegram.notConnected') : 'NOT CONNECTED ❌')}
     </div>
   )
 }

@@ -1,168 +1,27 @@
 // src/components/AuthModal.jsx
 //
-// Handles: Login, Register, Forgot Password, Google OAuth, Telegram OAuth
-// After Google/Telegram sign-in for NEW users → shows ProfileSetupModal (username + phone)
+// Handles: Login, Register, Forgot Password, Google OAuth
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
 import logo from '../assets/logo.png'
 
-const BOT_USERNAME    = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID     || ''
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProfileSetupModal — shown after Google/Telegram login for new users
 // ─────────────────────────────────────────────────────────────────────────────
-export function ProfileSetupModal({ onClose }) {
-  const { completeProfile, loading, user } = useAuth()
-  const { dark } = useTheme()
-
-  const [username, setUsername] = useState(user?.username || '')
-  const [phone,    setPhone]    = useState(user?.phone    || '')
-  const [error,    setError]    = useState('')
-  const [saving,   setSaving]   = useState(false)
-
-  const c = {
-    bg:      dark ? '#1f2937' : '#ffffff',
-    text:    dark ? '#f9fafb' : '#1f2937',
-    muted:   dark ? '#9ca3af' : '#6b7280',
-    inputBg: dark ? '#111827' : '#f9fafb',
-    border:  dark ? '#374151' : '#e5e7eb',
-  }
-
-  const inputStyle = (err) => ({
-    width: '100%', boxSizing: 'border-box',
-    padding: '12px 16px', borderRadius: 12, outline: 'none',
-    fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 600,
-    background: c.inputBg, color: c.text,
-    border: `1.5px solid ${err ? '#ef4444' : c.border}`,
-    transition: 'border-color 0.2s',
-  })
-
-  const handleSave = async () => {
-    setError('')
-    const u = username.trim()
-    if (!u) { setError('Username is required.'); return }
-    if (!/^[a-zA-Z0-9_]{3,50}$/.test(u)) {
-      setError('Username must be 3–50 characters: letters, numbers, underscores only.')
-      return
-    }
-    setSaving(true)
-    const res = await completeProfile(u, phone.trim() || null)
-    setSaving(false)
-    if (res.success) onClose()
-    else setError(res.message)
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
-    >
-      <div
-        className="rounded-3xl shadow-2xl w-full mx-4 relative"
-        style={{ background: c.bg, maxWidth: 400, padding: '36px 32px' }}
-      >
-        {/* Header */}
-        <div className="flex flex-col items-center mb-8">
-          <img src={logo} alt="Tronmatix" className="h-12 mb-4" />
-          <div style={{ fontSize: 28, marginBottom: 6 }}>👋</div>
-          <h2
-            className="font-black text-center"
-            style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 22, color: c.text, letterSpacing: 2 }}
-          >
-            ALMOST THERE!
-          </h2>
-          <p className="text-center mt-2" style={{ fontSize: 14, color: c.muted, lineHeight: 1.6 }}>
-            Set your username to complete your profile.<br />
-            <span style={{ fontSize: 12 }}>Phone is optional.</span>
-          </p>
-        </div>
-
-        {/* Username */}
-        <div className="mb-4">
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: 2, color: c.muted, marginBottom: 8 }}>
-            USERNAME *
-          </label>
-          <input
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            placeholder="e.g. john_doe123"
-            autoFocus
-            style={inputStyle(!!error && !username.trim())}
-            onFocus={e => { e.target.style.borderColor = '#F97316' }}
-            onBlur={e => { e.target.style.borderColor = error ? '#ef4444' : c.border }}
-            onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-          />
-          <p style={{ fontSize: 12, color: c.muted, marginTop: 5 }}>
-            Letters, numbers, underscores only. 3–50 characters.
-          </p>
-        </div>
-
-        {/* Phone */}
-        <div className="mb-6">
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: 2, color: c.muted, marginBottom: 8 }}>
-            PHONE / TEL <span style={{ fontWeight: 400, color: c.muted }}>(optional)</span>
-          </label>
-          <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 15, pointerEvents: 'none' }}>📞</span>
-            <input
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              placeholder="0xx xxx xxx"
-              style={{ ...inputStyle(false), paddingLeft: 40 }}
-              onFocus={e => { e.target.style.borderColor = '#F97316' }}
-              onBlur={e => { e.target.style.borderColor = c.border }}
-              onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-            />
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <p className="text-red-500 text-center mb-4" style={{ fontSize: 14 }}>{error}</p>
-        )}
-
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          disabled={saving || loading}
-          className="w-full py-3 rounded-full font-black tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            fontFamily: 'Rajdhani, sans-serif',
-            fontSize: 17,
-            background: 'linear-gradient(135deg, #F97316, #ea580c)',
-            color: '#fff',
-            border: 'none',
-            boxShadow: '0 4px 20px rgba(249,115,22,0.35)',
-            cursor: saving ? 'wait' : 'pointer',
-          }}
-        >
-          {saving ? '⏳ SAVING...' : '✓ SAVE & CONTINUE'}
-        </button>
-
-        {/* Skip */}
-        <button
-          onClick={onClose}
-          className="w-full mt-3 font-semibold transition-colors"
-          style={{ fontSize: 13, color: c.muted, background: 'none', border: 'none', cursor: 'pointer' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#F97316' }}
-          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
-        >
-          Skip for now →
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AuthModal — Login / Register / Forgot Password
-// ─────────────────────────────────────────────────────────────────────────────
 export default function AuthModal({ mode, onClose, onSwitch }) {
   const { login, register, forgotPassword, googleLogin, loading } = useAuth()
   const { dark } = useTheme()
+  const { isKhmer } = useLang()
+
+  // FIX: authFont was missing from AuthModal scope — declared only in ProfileSetupModal above,
+  // causing ReferenceError: authFont is not defined (at socialBtnBase object, line ~406)
+  const authFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const authBodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'  : 'Rajdhani, sans-serif'
 
   const [form, setForm]           = useState({ usernameOrEmail: '', username: '', email: '', password: '', confirm: '' })
   const [error, setError]         = useState('')
@@ -171,7 +30,6 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
   const [cooldown, setCooldown]   = useState(false)
   const [pwStrength, setPwStrength] = useState({ score: 0, hints: [] })
   const [socialLoading, setSocialLoading] = useState(null) // 'google' | 'telegram'
-  const tgContainerRef = useRef(null)
 
   const isLogin    = mode === 'login'
   const isRegister = mode === 'register'
@@ -197,11 +55,26 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     socialHover:  dark ? '#1f2937' : '#f3f4f6',
   }
 
-  const inputClass = 'w-full rounded-xl px-4 py-3 focus:outline-none transition-colors'
-  const inputStyle = { fontSize: 16, background: c.inputBg, border: `1px solid ${c.inputBorder}`, color: c.text }
+  const inputStyle = {
+    // All layout + font via inline style — NO className — prevents Tailwind preflight override
+    display: 'block',
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '12px 16px',
+    borderRadius: 12,
+    outline: 'none',
+    fontFamily: authBodyFont,
+    fontSize: isKhmer ? 15 : 16,
+    lineHeight: isKhmer ? 1.9 : 1.5,
+    background: c.inputBg,
+    border: `1px solid ${c.inputBorder}`,
+    color: c.text,
+    transition: 'border-color 0.15s',
+  }
   const focusHandlers = {
-    onFocus: (e) => { e.target.style.borderColor = '#F97316' },
-    onBlur:  (e) => { e.target.style.borderColor = c.inputBorder },
+    // Keep fontFamily explicitly on focus/blur so browser doesn't reset it
+    onFocus: (e) => { e.target.style.borderColor = '#F97316'; e.target.style.fontFamily = authBodyFont },
+    onBlur:  (e) => { e.target.style.borderColor = c.inputBorder; e.target.style.fontFamily = authBodyFont },
   }
 
   const handle = (e) => {
@@ -298,53 +171,6 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     }).requestAccessToken()
   }
 
-  // ── Telegram Widget ────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!showSocial || !BOT_USERNAME) return
-    const container = tgContainerRef.current
-    if (!container) return
-
-    container.innerHTML = ''
-
-    window.onTelegramAuthModal = async (tgUser) => {
-      if (!tgUser) return
-      setSocialLoading('telegram')
-      setError('')
-      try {
-        const { default: api } = await import('../lib/axios')
-        const res = await api.post('/api/auth/telegram', tgUser)
-        const t = res.data?.token
-        const u = res.data?.user
-        if (!t || !u) throw new Error('Unexpected response shape')
-        // Dispatch event — AuthContext listener handles applyToken/applyUser/is_new_user
-        window.dispatchEvent(new CustomEvent('auth:social-login', {
-          detail: { token: t, user: u, isNewUser: !!res.data?.is_new_user }
-        }))
-        setSuccess('Signed in with Telegram!')
-        setTimeout(onClose, 700)
-      } catch (e) {
-        setError(e.response?.data?.message || 'Telegram sign-in failed. Please try again.')
-        recordFailure()
-      } finally {
-        setSocialLoading(null)
-      }
-    }
-
-    const script = document.createElement('script')
-    script.src = 'https://telegram.org/js/telegram-widget.js?22'
-    script.async = true
-    script.setAttribute('data-telegram-login', BOT_USERNAME)
-    script.setAttribute('data-size',           'large')
-    script.setAttribute('data-radius',         '10')
-    script.setAttribute('data-onauth',         'onTelegramAuthModal(user)')
-    script.setAttribute('data-request-access', 'write')
-    container.appendChild(script)
-
-    return () => {
-      delete window.onTelegramAuthModal
-      if (container) container.innerHTML = ''
-    }
-  }, [showSocial, mode])
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const submit = async () => {
@@ -399,7 +225,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
     width: '100%', padding: '11px 16px', borderRadius: 12,
     border: `1px solid ${c.socialBorder}`, background: c.socialBg, color: c.text,
-    fontSize: 15, fontWeight: 700, fontFamily: 'Rajdhani, sans-serif',
+    fontSize: 15, fontWeight: 700, fontFamily: authFont,
     letterSpacing: 0.5, cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s',
   }
 
@@ -430,11 +256,16 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
         {/* Tabs */}
         {!isForgot && (
           <div className="flex rounded-full p-1 mb-6" style={{ background: c.tabBg }}>
-            {[['login', 'LOGIN'], ['register', 'REGISTER']].map(([val, label]) => (
+            {[
+              ['login',    isKhmer ? 'ចូល'       : 'LOGIN'],
+              ['register', isKhmer ? 'ចុះឈ្មោះ' : 'REGISTER'],
+            ].map(([val, label]) => (
               <button key={val} onClick={() => handleSwitch(val)}
                 className="flex-1 py-2 rounded-full font-bold tracking-wider transition-all"
                 style={{
-                  fontFamily: 'Rajdhani, sans-serif', fontSize: 18,
+                  fontFamily: authFont,
+                  fontSize: isKhmer ? 16 : 18,
+                  letterSpacing: isKhmer ? 0 : 2,
                   background: mode === val ? c.tabActive : 'transparent',
                   color: mode === val ? '#F97316' : c.textMuted,
                   boxShadow: mode === val ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
@@ -447,11 +278,11 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
         {isForgot && (
           <div className="mb-6 text-center">
             <div className="text-4xl mb-2">🔐</div>
-            <h2 className="font-black" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 24, color: c.text }}>
-              FORGOT PASSWORD
+            <h2 className="font-black" style={{ fontFamily: authFont, fontSize: isKhmer ? 20 : 24, color: c.text, letterSpacing: isKhmer ? 0 : 2 }}>
+              {isKhmer ? 'ភ្លេចពាក្យសម្ងាត់' : 'FORGOT PASSWORD'}
             </h2>
-            <p className="mt-1" style={{ fontSize: 14, color: c.textMuted }}>
-              Enter your email and we'll send you a reset link.
+            <p className="mt-1" style={{ fontSize: 14, color: c.textMuted, fontFamily: authBodyFont }}>
+              {isKhmer ? 'បញ្ចូលអ៊ីមែលរបស់អ្នក ហើយយើងនឹងផ្ញើតំណកំណត់ពាក្យសម្ងាត់ឡើងវិញ។' : "Enter your email and we'll send you a reset link."}
             </p>
           </div>
         )}
@@ -478,56 +309,15 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  <span>Continue with Google</span>
+                  <span>{isKhmer ? 'ចូលដោយ Google' : 'Continue with Google'}</span>
                 </>
               )}
             </button>
 
-            {/* Telegram */}
-            {BOT_USERNAME ? (
-              <div style={{ position: 'relative' }}>
-                <button
-                  style={{ ...socialBtnBase, opacity: socialLoading === 'telegram' ? 0.6 : 1 }}
-                  disabled={!!socialLoading || loading}
-                  onClick={() => {
-                    const btn = tgContainerRef.current?.querySelector('button, [role="button"], a')
-                    if (btn) btn.click()
-                    else setError('Telegram widget is loading. Please try again in a moment.')
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#229ED9' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
-                >
-                  {socialLoading === 'telegram' ? (
-                    <span style={{ fontSize: 14, color: c.textMuted }}>Connecting…</span>
-                  ) : (
-                    <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="12" fill="#229ED9"/>
-                        <path d="M5.5 11.5l10-4-3 10-2.5-3.5L5.5 11.5z" fill="white"/>
-                        <path d="M10 14l-.7 3.5L12 15.5" fill="white"/>
-                        <path d="M10 14l1.5 1.5 4-5" stroke="white" strokeWidth="0.5" fill="none"/>
-                      </svg>
-                      <span>Continue with Telegram</span>
-                    </>
-                  )}
-                </button>
-                <div ref={tgContainerRef}
-                  style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', top: 0, left: 0, width: 1, height: 1, overflow: 'hidden' }} />
-              </div>
-            ) : (
-              <button style={{ ...socialBtnBase, opacity: 0.4, cursor: 'not-allowed' }} disabled>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="12" fill="#229ED9"/>
-                  <path d="M5.5 11.5l10-4-3 10-2.5-3.5L5.5 11.5z" fill="white"/>
-                </svg>
-                <span style={{ color: c.textMuted }}>Telegram (not configured)</span>
-              </button>
-            )}
-
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 2px' }}>
               <div style={{ flex: 1, height: 1, background: c.divider }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, letterSpacing: 1 }}>OR</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, letterSpacing: isKhmer ? 0 : 1, fontFamily: authFont }}>{isKhmer ? 'ឬ' : 'OR'}</span>
               <div style={{ flex: 1, height: 1, background: c.divider }} />
             </div>
           </div>
@@ -537,31 +327,31 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
         <div className="space-y-3" onKeyDown={onKeyDown}>
           {isLogin && (
             <>
-              <input name="usernameOrEmail" placeholder="Username or Email"
+              <input name="usernameOrEmail" placeholder={isKhmer ? 'ឈ្មោះអ្នកប្រើ ឬ អ៊ីមែល' : 'Username or Email'}
                 value={form.usernameOrEmail} onChange={handle}
                 autoComplete="username email"
-                className={inputClass} style={inputStyle} {...focusHandlers} />
-              <input name="password" type="password" placeholder="Password"
+                style={inputStyle} {...focusHandlers} />
+              <input name="password" type="password" placeholder={isKhmer ? 'ពាក្យសម្ងាត់' : 'Password'}
                 value={form.password} onChange={handle}
                 autoComplete="current-password"
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                style={inputStyle} {...focusHandlers} />
             </>
           )}
 
           {isRegister && (
             <>
-              <input name="username" placeholder="Username"
+              <input name="username" placeholder={isKhmer ? 'ឈ្មោះអ្នកប្រើ' : 'Username'}
                 value={form.username} onChange={handle}
                 autoComplete="username"
-                className={inputClass} style={inputStyle} {...focusHandlers} />
-              <input name="email" type="email" placeholder="Email address"
+                style={inputStyle} {...focusHandlers} />
+              <input name="email" type="email" placeholder={isKhmer ? 'អ៊ីមែល' : 'Email address'}
                 value={form.email} onChange={handle}
                 autoComplete="email"
-                className={inputClass} style={inputStyle} {...focusHandlers} />
-              <input name="password" type="password" placeholder="Password"
+                style={inputStyle} {...focusHandlers} />
+              <input name="password" type="password" placeholder={isKhmer ? 'ពាក្យសម្ងាត់' : 'Password'}
                 value={form.password} onChange={handle}
                 autoComplete="new-password"
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                style={inputStyle} {...focusHandlers} />
 
               {form.password.length > 0 && (
                 <div>
@@ -574,25 +364,25 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
                   {pwStrength.score < 5 && (
                     <p style={{ fontSize: 12, color: strengthColors[pwStrength.score - 1] || '#9ca3af' }}>
                       {pwStrength.score > 0 && `${strengthLabels[pwStrength.score - 1]} — `}
-                      Still need: {pwStrength.hints.join(', ')}
+                      {isKhmer ? 'នៅខ្វះ: ' : 'Still need: '}{pwStrength.hints.join(', ')}
                     </p>
                   )}
-                  {pwStrength.score === 5 && <p style={{ fontSize: 12, color: '#16a34a' }}>Strong password ✓</p>}
+                  {pwStrength.score === 5 && <p style={{ fontSize: 12, color: '#16a34a' }}>{isKhmer ? 'ពាក្យសម្ងាត់រឹងមាំ ✓' : 'Strong password ✓'}</p>}
                 </div>
               )}
 
-              <input name="confirm" type="password" placeholder="Confirm Password"
+              <input name="confirm" type="password" placeholder={isKhmer ? 'បញ្ជាក់ពាក្យសម្ងាត់' : 'Confirm Password'}
                 value={form.confirm} onChange={handle}
                 autoComplete="new-password"
-                className={inputClass} style={inputStyle} {...focusHandlers} />
+                style={inputStyle} {...focusHandlers} />
             </>
           )}
 
           {isForgot && (
-            <input name="email" type="email" placeholder="Your email address"
+            <input name="email" type="email" placeholder={isKhmer ? 'អ៊ីមែលរបស់អ្នក' : 'Your email address'}
               value={form.email} onChange={handle}
               autoComplete="email"
-              className={inputClass} style={inputStyle} {...focusHandlers} />
+              style={inputStyle} {...focusHandlers} />
           )}
         </div>
 
@@ -602,7 +392,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
             <button onClick={() => handleSwitch('forgot')}
               className="font-semibold hover:underline"
               style={{ fontSize: 14, color: '#F97316' }}>
-              Forgot password?
+              {isKhmer ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
             </button>
           </div>
         )}
@@ -617,13 +407,17 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           disabled={loading || cooldown}
           className="w-full mt-5 rounded-full py-3 font-bold transition-all shadow disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            fontFamily: 'Rajdhani, sans-serif', fontSize: 18,
+            fontFamily: authFont, fontSize: 18,
             background: c.btnBg, border: `1px solid ${c.btnBorder}`, color: c.btnText,
           }}
           onMouseEnter={e => { e.currentTarget.style.background = '#F97316'; e.currentTarget.style.borderColor = '#F97316'; e.currentTarget.style.color = '#fff' }}
           onMouseLeave={e => { e.currentTarget.style.background = c.btnBg;   e.currentTarget.style.borderColor = c.btnBorder; e.currentTarget.style.color = c.btnText }}
         >
-          {loading ? '…' : isForgot ? 'Send Reset Link' : isLogin ? 'Login' : 'Register'}
+          {loading ? '…' : isForgot
+            ? (isKhmer ? 'ផ្ញើតំណកំណត់ឡើងវិញ' : 'Send Reset Link')
+            : isLogin
+              ? (isKhmer ? 'ចូលគណនី' : 'Login')
+              : (isKhmer ? 'ចុះឈ្មោះ' : 'Register')}
         </button>
 
         {isForgot && (
@@ -632,7 +426,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
             style={{ fontSize: 14, color: c.textMuted }}
             onMouseEnter={e => { e.currentTarget.style.color = '#F97316' }}
             onMouseLeave={e => { e.currentTarget.style.color = c.textMuted }}
-          >← Back to Login</button>
+          >{isKhmer ? '← ត្រឡប់ទៅចូលគណនី' : '← Back to Login'}</button>
         )}
       </div>
     </div>

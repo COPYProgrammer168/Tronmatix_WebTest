@@ -4,8 +4,8 @@
 import { useEffect, useRef } from 'react'
 
 // ✅ FIXED: Real Tronmatix Computer Store coordinates (was 11.5625 / 104.9019)
-const STORE_LAT = 11.5629735
-const STORE_LNG = 104.8995165
+const STORE_LAT     = 11.56298
+const STORE_LNG     = 104.899518
 const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
 
 export default function OrderMapView({ lat, lng, address }) {

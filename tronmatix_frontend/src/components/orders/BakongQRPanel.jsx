@@ -1,9 +1,11 @@
 // src/components/orders/BakongQRPanel.jsx
 import { useState, useEffect, useRef, useCallback } from "react"
+import { useLang } from "../../context/LanguageContext"
 import { generatekhqr_api, checkpayment_api, confirmManual_api } from "../../lib/qrApi"
 import { QRCodeSVG } from "qrcode.react"
 
 export default function BakongQRPanel({ orderId, total, onPaid }) {
+  const { t, isKhmer } = useLang()
   const [qrData,        setQrData]        = useState(null)
   const [loading,       setLoading]       = useState(false)
   const [paymentStatus, setPaymentStatus] = useState("idle")
@@ -196,12 +198,12 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               {loading ? (
                 <>
                   <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-gray-500 text-sm">Generating QR Code...</p>
+                  <p className="text-gray-500 text-sm">{isKhmer ? t("qr.generating") : "Generating QR Code..."}</p>
                 </>
               ) : (
                 <button onClick={generateQRCode}
                   className="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-lg rounded-xl transition-colors">
-                  {paymentStatus === "expired" ? "🔄 Generate New QR" : "🔄 Generate QR"}
+                  {paymentStatus === "expired" ? `🔄 ${isKhmer ? t("qr.generateNew") : "Generate New QR"}` : `🔄 ${isKhmer ? t("qr.generate") : "Generate QR"}`}
                 </button>
               )}
             </div>
@@ -238,7 +240,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                 {/* FIX: show polling indicator */}
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-xs text-gray-400">Checking payment automatically...</span>
+                  <span className="text-xs text-gray-400">{isKhmer ? t("qr.checking") : "Checking payment automatically..."}</span>
                 </div>
                 {qrData.qr_md5 && (
                   <p className="text-center text-gray-400 text-xs">MD5: {qrData.qr_md5.slice(0, 16)}...</p>
@@ -251,23 +253,23 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-red-500 text-base">⏱</span>
-                  <span className="text-red-500 font-bold text-sm">Time remaining:</span>
+                  <span className="text-red-500 font-bold text-sm">{isKhmer ? t("qr.timeRemaining") : "Time remaining:"}</span>
                 </div>
                 <span className="text-red-500 font-black text-2xl tabular-nums">{countdown || "--:--"}</span>
               </div>
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-4 flex gap-2 items-start">
                 <span className="text-yellow-500 text-sm mt-0.5">⚠️</span>
                 <p className="text-gray-700 text-sm leading-snug">
-                  Keep this page open. Payment detects automatically every 4 seconds.
+                  {isKhmer ? t("qr.keepOpen") : "Keep this page open. Payment detects automatically every 4 seconds."}
                 </p>
               </div>
               <button onClick={handleManualConfirm}
                 className="w-full py-3 mb-2 border-2 border-blue-400 text-blue-600 font-bold text-sm rounded-xl hover:bg-blue-50 transition-colors">
-                ✅ I already paid — notify admin
+                ✅ {isKhmer ? t("qr.alreadyPaid") : "I already paid — notify admin"}
               </button>
               <button onClick={generateQRCode}
                 className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold text-base rounded-xl transition-colors">
-                🔄 Regenerate QR
+                🔄 {isKhmer ? t("qr.regenerate") : "Regenerate QR"}
               </button>
             </div>
           </>
@@ -283,9 +285,9 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-yellow-500 text-3xl">⏳</span>
               </div>
-              <h2 className="text-xl font-black text-yellow-600 mb-1">Pending Verification</h2>
+              <h2 className="text-xl font-black text-yellow-600 mb-1">{isKhmer ? t("qr.pendingVerification") : "Pending Verification"}</h2>
               <p className="text-gray-500 text-sm mb-5">
-                Payment claim sent to admin for manual verification.
+                {isKhmer ? t("qr.paymentClaim") : "Payment claim sent to admin for manual verification."}
               </p>
               <div className="bg-yellow-50 rounded-xl p-4 mb-5 text-left">
                 <div className="flex justify-between text-sm">
@@ -308,8 +310,8 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                 style={{ animation: 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)' }}>
                 <span className="text-green-500 text-3xl font-bold">✓</span>
               </div>
-              <h2 className="text-xl font-black text-green-500 mb-1">Payment Successful!</h2>
-              <p className="text-gray-500 text-sm mb-5">Transaction completed successfully!</p>
+              <h2 className="text-xl font-black text-green-500 mb-1">{isKhmer ? t("qr.paymentSuccess") : "Payment Successful!"}</h2>
+              <p className="text-gray-500 text-sm mb-5">{isKhmer ? t("qr.transactionComplete") : "Transaction completed successfully!"}</p>
               <div className="bg-green-50 rounded-xl p-4 text-left">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-500 font-medium">Order ID:</span>

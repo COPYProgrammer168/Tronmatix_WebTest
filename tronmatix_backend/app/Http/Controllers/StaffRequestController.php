@@ -5,6 +5,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\StaffRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,12 +18,10 @@ class StaffRequestController extends Controller
 
     public function showForm()
     {
-        // If already logged in, go to dashboard
         if (Auth::guard('admin')->check()) {
             return redirect()->route('dashboard.index');
         }
 
-        // If no admins exist at all, redirect to full registration
         if (Admin::count() === 0) {
             return redirect()->route('dashboard.register');
         }
@@ -40,10 +39,15 @@ class StaffRequestController extends Controller
 
         $request->validate([
             'name'           => ['required', 'string', 'max:100'],
-            'email'          => ['required', 'email', 'unique:admins,email', 'unique:staff_requests,email'],
+            'email'          => ['required', 'email',
+                                 'unique:admins,email',
+                                 'unique:staff,email',
+                                 'unique:staff_requests,email'],
             'username'       => ['required', 'string', 'min:3', 'max:50', 'alpha_dash',
-                                 'unique:admins,username', 'unique:staff_requests,username'],
-            'requested_role' => ['required', 'in:admin,editor,seller,viewer'],
+                                 'unique:admins,username',
+                                 'unique:staff,username',
+                                 'unique:staff_requests,username'],
+            'requested_role' => ['required', 'in:editor,seller,delivery,developer'],
             'message'        => ['nullable', 'string', 'max:500'],
             'password'       => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
@@ -74,13 +78,26 @@ class StaffRequestController extends Controller
             return response()->json(['error' => 'Request already reviewed.'], 422);
         }
 
-        // Check for conflicts again (email/username may have been taken since request)
-        if (Admin::where('email', $req->email)->orWhere('username', $req->username)->exists()) {
-            $req->update(['status' => 'rejected', 'reviewed_by' => Auth::guard('admin')->id(), 'reviewed_at' => now()]);
-            return response()->json(['error' => 'Email or username was taken by another admin. Request rejected.'], 422);
+        // Check for conflicts across both tables
+        $emailTaken    = Admin::where('email', $req->email)->exists()
+                      || Staff::where('email', $req->email)->exists();
+        $usernameTaken = Admin::where('username', $req->username)->exists()
+                      || Staff::where('username', $req->username)->exists();
+
+        if ($emailTaken || $usernameTaken) {
+            $req->update([
+                'status'      => 'rejected',
+                'reviewed_by' => Auth::guard('admin')->id(),
+                'reviewed_at' => now(),
+            ]);
+
+            return response()->json([
+                'error' => 'Email or username was already taken. Request rejected.',
+            ], 422);
         }
 
-        Admin::create([
+        // Create in the staff table — NOT admins
+        Staff::create([
             'name'      => $req->name,
             'email'     => $req->email,
             'username'  => $req->username,
@@ -95,7 +112,9 @@ class StaffRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return response()->json(['message' => "{$req->name} has been added as {$req->requested_role}."]);
+        return response()->json([
+            'message' => "{$req->name} has been added as {$req->requested_role}.",
+        ]);
     }
 
     // ── Reject a request (superadmin only) ────────────────────────────────────
@@ -116,7 +135,9 @@ class StaffRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        return response()->json(['message' => "{$req->name}'s request has been rejected."]);
+        return response()->json([
+            'message' => "{$req->name}'s request has been rejected.",
+        ]);
     }
 
     // ── Private ───────────────────────────────────────────────────────────────
@@ -124,6 +145,10 @@ class StaffRequestController extends Controller
     private function assertSuperAdmin(): void
     {
         $admin = Auth::guard('admin')->user();
-        abort_unless($admin && $admin->role === 'superadmin', 403, 'Only superadmins can review staff requests.');
+        abort_unless(
+            $admin && $admin->role === 'superadmin',
+            403,
+            'Only superadmins can review staff requests.'
+        );
     }
 }

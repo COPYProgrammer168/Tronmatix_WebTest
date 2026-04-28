@@ -5,7 +5,7 @@
 
 @php
     use App\Models\AdminSetting;
-    $_pRole = Auth::guard('admin')->user()?->role ?? 'viewer';
+    $_pRole = (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor';
     $_pFeat = 'dashboard';
     $_pKey  = "perm_{$_pRole}_{$_pFeat}";
     $_pDef  = [
@@ -15,9 +15,15 @@
         'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
         'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
         'editor_settings'=>'0','editor_staff'=>'0',
-        'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
-        'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
-        'viewer_settings'=>'0','viewer_staff'=>'0',
+        'seller_dashboard'=>'1','seller_products'=>'1','seller_orders'=>'1',
+        'seller_orders_edit'=>'1','seller_users'=>'0','seller_discounts'=>'1',
+        'seller_settings'=>'0','seller_staff'=>'0',
+        'delivery_dashboard'=>'1','delivery_products'=>'0','delivery_orders'=>'1',
+        'delivery_orders_edit'=>'1','delivery_users'=>'0','delivery_discounts'=>'0',
+        'delivery_settings'=>'0','delivery_staff'=>'0',
+        'developer_dashboard'=>'1','developer_products'=>'1','developer_orders'=>'1',
+        'developer_orders_edit'=>'0','developer_users'=>'0','developer_discounts'=>'0',
+        'developer_settings'=>'0','developer_staff'=>'0',
     ];
     $_pAccess = $_pRole === 'superadmin'
         || (AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1');
@@ -25,9 +31,11 @@
         'superadmin'=>['color'=>'#F97316','icon'=>'👑','label'=>'Super Admin'],
         'admin'     =>['color'=>'#F97316','icon'=>'🛡️','label'=>'Admin'],
         'editor'    =>['color'=>'#3b82f6','icon'=>'✏️', 'label'=>'Editor'],
-        'viewer'    =>['color'=>'#a78bfa','icon'=>'👁️', 'label'=>'Viewer'],
+        'seller'    =>['color'=>'#10b981','icon'=>'🏪', 'label'=>'Seller'],
+        'delivery'  =>['color'=>'#a855f7','icon'=>'🚚', 'label'=>'Delivery'],
+        'developer' =>['color'=>'#06b6d4','icon'=>'💻', 'label'=>'Developer'],
     ];
-    $_pRM = $_pRoleMeta[$_pRole] ?? $_pRoleMeta['viewer'];
+    $_pRM = $_pRoleMeta[$_pRole] ?? ['color'=>'#6b7280','icon'=>'❓','label'=>ucfirst($_pRole)];
     $_pAllFeats = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋',
                    'orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️',
                    'settings'=>'⚙️','staff'=>'🛡️'];
@@ -118,7 +126,7 @@
         </div>
         <div>
             <div class="stat-value">{{ number_format($stats['total_users']) }}</div>
-            <div class="stat-label">TOTAL USERS</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalUsers') }}</div>
         </div>
     </div>
 
@@ -130,7 +138,7 @@
         </div>
         <div>
             <div class="stat-value">{{ number_format($stats['total_products']) }}</div>
-            <div class="stat-label">TOTAL PRODUCTS</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalProducts') }}</div>
         </div>
     </div>
 
@@ -143,7 +151,7 @@
         </div>
         <div>
             <div class="stat-value">{{ number_format($stats['total_orders']) }}</div>
-            <div class="stat-label">TOTAL ORDERS</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalOrders') }}</div>
         </div>
     </div>
 
@@ -156,7 +164,7 @@
         </div>
         <div>
             <div class="stat-value">${{ number_format($stats['total_revenue'], 0) }}</div>
-            <div class="stat-label">TOTAL REVENUE</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalRevenue') }}</div>
         </div>
     </div>
 
@@ -168,7 +176,7 @@
         </div>
         <div>
             <div class="stat-value">{{ number_format($stats['pending_orders']) }}</div>
-            <div class="stat-label">PENDING</div>
+            <div class="stat-label">{{ __('dashboard.stats.pendingOrders') }}</div>
         </div>
     </div>
 
@@ -180,7 +188,7 @@
         </div>
         <div>
             <div class="stat-value">{{ number_format($stats['active_orders']) }}</div>
-            <div class="stat-label">ACTIVE</div>
+            <div class="stat-label">{{ __('dashboard.stats.activeItems') }}</div>
         </div>
     </div>
 
@@ -194,7 +202,7 @@
         </div>
         <div>
             <div class="stat-value" style="color:#A855F7;">${{ number_format($stats['total_discount_used'], 2) }}</div>
-            <div class="stat-label">DISCOUNTS SAVED</div>
+            <div class="stat-label">{{ __('dashboard.stats.discountsSaved') }}</div>
         </div>
     </div>
 
@@ -207,156 +215,18 @@
         </div>
         <div>
             <div class="stat-value" style="color:#22C55E;">{{ number_format($stats['active_discounts']) }}</div>
-            <div class="stat-label">ACTIVE CODES</div>
+            <div class="stat-label">{{ __('dashboard.stats.activeCodes') }}</div>
         </div>
     </div>
 
-</div>
-
-{{-- ── Export Panel ────────────────────────────────────────────────────────────── --}}
-<div class="card" style="margin-bottom:20px;">
-    <div class="card-header">
-        <span class="card-title">🏷️ EXPORT</span>
-        <span class="chart-badge">Last 30 Days</span>
-    </div>
-    <div class="card-body">
-        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
-
-            {{-- Quick stats for the month --}}
-            <div style="display:flex; gap:12px; flex-wrap:wrap; flex:1; min-width:240px;">
-                <div style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2);
-                     border-radius:10px; padding:12px 18px;">
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">THIS MONTH SAVED</div>
-                    <div style="font-size:22px; font-weight:700; color:#A855F7;">
-                        ${{ number_format($stats['monthly_discount_used'], 2) }}
-                    </div>
-                </div>
-                <div style="background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2);
-                     border-radius:10px; padding:12px 18px;">
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TIMES USED (30 DAYS)</div>
-                    <div style="font-size:22px; font-weight:700; color:#F97316;">
-                        {{ number_format($stats['monthly_discount_count']) }}
-                    </div>
-                </div>
-            </div>
-
-            {{-- ── Dashboard Full Export Form ───────────────────────────────────────
-                 FIX 1: action uses route() helper instead of hardcoded url()
-                 FIX 2: removed @csrf — GET requests do not use CSRF tokens
-                 FIX 3: name="from" / name="to" send Y-m which the controller converts
-            ──────────────────────────────────────────────────────────────────────── --}}
-            <form action="{{ route('dashboard.export') }}" method="GET"
-                  style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">FROM MONTH</label>
-                    <input type="month"
-                           name="from"
-                           value="{{ now()->subMonth()->format('Y-m') }}"
-                           max="{{ now()->format('Y-m') }}"
-                           style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff;
-                                  border-radius:8px; padding:8px 12px; font-size:14px;" />
-                </div>
-
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">TO MONTH</label>
-                    <input type="month"
-                           name="to"
-                           value="{{ now()->format('Y-m') }}"
-                           max="{{ now()->format('Y-m') }}"
-                           style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff;
-                                  border-radius:8px; padding:8px 12px; font-size:14px;" />
-                </div>
-
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px;">FORMAT</label>
-                    <select name="format"
-                            style="background:#1A1A1A; border:1px solid rgba(255,255,255,0.12); color:#fff;
-                                   border-radius:8px; padding:8px 14px; font-size:14px;">
-                        {{-- xlsx exports all 8 sheets; csv exports Summary sheet only --}}
-                        <option value="xlsx">Excel (.xlsx) — All 8 sheets</option>
-                        <option value="csv">CSV (.csv) — Summary only</option>
-                    </select>
-                </div>
-
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <label style="color:transparent; font-size:11px;">.</label>
-                    <button type="submit" class="btn btn-orange" style="padding:8px 20px;">
-                        ⬇ Export Dashboard
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
-
-        {{-- Validation error display --}}
-        @if($errors->has('export'))
-        <div style="margin-top:12px; padding:10px 16px; background:rgba(239,68,68,0.1);
-             border:1px solid rgba(239,68,68,0.3); border-radius:8px;
-             color:#ef4444; font-size:13px; font-weight:600;">
-            ⚠ {{ $errors->first('export') }}
-        </div>
-        @endif
-
-        {{-- Top codes this month mini-table --}}
-        @if(isset($top_discount_codes) && $top_discount_codes->isNotEmpty())
-        <div style="margin-top:20px;">
-            <div style="font-size:11px; color:rgba(255,255,255,0.3); letter-spacing:2px; font-weight:700;
-                 margin-bottom:10px;">TOP CODES THIS MONTH</div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>CODE</th>
-                            <th>TYPE</th>
-                            <th>VALUE</th>
-                            <th>TIMES USED</th>
-                            <th>TOTAL SAVED ($)</th>
-                            <th>STATUS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($top_discount_codes as $dc)
-                        <tr>
-                            <td>
-                                <span style="font-family:monospace; font-size:13px; font-weight:700;
-                                      color:#F97316; background:rgba(249,115,22,0.08);
-                                      padding:3px 8px; border-radius:6px;">
-                                    {{ $dc->code }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge {{ $dc->type === 'percentage' ? 'badge-processing' : 'badge-orange' }}">
-                                    {{ strtoupper($dc->type) }}
-                                </span>
-                            </td>
-                            <td style="font-weight:700;">
-                                {{ $dc->type === 'percentage' ? $dc->value.'%' : '$'.number_format($dc->value, 2) }}
-                            </td>
-                            <td style="color:#F97316; font-weight:700;">{{ $dc->monthly_uses }}</td>
-                            <td style="color:#A855F7; font-weight:700;">${{ number_format($dc->monthly_saved, 2) }}</td>
-                            <td>
-                                <span class="badge {{ $dc->status === 'active' ? 'badge-confirmed' : ($dc->status === 'expired' ? 'badge-cancelled' : 'badge-gray') }}">
-                                    {{ strtoupper($dc->status) }}
-                                </span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endif
-    </div>
 </div>
 
 {{-- ── Row 1: Monthly Revenue + Monthly Orders ──────────────────────────────── --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📈 MONTHLY REVENUE</span>
-            <span class="chart-badge">Last 12 Months</span>
+            <span class="card-title">📈{{ __('dashboard.charts.monthlyRevenue') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
         </div>
         <div class="card-body">
             <canvas id="revenueChart" height="110"></canvas>
@@ -364,8 +234,8 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📦 MONTHLY ORDERS</span>
-            <span class="chart-badge">Last 12 Months</span>
+            <span class="card-title">📦{{ __('dashboard.charts.monthlyOrders') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
         </div>
         <div class="card-body">
             <canvas id="ordersChart" height="110"></canvas>
@@ -377,8 +247,8 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📅 DAILY SALES</span>
-            <span class="chart-badge">Last 14 Days</span>
+            <span class="card-title">📅{{ __('dashboard.charts.dailySales') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.last14Days') }}</span>
         </div>
         <div class="card-body">
             <canvas id="dailyChart" height="110"></canvas>
@@ -386,8 +256,8 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">👤 USER REGISTRATIONS</span>
-            <span class="chart-badge">Last 12 Months</span>
+            <span class="card-title">👤{{ __('dashboard.charts.userRegistrations') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
         </div>
         <div class="card-body">
             <canvas id="usersChart" height="110"></canvas>
@@ -399,8 +269,8 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🥧 ORDER STATUS</span>
-            <span class="chart-badge">All Time</span>
+            <span class="card-title">🥧{{ __('dashboard.charts.orderStatus') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.allTime') }}</span>
         </div>
         <div class="card-body" style="display:flex; justify-content:center;">
             <div style="width:260px; height:260px;">
@@ -410,8 +280,8 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🍩 REVENUE BY CATEGORY</span>
-            <span class="chart-badge">All Time</span>
+            <span class="card-title">🍩{{ __('dashboard.charts.revenueByCategory') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.allTime') }}</span>
         </div>
         <div class="card-body" style="display:flex; justify-content:center;">
             <div style="width:260px; height:260px;">
@@ -427,7 +297,7 @@
     {{-- Recent Orders --}}
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🕒 RECENT ORDERS</span>
+            <span class="card-title">🕒{{ __('dashboard.charts.recentOrders') }}</span>
             <a href="{{ route('dashboard.orders') }}" class="btn btn-outline btn-sm">VIEW ALL</a>
         </div>
         <div class="table-wrap">
@@ -470,7 +340,7 @@
 
         <div class="card">
             <div class="card-header">
-                <span class="card-title">🏆 TOP PRODUCTS</span>
+                <span class="card-title">🏆{{ __('dashboard.charts.topProducts') }}</span>
             </div>
             <div class="table-wrap">
                 <table>
@@ -512,7 +382,7 @@
 
         <div class="card">
             <div class="card-header">
-                <span class="card-title">⚠ LOW STOCK</span>
+                <span class="card-title">⚠ {{ __('dashboard.charts.lowStock') }}</span>
             </div>
             <div class="table-wrap">
                 <table>
@@ -564,19 +434,37 @@
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-// ── Global defaults ────────────────────────────────────────────────────────────
-Chart.defaults.color                             = 'rgba(255,255,255,0.45)';
-Chart.defaults.borderColor                       = 'rgba(255,255,255,0.06)';
-Chart.defaults.font.family                       = "'Rajdhani', sans-serif";
-Chart.defaults.font.size                         = 12;
-Chart.defaults.plugins.legend.labels.boxWidth    = 12;
-Chart.defaults.plugins.legend.labels.padding     = 16;
-Chart.defaults.plugins.tooltip.backgroundColor   = '#1A1A1A';
-Chart.defaults.plugins.tooltip.borderColor       = 'rgba(249,115,22,0.4)';
-Chart.defaults.plugins.tooltip.borderWidth       = 1;
-Chart.defaults.plugins.tooltip.padding           = 10;
-Chart.defaults.plugins.tooltip.titleColor        = '#F97316';
-Chart.defaults.plugins.tooltip.bodyColor         = 'rgba(255,255,255,0.8)';
+// ── Theme-aware colour helpers ────────────────────────────────────────────────
+function isLight() {
+    return document.documentElement.getAttribute('data-theme') === 'light';
+}
+function themeColors() {
+    const l = isLight();
+    return {
+        text:      l ? 'rgba(15,23,42,0.50)'   : 'rgba(255,255,255,0.45)',
+        grid:      l ? 'rgba(15,23,42,0.06)'   : 'rgba(255,255,255,0.06)',
+        tooltipBg: l ? '#FFFFFF'                : '#1A1A1A',
+        tooltipBdr:l ? 'rgba(249,115,22,0.35)' : 'rgba(249,115,22,0.4)',
+        pieBorder: l ? '#F1F5F9'               : '#111',
+        bodyClr:   l ? 'rgba(15,23,42,0.75)'  : 'rgba(255,255,255,0.8)',
+    };
+}
+function applyChartDefaults() {
+    const c = themeColors();
+    Chart.defaults.color                           = c.text;
+    Chart.defaults.borderColor                     = c.grid;
+    Chart.defaults.font.family                     = "'Rajdhani', sans-serif";
+    Chart.defaults.font.size                       = 12;
+    Chart.defaults.plugins.legend.labels.boxWidth  = 12;
+    Chart.defaults.plugins.legend.labels.padding   = 16;
+    Chart.defaults.plugins.tooltip.backgroundColor = c.tooltipBg;
+    Chart.defaults.plugins.tooltip.borderColor     = c.tooltipBdr;
+    Chart.defaults.plugins.tooltip.borderWidth     = 1;
+    Chart.defaults.plugins.tooltip.padding         = 10;
+    Chart.defaults.plugins.tooltip.titleColor      = '#F97316';
+    Chart.defaults.plugins.tooltip.bodyColor       = c.bodyClr;
+}
+applyChartDefaults();
 
 // ── Data from Laravel ──────────────────────────────────────────────────────────
 const monthlyLabels   = @json($monthlyLabels);
@@ -609,75 +497,95 @@ function makeGradient(ctx, top, bottom) {
 
 // 1. Monthly Revenue — Line
 const rCtx = document.getElementById('revenueChart').getContext('2d');
-new Chart(rCtx, {
+const revenueChart = new Chart(rCtx, {
     type: 'line',
     data: { labels: monthlyLabels, datasets: [{ label:'Revenue ($)', data:monthlyRevenue,
         borderColor:orange, borderWidth:2.5, pointBackgroundColor:orange,
-        pointBorderColor:'#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
+        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         fill:true, backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), tension:0.4 }] },
     options: { responsive:true, plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
-        scales:{ x:{grid:{color:'rgba(255,255,255,0.04)'}}, y:{grid:{color:'rgba(255,255,255,0.04)'},
+        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
 });
 
 // 2. Monthly Orders — Bar
 const oCtx = document.getElementById('ordersChart').getContext('2d');
-new Chart(oCtx, {
+const ordersChart = new Chart(oCtx, {
     type: 'bar',
     data: { labels: monthlyLabels, datasets: [{ label:'Orders', data:monthlyOrders,
         backgroundColor:makeGradient(oCtx, orangeMid,'rgba(249,115,22,0.15)'),
         borderColor:orange, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
-        scales:{ x:{grid:{color:'rgba(255,255,255,0.04)'}}, y:{grid:{color:'rgba(255,255,255,0.04)'},
+        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });
 
 // 3. Daily Sales — Line
 const dCtx = document.getElementById('dailyChart').getContext('2d');
-new Chart(dCtx, {
+const dailyChart = new Chart(dCtx, {
     type: 'line',
     data: { labels: dailyLabels, datasets: [{ label:'Revenue ($)', data:dailyRevenue,
         borderColor:blue, borderWidth:2.5, pointBackgroundColor:blue,
-        pointBorderColor:'#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
+        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
     options: { responsive:true, plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
-        scales:{ x:{grid:{color:'rgba(255,255,255,0.04)'}}, y:{grid:{color:'rgba(255,255,255,0.04)'},
+        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
 });
 
 // 4. User Registrations — Bar
 const uCtx = document.getElementById('usersChart').getContext('2d');
-new Chart(uCtx, {
+const usersChart = new Chart(uCtx, {
     type: 'bar',
     data: { labels: monthlyLabels, datasets: [{ label:'New Users', data:monthlyUsers,
         backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
-        scales:{ x:{grid:{color:'rgba(255,255,255,0.04)'}}, y:{grid:{color:'rgba(255,255,255,0.04)'},
+        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });
 
 // 5. Order Status — Pie
-new Chart(document.getElementById('statusChart').getContext('2d'), {
+const statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), {
     type: 'pie',
     data: { labels: statusLabels.map(s => s.toUpperCase()),
         datasets:[{ data:statusCounts, backgroundColor:[yellow,green,blue,purple,red],
-            borderColor:'#111', borderWidth:3, hoverOffset:8 }] },
+            borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
     options: { responsive:true, plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
         tooltip:{ callbacks:{ label: c => ' '+c.label+': '+c.parsed+' orders' }}}}
 });
 
 // 6. Revenue by Category — Doughnut
-new Chart(document.getElementById('categoryChart').getContext('2d'), {
+const categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
     type: 'doughnut',
     data: { labels: categoryLabels,
         datasets:[{ data:categoryRevData, backgroundColor:pieColors,
-            borderColor:'#111', borderWidth:3, hoverOffset:8 }] },
+            borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
     options: { responsive:true, cutout:'60%', plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
         tooltip:{ callbacks:{ label: c => ' '+c.label+': $'+c.parsed.toLocaleString() }}}}
 });
+
+// ── Live Chart theme updater (called by layout toggleTheme) ───────────────────
+window.__updateChartTheme = function(t) {
+    applyChartDefaults();
+    const c  = themeColors();
+    const bd = t === 'light' ? '#F1F5F9' : '#111';
+    [revenueChart, ordersChart, dailyChart, usersChart].forEach(ch => {
+        ch.options.scales.x.grid.color = c.grid;
+        ch.options.scales.y.grid.color = c.grid;
+        ch.update('none');
+    });
+    [statusChart, categoryChart].forEach(ch => {
+        ch.data.datasets[0].borderColor = bd;
+        ch.update('none');
+    });
+    [revenueChart, dailyChart].forEach(ch => {
+        ch.data.datasets[0].pointBorderColor = bd;
+        ch.update('none');
+    });
+};
 </script>
 @endpush
 
@@ -690,6 +598,11 @@ new Chart(document.getElementById('categoryChart').getContext('2d'), {
     padding: 3px 10px;
     border-radius: 20px;
     letter-spacing: 1px;
+}
+/* Empty state text */
+[data-theme="light"] td[style*="color:rgba(255,255,255,0.3)"],
+[data-theme="light"] td[style*="color: rgba(255,255,255,0.3)"] {
+    color: rgba(15,23,42,0.35) !important;
 }
 @media (max-width: 900px) {
     .chart-grid-2 { grid-template-columns: 1fr; }

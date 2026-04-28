@@ -165,9 +165,25 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">ORDER INFORMATION</span>
-                <span class="badge badge-{{ $order->status }}" style="font-size:13px;">
-                    {{ strtoupper($order->status) }}
-                </span>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    {{-- Fulfillment type badge --}}
+                    @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
+                        <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                            border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;
+                            background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;">
+                            🏪 PICKUP
+                        </span>
+                    @else
+                        <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                            border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;
+                            background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">
+                            🚚 DELIVERY
+                        </span>
+                    @endif
+                    <span class="badge badge-{{ $order->status }}" style="font-size:13px;">
+                        {{ strtoupper($order->status) }}
+                    </span>
+                </div>
             </div>
             <div class="card-body">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -210,15 +226,26 @@
         {{-- Delivery Timeline --}}
         <div class="card">
             <div class="card-header">
-                <span class="card-title">DELIVERY TIMELINE</span>
+                @if($order->isPickup())
+                    <span class="card-title">🏪 PICKUP TIMELINE</span>
+                @else
+                    <span class="card-title">🚚 DELIVERY TIMELINE</span>
+                @endif
             </div>
             <div class="card-body">
                 @php
-                    // Full delivery pipeline — pending → confirmed → processing → shipped → delivered
-                    $steps   = ['pending','confirmed','processing','shipped','delivered'];
-                    $labels  = ['Pending','Confirmed','Processing','Shipped','Delivered'];
-                    $icons   = ['⏳','✅','⚙️','🚚','📦'];
-                    $colors  = ['#eab308','#22c55e','#3b82f6','#a78bfa','#F97316'];
+                    // Pickup orders skip the "Shipped" step — item stays at store
+                    if ($order->isPickup()) {
+                        $steps   = ['pending','confirmed','processing','delivered'];
+                        $labels  = ['Pending','Confirmed','Ready','Picked Up'];
+                        $icons   = ['⏳','✅','📦','🏪'];
+                        $colors  = ['#eab308','#22c55e','#3b82f6','#F97316'];
+                    } else {
+                        $steps   = ['pending','confirmed','processing','shipped','delivered'];
+                        $labels  = ['Pending','Confirmed','Processing','Shipped','Delivered'];
+                        $icons   = ['⏳','✅','⚙️','🚚','📦'];
+                        $colors  = ['#eab308','#22c55e','#3b82f6','#a78bfa','#F97316'];
+                    }
                     $current = array_search($order->status, $steps);
                     if ($current === false) $current = ($order->status === 'cancelled') ? -1 : 0;
                 @endphp
@@ -393,7 +420,11 @@
 
         <div class="card">
             <div class="card-header">
-                <span class="card-title">🚚 SHIPPING ADDRESS & DELIVERY MAP</span>
+                @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
+                    <span class="card-title">🏪 STORE PICKUP — CUSTOMER INFO</span>
+                @else
+                    <span class="card-title">🚚 SHIPPING ADDRESS & DELIVERY MAP</span>
+                @endif
                 @if($order->location)
                 <span style="font-size:11px; color:#F97316; letter-spacing:1px;">
                     📌 SAVED #{{ $order->location->id }}
@@ -587,20 +618,29 @@
              Shows ONE correct next button per status; never a generic "process" CTA.
         --}}
         @php
+            // ── Smart next-action: pickup orders skip Shipped, go confirmed→processing→delivered
+            $isPickupOrder = $order->isPickup();
+
             $nextActions = [
                 'confirmed'  => [
                     'status'   => 'processing',
-                    'icon'     => '⚙️',
-                    'label'    => 'START PROCESSING',
-                    'title'    => 'CONFIRM &amp; PROCESS',
-                    'desc'     => 'Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.',
+                    'icon'     => $isPickupOrder ? '📦' : '⚙️',
+                    'label'    => $isPickupOrder ? 'MARK AS READY' : 'START PROCESSING',
+                    'title'    => $isPickupOrder ? 'ORDER READY FOR PICKUP' : 'CONFIRM &amp; PROCESS',
+                    'desc'     => $isPickupOrder
+                        ? 'Mark order as <strong style="color:#3b82f6;">Ready</strong> — customer will be notified to come collect.'
+                        : 'Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.',
                     'color'    => '#3b82f6',
                     'gradient' => 'linear-gradient(135deg,#3b82f6,#2563eb)',
                     'shadow'   => 'rgba(59,130,246,0.35)',
                     'border'   => 'rgba(59,130,246,0.3)',
                     'bg'       => 'rgba(59,130,246,0.04)',
                 ],
-                'processing' => [
+            ];
+
+            // Delivery: processing → shipped
+            if (! $isPickupOrder) {
+                $nextActions['processing'] = [
                     'status'   => 'shipped',
                     'icon'     => '🚚',
                     'label'    => 'SHIP ORDER',
@@ -611,8 +651,8 @@
                     'shadow'   => 'rgba(167,139,250,0.35)',
                     'border'   => 'rgba(167,139,250,0.3)',
                     'bg'       => 'rgba(167,139,250,0.04)',
-                ],
-                'shipped'    => [
+                ];
+                $nextActions['shipped'] = [
                     'status'   => 'delivered',
                     'icon'     => '📦',
                     'label'    => 'CONFIRM DELIVERY',
@@ -623,8 +663,23 @@
                     'shadow'   => 'rgba(34,197,94,0.35)',
                     'border'   => 'rgba(34,197,94,0.3)',
                     'bg'       => 'rgba(34,197,94,0.04)',
-                ],
-            ];
+                ];
+            } else {
+                // Pickup: processing (Ready) → delivered (Picked Up)
+                $nextActions['processing'] = [
+                    'status'   => 'delivered',
+                    'icon'     => '🏪',
+                    'label'    => 'CONFIRM PICKUP',
+                    'title'    => 'MARK AS PICKED UP',
+                    'desc'     => 'Confirm the customer has <strong style="color:#22c55e;">collected</strong> their order at the store.',
+                    'color'    => '#22c55e',
+                    'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
+                    'shadow'   => 'rgba(34,197,94,0.35)',
+                    'border'   => 'rgba(34,197,94,0.3)',
+                    'bg'       => 'rgba(34,197,94,0.04)',
+                ];
+            }
+
             $nextAction = $nextActions[$order->status] ?? null;
         @endphp
 
@@ -772,10 +827,14 @@
             </div>
         </div>
 
-        {{-- Shipping Address --}}
+        {{-- Shipping Address / Pickup Contact --}}
         <div class="card">
             <div class="card-header">
-                <span class="card-title">SHIPPING ADDRESS</span>
+                @if($order->isPickup())
+                    <span class="card-title">🏪 PICKUP CONTACT</span>
+                @else
+                    <span class="card-title">SHIPPING ADDRESS</span>
+                @endif
                 @if($order->location)
                 <span style="font-size:11px; color:#F97316; letter-spacing:1px;">
                     📌 SAVED #{{ $order->location->id }}
@@ -844,13 +903,21 @@
 
         {{-- Step flow — highlight the target status --}}
         @php
-            $popupSteps = [
-                'pending'    => ['label'=>'Pending',    'color'=>'#eab308'],
-                'confirmed'  => ['label'=>'Confirmed',  'color'=>'#22c55e'],
-                'processing' => ['label'=>'Processing', 'color'=>'#3b82f6'],
-                'shipped'    => ['label'=>'Shipped',    'color'=>'#a78bfa'],
-                'delivered'  => ['label'=>'Delivered',  'color'=>'#F97316'],
-            ];
+            // Popup flow: pickup orders don't have 'shipped'
+            $popupSteps = $order->isPickup()
+                ? [
+                    'pending'    => ['label'=>'Pending',    'color'=>'#eab308'],
+                    'confirmed'  => ['label'=>'Confirmed',  'color'=>'#22c55e'],
+                    'processing' => ['label'=>'Ready',      'color'=>'#3b82f6'],
+                    'delivered'  => ['label'=>'Picked Up',  'color'=>'#F97316'],
+                  ]
+                : [
+                    'pending'    => ['label'=>'Pending',    'color'=>'#eab308'],
+                    'confirmed'  => ['label'=>'Confirmed',  'color'=>'#22c55e'],
+                    'processing' => ['label'=>'Processing', 'color'=>'#3b82f6'],
+                    'shipped'    => ['label'=>'Shipped',    'color'=>'#a78bfa'],
+                    'delivered'  => ['label'=>'Delivered',  'color'=>'#F97316'],
+                  ];
             $currentIdx = array_search($order->status, array_keys($popupSteps));
             $targetIdx  = array_search($nextAction['status'], array_keys($popupSteps));
         @endphp
@@ -1086,4 +1153,39 @@ document.addEventListener('keydown', e => {
 </script>
 
 @endif
+
+@push('styles')
+<style>
+/* ── Orders Show – light theme ────────────────────────────────────────────── */
+/* Timeline connector line */
+[data-theme="light"] .timeline-line { background: rgba(15,23,42,0.08) !important; }
+/* Section sub-cards */
+[data-theme="light"] [style*="background:rgba(255,255,255,0.03)"] { background: rgba(15,23,42,0.025) !important; }
+/* Muted labels */
+[data-theme="light"] [style*="color:rgba(255,255,255,0.35)"] { color: rgba(15,23,42,0.40) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.3)"]  { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.5)"]  { color: rgba(15,23,42,0.55) !important; }
+/* Status change select */
+[data-theme="light"] .status-select,
+[data-theme="light"] select.form-control {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.14) !important;
+    color: #0F172A !important;
+}
+/* Confirm popup */
+[data-theme="light"] .popup-box {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.10) !important;
+    box-shadow: 0 20px 60px rgba(15,23,42,0.15) !important;
+}
+/* Product card within order */
+[data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.06)"] { border-color: rgba(15,23,42,0.07) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]  { border-color: rgba(15,23,42,0.10) !important; }
+/* Divider lines */
+[data-theme="light"] [style*="border-top:1px solid rgba(255,255,255"] { border-top-color: rgba(15,23,42,0.07) !important; }
+</style>
+@endpush
+
 @endsection

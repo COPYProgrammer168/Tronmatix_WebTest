@@ -274,6 +274,27 @@
 </div>{{-- /max-width wrapper --}}
 @endsection
 
+
+@push('styles')
+<style>
+/* ── Profile – light theme ────────────────────────────────────────────────── */
+[data-theme="light"] #avatar-preview-wrap {
+    border-color: rgba(249,115,22,0.30) !important;
+    background: rgba(249,115,22,0.04) !important;
+}
+[data-theme="light"] .profile-card {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+[data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]  { border-color: rgba(15,23,42,0.10) !important; }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 function previewAvatar(input) {

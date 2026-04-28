@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext'
 import { useDiscount } from '../context/DiscountContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { useTheme } from '../context/ThemeContext'
+import { useLang } from '../context/LanguageContext'
 import ProductCard from '../components/ProductCard'
 import axios from '../lib/axios'
 
@@ -115,6 +116,10 @@ export default function ProductDetailPage() {
   const textCol = dark ? '#f9fafb' : '#1f2937'
   const subCol  = dark ? '#9ca3af' : '#6b7280'
 
+  const { t, isKhmer } = useLang()
+  const headingFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
+  const bodyFont    = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'  : 'Rajdhani, sans-serif'
+
   return (
     <div className="max-w-[1280px] mx-auto px-4 py-8" style={{ background: bg, minHeight: '60vh' }}>
 
@@ -217,7 +222,7 @@ export default function ProductDetailPage() {
             <div className="font-semibold mb-1 tracking-widest uppercase" style={{ fontSize: 15, color: subCol }}>{product.brand}</div>
           )}
           <h1 className="font-black mb-2 leading-tight"
-            style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 'clamp(20px,3vw,30px)', color: '#F97316' }}>
+            style={{ fontFamily: headingFont, fontSize: 'clamp(20px,3vw,30px)', color: '#F97316', lineHeight: isKhmer ? 1.7 : undefined, letterSpacing: isKhmer ? 0 : undefined }}>
             {product.name}
           </h1>
           {product.rating > 0 && <div className="mb-3"><Stars rating={product.rating}/></div>}
@@ -226,15 +231,15 @@ export default function ProductDetailPage() {
           <div className="mb-4">
             {productDiscounted ? (
               <div className="flex items-end gap-3 flex-wrap">
-                <div className="text-primary font-black" style={{ fontSize: 32 }}>
+                <div className="text-primary font-black" style={{ fontFamily: headingFont, fontSize: 32 }}>
                   ${discountedPrice.toFixed(2)}
                 </div>
-                <div className="line-through" style={{ fontSize: 20, color: dark ? '#6b7280' : '#9ca3af' }}>
+                <div className="line-through" style={{ fontFamily: headingFont,  fontSize: 20, color: dark ? '#6b7280' : '#9ca3af' }}>
                   ${Number(product.price).toFixed(2)}
                 </div>
               </div>
             ) : (
-              <div className="text-primary font-black" style={{ fontSize: 32 }}>
+              <div className="text-primary font-black" style={{ fontFamily: headingFont,fontSize: 32 }}>
                 ${Number(product.price).toFixed(2)}
               </div>
             )}
@@ -280,7 +285,7 @@ export default function ProductDetailPage() {
           </div>
 
           {product.description && (
-            <p className="whitespace-pre-line mb-5 leading-relaxed" style={{ fontSize: 15, color: dark ? '#d1d5db' : '#4b5563' }}>
+            <p className="whitespace-pre-line mb-5 leading-relaxed" style={{ fontFamily: headingFont, fontSize: 15, color: dark ? '#d1d5db' : '#4b5563' }}>
               {product.description}
             </p>
           )}
@@ -305,8 +310,11 @@ export default function ProductDetailPage() {
             <button onClick={handleAddToCart} disabled={!inStock}
               className={`flex-1 font-bold py-3 px-8 rounded-lg transition-all text-white flex items-center justify-center gap-2
                 ${inStock ? added ? 'bg-green-500' : 'bg-primary hover:bg-orange-600 hover:scale-[1.02]' : 'bg-gray-300 cursor-not-allowed'}`}
-              style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 16, letterSpacing: 1 }}>
-              {added ? '✓ ADDED!' : '🛒 ADD TO CART'}
+              style={{ fontFamily: bodyFont, fontSize: 16, letterSpacing: isKhmer ? 0 : 1 }}>
+              {added
+                ? (isKhmer ? `✓ ${t('product.added')}` : '✓ ADDED!')
+                : (isKhmer ? `🛒 ${t('product.addToCart')}` : '🛒 ADD TO CART')
+              }
             </button>
 
             <button
@@ -340,8 +348,8 @@ export default function ProductDetailPage() {
           <div className="flex items-center gap-4 mb-4">
             <div className="flex-1 h-px" style={{ background: dark ? '#374151' : '#e5e7eb' }}/>
             <h2 className="font-black tracking-widest whitespace-nowrap"
-              style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, color: dark ? '#f9fafb' : '#374151' }}>
-              MORE {product.category ? product.category.toUpperCase() : 'RELATED PRODUCTS'}
+              style={{ fontFamily: headingFont, fontSize: 18, color: dark ? '#f9fafb' : '#374151', letterSpacing: isKhmer ? 0 : undefined }}>
+              {isKhmer ? t('product.relatedProducts') : `MORE ${product.category ? product.category.toUpperCase() : 'RELATED PRODUCTS'}`}
             </h2>
             <div className="flex-1 h-px" style={{ background: dark ? '#374151' : '#e5e7eb' }}/>
           </div>
@@ -365,8 +373,8 @@ export default function ProductDetailPage() {
           {product.category && (
             <div className="flex justify-end mt-3">
               <a href={`/category/${product.category.toLowerCase().replace(/\s+/g, '-')}`}
-                className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
-                View all {product.category} →
+                className="text-primary font-bold hover:underline" style={{ fontFamily: bodyFont, fontSize: 15, color: dark ? '#f9fafb' : '#374151', letterSpacing: isKhmer ? 0 : undefined }}>
+                {isKhmer ? 'មើលទាំងអស់នៃ':'View All'} {product.category} →
               </a>
             </div>
           )}

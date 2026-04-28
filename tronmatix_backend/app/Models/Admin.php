@@ -13,7 +13,7 @@ class Admin extends Authenticatable
 
     protected $guard = 'admin';
 
-    const ROLES = ['admin', 'superadmin'];
+    const ROLES = ['superadmin', 'admin'];
 
     protected $fillable = [
         'name', 'email', 'username', 'password',
@@ -25,7 +25,7 @@ class Admin extends Authenticatable
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'     => 'boolean',
         'last_login_at' => 'datetime',
     ];
 
@@ -36,13 +36,11 @@ class Admin extends Authenticatable
         return $this->role === 'superadmin';
     }
 
-    // FIX [2]: isActive() — middleware checks $admin->isActive()
     public function isActive(): bool
     {
         return (bool) $this->is_active;
     }
 
-    // FIX [1]: recordLogin() — DashboardAuthController calls this on successful login
     public function recordLogin(): void
     {
         $this->update(['last_login_at' => now()]);
@@ -54,7 +52,7 @@ class Admin extends Authenticatable
 
         return strtoupper(
             count($words) >= 2
-                ? ($words[0][0] ?? '').($words[1][0] ?? '')
+                ? ($words[0][0] ?? '') . ($words[1][0] ?? '')
                 : substr($this->name ?? 'AD', 0, 2)
         );
     }

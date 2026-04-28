@@ -103,15 +103,10 @@
 @keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
 </style>
 @else
-
-
-
     <div style="max-width:860px;">
-
         <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
             ← BACK TO PRODUCTS
         </a>
-
         <div class="card">
             <div class="card-header">
                 <span class="card-title" style="font-size:25px;">
@@ -598,6 +593,33 @@
             }
         }
     </style>
+@endpush
+
+
+@push('styles')
+<style>
+/* ── Products Form – light theme ─────────────────────────────────────────── */
+[data-theme="light"] .gallery-thumb {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.12) !important;
+}
+[data-theme="light"] .gallery-add-slot {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.15) !important;
+    color: rgba(15,23,42,0.35) !important;
+}
+[data-theme="light"] .gallery-add-slot:hover {
+    border-color: rgba(249,115,22,0.40) !important;
+    background: rgba(249,115,22,0.03) !important;
+}
+[data-theme="light"] [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] [style*="background:rgba(255,255,255,0.05)"] { background: rgba(15,23,42,0.04) !important; }
+[data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]  { border-color: rgba(15,23,42,0.10) !important; }
+</style>
 @endpush
 
 @push('scripts')

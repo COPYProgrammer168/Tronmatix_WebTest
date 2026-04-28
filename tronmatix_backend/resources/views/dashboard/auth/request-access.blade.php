@@ -10,47 +10,30 @@
         :root { --orange: #F97316; --dark: #0A0A0A; --dark-800: #111111; --dark-700: #1A1A1A; }
 
         body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--dark);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
+            font-family: 'Rajdhani', sans-serif; background: var(--dark);
+            min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; padding: 20px;
+            position: relative; overflow: hidden;
         }
         body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
+            content: ''; position: fixed; inset: 0;
             background-image:
                 linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
+            background-size: 50px 50px; pointer-events: none;
         }
         body::after {
-            content: '';
-            position: fixed;
-            top: -200px; left: 50%;
-            transform: translateX(-50%);
-            width: 600px; height: 600px;
+            content: ''; position: fixed; top: -200px; left: 50%;
+            transform: translateX(-50%); width: 600px; height: 600px;
             background: radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%);
             pointer-events: none;
         }
 
         .auth-card {
-            width: 100%;
-            max-width: 480px;
-            background: var(--dark-800);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-            animation: card-in 0.5s ease;
+            width: 100%; max-width: 480px; background: var(--dark-800);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+            overflow: hidden; position: relative; z-index: 1;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5); animation: card-in 0.5s ease;
         }
         @keyframes card-in {
             from { opacity: 0; transform: translateY(30px); }
@@ -60,71 +43,56 @@
         .auth-body     { padding: 36px 40px 40px; }
 
         .auth-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
+            display: flex; flex-direction: column; align-items: center; margin-bottom: 24px;
         }
         .brand-name { font-size: 20px; font-weight: 700; letter-spacing: 4px; color: #fff; margin-top: 10px; }
         .brand-sub  { font-size: 9px; letter-spacing: 5px; color: var(--orange); margin-top: 2px; }
-        .admin-badge {
-            margin-top: 8px;
-            background: rgba(249,115,22,0.1);
-            border: 1px solid rgba(249,115,22,0.3);
-            color: var(--orange);
-            font-size: 10px;
-            letter-spacing: 3px;
-            padding: 3px 14px;
-            border-radius: 20px;
+
+        /* ── Role badge strip ─────────────────────────────────────────────── */
+        .role-badges {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            justify-content: center; margin-top: 12px;
         }
+        .role-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+        }
+        .badge-editor    { background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.30); color: #3b82f6; }
+        .badge-seller    { background: rgba(16,185,129,0.10); border: 1px solid rgba(16,185,129,0.30); color: #10b981; }
+        .badge-delivery  { background: rgba(168,85,247,0.10); border: 1px solid rgba(168,85,247,0.30); color: #a855f7; }
+        .badge-developer { background: rgba(6,182,212,0.10);  border: 1px solid rgba(6,182,212,0.30);  color: #06b6d4; }
 
         .alert {
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 18px;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
+            padding: 12px 16px; border-radius: 10px; margin-bottom: 18px;
+            font-size: 13px; font-weight: 600;
+            display: flex; align-items: flex-start; gap: 8px;
         }
         .alert-error   { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.25);  color: #EF4444; }
         .alert-success { background: rgba(34,197,94,0.08);  border: 1px solid rgba(34,197,94,0.25);  color: #22C55E; }
         .alert-info    { background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25); color: var(--orange); }
 
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .form-group { margin-bottom: 15px; }
         .form-label {
-            display: block;
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.35);
-            margin-bottom: 7px;
-            text-transform: uppercase;
+            display: block; font-size: 10px; letter-spacing: 2px;
+            color: rgba(255,255,255,0.35); margin-bottom: 7px; text-transform: uppercase;
         }
         .input-wrap { position: relative; }
         .input-icon {
-            position: absolute;
-            left: 13px; top: 50%;
-            transform: translateY(-50%);
+            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
             color: rgba(255,255,255,0.25);
         }
         .form-control {
-            width: 100%;
-            background: var(--dark-700);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 12px 13px 12px 40px;
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
+            width: 100%; background: var(--dark-700);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+            padding: 12px 13px 12px 40px; color: #fff;
+            font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 500;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .form-control.no-icon { padding-left: 13px; }
         .form-control:focus {
-            outline: none;
-            border-color: var(--orange);
+            outline: none; border-color: var(--orange);
             box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
         }
         .form-control::placeholder { color: rgba(255,255,255,0.2); }
@@ -133,19 +101,14 @@
         select.form-control {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
+            background-repeat: no-repeat; background-position: right 14px center;
             padding-right: 36px;
         }
 
         .pass-toggle {
-            position: absolute;
-            right: 12px; top: 50%;
-            transform: translateY(-50%);
-            background: none; border: none;
-            color: rgba(255,255,255,0.25);
-            cursor: pointer; padding: 0;
-            transition: color 0.2s;
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: rgba(255,255,255,0.25);
+            cursor: pointer; padding: 0; transition: color 0.2s;
         }
         .pass-toggle:hover { color: var(--orange); }
 
@@ -156,51 +119,31 @@
         .strength-label { font-size: 11px; margin-top: 4px; color: rgba(255,255,255,0.3); }
 
         .btn-submit {
-            width: 100%;
-            background: var(--orange);
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            width: 100%; background: var(--orange); border: none; border-radius: 12px;
+            padding: 14px; color: #fff; font-family: 'Rajdhani', sans-serif;
+            font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s; margin-top: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-submit:hover { background: #FB923C; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(249,115,22,0.35); }
-        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-        .auth-footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 13px;
-            color: rgba(255,255,255,0.3);
-        }
-        .auth-footer a { color: var(--orange); text-decoration: none; font-weight: 600; }
-        .auth-footer a:hover { text-decoration: underline; }
+        .btn-submit:hover    { background: #ea580c; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(249,115,22,0.35); }
+        .btn-submit:active   { transform: translateY(0); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner {
             width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            display: none;
+            border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.8s linear infinite; display: none;
         }
         .btn-submit.loading .spinner  { display: block; }
         .btn-submit.loading .btn-text { display: none; }
 
-        @media (max-width: 480px) {
-            .auth-body { padding: 28px 22px 32px; }
+        .auth-footer { text-align: center; font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 20px; }
+        .auth-footer a { color: var(--orange); text-decoration: none; font-weight: 600; }
+        .auth-footer a:hover { text-decoration: underline; }
+
+        @media(max-width:480px) {
+            .auth-body { padding: 28px 24px 32px; }
             .form-row  { grid-template-columns: 1fr; }
         }
     </style>
@@ -213,7 +156,7 @@
 
         {{-- Logo --}}
         <div class="auth-logo">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="44" height="44">
                 <defs>
                     <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" style="stop-color:#FFB020"/>
@@ -225,15 +168,14 @@
             </svg>
             <div class="brand-name">TRONMATIX</div>
             <div class="brand-sub">COMPUTER</div>
-            <div class="admin-badge">REQUEST STAFF ACCESS</div>
         </div>
 
-        {{-- Info --}}
+        {{-- Info notice --}}
         <div class="alert alert-info" style="font-size:12px;">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            Your request will be reviewed by a <strong>Superadmin</strong>. You'll receive access once approved.
+            Your request will be reviewed by a superadmin before you can log in.
         </div>
 
         {{-- Errors --}}
@@ -242,11 +184,7 @@
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;">
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                <div>
-                    @foreach($errors->all() as $error)
-                        <div>{{ $error }}</div>
-                    @endforeach
-                </div>
+                <div>@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
             </div>
         @endif
 
@@ -264,7 +202,8 @@
                                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                             </svg>
                         </span>
-                        <input type="text" name="name" class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
+                        <input type="text" name="name"
+                               class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
                                value="{{ old('name') }}" placeholder="Full name" autofocus />
                     </div>
                     @error('name')<div class="field-error">{{ $message }}</div>@enderror
@@ -278,7 +217,8 @@
                                 <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                             </svg>
                         </span>
-                        <input type="text" name="username" class="form-control {{ $errors->has('username') ? 'is-invalid' : '' }}"
+                        <input type="text" name="username"
+                               class="form-control {{ $errors->has('username') ? 'is-invalid' : '' }}"
                                value="{{ old('username') }}" placeholder="username" />
                     </div>
                     @error('username')<div class="field-error">{{ $message }}</div>@enderror
@@ -295,22 +235,31 @@
                             <polyline points="22,6 12,13 2,6"/>
                         </svg>
                     </span>
-                    <input type="email" name="email" class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
+                    <input type="email" name="email"
+                           class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
                            value="{{ old('email') }}" placeholder="you@tronmatix.com" />
                 </div>
                 @error('email')<div class="field-error">{{ $message }}</div>@enderror
             </div>
 
-            {{-- Requested Role --}}
+            {{-- Requested Role — only valid staff roles, correct values --}}
             <div class="form-group">
                 <label class="form-label">Requested Role</label>
                 <div class="input-wrap">
-                    <select name="requested_role" class="form-control no-icon {{ $errors->has('requested_role') ? 'is-invalid' : '' }}">
-                        <option value="viewer"  {{ old('requested_role','viewer') === 'viewer'  ? 'selected' : '' }}>Viewer — read only</option>
-                        <option value="seller"  {{ old('requested_role') === 'Delivery'  ? 'selected' : '' }}>Delivery — Delivery Product</option>
-                        <option value="editor"  {{ old('requested_role') === 'editor'  ? 'selected' : '' }}>Editor — manage products & content</option>
-                        <option value="seller"  {{ old('requested_role') === 'seller'  ? 'selected' : '' }}>Seller — manage orders</option>
-                        <option value="admin"   {{ old('requested_role') === 'admin'   ? 'selected' : '' }}>Admin — full access (except superadmin)</option>
+                    <select name="requested_role"
+                            class="form-control no-icon {{ $errors->has('requested_role') ? 'is-invalid' : '' }}">
+                        <option value="editor"    {{ old('requested_role', 'editor') === 'editor'    ? 'selected' : '' }}>
+                            ✏️ Editor — manage products &amp; content
+                        </option>
+                        <option value="seller"    {{ old('requested_role') === 'seller'    ? 'selected' : '' }}>
+                            🏪 Seller — manage orders &amp; sales
+                        </option>
+                        <option value="delivery"  {{ old('requested_role') === 'delivery'  ? 'selected' : '' }}>
+                            🚚 Delivery — handle order deliveries
+                        </option>
+                        <option value="developer" {{ old('requested_role') === 'developer' ? 'selected' : '' }}>
+                            💻 Developer — technical &amp; system work
+                        </option>
                     </select>
                 </div>
                 @error('requested_role')<div class="field-error">{{ $message }}</div>@enderror
@@ -320,7 +269,7 @@
             <div class="form-group">
                 <label class="form-label">Message (optional)</label>
                 <textarea name="message" class="form-control no-icon" rows="2"
-                          placeholder="Why do you need access? (optional)" style="resize:none;">{{ old('message') }}</textarea>
+                          placeholder="Why do you need access?" style="resize:none;">{{ old('message') }}</textarea>
                 @error('message')<div class="field-error">{{ $message }}</div>@enderror
             </div>
 
@@ -367,7 +316,6 @@
                 </div>
             </div>
 
-            {{-- Submit --}}
             <button type="submit" class="btn-submit" id="submitBtn">
                 <span class="spinner"></span>
                 <span class="btn-text">SUBMIT REQUEST</span>
@@ -400,8 +348,8 @@
             { pct: '0%',   color: 'transparent', text: '' },
             { pct: '25%',  color: '#EF4444',      text: 'Weak' },
             { pct: '50%',  color: '#EAB308',      text: 'Fair' },
-            { pct: '75%',  color: '#3B82F6',      text: 'Good' },
-            { pct: '100%', color: '#22C55E',      text: 'Strong ✓' },
+            { pct: '75%',  color: '#3B82F6',       text: 'Good' },
+            { pct: '100%', color: '#22C55E',       text: 'Strong ✓' },
         ];
         const level = val.length === 0 ? 0 : score;
         fill.style.width      = levels[level].pct;

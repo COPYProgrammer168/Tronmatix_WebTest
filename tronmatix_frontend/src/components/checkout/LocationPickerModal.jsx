@@ -1,8 +1,12 @@
 // src/components/checkout/LocationPickerModal.jsx
 import { useTheme } from "../../context/ThemeContext"
+import { useLang } from "../../context/LanguageContext"
+import { useState } from "react"
 
 export default function LocationPickerModal({ locations, onSelect, onClose }) {
   const { dark } = useTheme()
+  const { t, isKhmer } = useLang()
+  const modalFont = isKhmer ? "Kh_Jrung_Thom, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
   const [loading, setLoading] = useState(false);
 
   // Semantic color tokens — all theme-aware
@@ -36,7 +40,7 @@ export default function LocationPickerModal({ locations, onSelect, onClose }) {
         background: colors.modalBg,
         borderRadius: 20, width: "100%", maxWidth: 480,
         boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden",
-        fontFamily: "Rajdhani, sans-serif",
+        fontFamily: modalFont,
       }}>
 
         {/* Header */}
@@ -47,10 +51,10 @@ export default function LocationPickerModal({ locations, onSelect, onClose }) {
         }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, color: colors.titleText }}>
-              📍 Select Delivery Location
+              {isKhmer ? t("locations.selectTitle") : "📍 Select Delivery Location"}
             </div>
             <div style={{ fontSize: 13, color: colors.subtitleText, marginTop: 2 }}>
-              Choose from your saved addresses
+              {isKhmer ? t("locations.chooseAddress") : "Choose from your saved addresses"}
             </div>
           </div>
           <button

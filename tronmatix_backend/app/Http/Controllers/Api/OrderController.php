@@ -58,7 +58,8 @@ class OrderController extends Controller
             'location'               => ['required', 'array'],
             'location.name'          => ['required', 'string', 'max:255'],
             'location.phone'         => ['required', 'string', 'max:50'],
-            'location.address'       => ['required', 'string', 'max:500'],
+            // address is required for delivery, optional for pickup
+            'location.address'       => ['nullable', 'string', 'max:500'],
             'location.city'          => ['nullable', 'string', 'max:100'],
             'location.country'       => ['nullable', 'string', 'max:100'],
             'location.note'          => ['nullable', 'string', 'max:500'],
@@ -70,6 +71,7 @@ class OrderController extends Controller
             'delivery_lat'           => ['nullable', 'numeric'],
             'delivery_lng'           => ['nullable', 'numeric'],
             'delivery_map_address'   => ['nullable', 'string', 'max:1000'],
+            'fulfillment_type'       => ['nullable', 'in:delivery,pickup'],
         ]);
 
         $user = $request->user();
@@ -143,12 +145,33 @@ class OrderController extends Controller
 
                 $total = max(0, $subtotal - $discountAmount);
 
+                // ── Resolve fulfillment type ──────────────────────────────────────────
+                $fulfillmentType = $validated['fulfillment_type'] ?? 'delivery';
+                $isPickup        = $fulfillmentType === 'pickup';
+
+                // ── Validate delivery address (pickup doesn't need one) ────────────────
+                if (! $isPickup && empty($validated['location']['address'])) {
+                    throw new \RuntimeException('Delivery address is required for delivery orders.');
+                }
+
                 // ✅ FIX: resolve saved location and build shipping snapshot with lat/lng
                 // Priority: saved location FK → manual map pin from request
                 $resolvedLocationId = null;
                 $shippingSnapshot   = $validated['location']; // default: manual fields only
 
-                if (! empty($validated['location_id'])) {
+                if ($isPickup) {
+                    // Pickup: store name + phone only, inject store address
+                    $shippingSnapshot = [
+                        'name'        => $validated['location']['name']  ?? '',
+                        'phone'       => $validated['location']['phone'] ?? '',
+                        'address'     => 'Store Pickup — Tronmatix Computer',
+                        'city'        => '',
+                        'note'        => $validated['location']['note']  ?? '',
+                        'lat'         => null,
+                        'lng'         => null,
+                        'map_address' => null,
+                    ];
+                } elseif (! empty($validated['location_id'])) {
                     $savedLoc = \App\Models\UserLocation::where('user_id', $user->id)
                         ->find($validated['location_id']);
 
@@ -160,7 +183,7 @@ class OrderController extends Controller
                 }
 
                 // If saved location had no pin, fall back to manual map pin from request
-                if (empty($shippingSnapshot['lat']) && ! empty($validated['delivery_lat'])) {
+                if (! $isPickup && empty($shippingSnapshot['lat']) && ! empty($validated['delivery_lat'])) {
                     $shippingSnapshot['lat']         = $validated['delivery_lat'];
                     $shippingSnapshot['lng']         = $validated['delivery_lng'] ?? null;
                     $shippingSnapshot['map_address'] = $validated['delivery_map_address'] ?? null;
@@ -181,6 +204,7 @@ class OrderController extends Controller
                     'status'             => 'confirmed',
                     'delivery_date'      => $validated['delivery_date']      ?? null,
                     'delivery_time_slot' => $validated['delivery_time_slot'] ?? null,
+                    'fulfillment_type'   => $fulfillmentType, // ✅ 'delivery' | 'pickup'
                 ]);
 
                 foreach ($validated['items'] as $item) {
@@ -237,21 +261,21 @@ class OrderController extends Controller
         }
 
         return response()->json([
-            'success'         => true,
-            'order_id'        => $order->order_id,
-            'id'              => $order->id,
-            'items'           => $order->items,
-            'location'        => $order->shipping,   // snapshot (includes lat/lng/map_address)
-            'location_id'     => $order->location_id,
-            'subtotal'        => $order->subtotal,
-            'discount_code'   => $order->discount_code,
-            'discount_amount' => $order->discount_amount,
-            'tax'             => $order->tax,
-            'delivery'        => $order->delivery,
-            'total'           => $order->total,
-            'payment_method'  => $order->payment_method,
-            'status'          => $order->status,
-            // ✅ lat/lng now live inside shipping snapshot, not as top-level columns
+            'success'          => true,
+            'order_id'         => $order->order_id,
+            'id'               => $order->id,
+            'fulfillment_type' => $order->fulfillment_type,  // ✅ frontend needs this for receipt UI
+            'items'            => $order->items,
+            'location'         => $order->shipping,
+            'location_id'      => $order->location_id,
+            'subtotal'         => $order->subtotal,
+            'discount_code'    => $order->discount_code,
+            'discount_amount'  => $order->discount_amount,
+            'tax'              => $order->tax,
+            'delivery'         => $order->delivery,
+            'total'            => $order->total,
+            'payment_method'   => $order->payment_method,
+            'status'           => $order->status,
             'delivery_lat'         => $order->shipping['lat']         ?? null,
             'delivery_lng'         => $order->shipping['lng']         ?? null,
             'delivery_map_address' => $order->shipping['map_address'] ?? null,

@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
@@ -6,8 +6,9 @@ import { FavoritesProvider } from "./context/FavoritesContext";
 import { LocationProvider } from "./context/LocationContext";
 import { DiscountProvider } from "./context/DiscountContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import { useTheme } from "./context/ThemeContext";
-import { useAuth } from "./context/AuthContext";
+import { useLang } from "./context/LanguageContext";
 
 // Eager — present on every page, must load immediately
 import Navbar from "./components/Navbar";
@@ -16,11 +17,7 @@ import CartSlider from "./components/CartSlider";
 import SupportChat from "./components/SupportChat";
 
 // AuthModal is lazy — only needed when the user clicks login
-// ProfileSetupModal is also exported from the same chunk
-const AuthModal          = lazy(() => import("./components/AuthModal"));
-const ProfileSetupModal  = lazy(() =>
-  import("./components/AuthModal").then((m) => ({ default: m.ProfileSetupModal }))
-);
+const AuthModal = lazy(() => import("./components/AuthModal"));
 
 // Pages — each becomes its own chunk, downloaded only when navigated to
 const HomePage          = lazy(() => import("./pages/HomePage"));
@@ -51,11 +48,13 @@ function PageSpinner() {
 function AppContent() {
   const [authMode, setAuthMode] = useState(null);
   const { dark } = useTheme();
+  const { isKhmer } = useLang();
 
-  // ── Post-OAuth profile completion modal ────────────────────────────────────
-  // Shown globally (outside the route tree) so it overlays any page.
-  // AuthContext sets needsProfileSetup=true when Google/Telegram creates a new user.
-  const { needsProfileSetup, setNeedsProfileSetup } = useAuth();
+  // ── Sync body.lang-km class ────────────────────────────────────────────────
+  useEffect(() => {
+    document.body.classList.toggle('lang-km', isKhmer);
+    document.documentElement.lang = isKhmer ? 'km' : 'en';
+  }, [isKhmer]);
 
   return (
     <div
@@ -77,13 +76,6 @@ function AppContent() {
             onClose={() => setAuthMode(null)}
             onSwitch={(m) => setAuthMode(m)}
           />
-        </Suspense>
-      )}
-
-      {/* Global post-OAuth profile setup modal (username + phone for new Google/Telegram users) */}
-      {needsProfileSetup && (
-        <Suspense fallback={null}>
-          <ProfileSetupModal onClose={() => setNeedsProfileSetup(false)} />
         </Suspense>
       )}
 
@@ -113,17 +105,19 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <LocationProvider>
-                <DiscountProvider>
-                  <AppContent />
-                </DiscountProvider>
-              </LocationProvider>
-            </FavoritesProvider>
-          </CartProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <LocationProvider>
+                  <DiscountProvider>
+                    <AppContent />
+                  </DiscountProvider>
+                </LocationProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

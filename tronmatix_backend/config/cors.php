@@ -1,28 +1,26 @@
 <?php
 
-// config/cors.php
-// ── Laravel CORS — must match Apache headers exactly ─────────────────────────
-
 return [
-
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout'],
 
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        env('FRONTEND_URL', 'https://tronmatix-frontend.onrender.com'),
+        // Local development
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:5174',
+        'https://pearl-whitebelt-valuably.ngrok-free.dev',     // ← replace with real domain later
     ],
 
-    'allowed_origins_patterns' => [
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => ['Authorization'],
+    'exposed_headers' => [],
 
-    'max_age' => 86400,
+    'max_age' => 0,
 
-    // false = Bearer token (no cookies) — must match axios withCredentials:false
-    'supports_credentials' => false,
-
+    'supports_credentials' => true,  // ← MUST BE TRUE for Sanctum + cookies
 ];

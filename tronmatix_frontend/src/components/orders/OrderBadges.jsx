@@ -9,7 +9,30 @@ export const STATUS_COLORS = {
   pending:    { bg: "bg-gray-50",   text: "text-gray-600",   border: "border-gray-200",   dot: "bg-gray-400" },
 };
 
-export const STATUS_STEPS = ["confirmed", "processing", "shipped", "delivered"];
+// Delivery pipeline: confirmed → processing → shipped → delivered
+export const STATUS_STEPS_DELIVERY = ["confirmed", "processing", "shipped", "delivered"];
+
+// Pickup pipeline: confirmed → processing (ready) → delivered (picked up) — no shipped
+export const STATUS_STEPS_PICKUP = ["confirmed", "processing", "delivered"];
+
+// Returns the correct steps array based on fulfillment type
+export function getStatusSteps(fulfillmentType) {
+  return fulfillmentType === "pickup" ? STATUS_STEPS_PICKUP : STATUS_STEPS_DELIVERY;
+}
+
+// Human-readable label per status, varies for pickup vs delivery
+export function getStatusLabel(status, fulfillmentType) {
+  const isPickup = fulfillmentType === "pickup";
+  const labels = {
+    confirmed:  "CONFIRMED",
+    processing: isPickup ? "READY" : "PROCESSING",
+    shipped:    "SHIPPED",
+    delivered:  isPickup ? "PICKED UP" : "DELIVERED",
+    cancelled:  "CANCELLED",
+    pending:    "PENDING",
+  };
+  return labels[status] || (status?.toUpperCase() ?? "PENDING");
+}
 
 export const MOCK_ORDERS = [
   {
@@ -18,34 +41,45 @@ export const MOCK_ORDERS = [
     status: "delivered", total: 698, subtotal: 748,
     discount_amount: 50, discount_code: "TRONMATIX10",
     payment_method: "cash", payment_status: "pending",
+    fulfillment_type: "delivery",
     shipping: { name: "Test User", phone: "012345678", address: "Phnom Penh", city: "Phnom Penh" },
     items: [{ name: "AMD RYZEN 7 9700X", qty: 1, price: 349 }, { name: "DDR5 RAM 32GB", qty: 1, price: 399 }],
   },
   {
     id: "ORD-002", order_id: "TRX-EFGH5678",
     created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
-    status: "shipped", total: 349, subtotal: 349,
+    status: "processing", total: 349, subtotal: 349,
     discount_amount: 0, discount_code: null,
     payment_method: "bakong", payment_status: "paid",
-    shipping: { name: "Test User", phone: "012345678", address: "Siem Reap", city: "Siem Reap" },
+    fulfillment_type: "pickup",
+    shipping: { name: "Test User", phone: "012345678", address: "Store Pickup", city: "" },
     items: [{ name: "AMD RYZEN 7 9800X3D", qty: 1, price: 349 }],
   },
 ];
 
-export function StatusBadge({ status }) {
+// StatusBadge — pass fulfillmentType so label changes for pickup
+export function StatusBadge({ status, fulfillmentType }) {
   const c = STATUS_COLORS[status] || STATUS_COLORS.pending;
+  const label = getStatusLabel(status, fulfillmentType);
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border ${c.bg} ${c.text} ${c.border}`}
-      style={{ fontSize: 12 }}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border ${c.bg} ${c.text} ${c.border}`}
+      style={{ fontSize: 12 }}
+    >
       <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-      {status?.toUpperCase() || "PENDING"}
+      {label}
     </span>
   );
 }
 
-export function PaymentStatusBadge({ paymentMethod, paymentStatus }) {
+export function PaymentStatusBadge({ paymentMethod, paymentStatus, fulfillmentType }) {
+  const isPickup = fulfillmentType === "pickup";
   if (paymentMethod === "cash")
-    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-gray-50 text-gray-500 border-gray-200" style={{ fontSize: 12 }}>💵 COD</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-gray-50 text-gray-500 border-gray-200" style={{ fontSize: 12 }}>
+        {isPickup ? "💵 PAY AT STORE" : "💵 COD"}
+      </span>
+    );
   if (paymentStatus === "paid")
     return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-green-50 text-green-600 border-green-200" style={{ fontSize: 12 }}>✅ PAID</span>;
   if (paymentStatus === "failed")

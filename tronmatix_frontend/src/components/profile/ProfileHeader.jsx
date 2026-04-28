@@ -1,4 +1,5 @@
 // src/components/profile/ProfileHeader.jsx
+import { useLang } from '../../context/LanguageContext'
 
 const THEMES = {
   vip: {
@@ -28,6 +29,9 @@ const THEMES = {
 }
 
 export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
+  const { isKhmer } = useLang()
+  const headerFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
   const role       = user?.role || 'customer'
   const spent      = totalSpent ?? 0
   const pct        = Math.min(100, Math.round((spent / VIP_GOAL) * 100))
@@ -100,7 +104,7 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
             <div>
             <div style={{
               fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: 1, lineHeight: 1,
-              fontFamily: 'Rajdhani, sans-serif',
+              fontFamily: headerFont,
               textShadow: showVip ? '0 0 24px rgba(249,115,22,0.5)' : 'none',
             }}>
               {user?.username || user?.name}
@@ -139,9 +143,9 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
-                  fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 20, letterSpacing: 2,
-                  border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Rajdhani, sans-serif',
-                }}>MEMBER</div>
+                  fontSize: 14, fontWeight: 600, padding: '4px 14px', borderRadius: 20, letterSpacing: 2,
+                  border: '1px solid rgba(255,255,255,0.12)', fontFamily: bodyFont,
+                }}>{isKhmer ? 'សមាជិក' : 'MEMBER'}</div>
               )}
             </div>
             </div>

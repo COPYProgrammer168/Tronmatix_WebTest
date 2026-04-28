@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import { useTheme } from '../context/ThemeContext'
 import axios from '../lib/axios'
+import { useLang } from '../context/LanguageContext'
 
 const LARAVEL_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
@@ -45,6 +46,15 @@ export default function HomePage() {
   const newProdRef = useRef(null)
   const catRefs    = useRef({})
   const { dark }   = useTheme()
+  const { t, isKhmer } = useLang()
+
+  // Font stacks that auto-switch based on language
+  const headingFont = isKhmer
+    ? 'Kh_Jrung_Thom, Khmer OS, sans-serif'
+    : 'HurstBagod, Rajdhani, sans-serif'
+  const bodyFont = isKhmer
+    ? 'KantumruyPro, Khmer OS, sans-serif'
+    : 'Rajdhani, sans-serif'
 
   const bg      = dark ? '#111827' : '#fff'
   const text    = dark ? '#f9fafb' : '#1f2937'
@@ -150,13 +160,27 @@ export default function HomePage() {
       <div className="max-w-[1280px] mx-auto px-4 pt-6 pb-2">
 
         {/* ── BANNER SLIDER ──────────────────────────────────────────────── */}
+        <style>{`
+          /* Hide browser native video controls & media overlay on banner */
+          .banner-video::-webkit-media-controls { display: none !important; }
+          .banner-video::-webkit-media-controls-enclosure { display: none !important; }
+          .banner-video::-webkit-media-controls-panel { display: none !important; }
+          .banner-video::--webkit-media-controls-play-button { display: none !important; }
+          .banner-video::-webkit-media-controls-timeline { display: none !important; }
+          .banner-video { -webkit-appearance: none; }
+          /* Hide media overlay icons on mobile Chrome/Safari */
+          .banner-video::-webkit-media-controls-start-playback-button { display: none !important; }
+          .banner-video::-webkit-media-controls-overlay-play-button { display: none !important; }
+        `}</style>
         <div className="max-w-[1280px] mx-auto px-4 mb-8">
           <div className="relative overflow-hidden rounded-xl"
-            style={{ minHeight: 444, background: hasMedia ? '#000' : bgColor, transition: 'background 0.5s' }}>
+            style={{ minHeight: 444, background: hasMedia ? '#000' : bgColor, transition: 'background 4s' }}>
 
             {hasVideo && videoType === 'upload' && videoSrc && (
-              <video key={videoSrc} className="absolute inset-0 w-full h-full object-cover"
-                style={{ opacity: 0.65 }} src={videoSrc} autoPlay muted loop playsInline
+              <video key={videoSrc} className="absolute inset-0 w-full h-full object-cover banner-video"
+                style={{ opacity: 0.4, pointerEvents: 'none' }}
+                src={videoSrc} autoPlay muted loop playsInline
+                disablePictureInPicture disableRemotePlayback
                 onError={e => { e.currentTarget.style.display = 'none' }} />
             )}
 
@@ -186,19 +210,19 @@ export default function HomePage() {
                   </span>
                 )}
                 <div className="font-black whitespace-pre-line leading-tight mb-3"
-                  style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 'clamp(24px,4vw,42px)', color: hasMedia ? '#fff' : txtColor }}>
+                  style={{ fontFamily: 'HurstBagod, Kh_Jrung_Thom, sans-serif', fontSize: 'clamp(24px,4vw,42px)', color: hasMedia ? '#fff' : txtColor, lineHeight: isKhmer ? 1.7 : 1.2, letterSpacing: isKhmer ? 0 : undefined }}>
                   {b.title}
                 </div>
                 {b.subtitle && (
                   <div className="font-semibold mb-6"
-                    style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 'clamp(14px,2vw,20px)', color: hasMedia ? 'rgba(255,255,255,0.85)' : txtColor, opacity: 0.85 }}>
+                    style={{ fontFamily: 'Rajdhani, KantumruyPro, sans-serif', fontSize: 'clamp(14px,2vw,20px)', color: hasMedia ? 'rgba(255,255,255,0.85)' : txtColor, opacity: 0.85, lineHeight: isKhmer ? 1.8 : undefined, letterSpacing: isKhmer ? 0 : undefined }}>
                     {b.subtitle}
                   </div>
                 )}
                 <Link to={detailLink}
                   className="inline-flex items-center gap-2 font-bold px-6 py-3 rounded-lg transition-all hover:scale-105 hover:opacity-90"
-                  style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 15, letterSpacing: 1, background: hasMedia ? '#fff' : txtColor, color: hasMedia ? '#111' : bgColor, textDecoration: 'none' }}>
-                  VIEW PRODUCT
+                  style={{ fontFamily: 'Rajdhani, KantumruyPro, sans-serif', fontSize: 15, letterSpacing: isKhmer ? 0 : 1, background: hasMedia ? '#fff' : txtColor, color: hasMedia ? '#111' : bgColor, textDecoration: 'none' }}>
+                  {isKhmer ? t('home.viewProduct') : 'VIEW PRODUCT'}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -219,7 +243,7 @@ export default function HomePage() {
               <div className="absolute bottom-4 left-10 md:left-16 flex gap-2" style={{ zIndex: 3 }}>
                 {banners.map((_, i) => (
                   <button key={i} onClick={() => setSlide(i)}
-                    className={`h-2 rounded-full transition-all ${i === slide ? 'bg-primary w-6' : 'bg-white/50 w-2'}`} />
+                    className={`banner-dot h-2 rounded-full transition-all ${i === slide ? 'bg-primary w-6' : 'bg-white/50 w-2'}`} />
                 ))}
               </div>
             )}
@@ -228,8 +252,12 @@ export default function HomePage() {
 
         {/* NEW ARRIVAL heading */}
         <div className="flex items-center gap-1 justify-center">
-          <span className="text-primary font-black tracking-widest" style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 32 }}>NEW</span>
-          <span className="font-black tracking-widest" style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 32, color: text }}>ARRIVAL</span>
+          <span className="text-primary font-black tracking-widest" style={{ fontFamily: headingFont, fontSize: 32, letterSpacing: isKhmer ? 0 : undefined }}>
+            {isKhmer ? t('home.newArrival') : 'NEW'}
+          </span>
+          {!isKhmer && (
+            <span className="font-black tracking-widest" style={{ fontFamily: headingFont, fontSize: 32, color: text }}>ARRIVAL</span>
+          )}
         </div>
       </div>
 
@@ -240,12 +268,12 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="w-1 h-8 bg-primary rounded-full" />
               <span className="font-black tracking-widest"
-                style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 22, color: text }}>
-                NEW PRODUCTS
+                style={{ fontFamily: headingFont, fontSize: 20, color: text, letterSpacing: isKhmer ? 0 : undefined }}>
+                {isKhmer ? t('home.newProducts') : 'NEW PRODUCTS'}
               </span>
               <span className="inline-flex items-center justify-center font-bold px-3 rounded-full"
-                style={{ background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.3)', letterSpacing: 1, fontSize: 11, height: 22, lineHeight: 1 }}>
-                JUST ADDED
+                style={{ fontFamily: bodyFont, background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.3)', fontSize: 12, height: 30, lineHeight: 1 }}>
+                {isKhmer ? 'ទើបបន្ថែមថ្មីៗ':'just Added'}
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -259,8 +287,8 @@ export default function HomePage() {
                   </button>
                 ))}
               </div>
-              <Link to="/search?sort=newest" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
-                View all new →
+              <Link to="/search?sort=newest" className="text-primary font-bold hover:underline" style={{ fontFamily:bodyFont, fontSize: 15 }}>
+                {isKhmer ? 'មើលផលិតផលថ្មី':'​View All New Product'} →
               </Link>
             </div>
           </div>
@@ -304,7 +332,7 @@ export default function HomePage() {
               </div>
               <Link to={`/category/${catSlug}`}
                 className="bg-primary text-white font-bold px-10 py-3 hover:bg-orange-600 transition-colors"
-                style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, letterSpacing: 2, clipPath: 'polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)' }}>
+                style={{ fontFamily: headingFont, fontSize: 18, letterSpacing: isKhmer ? 0 : 2, clipPath: 'polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)' }}>
                 {cat}
               </Link>
             </div>
@@ -381,8 +409,8 @@ export default function HomePage() {
             )}
 
             <div className="flex justify-end mt-3">
-              <Link to={`/category/${catSlug}`} className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
-                View all {cat} →
+              <Link to={`/category/${catSlug}`} className="text-primary font-bold hover:underline" style={{ fontFamily: bodyFont, fontSize: 15 }}>
+                {isKhmer ? 'មើលទាំងអស់នៃ':'View All'} {cat} →
               </Link>
             </div>
           </div>

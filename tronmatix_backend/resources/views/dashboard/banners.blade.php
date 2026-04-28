@@ -103,11 +103,21 @@
 @keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
 </style>
 @else
+
 @php
 function banner_img_url(?string $path): string {
     if (!$path) return '';
-    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) return $path;
-    return \Illuminate\Support\Facades\Storage::url(ltrim($path, '/'));
+    $p = trim((string) $path);
+    if (!$p) return '';
+    // Already a full URL (R2/CDN/external)
+    if (str_starts_with($p, 'http://') || str_starts_with($p, 'https://')) return $p;
+    // Stored as relative path — resolve via configured default disk
+    try {
+        return \Illuminate\Support\Facades\Storage::url(ltrim($p, '/'));
+    } catch (\Throwable $e) {
+        // Fallback: build URL from APP_URL + /storage/ prefix
+        return rtrim(config('app.url', ''), '/') . '/storage/' . ltrim($p, '/');
+    }
 }
 @endphp
 
@@ -779,4 +789,53 @@ document.getElementById('bannerModal').addEventListener('click', function(e) {
 </style>
 
 @endif
+
+@push('styles')
+<style>
+/* ── Banners – light theme ────────────────────────────────────────────────── */
+[data-theme="light"] #bannerModal > div {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.10) !important;
+    box-shadow: 0 32px 80px rgba(15,23,42,0.16) !important;
+}
+[data-theme="light"] #bannerModal .form-control,
+[data-theme="light"] #bannerModal input,
+[data-theme="light"] #bannerModal select,
+[data-theme="light"] #bannerModal textarea {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.14) !important;
+    color: #0F172A !important;
+}
+[data-theme="light"] #bannerModal [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] #bannerModal [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] #bannerModal [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] #bannerModal [style*="border-bottom:1px solid rgba(255,255,255"] {
+    border-bottom-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] #bannerModal [style*="background:rgba(255,255,255,0.05)"],
+[data-theme="light"] #bannerModal [style*="background:rgba(255,255,255,0.06)"] {
+    background: rgba(15,23,42,0.04) !important;
+}
+[data-theme="light"] #bannerModal button[onclick*="closeBannerModal"] {
+    background: rgba(15,23,42,0.05) !important;
+    border-color: rgba(15,23,42,0.12) !important;
+    color: rgba(15,23,42,0.45) !important;
+}
+/* Banner cards */
+[data-theme="light"] .banner-card {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] .banner-card [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] .banner-card [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] .banner-card [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+[data-theme="light"] .banner-card [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] #catDropdown {
+    background: #FFFFFF !important;
+    border-color: rgba(249,115,22,0.30) !important;
+}
+[data-theme="light"] .cat-item:hover { background: rgba(15,23,42,0.04) !important; }
+</style>
+@endpush
+
 @endsection

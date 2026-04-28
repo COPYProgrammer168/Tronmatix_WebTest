@@ -52,10 +52,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [ready,   setReady]   = useState(false)
 
-  // ── Post-OAuth profile completion state ──────────────────────────────────
-  // When is_new_user=true, we show a "complete your profile" modal.
-  const [needsProfileSetup, setNeedsProfileSetup] = useState(false)
-
   const tokenRef = useRef(token)
 
   const applyToken = useCallback((t) => {
@@ -80,7 +76,6 @@ export function AuthProvider({ children }) {
     applyToken(null)
     applyUser(null)
     clearAuthStorage()
-    setNeedsProfileSetup(false)
   }, [applyToken, applyUser])
 
   // ── Restore session on mount ──────────────────────────────────────────────
@@ -107,15 +102,12 @@ export function AuthProvider({ children }) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Listen for social login events dispatched by AuthModal ───────────────
-  // AuthModal dispatches 'auth:social-login' after Google/Telegram callback.
   useEffect(() => {
     const handler = (e) => {
-      const { token: t, user: u, isNewUser } = e.detail ?? {}
+      const { token: t, user: u } = e.detail ?? {}
       if (!t || !u) return
       applyToken(t)
       applyUser(u)
-      // Show profile completion modal for brand-new Google/Telegram users
-      if (isNewUser) setNeedsProfileSetup(true)
     }
     window.addEventListener('auth:social-login', handler)
     return () => window.removeEventListener('auth:social-login', handler)
@@ -176,6 +168,7 @@ export function AuthProvider({ children }) {
 
   // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────
   // Called by AuthModal after GSI popup returns an access_token.
+  // Google users log in directly — no profile setup modal needed.
   const googleLogin = useCallback(async (accessToken) => {
     setLoading(true)
     try {
@@ -185,9 +178,7 @@ export function AuthProvider({ children }) {
       if (!t || !u) throw new Error('Unexpected Google response shape')
       applyToken(t)
       applyUser(u)
-      // Show profile setup if this is a brand new Google account
-      if (res.data?.is_new_user) setNeedsProfileSetup(true)
-      return { success: true, isNewUser: !!res.data?.is_new_user }
+      return { success: true }
     } catch (e) {
       const msg = e.response?.data?.message || 'Google sign-in failed. Please try again.'
       return { success: false, message: msg }
@@ -195,27 +186,6 @@ export function AuthProvider({ children }) {
       setLoading(false)
     }
   }, [applyToken, applyUser])
-
-  // ── COMPLETE PROFILE (post-OAuth) ─────────────────────────────────────────
-  // Saves username + phone for new Google/Telegram users.
-  const completeProfile = useCallback(async (username, phone) => {
-    setLoading(true)
-    try {
-      const res = await api.post('/api/user/profile/complete', { username, phone })
-      const u = res.data?.data
-      if (u) applyUser(u)
-      setNeedsProfileSetup(false)
-      return { success: true }
-    } catch (e) {
-      const data = e.response?.data
-      let msg = 'Failed to save profile.'
-      if (data?.errors)  msg = Object.values(data.errors).flat()[0] || msg
-      else if (data?.message) msg = data.message
-      return { success: false, message: msg }
-    } finally {
-      setLoading(false)
-    }
-  }, [applyUser])
 
   // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
   const forgotPassword = useCallback(async (email) => {
@@ -244,9 +214,8 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, token, loading, ready,
-      needsProfileSetup, setNeedsProfileSetup,
       login, register, logout, refreshUser,
-      forgotPassword, googleLogin, completeProfile,
+      forgotPassword, googleLogin,
     }}>
       {children}
     </AuthContext.Provider>

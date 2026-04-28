@@ -4,6 +4,7 @@ import { useDiscount } from '../context/DiscountContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { resolveImage } from '../lib/resolveImage'
+import { useLang } from '../context/LanguageContext'
 import logo from '../assets/logo.png'
 
 export default function CartSlider() {
@@ -14,6 +15,9 @@ export default function CartSlider() {
   const navigate = useNavigate()
   const itemsRef = useRef(null)
   const prevCountRef = useRef(0)
+  const { t, isKhmer } = useLang()
+  const khfont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
+  const bodyFont  = isKhmer ? 'KantumruyPro, sans-serif' : 'Rajdhani, sans-serif'
 
   useEffect(() => {
     const current = items.reduce((s, i) => s + i.qty, 0)
@@ -38,7 +42,7 @@ export default function CartSlider() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 flex-shrink-0" style={{ borderBottom: `1px solid ${headerBd}` }}>
           <div>
-            <h2 className="text-white font-bold tracking-wider" style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20 }}>SHOPPING CART</h2>
+            <h2 className="text-white tracking-wider" style={{ fontFamily: khfont, fontSize: 20, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? 'កន្ត្រកទំនិញ' : t('cart.title')}</h2>
             {items.length > 0 && (
               <span className="text-gray-400" style={{ fontSize: 18 }}>
                 {items.reduce((s, i) => s + i.qty, 0)} item{items.reduce((s, i) => s + i.qty, 0) !== 1 ? 's' : ''}
@@ -55,8 +59,13 @@ export default function CartSlider() {
         <div ref={itemsRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 py-16">
-              <div style={{ fontSize: 40 }}>🛒</div>
-              <p className="text-gray-400 text-center" style={{ fontSize: 14 }}>Your cart is empty</p>
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              <p className="text-gray-400 text-center" style={{ fontSize: 14, fontFamily: bodyFont }}>
+                {t('cart.empty')}
+              </p>
             </div>
           ) : items.map(item => {
             // FIX: use shared resolveImage — handles S3/R2 full URLs and local /storage/ paths
@@ -89,7 +98,7 @@ export default function CartSlider() {
 
                   {isItemDiscounted(item) === false && discount?.categories?.length > 0 && (
                     <span style={{ fontSize: 10, color: '#666', fontStyle: 'italic', display: 'block', marginBottom: 2 }}>
-                      not eligible
+                      {isKhmer ? 'មិនមានសិទ្ធិ' : 'not eligible'}
                     </span>
                   )}
 
@@ -116,7 +125,7 @@ export default function CartSlider() {
         {items.length > 0 && (
           <div className="flex-shrink-0 p-4 space-y-2" style={{ borderTop: `1px solid ${headerBd}`, background: footerBg }}>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400 font-semibold" style={{ fontSize: 18 }}>SUBTOTAL</span>
+              <span className="text-gray-400 font-semibold" style={{ fontSize: 18, fontFamily: bodyFont }}>{isKhmer ? 'តម្លៃដើម' : 'SUBTOTAL'}</span>
               <span className="text-white font-bold" style={{ fontSize: 18 }}>${subtotal.toFixed(2)}</span>
             </div>
 
@@ -135,27 +144,27 @@ export default function CartSlider() {
             {discount && discountAmount === 0 && (
               <div className="px-3 py-1.5 rounded-lg" style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}>
                 <span style={{ fontSize: 14, color: '#F97316', fontWeight: 700 }}>
-                  🏷 {discount?.code || 'Discount'} — no eligible items
+                  🏷 {discount?.code || (isKhmer ? 'ការបញ្ចុះតម្លៃ' : 'Discount')} — {isKhmer ? 'គ្មានទំនិញដែលមានសិទ្ធិ' : 'no eligible items'}
                 </span>
               </div>
             )}
 
             <div className="flex justify-between items-center pb-1">
-              <span className="text-primary font-black" style={{ fontSize: 18 }}>TOTAL</span>
+              <span className="text-primary font-black" style={{ fontSize: 18, fontFamily: bodyFont }}>{isKhmer ? 'សរុប' : 'TOTAL'}</span>
               <span className="text-primary font-black" style={{ fontSize: 20 }}>${Math.max(0, subtotal - discountAmount).toFixed(2)}</span>
             </div>
 
             <button
               onClick={() => { setCartOpen(false); navigate('/cart') }}
               className="w-full py-3 bg-primary text-white font-black rounded-xl hover:bg-orange-600 active:scale-95 transition-all shadow-lg"
-              style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 16, letterSpacing: 1 }}>
-              🛒 CHECKOUT NOW
+              style={{ fontFamily: bodyFont, fontSize: isKhmer ? 15 : 16, letterSpacing: isKhmer ? 0 : 1 }}>
+              🛒 {isKhmer ? 'ទូទាត់ឥឡូវ' : 'CHECKOUT NOW'}
             </button>
             <button
               onClick={clearCart}
               className="w-full py-2 text-[#777] font-semibold hover:text-red-400 transition-colors text-center"
               style={{ fontSize: 18 }}>
-              Clear cart
+              {isKhmer ? 'លុបទំនិញ' : 'Clear cart'}
             </button>
           </div>
         )}

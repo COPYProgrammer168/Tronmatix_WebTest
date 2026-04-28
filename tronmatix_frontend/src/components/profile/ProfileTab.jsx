@@ -1,21 +1,31 @@
 // src/components/profile/ProfileTab.jsx
 import { useState, useEffect } from 'react'
 import axiosClient from '../../lib/axios'
+import { useLang } from '../../context/LanguageContext'
 import AvatarUpload from './AvatarUpload'
 import TelegramConnect from './TelegramConnect'
 
-const labelStyle = {
-  display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: 2,
+// NOTE: khFont/khBodyFont/isKhmer/dark defined inside component below
+// inputStyle is now a factory called inside the component with dark context
+const getLabelStyleProfile = (isKhmer) => ({
+  display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 2,
+  fontFamily: isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif',
   color: '#9CA3AF', marginBottom: 8,
-}
+  textTransform: isKhmer ? 'none' : 'uppercase',
+})
 
-const inputStyle = (hasError, editable = true) => ({
+const getInputStyle = (hasError, editable = true, dark = false) => ({
   width: '100%', boxSizing: 'border-box',
   padding: '12px 16px', borderRadius: 10, outline: 'none',
-  fontFamily: 'Rajdhani, sans-serif', fontSize: 15, fontWeight: 600,
-  border: hasError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
-  background: editable ? '#fff' : '#F9FAFB',
-  color: editable ? '#111' : '#374151',
+  border: hasError
+    ? '1.5px solid #EF4444'
+    : `1.5px solid ${dark ? '#374151' : '#E5E7EB'}`,
+  background: editable
+    ? (dark ? '#111827' : '#fff')
+    : (dark ? '#1f2937' : '#F9FAFB'),
+  color: editable
+    ? (dark ? '#f9fafb' : '#111')
+    : (dark ? '#9ca3af' : '#374151'),
   cursor: editable ? 'text' : 'default',
   transition: 'border-color 0.2s, box-shadow 0.2s',
 })
@@ -30,6 +40,12 @@ const ROLE_STYLE = {
 const fmt = (n) => '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 })
 
 export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify, dark }) {
+  const { t, isKhmer } = useLang()
+  const khFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
+  const khBodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'   : 'Rajdhani,sans-serif'
+  // Bind context-aware helpers
+  const labelStyle  = getLabelStyleProfile(isKhmer)
+  const inputStyle  = (hasError, editable = true) => getInputStyle(hasError, editable, dark)
   const [editing,   setEditing]   = useState(false)
   const [saving,    setSaving]    = useState(false)
   const [saved,     setSaved]     = useState(false)
@@ -91,7 +107,8 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
 
       {/* Save success flash */}
       {saved && (
-        <div style={{
+        <div className="relative overflow-hidden"
+        style={{
           position: 'absolute', inset: 0, zIndex: 10, borderRadius: 20,
           background: 'rgba(34,197,94,0.07)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -108,44 +125,44 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, margin: 0 }}>Personal Information</h2>
-          <div style={{ fontSize: 14, color: '#9CA3AF', marginTop: 4 }}>Manage your account details</div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, margin: 0, fontFamily: khFont }}>{isKhmer ? t('profile.personalInfo') : 'Personal Information'}</h2>
+          <div style={{ fontSize: 14, color: '#9CA3AF', marginTop: 4, fontFamily: khBodyFont }}>{isKhmer ? t('profile.manageAccount') : 'Manage your account details'}</div>
         </div>
         {!editing ? (
-          <button onClick={() => setEditing(true)} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: 'Rajdhani,sans-serif', fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>✏️ EDIT</button>
+          <button onClick={() => setEditing(true)} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.edit') : '✏️ EDIT'}</button>
         ) : (
-          <button onClick={cancel} style={{ background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: 'Rajdhani,sans-serif', fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>CANCEL</button>
+          <button onClick={cancel} style={{ background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.cancel') : 'CANCEL'}</button>
         )}
       </div>
 
       {/* Form fields */}
       <div style={{ display: 'grid', gap: 20 }}>
         <div>
-          <label style={labelStyle}>FULL NAME {editing && '*'}</label>
+          <label style={{ fontFamily: khBodyFont, ...labelStyle }}>{isKhmer ? 'ឈ្មោះរបស់អ្នក' : 'YOUR NAME'} {editing && '*'}</label>
           <input value={form.name} onChange={e => set('name', e.target.value)} readOnly={!editing} placeholder="Your full name"
             style={{ ...inputStyle(errors.name, editing), boxShadow: editing ? '0 0 0 3px rgba(249,115,22,0.1)' : 'none', borderColor: editing && !errors.name ? '#F97316' : errors.name ? '#EF4444' : '#E5E7EB' }} />
           {errors.name && <div style={{ color: '#DC2626', fontSize: 12, marginTop: 4 }}>{errors.name}</div>}
         </div>
 
         <div>
-          <label style={labelStyle}>USERNAME</label>
+          <label style={{ fontFamily: khBodyFont, ...labelStyle }}>{isKhmer ? 'ឈ្មោះរបស់អ្នក' : 'USERNAME'}</label>
           <div style={{ position: 'relative' }}>
             <input value={user?.username || ''} readOnly style={{ ...inputStyle(false, false), paddingRight: 80 }} />
-            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 700, color: '#9CA3AF', background: '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
+            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 700, color: '#9CA3AF', background: dark ? '#374151' : '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
           </div>
         </div>
 
         <div>
-          <label style={labelStyle}>EMAIL ADDRESS</label>
+          <label style={{ fontFamily: khBodyFont, ...labelStyle }}>{isKhmer ? 'អុីម៉ែល' : 'EMAIL'}</label>
           <div style={{ position: 'relative' }}>
             <input value={user?.email || ''} readOnly style={{ ...inputStyle(false, false), paddingRight: 80 }} />
-            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 700, color: '#9CA3AF', background: '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
+            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 700, color: '#9CA3AF', background: dark ? '#374151' : '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
           </div>
           <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 5 }}>Contact support to change your email address</div>
         </div>
 
         <div>
-          <label style={labelStyle}>PHONE / TEL</label>
+          <label style={{ fontFamily: khBodyFont, ...labelStyle }}>{isKhmer ? 'លេខទូរស័ព្ទ' : 'PHONE / TEL'}</label>
           <div style={{ position: 'relative' }}>
             <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 15, pointerEvents: 'none' }}>📞</span>
             <input value={form.phone} onChange={e => set('phone', e.target.value)} readOnly={!editing} placeholder="0xx xxx xxx"
@@ -158,11 +175,11 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           <button onClick={handleSave} disabled={saving} style={{
             width: '100%', padding: 14, borderRadius: 12, border: 'none',
             background: saving ? 'linear-gradient(135deg,#FED7AA,#FCA5A5)' : 'linear-gradient(135deg,#F97316,#ea580c)',
-            color: '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 17, fontWeight: 800, letterSpacing: 2,
+            color: '#fff', fontFamily: khFont, fontSize: 17, fontWeight: 800, letterSpacing: isKhmer ? 0 : 2,
             cursor: saving ? 'wait' : 'pointer', boxShadow: saving ? 'none' : '0 4px 20px rgba(249,115,22,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
           }}>
-            {saving ? '⏳ SAVING...' : '💾 SAVE CHANGES'}
+            {saving ? (isKhmer ? t('profile.saving') : '⏳ SAVING...') : (isKhmer ? t('profile.save') : '💾 SAVE CHANGES')}
           </button>
         )}
       </div>
@@ -218,7 +235,12 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       </div>
 
       {/* Account info strip */}
-      <div style={{ marginTop: 12, padding: '16px 20px', borderRadius: 12, background: '#F9FAFB', border: '1px solid #F3F4F6', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+      <div style={{
+        marginTop: 12, padding: '16px 20px', borderRadius: 12,
+        background: dark ? '#1f2937' : '#F9FAFB',
+        border: `1px solid ${dark ? '#374151' : '#F3F4F6'}`,
+        display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16,
+      }}>
         {[
           { label: 'MEMBER SINCE', value: user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—' },
           { label: 'ACCOUNT ID',   value: `#${user?.id || '—'}` },
@@ -226,7 +248,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
         ].map(({ label, value }) => (
           <div key={label} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: '#9CA3AF', fontWeight: 700 }}>{label}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#374151', marginTop: 4 }}>{value}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: dark ? '#f9fafb' : '#374151', marginTop: 4 }}>{value}</div>
           </div>
         ))}
       </div>
