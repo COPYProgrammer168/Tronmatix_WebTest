@@ -6,12 +6,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        // Local development
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:5174',
-        'https://pearl-whitebelt-valuably.ngrok-free.dev',     // ← replace with real domain later
+        'https://tronmatix-frontend.onrender.com',
     ],
 
     'allowed_origins_patterns' => [],
