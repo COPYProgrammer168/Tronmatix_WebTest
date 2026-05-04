@@ -12,28 +12,38 @@
 
 /* ── Inline role select ──────────────────────────────────────────────────── */
 .role-select {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--dark-700);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
     font-size: 13px;
     font-weight: 600;
     padding: 5px 10px;
     cursor: pointer;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, color 0.2s;
 }
 .role-select:hover { border-color: var(--orange); }
 .role-select:focus { border-color: var(--orange); }
+/* Role color per selected value */
+.role-select[data-role="customer"] { color: #9CA3AF; border-color: rgba(156,163,175,0.3); }
+.role-select[data-role="vip"]      { color: #F97316; border-color: rgba(249,115,22,0.5); }
+.role-select[data-role="reseller"] { color: #3B82F6; border-color: rgba(59,130,246,0.5); }
+.role-select[data-role="banned"]   { color: #EF4444; border-color: rgba(239,68,68,0.5); }
+/* Option colors in dropdown list */
+.role-select option[value="customer"] { color: #9CA3AF; background: var(--dark-900); }
+.role-select option[value="vip"]      { color: #F97316; background: var(--dark-900); }
+.role-select option[value="reseller"] { color: #3B82F6; background: var(--dark-900); }
+.role-select option[value="banned"]   { color: #EF4444; background: var(--dark-900); }
 
 /* ── Filter tabs ─────────────────────────────────────────────────────────── */
 .filter-tab {
     padding: 6px 14px;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--border);
     background: transparent;
-    color: rgba(255,255,255,0.5);
+    color: var(--text-muted);
     font-family: 'Rajdhani', sans-serif;
     font-size: 13px;
     font-weight: 700;
@@ -48,15 +58,15 @@
 }
 .filter-tab:hover               { border-color: var(--orange); color: var(--orange); }
 .filter-tab.active              { background: rgba(249,115,22,0.12); border-color: var(--orange); color: var(--orange); }
-.count-pill                     { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
+.count-pill                     { background: var(--dark-700); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
 .filter-tab.active .count-pill  { background: rgba(249,115,22,0.2); }
 
 /* ── Search ──────────────────────────────────────────────────────────────── */
 .search-input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark-700);
+    border: 1px solid var(--border);
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
     font-size: 15px;
     padding: 8px 16px 8px 38px;
@@ -65,7 +75,7 @@
     transition: border-color 0.2s;
 }
 .search-input:focus             { border-color: var(--orange); }
-.search-input::placeholder      { color: rgba(255,255,255,0.25); }
+.search-input::placeholder      { color: var(--text-muted); }
 
 /* ── VIP progress bar ────────────────────────────────────────────────────── */
 .vip-bar-fill {
@@ -77,17 +87,17 @@
 }
 
 /* ── Table hover ─────────────────────────────────────────────────────────── */
-tbody tr:hover td { background: rgba(255,255,255,0.02); }
+tbody tr:hover td { background: var(--dark-700); }
 
 /* ── Flash toast ─────────────────────────────────────────────────────────── */
 .flash-toast {
     position: fixed; bottom: 28px; right: 28px; z-index: 9999;
     display: flex; align-items: center; gap: 10px;
-    background: #18181b; border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark-800); border: 1px solid var(--border);
     border-radius: 12px; padding: 12px 18px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600;
-    color: #fff; opacity: 0; transform: translateY(8px);
+    color: var(--text-primary); opacity: 0; transform: translateY(8px);
     transition: opacity 0.25s, transform 0.25s;
     pointer-events: none;
 }
@@ -221,7 +231,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 @endif
 
 {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
-<div class="stats-grid" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
+<div class="stats-grid users-stats-grid" style="margin-bottom:20px;">
     @foreach(['customer','vip','reseller','banned'] as $role)
     <div class="stat-card">
         <div class="stat-icon"><span style="font-size:20px;">{{ $roleIcons[$role] }}</span></div>
@@ -241,6 +251,16 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
         <div>
             <div class="stat-value">{{ $totalUsers }}</div>
             <div class="stat-label">TOTAL</div>
+        </div>
+    </div>
+    @php $telegramCount = \App\Models\User::whereNotNull('telegram_chat_id')->count(); @endphp
+    <div class="stat-card" style="border-color:rgba(34,158,217,0.25);background:rgba(34,158,217,0.06);">
+        <div class="stat-icon" style="background:rgba(34,158,217,0.15);border-color:rgba(34,158,217,0.3);">
+            <span style="font-size:20px;">&#9992;&#65039;</span>
+        </div>
+        <div>
+            <div class="stat-value" style="color:#229ED9;">{{ $telegramCount }}</div>
+            <div class="stat-label" style="color:#229ED9;">TELEGRAM</div>
         </div>
     </div>
 </div>
@@ -292,6 +312,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                     <th>ORDERS</th>
                     <th>SPENT</th>
                     <th>2FA</th>
+                    <th>TELEGRAM</th>
                     <th>ROLE</th>
                     <th>JOINED</th>
                     <th style="min-width:200px;">CHANGE ROLE</th>
@@ -307,15 +328,41 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                     {{-- Avatar + username --}}
                     <td>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="
-                                width:34px; height:34px; border-radius:50%; flex-shrink:0;
-                                background:linear-gradient(135deg,#F97316,#ea580c);
-                                display:flex; align-items:center; justify-content:center;
-                                font-weight:800; font-size:13px; color:#fff;">
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                            @php
+                                $userAvatar = $user->avatar
+                                    ? (Str::startsWith($user->avatar, ['http://','https://'])
+                                        ? $user->avatar
+                                        : asset('storage/' . $user->avatar))
+                                    : null;
+                            @endphp
+                            {{-- Avatar: real photo or gradient initial --}}
+                            <div style="width:36px; height:36px; border-radius:50%; flex-shrink:0; overflow:hidden;
+                                        border:1.5px solid rgba(249,115,22,0.3); position:relative;">
+                                @if($userAvatar)
+                                    <img src="{{ $userAvatar }}" alt="{{ $user->username }}"
+                                         style="width:100%; height:100%; object-fit:cover; display:block;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                    <div style="display:none; width:100%; height:100%;
+                                                background:linear-gradient(135deg,#F97316,#ea580c);
+                                                align-items:center; justify-content:center;
+                                                font-weight:800; font-size:13px; color:#fff; position:absolute; inset:0;">
+                                        {{ strtoupper(substr($user->username, 0, 1)) }}
+                                    </div>
+                                @else
+                                    <div style="width:100%; height:100%;
+                                                background:linear-gradient(135deg,#F97316,#ea580c);
+                                                display:flex; align-items:center; justify-content:center;
+                                                font-weight:800; font-size:13px; color:#fff;">
+                                        {{ strtoupper(substr($user->username, 0, 1)) }}
+                                    </div>
+                                @endif
                             </div>
                             <div>
-                                <div style="font-weight:700; font-size:15px;">{{ $user->username }}</div>
+                                <div style="font-weight:700; font-size:15px; cursor:pointer;"
+                                     onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ number_format((float)($user->total_spent ?? 0), 2) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
+                                     onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
+                                    {{ $user->username }}
+                                </div>
                                 @if($user->name && $user->name !== $user->username)
                                     <div style="font-size:11px; color:rgba(255,255,255,0.3);">{{ $user->name }}</div>
                                 @endif
@@ -374,6 +421,17 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                         @endif
                     </td>
 
+                    {{-- Telegram --}}
+                    <td>
+                        @if($user->telegram_chat_id)
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(34,158,217,0.15);border:1px solid rgba(34,158,217,0.3);color:#229ED9;" title="{{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}">
+                                ✈️ {{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}
+                            </span>
+                        @else
+                            <span style="font-size:11px;color:rgba(255,255,255,0.25);">—</span>
+                        @endif
+                    </td>
+
                     {{-- Current role badge --}}
                     <td>
                         <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
@@ -392,7 +450,9 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                         <div style="display:flex; align-items:center; gap:8px;">
                             <select class="role-select" id="role-select-{{ $user->id }}"
                                     data-user="{{ $user->id }}"
-                                    data-current="{{ $user->role ?? 'customer' }}">
+                                    data-current="{{ $user->role ?? 'customer' }}"
+                                    data-role="{{ $user->role ?? 'customer' }}"
+                                    onchange="this.dataset.role=this.value">
                                 @foreach(\App\Models\User::ROLES as $role)
                                     <option value="{{ $role }}"
                                         {{ ($user->role ?? 'customer') === $role ? 'selected' : '' }}>
@@ -414,7 +474,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="10" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
+                    <td colspan="11" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
                         <div style="font-size:32px; margin-bottom:10px;">👥</div>
                         No users found
                     </td>
@@ -434,6 +494,176 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 {{-- ── Toast element (for AJAX feedback) ──────────────────────────────────── --}}
 <div class="flash-toast" id="ajaxToast"></div>
+
+
+{{-- ── User Info Modal ───────────────────────────────────────────────────────── --}}
+<div id="user-info-modal" style="display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:16px;">
+    <div id="user-info-card" style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
+                background:linear-gradient(145deg,#141414,#1a1a1a);
+                border:1px solid rgba(255,255,255,0.1);
+                box-shadow:0 32px 80px rgba(0,0,0,0.7);
+                animation:uiModalIn .3s cubic-bezier(0.34,1.2,0.64,1);
+                font-family:Rajdhani,sans-serif;">
+
+        {{-- Header --}}
+        <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between;">
+            <div style="font-size:16px; font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.7);">USER INFORMATION</div>
+            <button onclick="closeUserInfo()"
+                style="width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,0.06);
+                       border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.4);
+                       font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
+        </div>
+
+        {{-- Avatar + name --}}
+        <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+            <div id="ui-avatar-wrap" style="width:72px; height:72px; border-radius:50%; overflow:hidden; flex-shrink:0;
+                border:2.5px solid #F97316; box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
+            </div>
+            <div>
+                <div id="ui-username" style="font-size:22px; font-weight:900; color:#fff; letter-spacing:1px;"></div>
+                <div id="ui-name" style="font-size:13px; color:rgba(255,255,255,0.4); margin-top:2px;"></div>
+                <div id="ui-role-badge" style="margin-top:6px;"></div>
+            </div>
+        </div>
+
+        {{-- Info grid --}}
+        <div style="padding:0 24px 8px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
+                <div id="ui-email" style="font-size:13px; color:#fff; font-weight:600; word-break:break-all;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
+                <div id="ui-phone" style="font-size:13px; color:#fff; font-weight:600;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
+                <div id="ui-orders" style="font-size:18px; color:#F97316; font-weight:900;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TOTAL SPENT</div>
+                <div id="ui-spent" style="font-size:18px; color:#22c55e; font-weight:900;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">JOINED</div>
+                <div id="ui-joined" style="font-size:13px; color:#fff; font-weight:600;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">2FA</div>
+                <div id="ui-2fa" style="font-size:13px; font-weight:700;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
+                <div id="ui-telegram" style="font-size:13px; font-weight:700;"></div>
+            </div>
+        </div>
+
+        {{-- VIP progress --}}
+        <div id="ui-vip-wrap" style="padding:0 24px 20px;">
+            <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <div style="font-size:11px; color:#F97316; font-weight:700; letter-spacing:1px;">⭐ VIP PROGRESS</div>
+                    <div id="ui-vip-pct" style="font-size:11px; color:rgba(255,255,255,0.4); font-weight:600;"></div>
+                </div>
+                <div style="height:6px; border-radius:6px; background:rgba(255,255,255,0.08); overflow:hidden;">
+                    <div id="ui-vip-bar" style="height:100%; border-radius:6px; background:linear-gradient(90deg,#F97316,#fb923c); transition:width 0.6s ease;"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Footer button --}}
+        <div style="padding:0 24px 24px;">
+            <a id="ui-view-orders-btn" href="#"
+                style="display:block; text-align:center; padding:11px; border-radius:10px;
+                       background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
+                       font-size:14px; font-weight:800; letter-spacing:1px; text-decoration:none;
+                       box-shadow:0 4px 16px rgba(249,115,22,0.3); transition:opacity .2s;"
+                onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                📦 VIEW ORDERS
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes uiModalIn { from { opacity:0; transform:scale(.93) translateY(16px); } to { opacity:1; transform:none; } }
+</style>
+
+<script>
+const ROLE_COLORS = {
+    customer: { bg:'rgba(156,163,175,0.15)', color:'#9CA3AF', border:'rgba(156,163,175,0.3)', label:'CUSTOMER' },
+    vip:      { bg:'rgba(249,115,22,0.15)',  color:'#F97316', border:'rgba(249,115,22,0.4)',  label:'⭐ VIP' },
+    reseller: { bg:'rgba(59,130,246,0.15)',  color:'#3B82F6', border:'rgba(59,130,246,0.4)',  label:'🏪 RESELLER' },
+    banned:   { bg:'rgba(239,68,68,0.15)',   color:'#EF4444', border:'rgba(239,68,68,0.4)',   label:'🚫 BANNED' },
+};
+
+function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa, telegram) {
+    const modal = document.getElementById('user-info-modal');
+    modal.style.display = 'flex';
+
+    // Avatar
+    const avatarWrap = document.getElementById('ui-avatar-wrap');
+    const initial = (username || '?').charAt(0).toUpperCase();
+    if (avatar) {
+        avatarWrap.innerHTML = `<img src="${avatar}" alt="${username}"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            onerror="this.style.display='none';this.nextSibling.style.display='flex'" />
+            <div style="display:none;width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
+                align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;">${initial}</div>`;
+    } else {
+        avatarWrap.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
+            display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;">${initial}</div>`;
+    }
+
+    // Basic info
+    document.getElementById('ui-username').textContent = username;
+    document.getElementById('ui-name').textContent = (name && name !== username) ? name : '';
+    document.getElementById('ui-email').textContent = email || '—';
+    document.getElementById('ui-phone').textContent = phone || '—';
+    document.getElementById('ui-orders').textContent = orders;
+    document.getElementById('ui-spent').textContent = '$' + spent;
+    document.getElementById('ui-joined').textContent = joined;
+    document.getElementById('ui-2fa').innerHTML = twofa
+        ? '<span style="color:#22c55e;">✓ ENABLED</span>'
+        : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
+    document.getElementById('ui-telegram').innerHTML = telegram
+        ? '<span style="color:#229ED9;">✈️ ' + telegram + '</span>'
+        : '<span style="color:rgba(255,255,255,0.3);">— Not connected</span>';
+
+    // Role badge
+    const rm = ROLE_COLORS[role] || ROLE_COLORS.customer;
+    document.getElementById('ui-role-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;
+        padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:1px;
+        background:${rm.bg};color:${rm.color};border:1px solid ${rm.border};">${rm.label}</span>`;
+
+    // VIP progress
+    const vipGoal = 1000;
+    const spentNum = parseFloat(spent) || 0;
+    const pct = Math.min(100, Math.round((spentNum / vipGoal) * 100));
+    const vipWrap = document.getElementById('ui-vip-wrap');
+    if (role === 'vip') {
+        vipWrap.style.display = 'none';
+    } else {
+        vipWrap.style.display = 'block';
+        document.getElementById('ui-vip-bar').style.width = pct + '%';
+        document.getElementById('ui-vip-pct').textContent = pct + '% · $' + vipGoal + ' goal';
+    }
+
+    // View orders link
+    document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${id}`;
+}
+
+function closeUserInfo() {
+    document.getElementById('user-info-modal').style.display = 'none';
+}
+document.getElementById('user-info-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeUserInfo();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUserInfo(); });
+</script>
 
 @endif
 @endsection
@@ -545,6 +775,7 @@ async function applyRole(userId, username) {
             setTimeout(() => row.style.background = '', 1200);
 
             select.dataset.current = newRole;
+            select.dataset.role = newRole;
             // Reset button to checkmark briefly then back to APPLY
             btn.innerHTML  = '✓';
             btn.style.color = '#22c55e';
@@ -589,5 +820,117 @@ if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
     60%     { transform: translateX(-4px); }
     80%     { transform: translateX(4px); }
 }
+</style>
+
+<style>
+
+/* ── User Info Modal – light theme ──────────────────────────────────────── */
+[data-theme="light"] #user-info-modal { background: rgba(15,23,42,0.55); }
+[data-theme="light"] #user-info-card {
+    background: linear-gradient(145deg,#FFFFFF,#F8FAFC) !important;
+    border-color: rgba(15,23,42,0.10) !important;
+    box-shadow: 0 32px 80px rgba(15,23,42,0.18) !important;
+}
+[data-theme="light"] #user-info-card [style*="color:rgba(255,255,255,0.7)"] { color: rgba(15,23,42,0.65) !important; }
+[data-theme="light"] #user-info-card [style*="color:rgba(255,255,255,0.35)"] { color: rgba(15,23,42,0.40) !important; }
+[data-theme="light"] #user-info-card [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] #user-info-card [style*="color:#fff"] { color: #0F172A !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(255,255,255,0.03)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+[data-theme="light"] #user-info-card [style*="border:1px solid rgba(255,255,255,0.07)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] #user-info-card [style*="border:1px solid rgba(255,255,255,0.1)"] { border-color: rgba(15,23,42,0.10) !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(255,255,255,0.08)"] { background: rgba(15,23,42,0.07) !important; }
+[data-theme="light"] #user-info-card [style*="background:rgba(249,115,22,0.06)"] { background: rgba(249,115,22,0.05) !important; }
+[data-theme="light"] #user-info-card button[onclick*="closeUserInfo"] {
+    background: rgba(15,23,42,0.05) !important;
+    border-color: rgba(15,23,42,0.12) !important;
+    color: rgba(15,23,42,0.45) !important;
+}
+[data-theme="light"] #user-info-card [style*="border:1px dashed rgba(249,115,22,0.25)"] {
+    border-color: rgba(249,115,22,0.30) !important;
+    background: rgba(249,115,22,0.04) !important;
+}
+/* VIP progress track */
+[data-theme="light"] #ui-vip-bar { box-shadow: 0 0 6px rgba(249,115,22,0.20); }
+/* ── Users stats grid responsive ─────────────────────────────────────────── */
+.users-stats-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+}
+@media (max-width: 860px) {
+    .users-stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+    }
+}
+@media (max-width: 700px) {
+    .users-stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+    }
+}
+@media (max-width: 420px) {
+    .users-stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+    }
+    .users-stats-grid .stat-card {
+        padding: 10px 8px !important;
+    }
+    .users-stats-grid .stat-value {
+        font-size: 18px !important;
+    }
+    .users-stats-grid .stat-label {
+        font-size: 9px !important;
+        letter-spacing: 0.5px !important;
+    }
+}
+
+/* ── Search input full-width on mobile ────────────────────────────────────── */
+@media (max-width: 600px) {
+    .search-input {
+        width: 100% !important;
+    }
+    .card-header form {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+body.theme-light .filter-tab               { border-color: #d1d5db; color: #6b7280; }
+body.theme-light .filter-tab:hover         { border-color: var(--orange); color: var(--orange); }
+body.theme-light .filter-tab.active        { border-color: var(--orange); color: var(--orange); }
+body.theme-light .count-pill               { background: #e5e7eb; color: #374151; }
+body.theme-light .filter-tab.active .count-pill { background: rgba(249,115,22,0.15); color: var(--orange); }
+body.theme-light .search-input             { background: #f9fafb; border-color: #d1d5db; color: #111827; }
+body.theme-light .search-input::placeholder{ color: #9ca3af; }
+body.theme-light .role-select              { background: #f9fafb; border-color: #d1d5db; color: #111827; }
+body.theme-light tbody tr:hover td         { background: #f3f4f6; }
+body.theme-light .flash-toast             { background: #fff; border-color: #e5e7eb; color: #111827; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+body.theme-light .vip-bar-fill             { box-shadow: 0 0 6px rgba(249,115,22,0.25); }
+
+/* Table cell text colors in light theme */
+body.theme-light #user-info-modal > div   { background: #fff !important; border-color: #e5e7eb !important; }
+body.theme-light #user-info-modal [style*="rgba(255,255,255,0.03)"] { background: #f9fafb !important; border-color: #e5e7eb !important; }
+body.theme-light #user-info-modal [style*="rgba(255,255,255,0.07)"] { border-color: #e5e7eb !important; }
+body.theme-light #user-info-modal [style*="color:rgba(255,255,255,0.35)"] { color: #9ca3af !important; }
+body.theme-light #user-info-modal [style*="color:#fff"] { color: #111827 !important; }
+body.theme-light #user-info-modal [style*="color:rgba(255,255,255,0.7)"] { color: #374151 !important; }
+body.theme-light #user-info-modal [style*="color:rgba(255,255,255,0.4)"] { color: #6b7280 !important; }
+body.theme-light #user-info-modal button[onclick*="closeUserInfo"] { background: #f3f4f6 !important; border-color: #d1d5db !important; color: #6b7280 !important; }
+body.theme-light #user-info-modal [style*="rgba(255,255,255,0.08)"] { background: #e5e7eb !important; }
+
+/* Table inline text colors */
+body.theme-light table td[style*="color:rgba(255,255,255"] { color: #6b7280 !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.3)"] { color: #9ca3af !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.25)"] { color: #9ca3af !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.5)"] { color: #6b7280 !important; }
+body.theme-light table [style*="color:rgba(255,255,255,0.4)"] { color: #9ca3af !important; }
+body.theme-light table [style*="color:#fff"] { color: #111827 !important; }
+body.theme-light [style*="background:rgba(255,255,255,0.08)"] { background: #e5e7eb !important; }
+
+/* VIP progress bar track */
+body.theme-light [style*="background:rgba(255,255,255,0.08)"][style*="height:4px"] { background: #e5e7eb !important; }
+body.theme-light [style*="background:rgba(255,255,255,0.08)"][style*="height:6px"] { background: #e5e7eb !important; }
 </style>
 @endpush

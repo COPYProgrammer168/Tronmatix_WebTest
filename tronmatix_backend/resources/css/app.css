@@ -13,6 +13,9 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    --font-khmer-title: 'Kh_Jrung_Thom', ui-sans-serif, system-ui, sans-serif;
+    --font-khmer-body: 'KantumruyPro', ui-sans-serif, system-ui, sans-serif;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -139,5 +142,46 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    /* Khmer font faces */
+    @font-face {
+        font-family: 'Kh_Jrung_Thom';
+        src: url('/fonts/Kh_Jrung_Thom.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'KantumruyPro';
+        src: url('/fonts/KantumruyPro.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    /* Khmer language styles - applied when lang="km" */
+    [lang="km"] h1,
+    [lang="km"] h2,
+    [lang="km"] h3,
+    [lang="km"] h4,
+    [lang="km"] h5,
+    [lang="km"] h6,
+    [lang="km"] .khmer-title {
+        font-family: var(--font-khmer-title);
+        line-height: 1.4;
+    }
+
+    [lang="km"] body,
+    [lang="km"] p,
+    [lang="km"] span,
+    [lang="km"] label,
+    [lang="km"] input,
+    [lang="km"] button,
+    [lang="km"] .khmer-body {
+        font-family: var(--font-khmer-body);
+        font-size: 16px;
+        line-height: 2.0;
     }
 }

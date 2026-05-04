@@ -1,8 +1,10 @@
 // src/components/checkout/DeliverySchedulePicker.jsx
 import { useTheme } from "../../context/ThemeContext"
+import { useLang } from "../../context/LanguageContext"
 
 export default function DeliverySchedulePicker({ value, onChange }) {
   const { dark } = useTheme()
+  const { t, isKhmer } = useLang()
 
   const c = {
     label:       dark ? '#9ca3af' : '#4b5563',
@@ -18,7 +20,7 @@ export default function DeliverySchedulePicker({ value, onChange }) {
   return (
     <div>
       <label className="block font-bold mb-1" style={{ fontSize: 13, letterSpacing: 1, color: c.label }}>
-        PREFERRED DELIVERY DATE (optional)
+        {isKhmer ? t("checkout.preferredDate") : "PREFERRED DELIVERY DATE (optional)"}
       </label>
 
       <input

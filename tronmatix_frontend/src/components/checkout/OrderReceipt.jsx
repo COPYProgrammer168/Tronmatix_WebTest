@@ -1,19 +1,33 @@
 // src/components/checkout/OrderReceipt.jsx
 import { useCallback } from "react"
+import { useLang } from "../../context/LanguageContext"
 import { useNavigate } from "react-router-dom"
 import logo from "../../assets/logo.png"
 
-const STATUS_STEPS = [
+// For DELIVERY orders: full pipeline
+const DELIVERY_STEPS = [
   { key: "confirmed",  label: "Confirmed",  icon: "✅" },
   { key: "processing", label: "Processing", icon: "⚙️" },
   { key: "shipped",    label: "Shipped",    icon: "🚚" },
   { key: "delivered",  label: "Delivered",  icon: "📦" },
 ]
 
+// For PICKUP orders: pipeline without "shipped"
+const PICKUP_STEPS = [
+  { key: "confirmed",  label: "Confirmed",  icon: "✅" },
+  { key: "processing", label: "Ready",      icon: "📦" },
+  { key: "delivered",  label: "Picked Up",  icon: "🏪" },
+]
+
 export default function OrderReceipt({ order, deliveryStatus }) {
   const navigate = useNavigate()
+  const { t, isKhmer } = useLang()
+  const receiptFont = isKhmer ? "Kh_Jrung_Thom, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
+  const receiptBodyFont = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
 
-  // Support both local snapshot fields (_discountAmount) and API response fields (discount_amount)
+  const isPickup = (order.fulfillment_type ?? "delivery") === "pickup"
+  const STATUS_STEPS = isPickup ? PICKUP_STEPS : DELIVERY_STEPS
+
   const snapDiscount = Number(order._discountAmount || order.discount_amount || 0)
   const snapCode     = order._discountCode || order.discount_code || ""
   const snapType     = order._discountType || ""
@@ -42,17 +56,19 @@ export default function OrderReceipt({ order, deliveryStatus }) {
         .total-row td{font-size:18px;font-weight:900;color:#F97316;padding-top:12px}
         .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:28px;border-top:1px solid #eee;padding-top:16px;letter-spacing:1px}
         .badge{display:inline-block;background:#fff7ed;border:1px solid #F97316;color:#F97316;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:1px}
+        .pickup-badge{display:inline-block;background:#f0fdf4;border:1px solid #22c55e;color:#16a34a;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:1px}
         @media print{body{padding:16px}}
       </style></head><body>
       <div class="brand">TRONMATIX COMPUTER</div>
       <div class="subtitle">ORDER RECEIPT</div>
       <div class="info-row"><span>Order ID</span><span style="color:#F97316;font-family:monospace">#${order.order_id || order.id}</span></div>
+      <div class="info-row"><span>Fulfillment</span><span>${isPickup ? '<span class="pickup-badge">🏪 STORE PICKUP</span>' : '🚚 Delivery'}</span></div>
       <div class="info-row"><span>Date</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
       <div class="info-row"><span>Customer</span><span>${order.location?.name || "—"}</span></div>
       <div class="info-row"><span>Phone</span><span>${order.location?.phone || "—"}</span></div>
-      <div class="info-row"><span>Address</span><span>${order.location?.address || ""}${order.location?.city ? ", " + order.location.city : ""}</span></div>
-      ${order.delivery_date ? `<div class="info-row"><span>Delivery</span><span style="color:#F97316">${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}</span></div>` : ""}
-      <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? "💵 Cash on Delivery" : "📱 ABA BAKONG KHQR"}</span></div>
+      ${!isPickup ? `<div class="info-row"><span>Address</span><span>${order.location?.address || ""}${order.location?.city ? ", " + order.location.city : ""}</span></div>` : ""}
+      ${order.delivery_date ? `<div class="info-row"><span>${isPickup ? "Preferred Pickup" : "Delivery"}</span><span style="color:#F97316">${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}</span></div>` : ""}
+      <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? (isPickup ? "💵 Pay at Store" : "💵 Cash on Delivery") : "📱 ABA BAKONG KHQR"}</span></div>
       ${snapDiscount > 0 ? `<div class="info-row"><span>Discount</span><span class="badge">${snapCode ? snapCode + " — " : ""}${discLabel}</span></div>` : ""}
       <table>
         <thead><tr><th>ITEM</th><th style="text-align:center">QTY</th><th style="text-align:right">UNIT</th><th style="text-align:right">TOTAL</th></tr></thead>
@@ -70,11 +86,12 @@ export default function OrderReceipt({ order, deliveryStatus }) {
           <tr class="total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right">$${Number(order.total).toFixed(2)}</td></tr>
         </tfoot>
       </table>
+      ${isPickup ? '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#166534;">🏪 Please bring this Order ID when picking up. We will prepare your order and notify you when it\'s ready.</div>' : ""}
       <div class="footer">THANK YOU FOR SHOPPING AT TRONMATIX COMPUTER</div>
     </body></html>`)
     w.document.close()
     setTimeout(() => w.print(), 600)
-  }, [order])
+  }, [order, isPickup])
 
   return (
     <div className="max-w-[900px] mx-auto px-4 py-8">
@@ -101,14 +118,32 @@ export default function OrderReceipt({ order, deliveryStatus }) {
           </div>
         </div>
 
+        {/* Fulfillment type badge */}
+        <div className="px-6 pt-4 pb-0">
+          {isPickup ? (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-green-700 border border-green-200 bg-green-50" style={{ fontSize: 13 }}>
+              🏪 STORE PICKUP — please bring your Order ID
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-purple-700 border border-purple-200 bg-purple-50" style={{ fontSize: 13 }}>
+              🚚 HOME DELIVERY
+            </div>
+          )}
+        </div>
+
         {/* Customer info */}
-        <div className="grid grid-cols-2 border-b border-gray-100">
+        <div className="grid grid-cols-2 border-b border-gray-100 mt-4">
           {[
             ["Customer", order.location?.name],
             ["Phone",    order.location?.phone],
-            ["Address",  `${order.location?.address || ""}${order.location?.city ? ", " + order.location.city : ""}`],
-            ["Payment",  order.payment_method === "cash" ? "💵 Cash on Delivery" : "📱 ABA BAKONG KHQR"],
-            ...(order.delivery_date ? [["Delivery Date", `${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}`]] : []),
+            // For pickup: skip address row; for delivery: show address
+            ...(!isPickup ? [["Address", `${order.location?.address || ""}${order.location?.city ? ", " + order.location.city : ""}`]] : []),
+            ["Payment",
+              order.payment_method === "cash"
+                ? (isPickup ? "💵 Pay at Store" : "💵 Cash on Delivery")
+                : "📱 ABA BAKONG KHQR"],
+            ...(order.delivery_date ? [[isPickup ? "Preferred Pickup" : "Delivery Date",
+              `${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}`]] : []),
             ...(order.location?.note ? [["Note", order.location.note]] : []),
           ].map(([k, v]) => (
             <div key={k} className="px-6 py-3 border-b border-gray-50">
@@ -116,73 +151,22 @@ export default function OrderReceipt({ order, deliveryStatus }) {
               <div className="font-bold text-gray-800" style={{ fontSize: 14 }}>{v || "—"}</div>
             </div>
           ))}
-
-          {snapDiscount > 0 && (
-            <div className="col-span-2 px-6 py-3 bg-green-50 border-b border-green-100">
-              <div className="text-green-500 font-semibold" style={{ fontSize: 11, letterSpacing: 1 }}>DISCOUNT APPLIED</div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="bg-green-100 border border-green-300 text-green-700 font-black rounded-full px-3 py-0.5" style={{ fontSize: 13, letterSpacing: 1 }}>
-                    🏷 {snapCode}
-                  </span>
-                  <span className="text-green-600 font-bold" style={{ fontSize: 13 }}>{discLabel}</span>
-                </div>
-                <span className="text-green-700 font-black" style={{ fontSize: 16 }}>−${snapDiscount.toFixed(2)}</span>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Items table */}
-        <table className="w-full border-b border-gray-100">
-          <thead className="bg-gray-50">
-            <tr>
-              {["ITEM", "QTY", "UNIT", "TOTAL"].map((h) => (
-                <th key={h} className={`py-3 text-gray-500 font-semibold ${h === "ITEM" ? "text-left px-6" : h === "TOTAL" ? "text-right px-6" : "text-center px-3"}`} style={{ fontSize: 12 }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(order.items || []).map((item, i) => (
-              <tr key={i} className="border-t border-gray-50">
-                <td className="px-6 py-3 font-semibold text-gray-800" style={{ fontSize: 14 }}>{item.name}</td>
-                <td className="px-3 py-3 text-center text-gray-500" style={{ fontSize: 14 }}>×{item.qty}</td>
-                <td className="px-3 py-3 text-right text-gray-600" style={{ fontSize: 14 }}>${Number(item.price).toFixed(2)}</td>
-                <td className="px-6 py-3 text-right font-black" style={{ fontSize: 14 }}>${(item.price * item.qty).toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot className="bg-orange-50">
-            <tr>
-              <td colSpan={3} className="px-6 py-2 text-right text-gray-500" style={{ fontSize: 13 }}>Subtotal</td>
-              <td className="px-6 py-2 text-right text-gray-700 font-bold" style={{ fontSize: 13 }}>${Number(order.subtotal || order.total).toFixed(2)}</td>
-            </tr>
-            {snapDiscount > 0 && (
-              <tr>
-                <td colSpan={3} className="px-6 py-2 text-right text-green-600 font-bold" style={{ fontSize: 13 }}>🏷 Discount ({snapCode})</td>
-                <td className="px-6 py-2 text-right text-green-600 font-bold" style={{ fontSize: 13 }}>−${snapDiscount.toFixed(2)}</td>
-              </tr>
-            )}
-            <tr>
-              <td colSpan={3} className="px-6 py-4 text-right font-black tracking-widest text-gray-700" style={{ fontSize: 15 }}>TOTAL</td>
-              <td className="px-6 py-4 text-right font-black text-primary" style={{ fontSize: 22 }}>${Number(order.total).toFixed(2)}</td>
-            </tr>
-          </tfoot>
-        </table>
-
-        {/* Delivery tracker */}
-        <div className="px-6 py-5 border-b border-gray-100 bg-gray-50">
-          <h3 className="font-black text-gray-500 mb-4" style={{ fontSize: 12, letterSpacing: 2 }}>DELIVERY STATUS</h3>
+        {/* Status timeline */}
+        <div className="px-6 py-5 border-b border-gray-100">
+          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: 11, letterSpacing: 2 }}>ORDER STATUS</div>
           <div className="flex items-center">
             {STATUS_STEPS.map((s, i) => (
-              <div key={s.key} className="flex items-center flex-1">
+              <div key={s.key} className="flex items-center flex-1 min-w-0">
                 <div className="flex flex-col items-center flex-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${i <= deliveryStatus ? "bg-primary text-white shadow-md" : "bg-gray-200 text-gray-400"}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-content text-lg border-2 ${
+                    i <= deliveryStatus ? "border-primary bg-orange-50" : "border-gray-200 bg-gray-50"
+                  }`} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {s.icon}
                   </div>
-                  <div className={`mt-1 font-bold text-center ${i <= deliveryStatus ? "text-primary" : "text-gray-400"}`} style={{ fontSize: 10 }}>
+                  <div className={`mt-1 text-center font-bold ${i <= deliveryStatus ? "text-primary" : "text-gray-300"}`}
+                    style={{ fontSize: 10, letterSpacing: 0.5 }}>
                     {s.label}
                   </div>
                 </div>
@@ -194,9 +178,87 @@ export default function OrderReceipt({ order, deliveryStatus }) {
           </div>
         </div>
 
-        {/* Payment panel */}
+        {/* Items table */}
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: 11, letterSpacing: 2 }}>ORDER ITEMS</div>
+          <table className="w-full" style={{ borderCollapse: "collapse", fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid #f0f0f0" }}>
+                {["ITEM", "QTY", "UNIT", "TOTAL"].map((h) => (
+                  <th key={h} className="text-left pb-2 text-gray-400 font-bold" style={{ fontSize: 11, letterSpacing: 1 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(order.items || []).map((item) => (
+                <tr key={item.id} style={{ borderBottom: "1px solid #f9fafb" }}>
+                  <td className="py-2 font-semibold text-gray-700">{item.name}</td>
+                  <td className="py-2 text-gray-500">×{item.qty}</td>
+                  <td className="py-2 text-gray-500">${Number(item.price).toFixed(2)}</td>
+                  <td className="py-2 font-bold text-gray-800">${(item.price * item.qty).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* Totals */}
+          <div className="mt-3 space-y-1" style={{ borderTop: "1px solid #f0f0f0", paddingTop: 12 }}>
+            <div className="flex justify-between text-gray-500" style={{ fontSize: 13 }}>
+              <span>Subtotal</span><span>${Number(order.subtotal || order.total).toFixed(2)}</span>
+            </div>
+            {snapDiscount > 0 && (
+              <div className="flex justify-between font-bold text-green-600" style={{ fontSize: 13 }}>
+                <span>🏷 {discLabel}</span><span>−${snapDiscount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-black text-primary" style={{ fontSize: 18, borderTop: "1px solid #f0f0f0", paddingTop: 8 }}>
+              <span>TOTAL</span><span>${Number(order.total).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment / pickup panel */}
         <div className="px-6 py-5 border-b border-gray-100">
-          {order.payment_method === "cash" ? (
+          {isPickup ? (
+            /* ── Pickup panel ── */
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center" style={{ fontSize: 26 }}>🏪</div>
+                <div>
+                  <div className="font-black text-green-700" style={{ fontSize: 18 }}>
+                    {order.payment_method === "cash" ? "Pay at Store" : "ABA BAKONG KHQR"}
+                  </div>
+                  <div className="text-green-600" style={{ fontSize: 13 }}>
+                    {order.payment_method === "cash"
+                      ? "Please pay when you arrive at the store"
+                      : "Payment confirmed via KHQR"}
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white border border-green-200 rounded-xl p-4 space-y-2" style={{ fontSize: 14 }}>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Amount</span>
+                  <span className="font-black text-green-700 text-lg">${Number(order.total).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Order ID</span>
+                  <span className="font-bold font-mono">#{order.order_id || order.id}</span>
+                </div>
+                {order.delivery_date && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Preferred Pickup</span>
+                    <span className="font-bold text-primary">
+                      {order.delivery_date}{order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-green-600" style={{ fontSize: 12 }}>
+                <span>✅</span>
+                <span className="font-semibold">We'll notify you when your order is ready for pickup</span>
+              </div>
+            </div>
+          ) : order.payment_method === "cash" ? (
+            /* ── Cash on Delivery panel ── */
             <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center" style={{ fontSize: 26 }}>💵</div>
@@ -229,6 +291,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
               </div>
             </div>
           ) : (
+            /* ── BAKONG panel ── */
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center" style={{ fontSize: 26 }}>📱</div>
               <div>
@@ -251,13 +314,13 @@ export default function OrderReceipt({ order, deliveryStatus }) {
 
       {/* Action buttons */}
       <div className="flex gap-3 mt-6">
-        <button onClick={printPDF} className="flex-1 flex items-center justify-center gap-2 bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-700 transition-colors" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: 14 }}>
+        <button onClick={printPDF} className="flex-1 flex items-center justify-center gap-2 bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-700 transition-colors" style={{ fontFamily: receiptFont, fontSize: 14 }}>
           🖨 PRINT / PDF
         </button>
-        <button onClick={() => navigate("/orders")} className="flex-1 flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-colors" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: 14 }}>
+        <button onClick={() => navigate("/orders")} className="flex-1 flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-colors" style={{ fontFamily: receiptFont, fontSize: 14 }}>
           📋 MY ORDERS
         </button>
-        <button onClick={() => navigate("/")} className="flex-1 bg-primary text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition-colors" style={{ fontFamily: "Rajdhani, sans-serif", fontSize: 14 }}>
+        <button onClick={() => navigate("/")} className="flex-1 bg-primary text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition-colors" style={{ fontFamily: receiptFont, fontSize: 14 }}>
           🏠 HOME
         </button>
       </div>

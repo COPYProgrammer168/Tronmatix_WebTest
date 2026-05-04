@@ -1,6 +1,8 @@
 // src/components/orders/OrderCard.jsx
 import { useTheme } from "../../context/ThemeContext";
+import { useLang } from "../../context/LanguageContext";
 import { StatusBadge, PaymentStatusBadge } from "./OrderBadges";
+import FulfillmentBadge from "./FulfillmentBadge";
 import OrderExpandedPanel from "./OrderExpandedPanel";
 
 export default function OrderCard({
@@ -15,13 +17,17 @@ export default function OrderCard({
   deleting,
 }) {
   const { dark } = useTheme();
+  const { t, isKhmer } = useLang();
+  const cardFont = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif";
   const cardBg   = dark ? "#1f2937" : "#ffffff";
   const border   = dark ? "#374151" : "#e5e7eb";
   const textMain = dark ? "#f9fafb" : "#111827";
   const textSub  = dark ? "#9ca3af" : "#6b7280";
 
-  const orderId = order.order_id || order.id;
-  const isExpanded = expanded === orderId;
+  const orderId        = order.order_id || order.id;
+  const isExpanded     = expanded === orderId;
+  const fulfillmentType = order.fulfillment_type ?? "delivery"; // ← pickup | delivery
+  const isPickup       = fulfillmentType === "pickup";
 
   return (
     <div
@@ -51,8 +57,9 @@ export default function OrderCard({
               </span>
             </div>
           </div>
-          <StatusBadge status={order.status || "confirmed"} />
-          <PaymentStatusBadge paymentMethod={order.payment_method} paymentStatus={order.payment_status} />
+          <StatusBadge status={order.status || "confirmed"} fulfillmentType={fulfillmentType} />
+          <PaymentStatusBadge paymentMethod={order.payment_method} paymentStatus={order.payment_status} fulfillmentType={fulfillmentType} />
+          <FulfillmentBadge type={fulfillmentType} />
         </div>
 
         {/* Right: price + buttons */}
@@ -71,7 +78,9 @@ export default function OrderCard({
               </div>
             )}
             <div style={{ fontSize: 13, color: textSub }}>
-              {order.payment_method === "cash" ? "💵 Cash" : "📱 BAKONG"}
+              {order.payment_method === "cash"
+                ? (isPickup ? "💵 Pay at Store" : "💵 Cash")
+                : "📱 BAKONG"}
             </div>
           </div>
 
@@ -82,7 +91,7 @@ export default function OrderCard({
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold border-2 border-blue-300 text-blue-500 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-sm"
               style={{ fontSize: 12 }}
             >
-              📱 Show QR
+              📱 {isKhmer ? t("orders.showQR") : "Show QR"}
             </button>
           )}
 
@@ -95,8 +104,8 @@ export default function OrderCard({
               style={{ fontSize: 12 }}
             >
               {cancelling === order.id ? (
-                <><span className="w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full animate-spin inline-block" /> Cancelling…</>
-              ) : <>🚫 Cancel</>}
+                <><span className="w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full animate-spin inline-block" /> {isKhmer ? t("orders.cancelling") : "Cancelling…"}</>
+              ) : <>{isKhmer ? `🚫 ${t("orders.cancel")}` : "🚫 Cancel"}</>}
             </button>
           )}
 
@@ -109,8 +118,8 @@ export default function OrderCard({
               style={{ fontSize: 12 }}
             >
               {deleting === order.id ? (
-                <><span className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin inline-block" /> Deleting…</>
-              ) : <>🗑 Delete</>}
+                <><span className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin inline-block" /> {isKhmer ? t("orders.deleting") : "Deleting…"}</>
+              ) : <>{isKhmer ? `🗑 ${t("common.delete")}` : "🗑 Delete"}</>}
             </button>
           )}
 
@@ -120,7 +129,7 @@ export default function OrderCard({
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold border-2 transition-all"
             style={{ fontSize: 12, borderColor: border, color: textSub }}
           >
-            🖨 Receipt
+            🖨 {isKhmer ? t("orders.receipt") : "Receipt"}
           </button>
 
           {/* Expand toggle */}

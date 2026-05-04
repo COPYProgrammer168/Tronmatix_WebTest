@@ -12,75 +12,76 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Exports\DashboardExport;
+use App\Services\TelegramService;      // Bot 1 — admin/owner alerts
+use App\Services\TelegramBotService;   // Bot 2 — user-facing notifications
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Traits\StorageHelper;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
+    use StorageHelper;
     // ── Dashboard index ───────────────────────────────────────────────────────
     public function index()
     {
-        // ── Discount aggregates ───────────────────────────────────────────────
+        return view('dashboard.index', $this->buildDashboardData());
+    }
+
+
+
+    // ── Shared analytics data builder ─────────────────────────────────────────
+    private function buildDashboardData(): array
+    {
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth   = Carbon::now()->endOfMonth();
 
         $stats = [
-            'total_users'    => User::count(),
-            'total_products' => Product::count(),
-            'total_orders'   => Order::count(),
-            'total_revenue'  => Order::whereNotIn('status', ['cancelled'])->sum('total'),
-            'pending_orders' => Order::whereIn('status', ['pending', 'confirmed'])->count(),
-            'active_orders'  => Order::whereIn('status', ['confirmed', 'processing', 'shipped'])->count(),
-
-            // Total discount amount saved across ALL orders (all time)
-            'total_discount_used' => (float) Order::whereNotNull('discount_amount')
-                ->where('discount_amount', '>', 0)
-                ->sum('discount_amount'),
-
-            // Count of currently active (non-expired) discount codes
-            'active_discounts' => Discount::active()->count(),
-
-            // Discount savings within the current calendar month
-            'monthly_discount_used' => (float) Order::whereNotNull('discount_amount')
-                ->where('discount_amount', '>', 0)
-                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                ->sum('discount_amount'),
-
-            // Number of orders that used a discount code this month
+            'total_users'            => User::count(),
+            'total_products'         => Product::count(),
+            'total_orders'           => Order::count(),
+            'total_revenue'          => Order::whereNotIn('status', ['cancelled'])->sum('total'),
+            'pending_orders'         => Order::whereIn('status', ['pending', 'confirmed'])->count(),
+            'active_orders'          => Order::whereIn('status', ['confirmed', 'processing', 'shipped'])->count(),
+            'total_discount_used'    => (float) Order::whereNotNull('discount_amount')
+                                            ->where('discount_amount', '>', 0)->sum('discount_amount'),
+            'active_discounts'       => Discount::active()->count(),
+            'monthly_discount_used'  => (float) Order::whereNotNull('discount_amount')
+                                            ->where('discount_amount', '>', 0)
+                                            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                                            ->sum('discount_amount'),
             'monthly_discount_count' => Order::whereNotNull('discount_id')
-                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                ->count(),
+                                            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                                            ->count(),
         ];
 
         // Monthly sales — last 12 months
         $salesRows = Order::select(
-            DB::raw($this->dateFormatExpr('created_at', 'Y-m').' as month_key'),
+            DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
             DB::raw('SUM(total) as revenue'),
             DB::raw('COUNT(*) as orders')
         )
             ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
             ->whereNotIn('status', ['cancelled'])
-            ->groupBy('month_key')
-            ->orderBy('month_key')
+            ->groupBy('month_key')->orderBy('month_key')
             ->get()->keyBy('month_key');
 
         $monthlyLabels = $monthlyRevenue = $monthlyOrders = [];
         for ($i = 11; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $key = $date->format('Y-m');
+            $date  = Carbon::now()->subMonths($i);
+            $key   = $date->format('Y-m');
             $found = $salesRows->get($key);
-            $monthlyLabels[] = $date->format('M Y');
+            $monthlyLabels[]  = $date->format('M Y');
             $monthlyRevenue[] = $found ? round((float) $found->revenue, 2) : 0;
-            $monthlyOrders[] = $found ? (int) $found->orders : 0;
+            $monthlyOrders[]  = $found ? (int) $found->orders : 0;
         }
 
         // Monthly user registrations
         $userRows = User::select(
-            DB::raw($this->dateFormatExpr('created_at', 'Y-m').' as month_key'),
+            DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
             DB::raw('COUNT(*) as total')
         )
             ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
@@ -89,33 +90,33 @@ class DashboardController extends Controller
 
         $monthlyUserCounts = [];
         for ($i = 11; $i >= 0; $i--) {
-            $key = Carbon::now()->subMonths($i)->format('Y-m');
+            $key   = Carbon::now()->subMonths($i)->format('Y-m');
             $found = $userRows->get($key);
             $monthlyUserCounts[] = $found ? (int) $found->total : 0;
         }
 
         // Order status pie
-        $orderStatus = Order::select('status', DB::raw('COUNT(*) as total'))
+        $orderStatus  = Order::select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')->get()
-            ->mapWithKeys(fn ($item) => [$item->status => (int) $item->total]);
+            ->mapWithKeys(fn($item) => [$item->status => (int) $item->total]);
 
         $statusLabels = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-        $statusCounts = collect($statusLabels)->map(fn ($s) => $orderStatus->get($s, 0))->values()->toArray();
+        $statusCounts = collect($statusLabels)->map(fn($s) => $orderStatus->get($s, 0))->values()->toArray();
 
         // Sales by category
         $categoryRevenue = DB::table('order_items')
             ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('orders',   'order_items.order_id',   '=', 'orders.id')
             ->whereNotIn('orders.status', ['cancelled'])
             ->select('products.category', DB::raw('SUM(order_items.price * order_items.qty) as revenue'))
             ->groupBy('products.category')->orderByDesc('revenue')->limit(6)->get();
 
-        $categoryLabels = $categoryRevenue->pluck('category')->toArray();
-        $categoryRevData = $categoryRevenue->pluck('revenue')->map(fn ($v) => round((float) $v, 2))->toArray();
+        $categoryLabels  = $categoryRevenue->pluck('category')->toArray();
+        $categoryRevData = $categoryRevenue->pluck('revenue')->map(fn($v) => round((float) $v, 2))->toArray();
 
         // Daily sales — last 14 days
         $dailyRows = Order::select(
-            DB::raw($this->dateFormatExpr('created_at', 'Y-m-d').' as date_key'),
+            DB::raw($this->dateFormatExpr('created_at', 'Y-m-d') . ' as date_key'),
             DB::raw('SUM(total) as revenue')
         )
             ->where('created_at', '>=', Carbon::now()->subDays(13)->startOfDay())
@@ -125,43 +126,36 @@ class DashboardController extends Controller
 
         $dailyLabels = $dailyRevenue = [];
         for ($i = 13; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $key = $date->toDateString();
+            $date  = Carbon::now()->subDays($i);
+            $key   = $date->toDateString();
             $found = $dailyRows->get($key);
-            $dailyLabels[] = $date->format('d M');
+            $dailyLabels[]  = $date->format('d M');
             $dailyRevenue[] = $found ? round((float) $found->revenue, 2) : 0;
         }
 
         $top_products = Product::withCount('orderItems')->orderByDesc('order_items_count')->take(5)->get();
-
-        // FIX [1]: use AdminSetting threshold, not hardcoded 5
-        $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
-        $low_stock = Product::lowStock()->orderBy('stock')->take(5)->get(); // FIX [1]
-
-        // FIX [3]: eager-load 'location'
+        $low_stock    = Product::lowStock()->orderBy('stock')->take(5)->get();
         $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(8)->get();
 
-        // Top discount codes used this month — for the dashboard mini-table
         $top_discount_codes = Discount::select(
-                'discounts.*',
-                DB::raw('COUNT(orders.id)                            AS monthly_uses'),
-                DB::raw('COALESCE(SUM(orders.discount_amount), 0)   AS monthly_saved')
-            )
+            'discounts.*',
+            DB::raw('COUNT(orders.id)                          AS monthly_uses'),
+            DB::raw('COALESCE(SUM(orders.discount_amount), 0) AS monthly_saved')
+        )
             ->join('orders', function ($join) use ($startOfMonth, $endOfMonth) {
                 $join->on('orders.discount_id', '=', 'discounts.id')
-                     ->whereBetween('orders.created_at', [$startOfMonth, $endOfMonth]);
+                    ->whereBetween('orders.created_at', [$startOfMonth, $endOfMonth]);
             })
             ->groupBy('discounts.id')
             ->orderByDesc('monthly_saved')
-            ->limit(8)
-            ->get();
+            ->limit(8)->get();
 
-        return view('dashboard.index', compact(
+        return compact(
             'stats', 'recent_orders', 'top_products', 'low_stock',
             'monthlyLabels', 'monthlyRevenue', 'monthlyOrders', 'monthlyUserCounts',
             'statusLabels', 'statusCounts', 'categoryLabels', 'categoryRevData',
             'dailyLabels', 'dailyRevenue', 'top_discount_codes'
-        ));
+        );
     }
 
     // ── Products list ─────────────────────────────────────────────────────────
@@ -170,8 +164,8 @@ class DashboardController extends Controller
         $query = Product::query();
 
         if (request('search')) {
-            $term = '%'.request('search').'%';
-            $query->where(fn ($q) => $q->where('name', 'LIKE', $term)
+            $term = '%' . request('search') . '%';
+            $query->where(fn($q) => $q->where('name', 'LIKE', $term)
                 ->orWhere('brand', 'LIKE', $term)
                 ->orWhere('category', 'LIKE', $term));
         }
@@ -186,7 +180,7 @@ class DashboardController extends Controller
         } elseif (request('stock') === 'low') {
             $query->where('stock', '>', 0)->where('stock', '<=', $threshold); // FIX [2]
         } elseif (request('stock') === 'in') {
-            $query->where(fn ($q) => $q->whereNull('stock')->orWhere('stock', '>', 0));
+            $query->where(fn($q) => $q->whereNull('stock')->orWhere('stock', '>', 0));
         }
 
         if (request('filter') === 'hot') {
@@ -283,9 +277,10 @@ class DashboardController extends Controller
             $query->where('status', $status);
         }
         if ($search !== '') {
-            $query->where(fn ($q) => $q
-                ->where('order_id', 'like', "%{$search}%")
-                ->orWhereHas('user', fn ($u) => $u->where('username', 'like', "%{$search}%"))
+            $query->where(
+                fn($q) => $q
+                    ->where('order_id', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($u) => $u->where('username', 'like', "%{$search}%"))
             );
         }
 
@@ -310,18 +305,72 @@ class DashboardController extends Controller
         $request->validate([
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
         ]);
-        $order->update(['status' => $request->status]);
 
-        return redirect()->route('dashboard.orders.show', $order)->with('success', 'Order status updated.');
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        $order->update(['status' => $newStatus]);
+
+        // Load relations needed by Telegram message builders
+        $order->load(['items', 'user']);
+
+        // ── Bot 1 — notify admin channel ──────────────────────────────────────
+        try {
+            app(TelegramService::class)->sendAlert(
+                "📋 *Order Status Updated*\n\n" .
+                "📦 Order: `#{$order->order_id}`\n" .
+                "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+                "🔄 {$oldStatus} → *{$newStatus}*\n" .
+                "🕐 " . now()->format('d M Y, H:i')
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
+        }
+
+        // ── Bot 2 — notify customer in their Telegram ─────────────────────────
+        // Only fires if the customer has connected their Telegram account.
+        try {
+            $bot = app(TelegramBotService::class);
+            match ($newStatus) {
+                'confirmed' => $bot->onOrderConfirmed($order),
+                'processing' => $bot->onOrderProcessing($order),
+                'shipped' => $bot->onOrderShipped($order),
+                'delivered' => $bot->onOrderDelivered($order),
+                'cancelled' => $bot->onOrderCancelled($order),
+                default => null, // 'pending' — no user alert
+            };
+        } catch (\Throwable $e) {
+            Log::warning('[Bot2] User status notification failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('dashboard.orders.show', $order)->with('success', 'Order status updated to ' . strtoupper($newStatus) . '.');
     }
 
     public function confirmDelivery(Order $order)
     {
-        if (! in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
+        if (!in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
             return redirect()->route('dashboard.orders.show', $order)
                 ->with('error', 'Order cannot be marked as delivered from its current status.');
         }
+
         $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
+
+        // Load relations needed by Telegram message builders
+        $order->load(['items', 'user']);
+
+        // ── Bot 1 — notify admin channel ──────────────────────────────────────
+        try {
+            app(TelegramService::class)->sendDeliveryConfirmed($order);
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Delivery confirm failed: ' . $e->getMessage());
+        }
+
+        // ── Bot 2 — notify customer their order was delivered ─────────────────
+        try {
+            app(TelegramBotService::class)->onOrderDelivered($order);
+        } catch (\Throwable $e) {
+            Log::warning('[Bot2] User delivery notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('dashboard.orders.show', $order)
             ->with('success', "Order #{$order->order_id} marked as delivered ✅");
@@ -340,11 +389,12 @@ class DashboardController extends Controller
             $query->where('status', $status);
         }
         if ($search !== '') {
-            $query->where(fn ($q) => $q
-                ->whereHas('order', fn ($o) => $o->where('order_id', 'like', "%{$search}%"))
-                ->orWhere('qr_md5', 'like', "%{$search}%")
-                ->orWhere('bakong_hash', 'like', "%{$search}%")
-                ->orWhere('from_account_id', 'like', "%{$search}%")
+            $query->where(
+                fn($q) => $q
+                    ->whereHas('order', fn($o) => $o->where('order_id', 'like', "%{$search}%"))
+                    ->orWhere('qr_md5', 'like', "%{$search}%")
+                    ->orWhere('bakong_hash', 'like', "%{$search}%")
+                    ->orWhere('from_account_id', 'like', "%{$search}%")
             );
         }
 
@@ -369,11 +419,47 @@ class DashboardController extends Controller
     }
 
     // ── Users ─────────────────────────────────────────────────────────────────
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::withCount('orders')->latest()->paginate(15);
+        // Build base query — include total_spent via subquery for VIP progress bar in blade
+        $query = User::withCount('orders')
+            ->selectRaw(
+                'users.*, COALESCE((SELECT SUM(total) FROM orders WHERE orders.user_id = users.id AND orders.status != ?), 0) as total_spent',
+                ['cancelled']
+            )
+            ->latest();
 
-        return view('dashboard.users', compact('users'));
+        // Role filter
+        if ($role = $request->input('role')) {
+            if ($role !== 'all') {
+                $query->where('role', $role);
+            }
+        }
+
+        // Telegram filter
+        if ($request->input('telegram') === 'connected') {
+            $query->whereNotNull('telegram_chat_id');
+        }
+
+        // Search
+        if ($search = trim($request->input('search', ''))) {
+            $query->where(
+                fn($q) => $q
+                    ->where('username', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+            );
+        }
+
+        $perPage = AdminSetting::int('dashboard_rows_per_page', 15);
+        $users = $query->paginate($perPage)->withQueryString();
+
+        // Role counts for the filter tabs
+        $roleCounts = User::selectRaw('role, COUNT(*) as total')
+            ->groupBy('role')
+            ->pluck('total', 'role')
+            ->toArray();
+
+        return view('dashboard.users', compact('users', 'roleCounts'));
     }
 
     // ── Banners ───────────────────────────────────────────────────────────────
@@ -415,7 +501,7 @@ class DashboardController extends Controller
     public function discountsUpdate(Request $request, Discount $discount)
     {
         $data = $request->validate([
-            'code' => 'required|string|max:50|unique:discounts,code,'.$discount->id,
+            'code' => 'required|string|max:50|unique:discounts,code,' . $discount->id,
             'type' => 'required|in:percentage,fixed',
             'value' => 'required|numeric|min:0',
             'min_order' => 'nullable|numeric|min:0',
@@ -432,7 +518,7 @@ class DashboardController extends Controller
         return redirect()->route('dashboard.discounts')->with('success', 'Discount updated.');
     }
 
-    public function discountsSaveBadge(Request $request,Discount $discount)
+    public function discountsSaveBadge(Request $request, Discount $discount)
     {
         // clear_badge=1 means the admin clicked "CLEAR BADGE"
         if ($request->boolean('clear_badge')) {
@@ -441,12 +527,12 @@ class DashboardController extends Controller
         }
 
         $request->validate([
-            'badge_config'        => 'required|array',
-            'badge_config.text'   => 'required|string|max:30',
-            'badge_config.icon'   => 'nullable|string|max:10',
-            'badge_config.bg'     => 'nullable|string|max:100',
+            'badge_config' => 'required|array',
+            'badge_config.text' => 'required|string|max:30',
+            'badge_config.icon' => 'nullable|string|max:10',
+            'badge_config.bg' => 'nullable|string|max:100',
             'badge_config.border' => 'nullable|string|max:100',
-            'badge_config.color'  => 'nullable|string|max:30',
+            'badge_config.color' => 'nullable|string|max:30',
         ]);
 
         $discount->update([
@@ -471,48 +557,48 @@ class DashboardController extends Controller
     //   Summary | Monthly Sales | Daily Sales | Orders |
     //   Order Status | Category Revenue | Top Products | Discounts
     public function dashboardExport(Request $request)
-{
-    // ── 1. Parse & validate the month inputs (blade sends Y-m) ────────────────
-    $fromRaw = $request->input('from', \Carbon\Carbon::now()->subMonth()->format('Y-m'));
-    $toRaw   = $request->input('to',   \Carbon\Carbon::now()->format('Y-m'));
+    {
+        // ── 1. Parse & validate the month inputs (blade sends Y-m) ────────────────
+        $fromRaw = $request->input('from', \Carbon\Carbon::now()->subMonth()->format('Y-m'));
+        $toRaw = $request->input('to', \Carbon\Carbon::now()->format('Y-m'));
 
-    // Validate format: must be Y-m (e.g. "2025-01")
-    $monthPattern = '/^\d{4}-(0[1-9]|1[0-2])$/';
-    if (!preg_match($monthPattern, $fromRaw) || !preg_match($monthPattern, $toRaw)) {
-        return back()->withErrors(['export' => 'Invalid date format. Please use month pickers.']);
+        // Validate format: must be Y-m (e.g. "2025-01")
+        $monthPattern = '/^\d{4}-(0[1-9]|1[0-2])$/';
+        if (!preg_match($monthPattern, $fromRaw) || !preg_match($monthPattern, $toRaw)) {
+            return back()->withErrors(['export' => 'Invalid date format. Please use month pickers.']);
+        }
+
+        // Convert Y-m → full Y-m-d dates for the export class
+        $from = \Carbon\Carbon::createFromFormat('Y-m', $fromRaw)->startOfMonth()->format('Y-m-d');
+        $to = \Carbon\Carbon::createFromFormat('Y-m', $toRaw)->endOfMonth()->format('Y-m-d');
+
+        // Ensure "from" is not after "to"
+        if ($from > $to) {
+            return back()->withErrors(['export' => '"From" month cannot be after "To" month.']);
+        }
+
+        // ── 2. Determine export format ────────────────────────────────────────────
+        $format = in_array($request->input('format'), ['xlsx', 'csv']) ? $request->input('format') : 'xlsx';
+        $filename = 'dashboard-' . $from . '-to-' . $to . '.' . $format;
+
+        // ── 3. Stream the download ────────────────────────────────────────────────
+        if ($format === 'csv') {
+            // CSV does not support multiple sheets — export Summary sheet only.
+            // SummarySheet must implement FromCollection/FromQuery + WithHeadings.
+            return Excel::download(
+                new \App\Exports\Sheets\SummarySheet(
+                    \Carbon\Carbon::parse($from)->startOfDay(),
+                    \Carbon\Carbon::parse($to)->endOfDay()
+                ),
+                $filename,
+                \Maatwebsite\Excel\Excel::CSV,
+                ['Content-Type' => 'text/csv']
+            );
+        }
+
+        // Default: full multi-sheet .xlsx
+        return Excel::download(new DashboardExport($from, $to), $filename);
     }
-
-    // Convert Y-m → full Y-m-d dates for the export class
-    $from = \Carbon\Carbon::createFromFormat('Y-m', $fromRaw)->startOfMonth()->format('Y-m-d');
-    $to   = \Carbon\Carbon::createFromFormat('Y-m', $toRaw)->endOfMonth()->format('Y-m-d');
-
-    // Ensure "from" is not after "to"
-    if ($from > $to) {
-        return back()->withErrors(['export' => '"From" month cannot be after "To" month.']);
-    }
-
-    // ── 2. Determine export format ────────────────────────────────────────────
-    $format   = in_array($request->input('format'), ['xlsx', 'csv']) ? $request->input('format') : 'xlsx';
-    $filename = 'dashboard-' . $from . '-to-' . $to . '.' . $format;
-
-    // ── 3. Stream the download ────────────────────────────────────────────────
-    if ($format === 'csv') {
-        // CSV does not support multiple sheets — export Summary sheet only.
-        // SummarySheet must implement FromCollection/FromQuery + WithHeadings.
-        return Excel::download(
-            new \App\Exports\Sheets\SummarySheet(
-                \Carbon\Carbon::parse($from)->startOfDay(),
-                \Carbon\Carbon::parse($to)->endOfDay()
-            ),
-            $filename,
-            \Maatwebsite\Excel\Excel::CSV,
-            ['Content-Type' => 'text/csv']
-        );
-    }
-
-    // Default: full multi-sheet .xlsx
-    return Excel::download(new DashboardExport($from, $to), $filename);
-}
 
     // ── Private helpers ───────────────────────────────────────────────────────
     private function processImages(Request $request, array $currentImages): array
@@ -521,7 +607,7 @@ class DashboardController extends Controller
 
         foreach ($request->input('existing_images', []) as $path) {
             $clean = $this->normalizeImagePath($path);
-            if ($clean && ! in_array($clean, $finalImages)) {
+            if ($clean && !in_array($clean, $finalImages)) {
                 $finalImages[] = $clean;
             }
         }
@@ -533,12 +619,13 @@ class DashboardController extends Controller
 
         if ($request->hasFile('image_files')) {
             foreach ($request->file('image_files') as $file) {
-                if (! $file->isValid() || count($finalImages) >= 8) {
+                if (!$file->isValid() || count($finalImages) >= 8) {
                     continue;
                 }
-                $path = $file->store('products', 'public');
-                if ($path) {
-                    $finalImages[] = '/storage/'.$path;
+                // FIX: Upload to S3/R2 (production) or local (dev)
+                $url = $this->storeFile($file, 'products');
+                if ($url) {
+                    $finalImages[] = $url;
                 }
             }
         }
@@ -548,7 +635,7 @@ class DashboardController extends Controller
                 break;
             }
             $url = trim($url);
-            if (filter_var($url, FILTER_VALIDATE_URL) && ! in_array($url, $finalImages)) {
+            if (filter_var($url, FILTER_VALIDATE_URL) && !in_array($url, $finalImages)) {
                 $finalImages[] = $url;
             }
         }
@@ -566,22 +653,21 @@ class DashboardController extends Controller
         if (Str::startsWith($path, ['https://', 'http://'])) {
             $appUrl = rtrim(config('app.url'), '/');
             foreach (array_unique([$appUrl, 'http://127.0.0.1:8000', 'http://localhost:8000', 'http://localhost']) as $base) {
-                if ($base && Str::startsWith($path, $base.'/')) {
-                    return '/'.ltrim(substr($path, strlen($base)), '/');
+                if ($base && Str::startsWith($path, $base . '/')) {
+                    return '/' . ltrim(substr($path, strlen($base)), '/');
                 }
             }
 
             return $path;
         }
 
-        return '/'.ltrim($path, '/');
+        return '/' . ltrim($path, '/');
     }
 
     private function deleteStoredFile(string $path): void
     {
-        if (Str::startsWith($path, '/storage/')) {
-            Storage::disk('public')->delete(Str::after($path, '/storage/'));
-        }
+        // FIX: Handle both S3/R2 URLs and local /storage/ paths
+        $this->deleteStorageFile($path);
     }
 
     private function dateFormatExpr(string $column, string $format): string
@@ -590,9 +676,14 @@ class DashboardController extends Controller
         $sqlFormat = str_replace(['Y', 'm', 'd'], ['%Y', '%m', '%d'], $format);
 
         return match ($driver) {
-            'pgsql' => "TO_CHAR({$column}, '".str_replace(['%Y', '%m', '%d'], ['YYYY', 'MM', 'DD'], $sqlFormat)."')",
+            'pgsql' => "TO_CHAR({$column}, '" . str_replace(['%Y', '%m', '%d'], ['YYYY', 'MM', 'DD'], $sqlFormat) . "')",
             'sqlite' => "strftime('{$sqlFormat}', {$column})",
             default => "DATE_FORMAT({$column}, '{$sqlFormat}')",
         };
+    }
+
+    public function report()
+    {
+        return view('dashboard.report', $this->buildDashboardData());
     }
 }

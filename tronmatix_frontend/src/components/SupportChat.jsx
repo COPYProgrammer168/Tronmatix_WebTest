@@ -59,12 +59,29 @@ function TypingIndicator() {
 
 export default function SupportChat() {
   const [open,      setOpen]      = useState(false)
-  const [messages,  setMessages]  = useState([BOT_INTRO])
+  const [messages,  setMessages]  = useState(() => {
+    // FIX: persist chat messages in sessionStorage (survives navigation, clears on tab close)
+    try {
+      const saved = sessionStorage.getItem('tronmatix_chat')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [BOT_INTRO]
+      }
+    } catch {}
+    return [BOT_INTRO]
+  })
   const [input,     setInput]     = useState('')
   const [typing,    setTyping]    = useState(false)
-  const [sessionId, setSessionId] = useState(null)
+  const [sessionId, setSessionId] = useState(() => {
+    try { return sessionStorage.getItem('tronmatix_chat_session') || null } catch { return null }
+  })
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
+
+  // FIX: persist messages to sessionStorage
+  useEffect(() => {
+    try { sessionStorage.setItem('tronmatix_chat', JSON.stringify(messages)) } catch {}
+  }, [messages])
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -94,7 +111,7 @@ export default function SupportChat() {
   setTyping(true)
 
   try {
-    const res = await axios.post('/chat/message', {
+    const res = await axios.post('/api/chat/message', {
       message: trimmed,
       session_id: sessionId,
       history: updatedMessages.slice(-8).map(m => ({
@@ -112,6 +129,7 @@ export default function SupportChat() {
 
     if (data?.session_id) {
       setSessionId(data.session_id)
+      try { sessionStorage.setItem('tronmatix_chat_session', data.session_id) } catch {}
     }
 
     setMessages(prev => [

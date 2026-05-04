@@ -128,7 +128,7 @@
         $isActive = ($activeTab === $key) || ($key === 'all' && !$activeTab);
         $href     = route('dashboard.orders', array_filter(['status' => $key === 'all' ? null : $key, 'search' => $search ?: null]));
     @endphp
-    <a href="{{ $href }}" style="
+    <a href="{{ $href }}" {{ !$isActive ? 'class="order-status-tab-inactive"' : '' }} style="
         display:inline-flex; align-items:center; gap:6px;
         padding:8px 16px; border-radius:30px; font-family:Rajdhani,sans-serif;
         font-size:13px; font-weight:700; letter-spacing:1px; text-decoration:none;
@@ -139,7 +139,7 @@
         box-shadow:  {{ $isActive ? '0 0 14px '.$tab['color'].'66' : 'none' }};
     " onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
         {{ $tab['icon'] }} {{ $tab['label'] }}
-        <span style="
+        <span {{ !$isActive ? 'class="order-tab-count"' : '' }} style="
             background:{{ $isActive ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.1)' }};
             color:{{ $isActive ? '#fff' : 'rgba(255,255,255,0.6)' }};
             border-radius:20px; padding:0 8px; font-size:12px; font-weight:800; line-height:20px;
@@ -154,15 +154,17 @@
         @endif
         <input type="text" name="search" value="{{ $search ?? '' }}"
             placeholder="Search order ID or customer…"
+            class="orders-search-input"
             style="background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12);
                    color:#fff; border-radius:10px; padding:8px 16px; font-size:13px;
                    font-family:Rajdhani,sans-serif; outline:none; width:230px; transition:border-color .2s;"
-            onfocus="this.style.borderColor='#F97316'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'" />
+            onfocus="this.style.borderColor='#F97316'" onblur="this.style.borderColor=''" />
         <button type="submit" style="background:#F97316; color:#fff; border:none; border-radius:10px;
             padding:8px 16px; font-family:Rajdhani,sans-serif; font-size:13px; font-weight:700;
             cursor:pointer; letter-spacing:1px;">SEARCH</button>
         @if($search)
         <a href="{{ route('dashboard.orders', $activeTab && $activeTab !== 'all' ? ['status' => $activeTab] : []) }}"
+           class="orders-clear-btn"
            style="background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.5); border:1.5px solid rgba(255,255,255,0.1);
                   border-radius:10px; padding:8px 12px; font-size:14px; text-decoration:none;">✕</a>
         @endif
@@ -236,7 +238,17 @@
 
                     <td>
                         @if($order->discount_amount > 0)
-                            @if($order->discount_code)
+                            @php
+                                $dBadge = $order->discount?->badge_config;
+                            @endphp
+                            @if($dBadge && !empty($dBadge['text']))
+                                <div style="display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:800; letter-spacing:0.5px;
+                                    background:{{ $dBadge['bg'] ?? 'rgba(249,115,22,0.15)' }};
+                                    border:1px solid {{ $dBadge['border'] ?? 'rgba(249,115,22,0.4)' }};
+                                    color:{{ $dBadge['color'] ?? '#F97316' }};">
+                                    {{ $dBadge['icon'] ?? '🏷️' }} {{ $dBadge['text'] }}
+                                </div>
+                            @elseif($order->discount_code)
                                 <span style="font-family:monospace; font-size:11px; color:#4ade80; font-weight:700;
                                     background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.2);
                                     border-radius:4px; padding:1px 6px;">{{ $order->discount_code }}</span>
@@ -267,17 +279,38 @@
                     <td><span class="badge badge-{{ $order->status }}" style="font-size:11px;">{{ strtoupper($order->status) }}</span></td>
 
                     <td style="font-size:12px; white-space:nowrap;">
-                        <div style="color:rgba(255,255,255,0.75); font-weight:600;">{{ $order->created_at->format('d M Y') }}</div>
-                        <div style="color:rgba(255,255,255,0.3); font-size:11px;">🕐 {{ $order->created_at->format('H:i') }}</div>
+                        <div style="color:rgba(255,255,255,0.75); font-weight:600;">{{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y') }}</div>
+                        <div style="color:rgba(255,255,255,0.3); font-size:11px;">🕐 {{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('H:i') }}</div>
                     </td>
 
                     <td style="font-size:12px; white-space:nowrap;">
+                        {{-- Fulfillment type badge --}}
+                        @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;
+                                border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;
+                                background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);
+                                color:#22c55e;margin-bottom:4px;">
+                                🏪 PICKUP
+                            </span>
+                        @else
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;
+                                border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;
+                                background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);
+                                color:#a78bfa;margin-bottom:4px;">
+                                🚚 DELIVERY
+                            </span>
+                        @endif
+                        {{-- Scheduled date if set --}}
                         @if($order->delivery_date)
-                            <div style="color:#a78bfa; font-weight:700;">📅 {{ \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') }}</div>
+                            @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
+                                <div style="color:#22c55e; font-weight:700; margin-top:2px;">📅 {{ \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') }}</div>
+                            @else
+                                <div style="color:#a78bfa; font-weight:700; margin-top:2px;">📅 {{ \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') }}</div>
+                            @endif
                             @if($order->delivery_time_slot)
                                 <div style="color:rgba(167,139,250,0.55); font-size:11px;">🕐 {{ $order->delivery_time_slot }}</div>
                             @endif
-                        @else <span style="color:rgba(255,255,255,0.15);">—</span> @endif
+                        @endif
                     </td>
 
                     <td><a href="{{ route('dashboard.orders.show', $order) }}" class="btn btn-outline btn-sm">VIEW</a></td>

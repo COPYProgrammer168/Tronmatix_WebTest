@@ -1,8 +1,10 @@
 // src/components/orders/QRModal.jsx
 import { useEffect } from "react"
+import { useLang } from "../../context/LanguageContext"
 import BakongQRPanel from "./BakongQRPanel"
 
 export default function QRModal({ order, onClose, onPaid }) {
+  const { t, isKhmer } = useLang()
   // Lock body scroll while modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden"
@@ -34,7 +36,7 @@ export default function QRModal({ order, onClose, onPaid }) {
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
           <div>
             <div className="font-black text-gray-800" style={{ fontSize: 18 }}>
-              📱 KHQR Payment
+              📱 {isKhmer ? t("qr.title") : "KHQR Payment"}
             </div>
             <div className="text-gray-400" style={{ fontSize: 12 }}>
               Order #{order.order_id || order.id}

@@ -1,7 +1,9 @@
 // src/components/orders/ConfirmModal.jsx
 import { useEffect } from "react";
+import { useLang } from "../../context/LanguageContext";
 
 export default function ConfirmModal({ isOpen, onConfirm, onCancel, title, message, confirmLabel, confirmStyle = "danger" }) {
+  const { t, isKhmer } = useLang();
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
@@ -38,7 +40,7 @@ export default function ConfirmModal({ isOpen, onConfirm, onCancel, title, messa
           <button onClick={onCancel}
             className="flex-1 py-3 rounded-xl font-bold border-2 border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
             style={{ fontSize: 14 }}>
-            Keep it
+            {isKhmer ? t("orders.keepIt") : "Keep it"}
           </button>
           <button onClick={onConfirm}
             className={`flex-1 py-3 rounded-xl font-black text-white transition-all ${s.btn} focus:outline-none focus:ring-2 ${s.ring} active:scale-95`}

@@ -111,7 +111,7 @@
         style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
             <p style="color:rgba(255,255,255,0.8); font-size:20px;">
-                {{ $products->total() }} products total
+                {{ $products->total() }} {{ __('dashboard.productsPage.productsTotal') }}
             </p>
         </div>
         <a href="{{ route('dashboard.products.create') }}" class="btn btn-orange" style="font-size:16px;">
@@ -119,7 +119,7 @@
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            ADD PRODUCT
+            {{ __('dashboard.productsPage.addProduct') }}
         </a>
     </div>
 
@@ -134,7 +134,7 @@
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <input type="text" name="search" placeholder="Search product..." value="{{ request('search') }}"
+                <input type="text" name="search" placeholder="{{ __('dashboard.productsPage.searchPlaceholder') }}" value="{{ request('search') }}"
                     class="filter-input" oninput="debounceSubmit()" />
             </div>
 
@@ -146,7 +146,7 @@
                         d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
                 </svg>
                 <select name="category" class="filter-select" onchange="this.form.submit()">
-                    <option value="">ALL CATEGORIES</option>
+                    <option value="">{{ __('dashboard.productsPage.allCategories') }}</option>
 
                     {{-- <optgroup label="─── NEW ADD ───────────────">
                         @foreach (['New Arrival'] as $cat)
@@ -220,10 +220,10 @@
                     <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
                 </svg>
                 <select name="stock" class="filter-select" onchange="this.form.submit()">
-                    <option value="">ALL STOCK</option>
-                    <option value="in" {{ request('stock') === 'in' ? 'selected' : '' }}>IN STOCK</option>
-                    <option value="low" {{ request('stock') === 'low' ? 'selected' : '' }}>LOW STOCK (≤5)</option>
-                    <option value="out" {{ request('stock') === 'out' ? 'selected' : '' }}>OUT OF STOCK</option>
+                    <option value="">{{ __('dashboard.productsPage.allStock') }}</option>
+                    <option value="in" {{ request('stock') === 'in' ? 'selected' : '' }}>{{ __('dashboard.productsPage.inStock') }}</option>
+                    <option value="low" {{ request('stock') === 'low' ? 'selected' : '' }}>{{ __('dashboard.productsPage.lowStock') }}</option>
+                    <option value="out" {{ request('stock') === 'out' ? 'selected' : '' }}>{{ __('dashboard.productsPage.outOfStock') }}</option>
                 </select>
             </div>
 
@@ -235,16 +235,16 @@
                     <path d="M12 6v6l4 2" />
                 </svg>
                 <select name="filter" class="filter-select" onchange="this.form.submit()">
-                    <option value="">ALL PRODUCTS</option>
-                    <option value="hot" {{ request('filter') === 'hot' ? 'selected' : '' }}>🔥 HOT ITEMS</option>
-                    <option value="featured" {{ request('filter') === 'featured' ? 'selected' : '' }}>⭐ FEATURED</option>
+                    <option value="">{{ __('dashboard.productsPage.allProducts') }}</option>
+                    <option value="hot" {{ request('filter') === 'hot' ? 'selected' : '' }}>{{ __('dashboard.productsPage.hotItems') }}</option>
+                    <option value="featured" {{ request('filter') === 'featured' ? 'selected' : '' }}>{{ __('dashboard.productsPage.featured') }}</option>
                 </select>
             </div>
 
             {{-- Clear filters --}}
             @if (request()->hasAny(['search', 'category', 'stock', 'filter']))
                 <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="white-space:nowrap;">
-                    ✕ CLEAR
+                    {{ __('dashboard.productsPage.clearFilters') }}
                 </a>
             @endif
 
@@ -283,14 +283,14 @@
             <table>
                 <thead>
                     <tr>
-                        <th>PRODUCT</th>
-                        <th>CATEGORY</th>
-                        <th>BRAND</th>
-                        <th>PRICE</th>
-                        <th>STOCK</th>
-                        <th>FEATURED</th>
-                        <th>HOT</th>
-                        <th>ACTIONS</th>
+                        <th>{{ __('dashboard.productsPage.product') }}</th>
+                        <th>{{ __('dashboard.productsPage.category') }}</th>
+                        <th>{{ __('dashboard.productsPage.brand') }}</th>
+                        <th>{{ __('dashboard.productsPage.price') }}</th>
+                        <th>{{ __('dashboard.productsPage.stock') }}</th>
+                        <th>{{ __('dashboard.productsPage.featured') }}</th>
+                        <th>{{ __('dashboard.productsPage.hot') }}</th>
+                        <th>{{ __('dashboard.productsPage.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -335,14 +335,14 @@
                             </td>
                             <td>
                                 @if ($product->is_featured)
-                                    <span class="badge badge-paid">YES</span>
+                                    <span class="badge badge-paid">{{ __('dashboard.btn.yes') }}</span>
                                 @else
-                                    <span class="badge badge-gray">NO</span>
+                                    <span class="badge badge-gray">{{ __('dashboard.btn.no') }}</span>
                                 @endif
                             </td>
                             <td>
                                 @if ($product->is_hot)
-                                    <span class="badge badge-orange">HOT</span>
+                                    <span class="badge badge-orange">{{ __('dashboard.productsPage.hot') }}</span>
                                 @else
                                     <span class="badge badge-gray">—</span>
                                 @endif
@@ -350,12 +350,12 @@
                             <td>
                                 <div style="display:flex; gap:6px;">
                                     <a href="{{ route('dashboard.products.edit', $product) }}"
-                                        class="btn btn-outline btn-sm">EDIT</a>
+                                        class="btn btn-outline btn-sm">{{ __('dashboard.btn.edit') }}</a>
                                     <form method="POST" action="{{ route('dashboard.products.destroy', $product) }}"
-                                        onsubmit="return confirm('Delete this product?')">
+                                        onsubmit="return confirm('{{ __('dashboard.productsPage.deleteConfirm') }}')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-danger btn-sm" type="submit">DEL</button>
+                                        <button class="btn btn-danger btn-sm" type="submit">{{ __('dashboard.btn.delete') }}</button>
                                     </form>
                                 </div>
                             </td>
@@ -364,10 +364,10 @@
                         <tr>
                             <td colspan="8" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
                                 @if (request()->hasAny(['search', 'category', 'stock', 'filter']))
-                                    No products match your filters —
-                                    <a href="{{ route('dashboard.products') }}" style="color:#F97316;">clear filters</a>
+                                    {{ __('dashboard.productsPage.noProductsFiltered') }}
+                                    <a href="{{ route('dashboard.products') }}" style="color:#F97316;">{{ __('dashboard.productsPage.clearFiltersLink') }}</a>
                                 @else
-                                    No products found
+                                    {{ __('dashboard.productsPage.noProducts') }}
                                 @endif
                             </td>
                         </tr>

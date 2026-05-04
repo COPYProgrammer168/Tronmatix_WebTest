@@ -3,72 +3,176 @@
 @section('title', 'MY PROFILE')
 
 @section('content')
+@php
+    $admin   = Auth::guard('admin')->user();
+    // Resolve avatar URL — handles S3 full URL and local public disk path
+    $avatarUrl = null;
+    if ($admin->avatar) {
+        if (Str::startsWith($admin->avatar, ['http://', 'https://'])) {
+            // S3 / R2 / external — already a full URL, use directly
+            $avatarUrl = $admin->avatar;
+        } else {
+            // Local public disk — build URL via asset()
+            $avatarUrl = asset('storage/' . $admin->avatar);
+        }
+    }
+@endphp
+
 <div style="max-width:800px; margin:0 auto;">
 
     {{-- ── Page header ─────────────────────────────────────────────────────── --}}
     <div style="margin-bottom:28px; display:flex; align-items:center; gap:16px;">
-        <div style="
-            width:56px; height:56px; border-radius:50%;
-            background:linear-gradient(135deg,#F97316,#ea580c);
-            display:flex; align-items:center; justify-content:center;
-            font-size:22px; font-weight:800; color:#fff; flex-shrink:0;
-            box-shadow:0 4px 16px rgba(249,115,22,0.35);
-        ">
-            {{ strtoupper(substr(Auth::guard('admin')->user()->name ?? 'A', 0, 1)) }}
+
+        {{-- Avatar display --}}
+        <div style="position:relative; flex-shrink:0;">
+            @if($avatarUrl)
+                <img src="{{ $avatarUrl }}" alt="Avatar"
+                     style="width:60px; height:60px; border-radius:50%; object-fit:cover;
+                            border:2px solid rgba(249,115,22,0.5);
+                            box-shadow:0 4px 16px rgba(249,115,22,0.3);" />
+            @else
+                <div style="width:60px; height:60px; border-radius:50%;
+                            background:linear-gradient(135deg,#F97316,#ea580c);
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:24px; font-weight:800; color:#fff;
+                            box-shadow:0 4px 16px rgba(249,115,22,0.35);">
+                    {{ strtoupper(substr($admin->name ?? 'A', 0, 1)) }}
+                </div>
+            @endif
         </div>
+
         <div>
             <div style="font-size:24px; font-weight:800; letter-spacing:2px;">
-                {{ Auth::guard('admin')->user()->name ?? 'Admin' }}
+                {{ $admin->name ?? 'Admin' }}
             </div>
             <div style="font-size:14px; color:rgba(255,255,255,0.4); margin-top:2px; letter-spacing:1px;">
-                {{ Auth::guard('admin')->user()->email ?? '' }}
+                {{ $admin->email ?? '' }}
             </div>
         </div>
         <div style="margin-left:auto;">
             <span class="badge badge-orange" style="font-size:13px; letter-spacing:2px;">
-                {{ strtoupper(Auth::guard('admin')->user()->role ?? 'ADMIN') }}
+                {{ strtoupper($admin->role ?? 'ADMIN') }}
             </span>
         </div>
     </div>
 
+    {{-- Flash messages --}}
+    @if(session('success'))
+    <div style="margin-bottom:20px; padding:14px 18px; border-radius:10px;
+                background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);
+                color:#22c55e; font-weight:700; font-size:14px;">
+        ✓ {{ session('success') }}
+    </div>
+    @endif
+    @if($errors->any())
+    <div style="margin-bottom:20px; padding:14px 18px; border-radius:10px;
+                background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);
+                color:#ef4444; font-size:13px;">
+        @foreach($errors->all() as $e) <div>• {{ $e }}</div> @endforeach
+    </div>
+    @endif
+
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
 
-        {{-- ── Left: Edit Profile ──────────────────────────────────────────── --}}
+        {{-- ── Left: Edit Profile + Avatar Upload ─────────────────────────── --}}
         <div class="card">
             <div class="card-header">
                 <span style="font-size:16px; font-weight:800; letter-spacing:2px;">✏️ EDIT PROFILE</span>
             </div>
             <div style="padding:24px;">
-                <form method="POST" action="{{ route('dashboard.profile.update') }}">
+                {{-- HTML forms can't send PUT directly; use POST + @method('PUT') spoofing.
+                     Laravel reads the hidden _method field and routes it to the PUT handler. --}}
+                <form method="POST" action="{{ route('dashboard.profile.update') }}"
+                      enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
+                    {{-- Avatar Upload --}}
+                    <div class="form-group">
+                        <label class="form-label">PROFILE PHOTO</label>
+                        <div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+
+                            {{-- Preview --}}
+                            <div id="avatar-preview-wrap" style="width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0;
+                                      border:2px solid rgba(249,115,22,0.4); background:rgba(249,115,22,0.08);
+                                      display:flex; align-items:center; justify-content:center;">
+                                @if($avatarUrl)
+                                    <img id="avatar-preview" src="{{ $avatarUrl }}" alt="Avatar"
+                                         style="width:100%; height:100%; object-fit:cover;" />
+                                @else
+                                    <span id="avatar-initials" style="font-size:24px; font-weight:800; color:#F97316;">
+                                        {{ strtoupper(substr($admin->name ?? 'A', 0, 1)) }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div style="flex:1;">
+                                <label for="avatar-input" style="
+                                    display:inline-flex; align-items:center; gap:6px;
+                                    padding:8px 14px; border-radius:8px; cursor:pointer;
+                                    background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.3);
+                                    color:#F97316; font-size:13px; font-weight:700; letter-spacing:1px;
+                                    transition:all .2s;"
+                                    onmouseover="this.style.background='rgba(249,115,22,0.2)'"
+                                    onmouseout="this.style.background='rgba(249,115,22,0.1)'">
+                                    📷 CHOOSE PHOTO
+                                </label>
+                                <input id="avatar-input" type="file" name="avatar"
+                                       accept="image/jpg,image/jpeg,image/png,image/webp"
+                                       style="display:none;"
+                                       onchange="previewAvatar(this)" />
+                                <div style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:4px;">
+                                    JPG, PNG, WEBP · Max 2MB
+                                </div>
+                            </div>
+                        </div>
+
+                    {{-- Remove avatar button — MUST be outside the upload form (no nested forms) --}}
+                        @if($avatarUrl)
+                        <div style="margin-top:6px;">
+                            <button type="button"
+                                    onclick="document.getElementById('remove-avatar-form').submit()"
+                                    style="font-size:12px; color:rgba(239,68,68,0.7); background:none;
+                                           border:none; cursor:pointer; padding:0; font-weight:600;"
+                                    onmouseover="this.style.color='#ef4444'"
+                                    onmouseout="this.style.color='rgba(239,68,68,0.7)'">
+                                🗑 Remove photo
+                            </button>
+                        </div>
+                        @endif
+                    </div>
+
+                    {{-- Name --}}
                     <div class="form-group">
                         <label class="form-label">FULL NAME</label>
                         <input type="text" name="name" class="form-control"
-                            value="{{ old('name', Auth::guard('admin')->user()->name) }}"
-                            placeholder="Admin name" required
-                            style="border-color:{{ $errors->has('name') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
+                               value="{{ old('name', $admin->name) }}"
+                               placeholder="Admin name" required
+                               style="border-color:{{ $errors->has('name') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('name')
                             <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    {{-- Email --}}
                     <div class="form-group">
                         <label class="form-label">EMAIL ADDRESS</label>
                         <input type="email" name="email" class="form-control"
-                            value="{{ old('email', Auth::guard('admin')->user()->email) }}"
-                            placeholder="admin@example.com" required
-                            style="border-color:{{ $errors->has('email') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
+                               value="{{ old('email', $admin->email) }}"
+                               placeholder="admin@example.com" required
+                               style="border-color:{{ $errors->has('email') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('email')
                             <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <button type="submit" class="btn btn-orange" style="width:100%; justify-content:center; font-size:15px;">
-                        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <button type="submit" class="btn btn-orange"
+                            style="width:100%; justify-content:center; font-size:15px;">
+                        <svg style="width:16px;height:16px" fill="none" stroke="currentColor"
+                             stroke-width="2" viewBox="0 0 24 24">
                             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
                         </svg>
                         SAVE CHANGES
                     </button>
@@ -83,14 +187,13 @@
             </div>
             <div style="padding:24px;">
                 <form method="POST" action="{{ route('dashboard.profile.password') }}">
-                    @csrf
-                    @method('PUT')
+                    @csrf @method('PUT')
 
                     <div class="form-group">
                         <label class="form-label">CURRENT PASSWORD</label>
                         <input type="password" name="current_password" class="form-control"
-                            placeholder="Enter current password"
-                            style="border-color:{{ $errors->has('current_password') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
+                               placeholder="Enter current password"
+                               style="border-color:{{ $errors->has('current_password') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('current_password')
                             <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
                         @enderror
@@ -99,8 +202,8 @@
                     <div class="form-group">
                         <label class="form-label">NEW PASSWORD</label>
                         <input type="password" name="password" class="form-control"
-                            placeholder="Min. 8 characters"
-                            style="border-color:{{ $errors->has('password') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
+                               placeholder="Min. 8 characters"
+                               style="border-color:{{ $errors->has('password') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('password')
                             <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
                         @enderror
@@ -109,12 +212,14 @@
                     <div class="form-group">
                         <label class="form-label">CONFIRM NEW PASSWORD</label>
                         <input type="password" name="password_confirmation" class="form-control"
-                            placeholder="Repeat new password"
-                            style="border-color:rgba(255,255,255,0.1);" />
+                               placeholder="Repeat new password"
+                               style="border-color:rgba(255,255,255,0.1);" />
                     </div>
 
-                    <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center; font-size:15px;">
-                        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <button type="submit" class="btn btn-outline"
+                            style="width:100%; justify-content:center; font-size:15px;">
+                        <svg style="width:16px;height:16px" fill="none" stroke="currentColor"
+                             stroke-width="2" viewBox="0 0 24 24">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
@@ -126,99 +231,26 @@
 
     </div>{{-- /grid --}}
 
-    {{-- ── Change Role ──────────────────────────────────────────────────────── --}}
-    {{-- @php
-        $adminRoles = [
-            'admin'      => ['label' => 'Admin',       'icon' => '🛡️',  'desc' => 'Full access to all sections'],
-            'superadmin' => ['label' => 'Super Admin', 'icon' => '👑',  'desc' => 'Owner-level access, all permissions'],
-            'editor'     => ['label' => 'Editor',      'icon' => '✏️',  'desc' => 'Can manage products & content'],
-            'viewer'     => ['label' => 'Viewer',      'icon' => '👁️',  'desc' => 'Read-only access to dashboard'],
-        ];
-        $currentAdminRole = Auth::guard('admin')->user()->role ?? 'admin';
-    @endphp
-
-    <div class="card" style="margin-top:20px;">
-        <div class="card-header">
-            <span style="font-size:16px; font-weight:800; letter-spacing:2px;">🎭 CHANGE ROLE</span>
-            <span style="font-size:13px; color:rgba(255,255,255,0.3);">
-                Current: <span style="color:#F97316; font-weight:700;">{{ strtoupper($currentAdminRole) }}</span>
-            </span>
-        </div>
-        <div style="padding:20px;">
-            <form method="POST" action="{{ route('dashboard.profile.role') }}"
-                  onsubmit="return confirmRoleChange(this)">
-                @csrf
-                @method('PUT')
-                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;">
-                    @foreach($adminRoles as $roleKey => $roleInfo)
-                    <label style="cursor:pointer; display:block;">
-                        <input type="radio" name="role" value="{{ $roleKey }}"
-                               {{ $currentAdminRole === $roleKey ? 'checked' : '' }}
-                               style="display:none;"
-                               class="role-radio"
-                               onchange="updateRoleSelection()" />
-                        <div class="role-option-card {{ $currentAdminRole === $roleKey ? 'selected' : '' }}"
-                             id="role-card-{{ $roleKey }}"
-                             style="
-                                padding:14px 16px; border-radius:12px; border:2px solid;
-                                transition: all 0.18s;
-                                {{ $currentAdminRole === $roleKey
-                                    ? 'border-color:#F97316; background:rgba(249,115,22,0.1);'
-                                    : 'border-color:rgba(255,255,255,0.08); background:rgba(255,255,255,0.02);' }}
-                             ">
-                            <div style="font-size:22px; margin-bottom:6px;">{{ $roleInfo['icon'] }}</div>
-                            <div style="font-size:14px; font-weight:800; letter-spacing:1px; color:#fff;">
-                                {{ strtoupper($roleInfo['label']) }}
-                            </div>
-                            <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px; line-height:1.4;">
-                                {{ $roleInfo['desc'] }}
-                            </div>
-                        </div>
-                    </label>
-                    @endforeach
-                </div>
-
-                @error('role')
-                    <div style="color:#EF4444; font-size:13px; margin-bottom:12px;">{{ $message }}</div>
-                @enderror
-
-                <button type="submit" id="roleSubmitBtn"
-                        class="btn btn-orange"
-                        style="justify-content:center; font-size:15px; opacity:0.4; pointer-events:none;"
-                        disabled>
-                    <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    APPLY ROLE CHANGE
-                </button>
-            </form>
-        </div>
-    </div> --}}
-
     {{-- ── Account Info ─────────────────────────────────────────────────────── --}}
     <div class="card" style="margin-top:20px;">
         <div class="card-header">
             <span style="font-size:16px; font-weight:800; letter-spacing:2px;">📋 ACCOUNT INFORMATION</span>
         </div>
         <div style="padding:20px;">
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px;">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
                 @php
-                    $admin = Auth::guard('admin')->user();
                     $infos = [
-                        ['label' => 'ACCOUNT ID',    'value' => '#' . ($admin->id ?? '—')],
-                        ['label' => 'ROLE',          'value' => strtoupper($admin->role ?? 'ADMIN')],
-                        ['label' => 'MEMBER SINCE',  'value' => $admin->created_at ? $admin->created_at->format('M Y') : '—'],
-                        ['label' => 'LAST UPDATED',  'value' => $admin->updated_at ? $admin->updated_at->diffForHumans() : '—'],
+                        ['label' => 'ACCOUNT ID',   'value' => '#' . ($admin->id ?? '—')],
+                        ['label' => 'ROLE',         'value' => strtoupper($admin->role ?? 'ADMIN')],
+                        ['label' => 'MEMBER SINCE', 'value' => $admin->created_at ? $admin->created_at->format('M Y') : '—'],
+                        ['label' => 'LAST UPDATED', 'value' => $admin->updated_at ? $admin->updated_at->diffForHumans() : '—'],
                     ];
                 @endphp
                 @foreach($infos as $info)
-                <div style="
-                    padding:16px; border-radius:12px;
-                    background:rgba(255,255,255,0.03);
-                    border:1px solid rgba(255,255,255,0.06);
-                    text-align:center;
-                ">
+                <div style="padding:16px; border-radius:12px;
+                            background:rgba(255,255,255,0.03);
+                            border:1px solid rgba(255,255,255,0.06);
+                            text-align:center;">
                     <div style="font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:8px;">
                         {{ $info['label'] }}
                     </div>
@@ -230,62 +262,84 @@
             </div>
         </div>
     </div>
-</div>
+
+    {{-- Standalone remove-avatar form — outside the upload form (no nested forms allowed) --}}
+    @if($avatarUrl)
+    <form method="POST" action="{{ route('dashboard.profile.avatar.remove') }}"
+          id="remove-avatar-form" style="display:none;">
+        @csrf @method('DELETE')
+    </form>
+    @endif
+
+</div>{{-- /max-width wrapper --}}
 @endsection
+
 
 @push('styles')
 <style>
-.role-option-card:hover {
-    border-color: rgba(249,115,22,0.5) !important;
-    background: rgba(249,115,22,0.05) !important;
+/* ── Profile – light theme ────────────────────────────────────────────────── */
+[data-theme="light"] #avatar-preview-wrap {
+    border-color: rgba(249,115,22,0.30) !important;
+    background: rgba(249,115,22,0.04) !important;
 }
+[data-theme="light"] .profile-card {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+[data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]  { border-color: rgba(15,23,42,0.10) !important; }
 </style>
 @endpush
 
-{{-- @push('scripts')
+@push('scripts')
 <script>
-var INITIAL_ROLE = '{{ $currentAdminRole }}';
-
-function updateRoleSelection() {
-    var radios  = document.querySelectorAll('.role-radio');
-    var btn     = document.getElementById('roleSubmitBtn');
-    var selected = null;
-
-    radios.forEach(function(r) {
-        var card = document.getElementById('role-card-' + r.value);
-        if (r.checked) {
-            selected = r.value;
-            card.style.borderColor = '#F97316';
-            card.style.background  = 'rgba(249,115,22,0.1)';
-        } else {
-            card.style.borderColor = 'rgba(255,255,255,0.08)';
-            card.style.background  = 'rgba(255,255,255,0.02)';
-        }
-    });
-
-    // Only enable button if selection differs from current role
-    if (selected && selected !== INITIAL_ROLE) {
-        btn.disabled             = false;
-        btn.style.opacity        = '1';
-        btn.style.pointerEvents  = 'auto';
-    } else {
-        btn.disabled             = true;
-        btn.style.opacity        = '0.4';
-        btn.style.pointerEvents  = 'none';
-    }
-}
-
-function confirmRoleChange(form) {
-    var selected = form.querySelector('.role-radio:checked');
-    if (!selected || selected.value === INITIAL_ROLE) return false;
-
-    var label = selected.closest('label').querySelector('[id^="role-card-"] div:nth-child(2)');
-    var roleName = label ? label.textContent.trim() : selected.value;
-
-    if (selected.value === 'superadmin') {
-        return confirm('⚠️ Grant SUPER ADMIN role?\nThis gives full owner-level access to the dashboard.');
-    }
-    return confirm('Change admin role to ' + roleName + '?');
+function previewAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const wrap = document.getElementById('avatar-preview-wrap');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Replace initials with image preview
+        wrap.innerHTML = `<img id="avatar-preview" src="${e.target.result}"
+            style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    };
+    reader.readAsDataURL(file);
 }
 </script>
-@endpush --}}
+@endpush
+
+@push('styles')
+<style>
+/* Profile grid: 2-col → 1-col on tablet/mobile */
+@media (max-width: 760px) {
+    div[style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Page header stack on mobile */
+@media (max-width: 540px) {
+    div[style*="margin-bottom:28px; display:flex"] {
+        flex-wrap: wrap !important;
+    }
+}
+
+/* Account info grid: 4-col → 2-col on mobile */
+@media (max-width: 640px) {
+    div[style*="grid-template-columns:repeat(4,1fr)"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Full-width form controls on small screens */
+@media (max-width: 380px) {
+    div[style*="max-width:800px"] {
+        max-width: 100% !important;
+    }
+}
+</style>
+@endpush

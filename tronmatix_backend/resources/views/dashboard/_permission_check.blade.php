@@ -6,43 +6,53 @@
     use Illuminate\Support\Facades\Auth;
     use App\Models\AdminSetting;
 
-    $_adminUser  = Auth::guard('admin')->user();
-    $_role       = $_adminUser?->role ?? 'viewer';
+    $_adminUser  = Auth::guard('admin')->user() ?? Auth::guard('staff')->user(); // dual-guard
+    $_role       = $_adminUser?->role ?? 'editor';
     $_feature    = $feature ?? 'dashboard';
 
-    // Superadmin always has access
     if ($_role === 'superadmin') {
         $_hasAccess = true;
     } else {
-        // Read saved permission: perm_{role}_{feature}
         $_permKey = "perm_{$_role}_{$_feature}";
         $_defaults = [
+            // admin — full access, locked in controller
             'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
             'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
             'admin_settings'=>'1','admin_staff'=>'1',
+            // editor — content only, no sensitive admin pages
             'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
             'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
             'editor_settings'=>'0','editor_staff'=>'0',
-            'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
-            'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
-            'viewer_settings'=>'0','viewer_staff'=>'0',
+            // seller — products, orders & discounts
+            'seller_dashboard'=>'1','seller_products'=>'1','seller_orders'=>'1',
+            'seller_orders_edit'=>'1','seller_users'=>'0','seller_discounts'=>'1',
+            'seller_settings'=>'0','seller_staff'=>'0',
+            // delivery — orders view & edit only
+            'delivery_dashboard'=>'1','delivery_products'=>'0','delivery_orders'=>'1',
+            'delivery_orders_edit'=>'1','delivery_users'=>'0','delivery_discounts'=>'0',
+            'delivery_settings'=>'0','delivery_staff'=>'0',
+            // developer — read access, no admin-sensitive pages
+            'developer_dashboard'=>'1','developer_products'=>'1','developer_orders'=>'1',
+            'developer_orders_edit'=>'0','developer_users'=>'0','developer_discounts'=>'0',
+            'developer_settings'=>'0','developer_staff'=>'0',
         ];
         $_savedValue = AdminSetting::get($_permKey, $_defaults["{$_role}_{$_feature}"] ?? '0');
         $_hasAccess  = $_savedValue === '1';
     }
 
-    // Role meta for the denied screen
     $_roleMeta = [
-        'superadmin' => ['color' => '#F97316', 'icon' => '👑', 'label' => 'Super Admin'],
-        'admin'      => ['color' => '#F97316', 'icon' => '🛡️', 'label' => 'Admin'],
-        'editor'     => ['color' => '#3b82f6', 'icon' => '✏️',  'label' => 'Editor'],
-        'viewer'     => ['color' => '#a78bfa', 'icon' => '👁️',  'label' => 'Viewer'],
+        'superadmin' => ['color' => '#F97316', 'icon' => '👑', 'label' => __('dashboard.roles.superadmin')],
+        'admin'      => ['color' => '#F97316', 'icon' => '🛡️', 'label' => __('dashboard.roles.admin')],
+        'editor'     => ['color' => '#3b82f6', 'icon' => '✏️',  'label' => __('dashboard.roles.editor')],
+        'seller'     => ['color' => '#10b981', 'icon' => '🏪',  'label' => __('dashboard.roles.seller')],
+        'delivery'   => ['color' => '#a855f7', 'icon' => '🚚',  'label' => __('dashboard.roles.delivery')],
+        'developer'  => ['color' => '#06b6d4', 'icon' => '💻',  'label' => __('dashboard.roles.developer')],
     ];
-    $_rm = $_roleMeta[$_role] ?? $_roleMeta['viewer'];
+    $_rm = $_roleMeta[$_role] ?? ['color' => '#6b7280', 'icon' => '❓', 'label' => strtoupper($_role)];
 @endphp
 
 @if(!$_hasAccess)
-{{-- ══════════════════ ACCESS DENIED SCREEN ══════════════════════════════════ --}}
+{{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
 <div style="
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     min-height:60vh; text-align:center; padding:40px 20px;
@@ -60,11 +70,10 @@
 
     {{-- Title --}}
     <div style="font-size:30px; font-weight:900; letter-spacing:3px; color:#ef4444; margin-bottom:8px;">
-        ACCESS DENIED
+        {{ strtoupper(__('dashboard.access.denied')) }}
     </div>
     <div style="font-size:14px; color:rgba(255,255,255,0.35); margin-bottom:32px; max-width:380px; line-height:1.6;">
-        Your role does not have permission to access this module.<br>
-        Contact a <span style="color:#F97316; font-weight:700;">Super Admin</span> to request access.
+        {{ __('dashboard.access.desc') }}
     </div>
 
     {{-- Role badge --}}
@@ -75,19 +84,44 @@
     ">
         <span style="font-size:22px;">{{ $_rm['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px; font-weight:800; color:{{ $_rm['color'] }}; letter-spacing:1px;">{{ strtoupper($_rm['label']) }}</div>
+            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">
+                {{ strtoupper(__('dashboard.access.yourRole')) }}
+            </div>
+            <div style="font-size:16px; font-weight:800; color:{{ $_rm['color'] }}; letter-spacing:1px;">
+                {{ strtoupper($_rm['label']) }}
+            </div>
         </div>
         <div style="width:1px; height:32px; background:rgba(255,255,255,0.1); margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">MODULE</div>
-            <div style="font-size:16px; font-weight:800; color:rgba(255,255,255,0.6); letter-spacing:1px;">{{ strtoupper(str_replace('_',' ',$_feature)) }}</div>
+            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">
+                {{ strtoupper(__('dashboard.access.module')) }}
+            </div>
+            <div style="font-size:16px; font-weight:800; color:rgba(255,255,255,0.6); letter-spacing:1px;">
+                {{ strtoupper(str_replace('_',' ',$_feature)) }}
+            </div>
         </div>
     </div>
 
     {{-- Permission matrix mini preview --}}
     @php
         $_allFeatures = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋','orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️','settings'=>'⚙️','staff'=>'🛡️'];
+        $_fDefaultsAll = [
+            'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
+            'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
+            'admin_settings'=>'1','admin_staff'=>'1',
+            'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
+            'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
+            'editor_settings'=>'0','editor_staff'=>'0',
+            'seller_dashboard'=>'1','seller_products'=>'1','seller_orders'=>'1',
+            'seller_orders_edit'=>'1','seller_users'=>'0','seller_discounts'=>'1',
+            'seller_settings'=>'0','seller_staff'=>'0',
+            'delivery_dashboard'=>'1','delivery_products'=>'0','delivery_orders'=>'1',
+            'delivery_orders_edit'=>'1','delivery_users'=>'0','delivery_discounts'=>'0',
+            'delivery_settings'=>'0','delivery_staff'=>'0',
+            'developer_dashboard'=>'1','developer_products'=>'1','developer_orders'=>'1',
+            'developer_orders_edit'=>'0','developer_users'=>'0','developer_discounts'=>'0',
+            'developer_settings'=>'0','developer_staff'=>'0',
+        ];
     @endphp
     <div style="
         background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
@@ -95,14 +129,13 @@
         max-width:480px; width:100%;
     ">
         <div style="font-size:11px; color:rgba(255,255,255,0.3); letter-spacing:2px; font-weight:700; margin-bottom:16px; text-align:left;">
-            YOUR ACCESS OVERVIEW
+            {{ strtoupper(__('dashboard.access.overview')) }}
         </div>
         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
             @foreach($_allFeatures as $_fKey => $_fIcon)
             @php
                 $_fPermKey = "perm_{$_role}_{$_fKey}";
-                $_fDefaults = ['admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1','admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1','admin_settings'=>'1','admin_staff'=>'1','editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1','editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1','editor_settings'=>'0','editor_staff'=>'0','viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1','viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0','viewer_settings'=>'0','viewer_staff'=>'0'];
-                $_fHas = $_role === 'superadmin' || (AdminSetting::get($_fPermKey, $_fDefaults["{$_role}_{$_fKey}"] ?? '0') === '1');
+                $_fHas = $_role === 'superadmin' || (AdminSetting::get($_fPermKey, $_fDefaultsAll["{$_role}_{$_fKey}"] ?? '0') === '1');
                 $_fActive = $_fKey === $_feature;
             @endphp
             <div style="
@@ -130,7 +163,7 @@
             letter-spacing:1px; transition:all .2s;
             box-shadow:0 4px 16px rgba(249,115,22,0.3);
         " onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
-            🏠 GO TO DASHBOARD
+            🏠 {{ strtoupper(__('dashboard.btn.goToDashboard')) }}
         </a>
         <a href="javascript:history.back()" style="
             display:inline-flex; align-items:center; gap:8px;
@@ -139,7 +172,7 @@
             color:rgba(255,255,255,0.6); font-size:14px; font-weight:700; letter-spacing:1px;
             transition:all .2s;
         " onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ← GO BACK
+            ← {{ strtoupper(__('dashboard.btn.goBack')) }}
         </a>
     </div>
 </div>

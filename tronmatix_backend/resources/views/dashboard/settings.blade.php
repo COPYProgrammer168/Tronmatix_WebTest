@@ -378,7 +378,7 @@ setTimeout(closeSavePopup, 3500);
      ROLE PERMISSIONS MATRIX — only admin/superadmin can save changes
 ════════════════════════════════════════════════════════════════════════════ --}}
 @php
-    $currentAdminRole = Auth::guard('admin')->user()->role ?? 'viewer';
+    $currentAdminRole = Auth::guard('admin')->user()->role ?? 'editor';
     $canEditPerms     = in_array($currentAdminRole, ['admin','superadmin']);
 
     // Permission matrix definition: [feature_key => display_label]
@@ -395,9 +395,11 @@ setTimeout(closeSavePopup, 3500);
 
     // Roles that can be configured (superadmin is always full — not editable)
     $permRoles = [
-        'admin'  => ['label' => 'Admin',   'color' => '#F97316', 'icon' => '🛡️'],
-        'editor' => ['label' => 'Editor',  'color' => '#3b82f6', 'icon' => '✏️'],
-        'viewer' => ['label' => 'Viewer',  'color' => '#a78bfa', 'icon' => '👁️'],
+        'admin'     => ['label' => 'Admin',     'color' => '#F97316', 'icon' => '🛡️'],
+        'editor'    => ['label' => 'Editor',    'color' => '#3b82f6', 'icon' => '✏️'],
+        'seller'    => ['label' => 'Seller',    'color' => '#10b981', 'icon' => '🏪'],
+        'delivery'  => ['label' => 'Delivery',  'color' => '#a855f7', 'icon' => '🚚'],
+        'developer' => ['label' => 'Developer', 'color' => '#06b6d4', 'icon' => '💻'],
     ];
 
     // Default locked values for superadmin (always all true)
@@ -408,15 +410,23 @@ setTimeout(closeSavePopup, 3500);
         $key = "perm_{$role}_{$feature}";
         // Sensible defaults if not saved yet
         $defaults = [
-            'admin_dashboard'   => '1','admin_products' => '1','admin_orders'  => '1',
-            'admin_orders_edit' => '1','admin_users'    => '1','admin_discounts'=> '1',
-            'admin_settings'    => '1','admin_staff'    => '1',
-            'editor_dashboard'  => '1','editor_products'=> '1','editor_orders' => '1',
-            'editor_orders_edit'=> '0','editor_users'   => '0','editor_discounts'=>'1',
-            'editor_settings'   => '0','editor_staff'   => '0',
-            'viewer_dashboard'  => '1','viewer_products'=> '0','viewer_orders'  => '1',
-            'viewer_orders_edit'=> '0','viewer_users'   => '0','viewer_discounts'=>'0',
-            'viewer_settings'   => '0','viewer_staff'   => '0',
+            'admin_dashboard'    => '1','admin_products'    => '1','admin_orders'       => '1',
+            'admin_orders_edit'  => '1','admin_users'       => '1','admin_discounts'    => '1',
+            'admin_settings'     => '1','admin_staff'       => '1',
+            'editor_dashboard'   => '1','editor_products'   => '1','editor_orders'      => '1',
+            'editor_orders_edit' => '0','editor_users'      => '0','editor_discounts'   => '1',
+            'editor_settings'    => '0','editor_staff'      => '0',
+            'seller_dashboard'   => '1','seller_products'   => '1','seller_orders'      => '1',
+            'seller_orders_edit' => '1','seller_users'      => '0','seller_discounts'   => '1',
+            'seller_settings'    => '0','seller_staff'      => '0',
+            // delivery — orders view & edit only, no admin pages
+            'delivery_dashboard' => '1','delivery_products' => '0','delivery_orders'    => '1',
+            'delivery_orders_edit'=> '1','delivery_users'   => '0','delivery_discounts' => '0',
+            'delivery_settings'  => '0','delivery_staff'    => '0',
+            // developer — broad read access, no admin-sensitive pages
+            'developer_dashboard'=> '1','developer_products'=> '1','developer_orders'   => '1',
+            'developer_orders_edit'=>'0','developer_users'  => '0','developer_discounts'=> '0',
+            'developer_settings' => '0','developer_staff'   => '0',
         ];
         return ($s[$key] ?? $defaults["{$role}_{$feature}"] ?? '0') === '1';
     };
@@ -520,10 +530,20 @@ setTimeout(closeSavePopup, 3500);
                             </td>
 
                             @foreach($permRoles as $roleKey => $roleMeta)
-                            @php $checked = $perm($roleKey, $featureKey); @endphp
+                            @php
+                                $checked = $perm($roleKey, $featureKey);
+
+                                // admin: always ON for sensitive features — cannot be removed
+                                $lockedOn = $roleKey === 'admin'
+                                    && in_array($featureKey, ['settings','staff','orders_edit','users']);
+
+                                // delivery & developer: always OFF for admin-sensitive pages — cannot be granted
+                                $lockedOff = in_array($roleKey, ['delivery','developer'])
+                                    && in_array($featureKey, ['settings','staff','users']);
+                            @endphp
                             <td style="padding:14px; text-align:center;">
-                                {{-- Staff & Settings: admin always ON, cannot be turned off --}}
-                                @if($roleKey === 'admin' && in_array($featureKey, ['settings','staff','orders_edit','users']))
+                                @if($lockedOn)
+                                    {{-- Hidden forced value: 1 --}}
                                     <input type="hidden" name="perm_{{ $roleKey }}_{{ $featureKey }}" value="1">
                                     <span style="display:inline-flex; align-items:center; justify-content:center;
                                                  width:28px; height:28px; border-radius:8px;
@@ -531,6 +551,17 @@ setTimeout(closeSavePopup, 3500);
                                           title="Admin always has this permission">
                                         <svg width="14" height="14" fill="none" stroke="#F97316" stroke-width="2.5" viewBox="0 0 24 24">
                                             <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </span>
+                                @elseif($lockedOff)
+                                    {{-- Hidden forced value: 0 — this role can NEVER get these pages --}}
+                                    <input type="hidden" name="perm_{{ $roleKey }}_{{ $featureKey }}" value="0">
+                                    <span style="display:inline-flex; align-items:center; justify-content:center;
+                                                 width:28px; height:28px; border-radius:8px;
+                                                 background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2);"
+                                          title="This role cannot access this page">
+                                        <svg width="14" height="14" fill="none" stroke="rgba(239,68,68,0.5)" stroke-width="2.5" viewBox="0 0 24 24">
+                                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                                         </svg>
                                     </span>
                                 @else
@@ -605,7 +636,9 @@ setTimeout(closeSavePopup, 3500);
                 ['👑','SUPER ADMIN','#F97316','Full owner-level access to everything'],
                 ['🛡️','ADMIN',     '#F97316','Full access; cannot demote superadmin'],
                 ['✏️','EDITOR',    '#3b82f6','Products, banners & discounts; read-only orders'],
-                ['👁️','VIEWER',    '#a78bfa','Dashboard & orders read-only only'],
+                ['🏪','SELLER',    '#10b981','Products, orders & discounts management'],
+                ['🚚','DELIVERY',  '#a855f7','Order delivery management only'],
+                ['💻','DEVELOPER', '#06b6d4','Technical access; no admin-sensitive pages'],
             ];
         @endphp
         @foreach($legend as [$icon,$label,$color,$desc])
@@ -819,6 +852,33 @@ if (permsForm) {
 }
 .perm-toggle:hover .perm-check {
     transform: scale(1.1);
+}
+
+/* Permission matrix: scroll on small screens */
+@media (max-width: 768px) {
+    div[style*="overflow-x:auto"] table,
+    .table-wrap table { min-width: 520px; }
+}
+
+/* Settings cards stack on mobile */
+@media (max-width: 700px) {
+    div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"],
+    div[style*="display:grid"][style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Role legend wraps nicely on mobile */
+@media (max-width: 540px) {
+    div[style*="min-width:200px"] {
+        min-width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+}
+
+/* Perm matrix role header compact on tablet */
+@media (max-width: 860px) {
+    .perm-role-header { font-size: 9px !important; }
 }
 </style>
 

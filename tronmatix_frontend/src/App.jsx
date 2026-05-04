@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
@@ -6,14 +6,19 @@ import { FavoritesProvider } from "./context/FavoritesContext";
 import { LocationProvider } from "./context/LocationContext";
 import { DiscountProvider } from "./context/DiscountContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import { useTheme } from "./context/ThemeContext";
+import { useLang } from "./context/LanguageContext";
+
 // Eager — present on every page, must load immediately
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartSlider from "./components/CartSlider";
 import SupportChat from "./components/SupportChat";
+
 // AuthModal is lazy — only needed when the user clicks login
 const AuthModal = lazy(() => import("./components/AuthModal"));
+
 // Pages — each becomes its own chunk, downloaded only when navigated to
 const HomePage          = lazy(() => import("./pages/HomePage"));
 const CartPage          = lazy(() => import("./pages/CartPage"));
@@ -43,6 +48,13 @@ function PageSpinner() {
 function AppContent() {
   const [authMode, setAuthMode] = useState(null);
   const { dark } = useTheme();
+  const { isKhmer } = useLang();
+
+  // ── Sync body.lang-km class ────────────────────────────────────────────────
+  useEffect(() => {
+    document.body.classList.toggle('lang-km', isKhmer);
+    document.documentElement.lang = isKhmer ? 'km' : 'en';
+  }, [isKhmer]);
 
   return (
     <div
@@ -55,6 +67,8 @@ function AppContent() {
       <Navbar onAuthOpen={(mode) => setAuthMode(mode)} />
       <CartSlider />
       <SupportChat />
+
+      {/* Login / Register / Forgot Password modal */}
       {authMode && (
         <Suspense fallback={null}>
           <AuthModal
@@ -64,6 +78,7 @@ function AppContent() {
           />
         </Suspense>
       )}
+
       <main className="flex-1">
         <Suspense fallback={<PageSpinner />}>
           <Routes>
@@ -90,17 +105,19 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <LocationProvider>
-                <DiscountProvider>
-                  <AppContent />
-                </DiscountProvider>
-              </LocationProvider>
-            </FavoritesProvider>
-          </CartProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <LocationProvider>
+                  <DiscountProvider>
+                    <AppContent />
+                  </DiscountProvider>
+                </LocationProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

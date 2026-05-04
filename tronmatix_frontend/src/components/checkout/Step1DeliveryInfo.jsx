@@ -1,10 +1,27 @@
 // src/components/checkout/Step1DeliveryInfo.jsx
+import { useState } from "react"
 import { useTheme } from "../../context/ThemeContext"
+import { useLang } from "../../context/LanguageContext"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
+import MapPickerModal from "../profile/MapPickerModal"
 
-export default function Step1DeliveryInfo({ location, onChange, delivery, onDeliveryChange, saveAddr, onSaveAddr, savedLocations, onPickLocation, onNext }) {
+export default function Step1DeliveryInfo({
+  location, onChange, delivery, onDeliveryChange,
+  saveAddr, onSaveAddr, savedLocations, onPickLocation,
+  onSaveToProfile, onNext, mapPin, onMapPin,
+  isPickup,   // ← NEW: passed from CheckoutPage
+}) {
   const { dark } = useTheme()
-  const canProceed = location.name && location.phone && location.address
+  const { t, isKhmer } = useLang()
+  const step1Font = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
+  const [showMapPicker, setShowMapPicker] = useState(false)
+  // For pickup: only name + phone are required (no address)
+  const canProceed = isPickup
+    ? (location.name && location.phone)
+    : (location.name && location.phone && location.address)
+  const [saving,   setSaving]   = useState(false)
+  const [saved,    setSaved]    = useState(false)
+  const [saveErr,  setSaveErr]  = useState(null)
 
   // Theme tokens
   const c = {
@@ -19,8 +36,9 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
     saveBg:       dark ? 'rgba(249,115,22,0.08)' : '#fff7ed',
     saveBorder:   dark ? 'rgba(249,115,22,0.25)' : '#fed7aa',
     saveText:     dark ? '#d1d5db' : '#374151',
-    backBtn:      dark ? '#374151' : '#d1d5db',
-    backText:     dark ? '#f9fafb' : '#374151',
+    textSub:      dark ? '#6b7280' : '#9ca3af',
+    pickupBg:     dark ? 'rgba(34,197,94,0.06)' : '#f0fdf4',
+    pickupBorder: dark ? 'rgba(34,197,94,0.25)' : '#bbf7d0',
   }
 
   const inputStyle = {
@@ -35,9 +53,22 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
     onBlur:  (e) => { e.target.style.borderColor = c.inputBorder },
   }
 
+  const handleSaveToProfile = async () => {
+    if (!onSaveToProfile || !location.name || !location.phone || !location.address) return
+    setSaving(true); setSaved(false); setSaveErr(null)
+    try {
+      await onSaveToProfile(location, false)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch {
+      setSaveErr('Failed to save. Try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
-      {/* Placeholder color override for dark mode */}
       {dark && (
         <style>{`
           .checkout-input::placeholder { color: #6b7280; }
@@ -47,18 +78,32 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="font-black" style={{ fontSize: 20, color: c.heading }}>
-          Delivery Information
+          {isPickup
+            ? (isKhmer ? t("checkout.yourInfo") : "Your Contact Info")
+            : (isKhmer ? t("checkout.deliveryInfo") : "Delivery Information")}
         </h2>
-        {savedLocations.length > 0 && (
+        {!isPickup && savedLocations.length > 0 && (
           <button
             onClick={onPickLocation}
             className="flex items-center gap-1.5 text-sm font-bold text-white bg-primary hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors"
-            style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: 1 }}
+            style={{ fontFamily: step1Font, letterSpacing: isKhmer ? 0 : 1 }}
           >
-            📍 My Locations ({savedLocations.length})
+            📍 {isKhmer ? t("checkout.myLocations") : `My Locations (${savedLocations.length})`}
           </button>
         )}
       </div>
+
+      {/* Pickup notice banner */}
+      {isPickup && (
+        <div className="flex items-start gap-3 rounded-xl p-4"
+          style={{ background: c.pickupBg, border: `1px solid ${c.pickupBorder}` }}>
+          <span style={{ fontSize: 22 }}>🏪</span>
+          <div>
+            <p className="font-bold" style={{ fontSize: 14, color: '#22c55e' }}>{t("checkout.pickupSelectedTitle")}</p>
+            <p style={{ fontSize: 13, color: c.textSub, marginTop: 2 }}>{t("checkout.pickupSelectedHint")}</p>
+          </div>
+        </div>
+      )}
 
       {/* Name + Phone */}
       <div className="grid grid-cols-2 gap-4">
@@ -74,65 +119,175 @@ export default function Step1DeliveryInfo({ location, onChange, delivery, onDeli
         ))}
       </div>
 
-      {/* Address */}
-      <div>
-        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>Address *</label>
-        <input
-          name="address" value={location.address} onChange={onChange}
-          placeholder="Street / Village / Commune"
-          className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
-          style={inputStyle} {...focusHandlers}
-        />
-      </div>
+      {/* Address fields — hidden for pickup */}
+      {!isPickup && (
+        <>
+          {/* Address */}
+          <div>
+            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>{isKhmer ? t("checkout.address") : "Address *"}</label>
+            <input
+              name="address" value={location.address} onChange={onChange}
+              placeholder="Street / Village / Commune"
+              className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
+              style={inputStyle} {...focusHandlers}
+            />
+          </div>
 
-      {/* City */}
-      <div>
-        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>City / Province</label>
-        <input
-          name="city" value={location.city} onChange={onChange} placeholder="City or Province"
-          className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
-          style={inputStyle} {...focusHandlers}
-        />
-      </div>
+          {/* City */}
+          <div>
+            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>{isKhmer ? t("checkout.cityProvince") : "City / Province"}</label>
+            <input
+              name="city" value={location.city} onChange={onChange} placeholder="City or Province"
+              className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
+              style={inputStyle} {...focusHandlers}
+            />
+          </div>
+
+          {/* Map pin picker */}
+          <div>
+            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>
+              {isKhmer ? t("locations.mapPin") : "PIN LOCATION ON MAP (optional)"}
+            </label>
+            <button type="button" onClick={() => setShowMapPicker(true)}
+              className="w-full rounded-lg px-4 py-2.5 text-left transition-colors"
+              style={{
+                border: mapPin?.lat ? '1.5px solid #22c55e' : `1px dashed ${c.inputBorder}`,
+                background: mapPin?.lat ? 'rgba(34,197,94,0.06)' : c.inputBg,
+                color: mapPin?.lat ? '#22c55e' : c.textSub,
+                fontFamily: 'Rajdhani, sans-serif', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}>
+              {mapPin?.lat
+                ? `✅ Pinned: ${mapPin.address ? mapPin.address.slice(0,40)+'...' : `${Number(mapPin.lat).toFixed(5)}, ${Number(mapPin.lng).toFixed(5)}`}`
+                : (isKhmer ? '📍 ចុចដើម្បីកំណត់ទីតាំង (ឬស្វែងរក/បិទភ្ជាប់តំណ)' : '📍 Pin location (or search/paste link)')
+              }
+            </button>
+            {mapPin?.lat && (
+              <button type="button" onClick={() => onMapPin?.(null)}
+                style={{ fontSize: 12, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }}>
+                ✕ {isKhmer ? t('checkout.removePin') : 'Remove pin'}
+              </button>
+            )}
+          </div>
+
+          {showMapPicker && (
+            <MapPickerModal
+              initialLat={mapPin?.lat}
+              initialLng={mapPin?.lng}
+              onClose={() => setShowMapPicker(false)}
+              onConfirm={(pin) => {
+                onMapPin?.(pin)
+                setShowMapPicker(false)
+              }}
+            />
+          )}
+        </>
+      )}
 
       {/* Note */}
       <div>
-        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>Note (optional)</label>
+        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>
+          {isKhmer ? t("checkout.note") : (isPickup ? "Note (optional)" : "Delivery Note (optional)")}
+        </label>
         <textarea
           name="note" value={location.note} onChange={onChange} rows={2}
-          placeholder="Delivery instructions…"
+          placeholder={isPickup ? "Any special note for pickup…" : "Delivery instructions…"}
           className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none resize-none transition-colors"
           style={inputStyle} {...focusHandlers}
         />
       </div>
 
-      {/* Delivery schedule */}
-      <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
-        <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
-      </div>
+      {/* Save to Profile button — only for delivery */}
+      {!isPickup && onSaveToProfile && (
+        <div>
+          <button
+            type="button"
+            onClick={handleSaveToProfile}
+            disabled={saving || !location.name || !location.phone || !location.address}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold transition-all disabled:opacity-40"
+            style={{
+              fontSize: 14, letterSpacing: 0.5,
+              background: saved
+                ? 'rgba(34,197,94,0.12)'
+                : dark ? 'rgba(249,115,22,0.10)' : '#fff7ed',
+              border: `1.5px solid ${saved ? 'rgba(34,197,94,0.4)' : 'rgba(249,115,22,0.35)'}`,
+              color: saved ? '#22c55e' : '#F97316',
+              cursor: saving ? 'wait' : 'pointer',
+            }}
+          >
+            {saving ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                {isKhmer ? t("profile.saving") : "Saving…"}
+              </>
+            ) : saved ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                {isKhmer ? t("checkout.savedToProfile") : "Saved to Profile!"}
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {isKhmer ? t("checkout.saveToProfile") : "Save Address to My Profile"}
+              </>
+            )}
+          </button>
+          {saveErr && (
+            <p className="text-red-500 font-semibold mt-1" style={{ fontSize: 12 }}>⚠ {saveErr}</p>
+          )}
+        </div>
+      )}
 
-      {/* Save address toggle */}
-      <label
-        className="flex items-center gap-3 cursor-pointer p-3 rounded-lg"
-        style={{ background: c.saveBg, border: `1px solid ${c.saveBorder}` }}
-      >
-        <input
-          type="checkbox" checked={saveAddr} onChange={(e) => onSaveAddr(e.target.checked)}
-          className="w-4 h-4 accent-primary"
-        />
-        <span className="font-bold" style={{ fontSize: 15, color: c.saveText }}>
-          💾 Save this address for next time
-        </span>
-      </label>
+      {/* Delivery schedule — only for delivery */}
+      {!isPickup && (
+        <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
+          <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
+        </div>
+      )}
+
+      {/* Pickup schedule */}
+      {isPickup && (
+        <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
+          <p className="font-bold mb-2" style={{ fontSize: 13, letterSpacing: isKhmer ? 0 : 1, color: c.label }}>{t("checkout.preferredPickupDate")}</p>
+          <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
+        </div>
+      )}
+
+      {/* Save address checkbox — only for delivery */}
+      {!isPickup && (
+        <label
+          className="flex items-center gap-3 cursor-pointer p-3 rounded-lg"
+          style={{ background: c.saveBg, border: `1px solid ${c.saveBorder}` }}
+        >
+          <input
+            type="checkbox" checked={saveAddr} onChange={(e) => onSaveAddr(e.target.checked)}
+            className="w-4 h-4 accent-primary"
+          />
+          <div>
+            <span className="font-bold" style={{ fontSize: 15, color: c.saveText }}>
+              💾 {isKhmer ? t("checkout.saveAddress") : "Save this address when I place the order"}
+            </span>
+            <p style={{ fontSize: 12, color: dark ? '#6b7280' : '#9ca3af', marginTop: 2 }}>
+              {isKhmer ? t("checkout.saveAddressHint") : "Automatically saved to your profile when you checkout"}
+            </p>
+          </div>
+        </label>
+      )}
 
       {/* Continue */}
       <button
         onClick={onNext}
         disabled={!canProceed}
         className="w-full bg-primary text-white font-bold py-3.5 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-        style={{ fontFamily: "Rajdhani, sans-serif", fontSize: 18 }}
+        style={{ fontFamily: step1Font, fontSize: 18, letterSpacing: isKhmer ? 0 : undefined }}
       >
-        CONTINUE TO PAYMENT →
+        {isKhmer ? t("checkout.continueToPayment") : "CONTINUE TO PAYMENT →"}
       </button>
     </div>
   )

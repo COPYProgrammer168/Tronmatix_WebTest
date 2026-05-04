@@ -1,4 +1,5 @@
 // src/components/profile/ProfileHeader.jsx
+import { useLang } from '../../context/LanguageContext'
 
 const THEMES = {
   vip: {
@@ -28,6 +29,9 @@ const THEMES = {
 }
 
 export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
+  const { isKhmer } = useLang()
+  const headerFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
   const role       = user?.role || 'customer'
   const spent      = totalSpent ?? 0
   const pct        = Math.min(100, Math.round((spent / VIP_GOAL) * 100))
@@ -65,11 +69,42 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 24px 24px', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
 
-          {/* Left: name + email + badge */}
-          <div>
+          {/* Left: avatar + name + email + badge */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+
+            {/* Avatar circle */}
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+              overflow: 'hidden',
+              border: `2.5px solid ${t.accent}`,
+              boxShadow: `0 0 0 3px ${t.glow1}, 0 4px 16px rgba(0,0,0,0.3)`,
+              background: `linear-gradient(135deg, ${t.accent}, ${t.gold})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, fontWeight: 900, color: '#fff',
+              fontFamily: 'Rajdhani, sans-serif',
+              transition: 'all 0.3s',
+            }}>
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user?.username}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+                />
+              ) : null}
+              <div style={{
+                display: user?.avatar ? 'none' : 'flex',
+                width: '100%', height: '100%',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                {(user?.username || user?.name || '?').charAt(0).toUpperCase()}
+              </div>
+            </div>
+
+            <div>
             <div style={{
               fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: 1, lineHeight: 1,
-              fontFamily: 'Rajdhani, sans-serif',
+              fontFamily: headerFont,
               textShadow: showVip ? '0 0 24px rgba(249,115,22,0.5)' : 'none',
             }}>
               {user?.username || user?.name}
@@ -108,10 +143,11 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
-                  fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 20, letterSpacing: 2,
-                  border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Rajdhani, sans-serif',
-                }}>MEMBER</div>
+                  fontSize: 14, fontWeight: 600, padding: '4px 14px', borderRadius: 20, letterSpacing: 2,
+                  border: '1px solid rgba(255,255,255,0.12)', fontFamily: bodyFont,
+                }}>{isKhmer ? 'សមាជិក' : 'MEMBER'}</div>
               )}
+            </div>
             </div>
           </div>
 

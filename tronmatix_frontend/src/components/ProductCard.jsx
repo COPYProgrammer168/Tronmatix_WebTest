@@ -4,14 +4,8 @@ import { useCart } from '../context/CartContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { useDiscount } from '../context/DiscountContext'
 import { useTheme } from '../context/ThemeContext'
-
-const LARAVEL_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
-function resolveImage(path) {
-  if (!path) return null
-  if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return LARAVEL_URL + (path.startsWith('/') ? path : '/' + path)
-}
+import { useLang } from '../context/LanguageContext'
+import { resolveImage } from '../lib/resolveImage'
 
 function PlaceholderImg({ name, dark }) {
   return (
@@ -25,7 +19,7 @@ function PlaceholderImg({ name, dark }) {
   )
 }
 
-function AddToCartBtn({ onAdd, dark, cardHovered }) {
+function AddToCartBtn({ onAdd, dark, cardHovered, btnFont = 'Rajdhani, sans-serif', isKhmer = false }) {
   const [state, setState] = useState('idle') // idle | adding | added
 
   const handleClick = () => {
@@ -55,7 +49,7 @@ function AddToCartBtn({ onAdd, dark, cardHovered }) {
       disabled={state !== 'idle'}
       className="mt-auto w-full font-bold rounded transition-all duration-200"
       style={{
-        fontFamily: 'Rajdhani, sans-serif',
+        fontFamily: btnFont,
         fontSize: 15,
         letterSpacing: 1,
         height: 42,
@@ -76,21 +70,21 @@ function AddToCartBtn({ onAdd, dark, cardHovered }) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            <span>ADDED!</span>
+            <span>{isKhmer ? 'បានបន្ថែម!' : 'ADDED!'}</span>
           </>
         ) : isAdding ? (
           <>
             <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <span>ADDING...</span>
+            <span>{isKhmer ? 'កំពុងបន្ថែម...' : 'ADDING...'}</span>
           </>
         ) : (
           <>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span>ADD TO CART</span>
+            <span>{isKhmer ? 'បន្ថែមទៅកន្ត្រក' : 'ADD TO CART'}</span>
           </>
         )}
       </span>
@@ -103,6 +97,8 @@ export default function ProductCard({ product }) {
   const { toggleFavorite, isFavorite }                        = useFavorites()
   const { getItemDiscounts, bestDiscountForItem }              = useDiscount()
   const { dark }                                              = useTheme()
+  const { isKhmer }                                           = useLang()
+  const btnFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
   const [hovered, setHovered]                                 = useState(false)
 
   const fav             = isFavorite(product.id)
@@ -260,7 +256,7 @@ export default function ProductCard({ product }) {
       <div className="p-3 text-center flex flex-col flex-1">
         <Link to={`/product/${product.id}`}>
           <h3 className="font-bold mb-1 leading-tight hover:text-primary transition-colors line-clamp-2"
-            style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 18, color: text }}>
+            style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', fontSize: 16, color: text, letterSpacing: isKhmer ? 0 : undefined }}>
             {product.name}
           </h3>
         </Link>
@@ -269,11 +265,11 @@ export default function ProductCard({ product }) {
         <div className="flex flex-col items-center justify-end mb-3" style={{ minHeight: 52 }}>
           {discountedPrice !== null ? (
             <>
-              <div className="text-primary font-black" style={{ fontSize: 20 }}>
+              <div className="text-primary font-black" style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', fontSize: 20 }}>
                 ${discountedPrice.toFixed(2)}
               </div>
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                <span className="line-through font-semibold" style={{ fontSize: 13, color: dark ? '#6b7280' : '#9ca3af' }}>
+                <span className="line-through font-semibold" style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', fontSize: 16, color: dark ? '#6b7280' : '#9ca3af' }}>
                   ${Number(product.price).toFixed(2)}
                 </span>
                 <span className="font-black rounded-full px-1.5 py-0.5"
@@ -285,13 +281,13 @@ export default function ProductCard({ product }) {
               </div>
             </>
           ) : (
-            <div className="text-primary font-bold" style={{ fontSize: 18 }}>
+            <div className="text-primary font-bold" style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif',fontSize: 18, color: text, letterSpacing: isKhmer ? 0 : undefined }}>
               {product.price ? `$${Number(product.price).toFixed(2)}` : '$$$'}
             </div>
           )}
         </div>
 
-        <AddToCartBtn onAdd={() => addItem(product)} dark={dark} cardHovered={hovered} />
+        <AddToCartBtn onAdd={() => addItem(product)} dark={dark} cardHovered={hovered} btnFont={btnFont} isKhmer={isKhmer} />
       </div>
     </div>
   )

@@ -1,0 +1,23 @@
+# render.yaml
+# ── Place this in your project ROOT: tronmatix_frontend/render.yaml ───────────
+
+services:
+  - type: web
+    name: tronmatix-frontend
+    runtime: static
+    branch: master
+
+    # ── Build ──────────────────────────────────────────────────────────────────
+    buildCommand: npm ci --legacy-peer-deps && npm run build
+    staticPublishPath: ./dist
+
+    # ── SPA routing fix — fixes 404 on page reload ────────────────────────────
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    # ── Environment variables ──────────────────────────────────────────────────
+    envVars:
+      - key: VITE_API_URL
+        value: https://tronmatix-beckend.onrender.com

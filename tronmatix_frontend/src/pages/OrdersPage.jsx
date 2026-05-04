@@ -3,20 +3,24 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useLang } from "../context/LanguageContext";
 
-import useOrders        from "../hooks/useOrders";
-import OrderHeader      from "../components/orders/OrderHeader";
-import OrderFilters     from "../components/orders/OrderFilters";
-import OrderCard        from "../components/orders/OrderCard";
-import ConfirmModal     from "../components/orders/ConfirmModal";
-import QRModal          from "../components/orders/QRModal";
+import useOrders    from "../hooks/useOrders";
+import OrderHeader  from "../components/orders/OrderHeader";
+import OrderFilters from "../components/orders/OrderFilters";
+import OrderCard    from "../components/orders/OrderCard";
+import ConfirmModal from "../components/orders/ConfirmModal";
+import QRModal      from "../components/orders/QRModal";
 
 export default function OrdersPage() {
   const { user }  = useAuth();
   const { dark }  = useTheme();
+  const { t, isKhmer}     = useLang();
   const [filter,   setFilter]  = useState("all");
   const [expanded, setExpanded] = useState(null);
   const [qrOrder,  setQrOrder]  = useState(null);
+  const headfont  = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
+  const bodyFont  = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
 
   const {
     orders, loading, cancelling, deleting,
@@ -24,6 +28,8 @@ export default function OrdersPage() {
     cancelOrder, deleteOrder, markPaid, printReceipt,
   } = useOrders();
 
+  // "all" shows everything; any other filter value matches order.status exactly
+  // This now correctly handles "cancelled", "shipped", "pickup" etc.
   const filtered = filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
   function toggleExpand(orderId) {
@@ -33,14 +39,18 @@ export default function OrdersPage() {
   if (!user) return (
     <div className="max-w-[600px] mx-auto px-4 py-20 text-center">
       <div className="text-6xl mb-4">🔒</div>
-      <h2 className="font-black mb-3" style={{ fontSize: 24, color: dark ? "#f9fafb" : "#1f2937" }}>
-        Login Required
+      <h2 className="font-black mb-3"
+        style={{ fontFamily: headfont, fontSize: 24, color: dark ? "#f9fafb" : "#1f2937" }}>
+        {t('orders.loginRequired')}
       </h2>
-      <p className="mb-6" style={{ fontSize: 16, color: dark ? "#9ca3af" : "#6b7280" }}>
-        Please login to view your orders.
+      <p className="mb-6"
+        style={{ fontFamily: bodyFont, fontSize: 16, color: dark ? "#9ca3af" : "#6b7280" }}>
+        {t('orders.loginToView')}
       </p>
-      <Link to="/" className="bg-primary text-white font-bold px-8 py-3 rounded-xl hover:bg-orange-600 transition-colors">
-        Go Home
+      <Link to="/"
+        className="bg-primary text-white font-bold px-8 py-3 rounded-xl hover:bg-orange-600 transition-colors"
+        style={{ fontFamily: headfont }}>
+        {t('orders.goHome')}
       </Link>
     </div>
   );
@@ -66,10 +76,7 @@ export default function OrdersPage() {
       )}
 
       {/* Page */}
-      <div
-        className="max-w-[900px] mx-auto px-4 py-8"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="max-w-[900px] mx-auto px-4 py-8" style={{ minHeight: "60vh" }}>
         <OrderHeader username={user.username} />
         <OrderFilters filter={filter} setFilter={setFilter} orders={orders} />
 
@@ -81,11 +88,12 @@ export default function OrdersPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">📦</div>
-            <h3 className="font-bold mb-2" style={{ fontSize: 20, color: dark ? "#9ca3af" : "#6b7280" }}>
-              No orders found
+            <h3 className="font-bold mb-2"
+              style={{ fontFamily: 'Kh_Jrung_Thom, Rajdhani, sans-serif', fontSize: 20, color: dark ? "#9ca3af" : "#6b7280" }}>
+              {t('orders.noOrders')}
             </h3>
             <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
-              Start Shopping →
+              {t('orders.startShopping')}
             </Link>
           </div>
         ) : (

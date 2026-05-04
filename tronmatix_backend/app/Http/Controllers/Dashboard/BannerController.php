@@ -1,75 +1,45 @@
 <?php
 
-// app/Http/Controllers/Dashboard/BannerController.php
-
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BannerController extends Controller
 {
+    public function __construct(
+        private readonly ImageStorageService $storage
+    ) {}
+
     public function index()
     {
-        $banners = Banner::all();
+        $banners = Banner::orderBy('order')->get();
 
         return view('dashboard.banners', compact('banners'));
     }
 
     public function store(Request $request)
     {
-        // ── Detect PHP-level upload failure (file silently dropped by PHP) ────
-        // When upload_max_filesize is exceeded, PHP sets the file's error code to
-        // UPLOAD_ERR_INI_SIZE (1). Laravel's Request::hasFile() returns false,
-        // which normally passes 'nullable' — but the user gets no feedback.
-        // We catch this here and return a clear validation error.
-        if ($request->hasAny(['image_file', 'video_file'])) {
-            foreach (['image_file', 'video_file'] as $field) {
-                $uploadedFile = $request->files->get($field);
-                if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_INI_SIZE) {
-                    return back()->withErrors([$field => 'File too large — increase upload_max_filesize in php.ini (currently '.ini_get('upload_max_filesize').').'])->withInput();
-                }
+        // Catch PHP upload size error before Laravel validation runs
+        foreach (['image_file', 'video_file'] as $field) {
+            $f = $request->files->get($field);
+            if ($f && $f->getError() === UPLOAD_ERR_INI_SIZE) {
+                return back()
+                    ->withErrors([$field => 'File too large (exceeds server PHP limit).'])
+                    ->withInput();
             }
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
-            'badge' => 'nullable|string|max:100',
-            'bg_color' => 'nullable|string|max:50',
-            'text_color' => 'nullable|string|max:50',
-            // Use 'file' + extension check instead of 'mimes' —
-            // 'mimes' relies on finfo MIME detection which can fail for large GIFs
-            // and some browsers send images as application/octet-stream.
-            'image_file' => ['nullable', 'file', 'max:51200',
-                function ($attr, $val, $fail) {
-                    $ext = strtolower($val->getClientOriginalExtension());
-                    if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
-                        $fail('Image must be jpg, jpeg, png, webp or gif.');
-                    }
-                }],
-            'order' => 'nullable|integer|min:0',
-            'active' => 'nullable|in:0,1,true,false',
-            'video_type' => 'nullable|in:upload,youtube,vimeo,facebook',
-            'video_file' => ['nullable', 'file', 'max:102400',
-                function ($attr, $val, $fail) {
-                    $ext = strtolower($val->getClientOriginalExtension());
-                    if (! in_array($ext, ['mp4', 'webm', 'ogg', 'mov'])) {
-                        $fail('Video must be mp4, webm, ogg or mov.');
-                    }
-                }],
-            'video_url' => 'nullable|max:500',
-        ]);
+        $validated = $this->validateBanner($request);
 
-        $validated['image'] = $this->handleImage($request, null);
-        $validated['video'] = $this->handleVideo($request, null);
+        $validated['image']      = $this->handleImage($request, null);
+        $validated['video']      = $this->handleVideo($request, null);
         $validated['video_type'] = $this->resolveVideoType($request);
-        $validated['active'] = $request->boolean('active', true);
-        $validated['order'] = (int) $request->input('order', 0);
-
-        unset($validated['image_file'], $validated['video_file'], $validated['video_url']);
+        $validated['active']     = $request->boolean('active', true);
+        $validated['order']      = (int) $request->input('order', 0);
 
         Banner::create($validated);
 
@@ -78,75 +48,51 @@ class BannerController extends Controller
 
     public function update(Request $request, Banner $banner)
     {
-        // ── Detect PHP-level upload failure ───────────────────────────────────
         foreach (['image_file', 'video_file'] as $field) {
-            $uploadedFile = $request->files->get($field);
-            if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_INI_SIZE) {
-                return back()->withErrors([$field => 'File too large — increase upload_max_filesize in php.ini (currently '.ini_get('upload_max_filesize').').'])->withInput();
+            $f = $request->files->get($field);
+            if ($f && $f->getError() === UPLOAD_ERR_INI_SIZE) {
+                return back()
+                    ->withErrors([$field => 'File too large (exceeds server PHP limit).'])
+                    ->withInput();
             }
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
-            'badge' => 'nullable|string|max:100',
-            'bg_color' => 'nullable|string|max:50',
-            'text_color' => 'nullable|string|max:50',
-            'image_file' => ['nullable', 'file', 'max:51200',
-                function ($attr, $val, $fail) {
-                    $ext = strtolower($val->getClientOriginalExtension());
-                    if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
-                        $fail('Image must be jpg, jpeg, png, webp or gif.');
-                    }
-                }],
-            'remove_image' => 'nullable|boolean',
-            'order' => 'nullable|integer|min:0',
-            'active' => 'nullable|in:0,1,true,false',
-            'video_type' => 'nullable|in:upload,youtube,vimeo,facebook',
-            'video_file' => ['nullable', 'file', 'max:102400',
-                function ($attr, $val, $fail) {
-                    $ext = strtolower($val->getClientOriginalExtension());
-                    if (! in_array($ext, ['mp4', 'webm', 'ogg', 'mov'])) {
-                        $fail('Video must be mp4, webm, ogg or mov.');
-                    }
-                }],
-            'video_url' => 'nullable|max:500',
-            'remove_video' => 'nullable|boolean',
-        ]);
+        $validated = $this->validateBanner($request, $banner);
 
-        // ── Image handling ────────────────────────────────────────────────────
+        // ── Image ─────────────────────────────────────────────────────────────
         if ($request->boolean('remove_image')) {
-            $this->deleteFile($banner->image);
+            $this->storage->delete($banner->image);
             $validated['image'] = null;
         } else {
             $newImage = $this->handleImage($request, $banner->image);
             if ($newImage !== $banner->image) {
+                // New file uploaded — delete the old one
+                $this->storage->delete($banner->image);
                 $validated['image'] = $newImage;
             }
         }
 
-        // ── Video handling ────────────────────────────────────────────────────
+        // ── Video ─────────────────────────────────────────────────────────────
         if ($request->boolean('remove_video')) {
-            $this->deleteVideoFile($banner->video, $banner->video_type);
-            $validated['video'] = null;
+            // Only delete from storage if it was an uploaded file (not a YouTube/Vimeo URL)
+            if ($banner->video_type === 'upload') {
+                $this->storage->delete($banner->video);
+            }
+            $validated['video']      = null;
             $validated['video_type'] = null;
         } else {
             $newVideo = $this->handleVideo($request, $banner->video);
             if ($newVideo !== $banner->video) {
-                // New video uploaded — delete old uploaded file if it was self-hosted
                 if ($banner->video_type === 'upload') {
-                    $this->deleteVideoFile($banner->video, 'upload');
+                    $this->storage->delete($banner->video);
                 }
-                $validated['video'] = $newVideo;
+                $validated['video']      = $newVideo;
                 $validated['video_type'] = $this->resolveVideoType($request);
             }
         }
 
         $validated['active'] = $request->boolean('active', $banner->active);
-        $validated['order'] = (int) $request->input('order', $banner->order);
-
-        unset($validated['image_file'], $validated['video_file'], $validated['video_url'],
-            $validated['remove_image'], $validated['remove_video']);
+        $validated['order']  = (int) $request->input('order', $banner->order);
 
         $banner->update($validated);
 
@@ -155,17 +101,20 @@ class BannerController extends Controller
 
     public function toggle(Banner $banner)
     {
-        $newState = ! $banner->active;
-        $banner->update(['active' => $newState]);
+        $banner->update(['active' => !$banner->active]);
 
         return redirect()->route('dashboard.banners')
-            ->with('success', 'Banner '.($newState ? 'activated' : 'deactivated').'.');
+            ->with('success', 'Banner ' . ($banner->active ? 'deactivated' : 'activated') . '.');
     }
 
     public function destroy(Banner $banner)
     {
-        $this->deleteFile($banner->image);
-        $this->deleteVideoFile($banner->video, $banner->video_type);
+        $this->storage->delete($banner->image);
+
+        if ($banner->video_type === 'upload') {
+            $this->storage->delete($banner->video);
+        }
+
         $banner->delete();
 
         return redirect()->route('dashboard.banners')->with('success', 'Banner deleted.');
@@ -173,48 +122,36 @@ class BannerController extends Controller
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
+    /**
+     * Upload a new banner image, or return the existing path unchanged.
+     * GIFs keep their extension so animation is preserved.
+     */
     private function handleImage(Request $request, ?string $current): ?string
     {
-        if (! $request->hasFile('image_file') || ! $request->file('image_file')->isValid()) {
+        if (!$request->hasFile('image_file') || !$request->file('image_file')->isValid()) {
             return $current;
         }
 
-        $this->deleteFile($current);
-
-        $file = $request->file('image_file');
-        // MUST preserve extension — GIF without .gif loses animation,
-        // and browsers rely on the extension to pick the correct MIME type.
-        $filename = \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension();
-        $path = $file->storeAs('banners', $filename, 'public');
-
-        return '/storage/'.$path;
+        return $this->storage->store($request->file('image_file'), 'banners');
     }
 
     /**
-     * Handle video: either a file upload or a YouTube / Vimeo / Facebook URL.
-     * Returns the stored path or URL, or the existing value if nothing changed.
+     * Upload a new banner video, or fall back to a URL input, or keep existing.
+     * File upload always takes priority over URL.
      */
     private function handleVideo(Request $request, ?string $current): ?string
     {
         if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
-            $file = $request->file('video_file');
-            // Preserve extension — browsers need .mp4 / .webm to determine MIME type
-            $filename = \Illuminate\Support\Str::uuid().'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('banners/videos', $filename, 'public');
-
-            return '/storage/'.$path;
+            return $this->storage->store($request->file('video_file'), 'banners/videos');
         }
 
         $url = trim($request->input('video_url', ''));
-        if ($url) {
-            return $url;   // YouTube / Vimeo / Facebook embed URL stored as-is
-        }
 
-        return $current;   // Nothing changed
+        return $url ?: $current;
     }
 
     /**
-     * Determine video_type from the current request.
+     * Infer video_type from what was submitted (uploaded file > URL pattern > explicit input).
      */
     private function resolveVideoType(Request $request): ?string
     {
@@ -223,33 +160,44 @@ class BannerController extends Controller
         }
 
         $url = trim($request->input('video_url', ''));
+
         if ($url) {
-            if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
-                return 'youtube';
-            }
-            if (str_contains($url, 'vimeo.com')) {
-                return 'vimeo';
-            }
-            if (str_contains($url, 'facebook.com') || str_contains($url, 'fb.watch')) {
-                return 'facebook';
-            }
+            if (Str::contains($url, ['youtube.com', 'youtu.be'])) return 'youtube';
+            if (Str::contains($url, 'vimeo.com'))                  return 'vimeo';
+            if (Str::contains($url, ['facebook.com', 'fb.watch'])) return 'facebook';
         }
 
         return $request->input('video_type') ?: null;
     }
 
-    private function deleteFile(?string $path): void
+    private function validateBanner(Request $request, ?Banner $banner = null): array
     {
-        if ($path && str_starts_with($path, '/storage/')) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $path));
-        }
-    }
+        $validated = $request->validate([
+            'title'        => 'required|string|max:255',
+            'subtitle'     => 'nullable|string|max:255',
+            'badge'        => 'nullable|string|max:100',
+            'bg_color'     => 'nullable|string|max:50',
+            'text_color'   => 'nullable|string|max:50',
+            'order'        => 'nullable|integer|min:0',
+            'active'       => 'nullable',
+            'image_file'   => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
+            'remove_image' => 'nullable|boolean',
+            'video_type'   => 'nullable|in:upload,youtube,vimeo,facebook',
+            'video_file'   => 'nullable|file|max:102400|mimes:mp4,webm,ogg,mov',
+            'video_url'    => 'nullable|url|max:500',
+            'remove_video' => 'nullable|boolean',
+        ]);
 
-    private function deleteVideoFile(?string $video, ?string $type): void
-    {
-        // Only delete physical files — not YouTube/Vimeo URLs
-        if ($type === 'upload' && $video) {
-            $this->deleteFile($video);
-        }
+        // Strip file/meta fields — handled separately, not written directly to DB
+        unset(
+            $validated['image_file'],
+            $validated['video_file'],
+            $validated['video_url'],
+            $validated['remove_image'],
+            $validated['remove_video'],
+            $validated['video_type'], // resolved and set by caller
+        );
+
+        return $validated;
     }
 }

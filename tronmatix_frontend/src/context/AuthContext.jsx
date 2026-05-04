@@ -1,16 +1,29 @@
 // src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import axios from '../lib/axios'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import api, { clearAuthStorage } from '../lib/axios'
 
 const AuthContext = createContext(null)
 
-// ── Axios defaults ─────────────────────────────────────────────────────────────
-axios.defaults.withCredentials = false
-axios.defaults.headers.common['Accept']       = 'application/json'
-axios.defaults.headers.common['Content-Type'] = 'application/json'
+const USER_KEY  = 'tronmatix_user'
+const TOKEN_KEY = 'token'
 
-// ── localStorage helpers ───────────────────────────────────────────────────────
-const USER_KEY = 'tronmatix_user'
+function isTokenExpired(token) {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    const json = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return json.exp ? json.exp * 1000 < Date.now() - 30_000 : false
+  } catch {
+    return false
+  }
+}
+
+function sanitizeUser(user) {
+  if (!user) return null
+  // eslint-disable-next-line no-unused-vars
+  const { password, password_confirmation, remember_token, ...safe } = user
+  return safe
+}
 
 function loadCachedUser() {
   try {
@@ -20,197 +33,189 @@ function loadCachedUser() {
 }
 
 function saveUser(user) {
-  if (user) localStorage.setItem(USER_KEY, JSON.stringify(user))
-  else       localStorage.removeItem(USER_KEY)
+  const safe = sanitizeUser(user)
+  if (safe) localStorage.setItem(USER_KEY, JSON.stringify(safe))
+  else      localStorage.removeItem(USER_KEY)
 }
 
-// ── Normalize whatever the API returns into a plain user object ───────────────
-// Handles: { data: user }, { user: user }, or just the user directly
 function extractUser(responseData) {
   if (!responseData) return null
-  // { data: { id, username, ... } }
-  if (responseData.data && responseData.data.id) return responseData.data
-  // { user: { id, username, ... } }
-  if (responseData.user && responseData.user.id) return responseData.user
-  // { id, username, ... } — already the user
-  if (responseData.id) return responseData
+  if (responseData.data?.id) return responseData.data
+  if (responseData.user?.id) return responseData.user
+  if (responseData.id)       return responseData
   return null
 }
 
-// ── Provider ───────────────────────────────────────────────────────────────────
 export function AuthProvider({ children }) {
-  // Seed from cache immediately → Navbar shows username on first paint, no flash
   const [user,    setUser]    = useState(() => loadCachedUser())
-  const [token,   setToken]   = useState(() => localStorage.getItem('token'))
+  const [token,   setToken]   = useState(() => localStorage.getItem(TOKEN_KEY))
   const [loading, setLoading] = useState(false)
   const [ready,   setReady]   = useState(false)
 
-  // ── Helper: set token in state + axios headers + localStorage ───────────────
+  const tokenRef = useRef(token)
+
   const applyToken = useCallback((t) => {
+    tokenRef.current = t
     if (t) {
-      localStorage.setItem('token', t)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${t}`
+      localStorage.setItem(TOKEN_KEY, t)
+      api.defaults.headers.common['Authorization'] = `Bearer ${t}`
     } else {
-      localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
+      localStorage.removeItem(TOKEN_KEY)
+      delete api.defaults.headers.common['Authorization']
     }
     setToken(t)
   }, [])
 
-  // ── Helper: set user in state + localStorage ────────────────────────────────
   const applyUser = useCallback((u) => {
-    // Merge with cached user to avoid losing fields the API omitted
-    const merged = u ? { ...loadCachedUser(), ...u } : null
+    const merged = u ? sanitizeUser({ ...loadCachedUser(), ...u }) : null
     setUser(merged)
     saveUser(merged)
   }, [])
 
-  // ── Helper: clear everything ────────────────────────────────────────────────
   const clearSession = useCallback(() => {
     applyToken(null)
     applyUser(null)
+    clearAuthStorage()
   }, [applyToken, applyUser])
 
-  // ── Restore session on mount ────────────────────────────────────────────────
+  // ── Restore session on mount ──────────────────────────────────────────────
   useEffect(() => {
-    if (!token) {
-      setReady(true)
-      return
-    }
-    // Apply saved token to axios immediately
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    const storedToken = localStorage.getItem(TOKEN_KEY)
 
-    axios.get('/api/auth/me')
+    if (!storedToken) { setReady(true); return }
+
+    if (isTokenExpired(storedToken)) { clearSession(); setReady(true); return }
+
+    api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
+    tokenRef.current = storedToken
+
+    api.get('/api/auth/me')
       .then(res => {
         const fresh = extractUser(res.data)
-        if (fresh) {
-          applyUser(fresh)
-        } else {
-          // Token valid but empty response — keep cache
-        }
+        if (fresh) applyUser(fresh)
       })
-      .catch(() => {
-        // 401 or network error
-        // If 401 → clear session. If network error → keep cache so user
-        // isn't logged out on a bad connection.
-        // We check by seeing if there's any cached user; if not, clear.
-        if (!loadCachedUser()) clearSession()
+      .catch((err) => {
+        if (err.response?.status === 401) clearSession()
+        // Network error → keep cached user
       })
       .finally(() => setReady(true))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── refreshUser — call after profile updates ────────────────────────────────
+  // ── Listen for social login events dispatched by AuthModal ───────────────
+  useEffect(() => {
+    const handler = (e) => {
+      const { token: t, user: u } = e.detail ?? {}
+      if (!t || !u) return
+      applyToken(t)
+      applyUser(u)
+    }
+    window.addEventListener('auth:social-login', handler)
+    return () => window.removeEventListener('auth:social-login', handler)
+  }, [applyToken, applyUser])
+
   const refreshUser = useCallback(async () => {
     try {
-      const res = await axios.get('/api/auth/me')
+      const res   = await api.get('/api/auth/me')
       const fresh = extractUser(res.data)
       if (fresh) applyUser(fresh)
       return fresh
     } catch { return null }
   }, [applyUser])
 
-  // ── LOGIN ───────────────────────────────────────────────────────────────────
-  const login = useCallback(async (username, password) => {
+  // ── LOGIN ─────────────────────────────────────────────────────────────────
+  const login = useCallback(async (usernameOrEmail, password) => {
     setLoading(true)
     try {
-      const res = await axios.post('/api/auth/login', { username, password })
-
-      // Token may be at res.data.token or res.data.data.token
+      const res = await api.post('/api/auth/login', { username: usernameOrEmail, password })
       const t = res.data?.token ?? res.data?.data?.token
       const u = extractUser(res.data)
-
-      if (!t || !u) throw new Error('Unexpected login response')
-
+      if (!t || !u) throw new Error('Unexpected login response shape')
       applyToken(t)
       applyUser(u)
       return { success: true }
     } catch (e) {
       const data = e.response?.data
-      let msg = 'Login failed. Check your username and password.'
-      if (data?.errors) {
-        msg = Object.values(data.errors).flat()[0] || msg
-      } else if (data?.message) {
-        msg = data.message
-      }
+      let msg = 'Login failed. Check your credentials and try again.'
+      if (data?.errors)  msg = Object.values(data.errors).flat()[0] || msg
+      else if (data?.message) msg = data.message
       return { success: false, message: msg }
     } finally {
       setLoading(false)
     }
   }, [applyToken, applyUser])
 
-  // ── REGISTER ─────────────────────────────────────────────────────────────────
+  // ── REGISTER ──────────────────────────────────────────────────────────────
   const register = useCallback(async (username, email, password, confirm) => {
     setLoading(true)
     try {
-      const res = await axios.post('/api/auth/register', {
+      await api.post('/api/auth/register', {
         username,
         email,
         password,
         password_confirmation: confirm,
       })
-
-      const t = res.data?.token ?? res.data?.data?.token
-      const u = extractUser(res.data)
-
-      if (!t || !u) throw new Error('Unexpected register response')
-
-      applyToken(t)
-      applyUser(u)
-      return { success: true }
+      return { success: true, email }
     } catch (e) {
       const data = e.response?.data
       let msg = 'Registration failed.'
-      if (data?.errors) {
-        msg = Object.values(data.errors).flat().join(' ')
-      } else if (data?.message) {
-        msg = data.message
-      }
-      return { success: false, message: msg }
-    } finally {
-      setLoading(false)
-    }
-  }, [applyToken, applyUser])
-
-  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────────
-  const forgotPassword = useCallback(async (email) => {
-    setLoading(true)
-    try {
-      const res = await axios.post('/api/auth/forgot-password', { email })
-      const msg =
-        res.data?.message ||
-        res.data?.status  ||
-        'Password reset link sent! Please check your email.'
-      return { success: true, message: msg }
-    } catch (e) {
-      const data = e.response?.data
-      let msg = 'Failed to send reset email. Please try again.'
-      if (data?.errors?.email) {
-        msg = data.errors.email[0]
-      } else if (data?.message) {
-        msg = data.message
-      } else if (data?.status) {
-        const statusMap = {
-          'passwords.throttled': 'Too many attempts. Please wait before requesting another link.',
-          'passwords.user':      'No account found with that email address.',
-        }
-        msg = statusMap[data.status] || data.status
-      }
+      if (data?.errors)  msg = Object.values(data.errors).flat().join(' ')
+      else if (data?.message) msg = data.message
       return { success: false, message: msg }
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // ── LOGOUT ───────────────────────────────────────────────────────────────────
+  // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────
+  // Called by AuthModal after GSI popup returns an access_token.
+  // Google users log in directly — no profile setup modal needed.
+  const googleLogin = useCallback(async (accessToken) => {
+    setLoading(true)
+    try {
+      const res = await api.post('/api/auth/google', { access_token: accessToken })
+      const t = res.data?.token
+      const u = res.data?.user
+      if (!t || !u) throw new Error('Unexpected Google response shape')
+      applyToken(t)
+      applyUser(u)
+      return { success: true }
+    } catch (e) {
+      const msg = e.response?.data?.message || 'Google sign-in failed. Please try again.'
+      return { success: false, message: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [applyToken, applyUser])
+
+  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
+  const forgotPassword = useCallback(async (email) => {
+    setLoading(true)
+    try {
+      const res = await api.post('/api/auth/forgot-password', { email })
+      const msg = res.data?.message || 'If that email is registered, a reset link has been sent.'
+      return { success: true, message: msg }
+    } catch (e) {
+      const data = e.response?.data
+      let msg = 'Failed to send reset email. Please try again.'
+      if (data?.errors?.email) msg = data.errors.email[0]
+      else if (data?.message)  msg = data.message
+      return { success: false, message: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // ── LOGOUT ────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
-    try { await axios.post('/api/auth/logout') } catch { /* ignore */ }
+    try { await api.post('/api/auth/logout') } catch { /* ignore */ }
     clearSession()
   }, [clearSession])
 
   return (
     <AuthContext.Provider value={{
       user, token, loading, ready,
-      login, register, logout, refreshUser, forgotPassword,
+      login, register, logout, refreshUser,
+      forgotPassword, googleLogin,
     }}>
       {children}
     </AuthContext.Provider>

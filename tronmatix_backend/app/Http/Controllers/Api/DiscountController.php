@@ -20,22 +20,24 @@ class DiscountController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'code' => 'required|string|max:50|unique:discounts,code',
-            'type' => 'required|in:percentage,fixed',
-            'value' => 'required|numeric|min:0',
-            'min_order' => 'nullable|numeric|min:0',
-            'max_uses' => 'nullable|integer|min:1',
-            'expires_at' => 'nullable|date',
-            'is_active' => 'boolean',
-            'categories' => 'nullable|array',
-            'categories.*' => 'string|max:100',
-            'badge_config' => 'nullable|array',
-            'badge_config.text' => 'nullable|string|max:30',
-            'badge_config.icon' => 'nullable|string|max:10',
-            'badge_config.bg' => 'nullable|string|max:100',
+            'code'                => 'required|string|max:50|unique:discounts,code',
+            'type'                => 'required|in:percentage,fixed',
+            'value'               => 'required|numeric|min:0',
+            'kind'                => 'nullable|in:code,badge',
+            'min_order'           => 'nullable|numeric|min:0',
+            'max_uses'            => 'nullable|integer|min:1',
+            'expires_at'          => 'nullable|date',
+            'is_active'           => 'boolean',
+            'categories'          => 'nullable|array',
+            'categories.*'        => 'string|max:100',
+            'badge_config'        => 'nullable|array',
+            'badge_config.text'   => 'nullable|string|max:30',
+            'badge_config.icon'   => 'nullable|string|max:10',
+            'badge_config.bg'     => 'nullable|string|max:100',
             'badge_config.border' => 'nullable|string|max:100',
-            'badge_config.color' => 'nullable|string|max:30',
+            'badge_config.color'  => 'nullable|string|max:30',
         ]);
+        $data['kind']         = $request->input('kind', 'code');
         $data['categories']   = $request->input('categories', []) ?: null;
         $data['badge_config'] = $request->input('badge_config') ?: null;
         $discount = Discount::create($data);
@@ -46,22 +48,24 @@ class DiscountController extends Controller
     public function update(Request $request, Discount $discount)
     {
         $data = $request->validate([
-            'code' => 'required|string|max:50|unique:discounts,code,'.$discount->id,
-            'type' => 'required|in:percentage,fixed',
-            'value' => 'required|numeric|min:0',
-            'min_order' => 'nullable|numeric|min:0',
-            'max_uses' => 'nullable|integer|min:1',
-            'expires_at' => 'nullable|date',
-            'is_active' => 'boolean',
-            'categories' => 'nullable|array',
-            'categories.*' => 'string|max:100',
-            'badge_config' => 'nullable|array',
-            'badge_config.text' => 'nullable|string|max:30',
-            'badge_config.icon' => 'nullable|string|max:10',
-            'badge_config.bg' => 'nullable|string|max:100',
+            'code'                => 'required|string|max:50|unique:discounts,code,'.$discount->id,
+            'type'                => 'required|in:percentage,fixed',
+            'value'               => 'required|numeric|min:0',
+            'kind'                => 'nullable|in:code,badge',
+            'min_order'           => 'nullable|numeric|min:0',
+            'max_uses'            => 'nullable|integer|min:1',
+            'expires_at'          => 'nullable|date',
+            'is_active'           => 'boolean',
+            'categories'          => 'nullable|array',
+            'categories.*'        => 'string|max:100',
+            'badge_config'        => 'nullable|array',
+            'badge_config.text'   => 'nullable|string|max:30',
+            'badge_config.icon'   => 'nullable|string|max:10',
+            'badge_config.bg'     => 'nullable|string|max:100',
             'badge_config.border' => 'nullable|string|max:100',
-            'badge_config.color' => 'nullable|string|max:30',
+            'badge_config.color'  => 'nullable|string|max:30',
         ]);
+        $data['kind']         = $request->input('kind', $discount->kind ?? 'code');
         $data['categories']   = $request->input('categories', []) ?: null;
         $data['badge_config'] = $request->input('badge_config') ?: null;
         $discount->update($data);
@@ -98,9 +102,9 @@ class DiscountController extends Controller
     }
 
     // ── Public active discounts (storefront badge display) ────────────────────
-    // Called by DiscountContext on mount — returns active discounts so
-    // ProductCard/ProductDetail can show sale badges automatically.
-    // Only returns non-sensitive fields (no used_count, max_uses, etc.).
+    // Called by DiscountContext on mount — returns active badge-kind discounts
+    // so ProductCard/ProductDetail can show sale badges automatically.
+    // Code-kind discounts are NOT returned here; they require manual entry.
     public function storefront()
     {
         $discounts = Discount::where('is_active', true)
@@ -108,14 +112,15 @@ class DiscountController extends Controller
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
             ->get()
-            ->filter(fn (Discount $d) => $d->isActiveForBadge())   // skip truly unusable (expired/exhausted/disabled)
+            ->filter(fn (Discount $d) => $d->isActiveForBadge())
             ->map(fn (Discount $d) => [
                 'id'           => $d->id,
+                'kind'         => $d->kind ?? 'code',   // frontend uses this to distinguish
                 'type'         => $d->type,
                 'value'        => $d->value,
                 'categories'   => $d->categories ?? [],
-                'badge_config' => $d->badge_config, // null if not configured
-                // No code, no used_count — these are automatic display-only badges
+                'badge_config' => $d->badge_config,
+                // No code, no used_count — display-only
             ])
             ->values();
 
@@ -136,6 +141,14 @@ class DiscountController extends Controller
 
         if (! $discount) {
             return response()->json(['success' => false, 'message' => 'Invalid discount code.'], 404);
+        }
+
+        // Badge-kind discounts are automatic — reject manual code entry
+        if ($discount->isBadgeKind()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This discount is applied automatically — no code needed.',
+            ], 422);
         }
 
         // FIX [1]: delegate to model's isUsable($subtotal) — single source of truth
@@ -161,16 +174,17 @@ class DiscountController extends Controller
         $discount->incrementUsage();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Discount applied!',
-            'discount_id' => $discount->id,
-            'code' => $discount->code,
-            'type' => $discount->type,
-            'value' => $discount->value,
-            'min_order' => $discount->min_order,  // FIX [3]
-            'categories' => $discount->categories ?? [],
+            'success'         => true,
+            'message'         => 'Discount applied!',
+            'discount_id'     => $discount->id,
+            'kind'            => $discount->kind ?? 'code',
+            'code'            => $discount->code,
+            'type'            => $discount->type,
+            'value'           => $discount->value,
+            'min_order'       => $discount->min_order,
+            'categories'      => $discount->categories ?? [],
             'discount_amount' => $amount,
-            'final_total' => max(0, (float) $request->subtotal - $amount),
+            'final_total'     => max(0, (float) $request->subtotal - $amount),
         ]);
     }
 
@@ -178,6 +192,7 @@ class DiscountController extends Controller
     {
         return [
             'id'           => $d->id,
+            'kind'         => $d->kind ?? 'code',
             'code'         => $d->code,
             'type'         => $d->type,
             'value'        => $d->value,
@@ -187,8 +202,8 @@ class DiscountController extends Controller
             'expires_at'   => $d->expires_at?->toDateTimeString(),
             'is_active'    => $d->is_active,
             'categories'   => $d->categories ?? [],
-            'badge_config' => $d->badge_config,  // { text, icon, bg, border, color } or null
-            'status'       => $d->status,         // uses model accessor
+            'badge_config' => $d->badge_config,
+            'status'       => $d->status,
         ];
     }
 }

@@ -104,6 +104,24 @@
 </style>
 @else
 
+@php
+function banner_img_url(?string $path): string {
+    if (!$path) return '';
+    $p = trim((string) $path);
+    if (!$p) return '';
+    // Already a full URL (R2/CDN/external)
+    if (str_starts_with($p, 'http://') || str_starts_with($p, 'https://')) return $p;
+    // Stored as relative path — resolve via configured default disk
+    try {
+        return \Illuminate\Support\Facades\Storage::url(ltrim($p, '/'));
+    } catch (\Throwable $e) {
+        // Fallback: build URL from APP_URL + /storage/ prefix
+        return rtrim(config('app.url', ''), '/') . '/storage/' . ltrim($p, '/');
+    }
+}
+@endphp
+
+
 
 
 {{-- Header --}}
@@ -138,7 +156,7 @@
 
             {{-- Video preview --}}
             @if($b->video && $b->video_type === 'upload')
-                <video src="{{ $b->video }}" muted loop autoplay playsinline
+                <video src="{{ banner_img_url($b->video) }}" muted loop autoplay playsinline
                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.5;"></video>
             @elseif($b->video && in_array($b->video_type, ['youtube','vimeo','facebook']))
                 {{-- Static thumbnail placeholder — iframes can't autoplay in card previews --}}
@@ -156,7 +174,7 @@
 
             {{-- Image overlay --}}
             @if($b->image)
-                <img src="{{ $b->image }}" alt="{{ $b->title }}"
+                <img src="{{ banner_img_url($b->image) }}" alt="{{ $b->title }}"
                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.55;">
                 {{-- GIF badge --}}
                 @if(str_ends_with(strtolower($b->image), '.gif'))
@@ -238,10 +256,10 @@
                     @js($b->badge ?? ''),
                     @js($b->bg_color ?? '#111111'),
                     @js($b->text_color ?? '#F97316'),
-                    @js($b->image ?? ''),
+                    @js($b->image ? banner_img_url($b->image) : ''),
                     {{ $b->order }},
                     {{ $b->active ? 'true' : 'false' }},
-                    @js($b->video ?? ''),
+                    @js($b->video ? banner_img_url($b->video) : ''),
                     @js($b->video_type ?? '')
                 )" class="btn btn-outline btn-sm">EDIT</button>
                 <form method="POST" action="{{ route('dashboard.banners.destroy', $b) }}"
@@ -264,13 +282,13 @@
      MODAL
 ═══════════════════════════════════════════════════════════════════════════════ --}}
 <div id="bannerModal" style="display:none; position:fixed; inset:0; z-index:1000;
-     background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
-                padding:28px; width:100%; max-width:620px; max-height:92vh; overflow-y:auto;">
+     background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:12px;">
+    <div class="banner-modal-box" style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
+                padding:24px; width:100%; max-width:540px; max-height:94vh; overflow-y:auto;">
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <h2 id="modalTitle" style="font-size:20px; font-weight:900; color:#fff; letter-spacing:2px;">ADD BANNER</h2>
-            <button onclick="closeModal()" style="background:none; border:none; color:rgba(255,255,255,0.4); font-size:24px; cursor:pointer;">✕</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="modalTitle" style="font-size:18px; font-weight:900; color:#fff; letter-spacing:2px;">ADD BANNER</h2>
+            <button onclick="closeModal()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); font-size:20px; cursor:pointer; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
         </div>
 
         <form id="bannerForm" method="POST" enctype="multipart/form-data">
@@ -302,7 +320,7 @@
             </div>
             @endif
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div class="banner-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
 
                 {{-- Title --}}
                 <div style="grid-column:1/-1;">
@@ -741,5 +759,83 @@ document.getElementById('bannerModal').addEventListener('click', function(e) {
 })
 </script>
 
+<style>
+/* ── Banner modal responsive ───────────────────────────────────────────── */
+@media (max-width: 540px) {
+    .banner-modal-box {
+        padding: 16px !important;
+        border-radius: 14px !important;
+        max-height: 96vh !important;
+    }
+    .banner-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    /* On mobile, make badge/order and bg/text color fields full-width */
+    .banner-form-grid > div {
+        grid-column: 1 / -1 !important;
+    }
+    /* Keep video tab pills wrapping nicely */
+    .video-tab {
+        padding: 5px 10px !important;
+        font-size: 12px !important;
+    }
+}
+/* Restore 2-col for badge+order and bg+text color on ≥ 541px */
+@media (min-width: 541px) {
+    .banner-form-grid > div:not([style*="grid-column:1/-1"]):not([style*="grid-column: 1 / -1"]) {
+        grid-column: auto !important;
+    }
+}
+</style>
+
 @endif
+
+@push('styles')
+<style>
+/* ── Banners – light theme ────────────────────────────────────────────────── */
+[data-theme="light"] #bannerModal > div {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.10) !important;
+    box-shadow: 0 32px 80px rgba(15,23,42,0.16) !important;
+}
+[data-theme="light"] #bannerModal .form-control,
+[data-theme="light"] #bannerModal input,
+[data-theme="light"] #bannerModal select,
+[data-theme="light"] #bannerModal textarea {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.14) !important;
+    color: #0F172A !important;
+}
+[data-theme="light"] #bannerModal [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
+[data-theme="light"] #bannerModal [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] #bannerModal [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] #bannerModal [style*="border-bottom:1px solid rgba(255,255,255"] {
+    border-bottom-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] #bannerModal [style*="background:rgba(255,255,255,0.05)"],
+[data-theme="light"] #bannerModal [style*="background:rgba(255,255,255,0.06)"] {
+    background: rgba(15,23,42,0.04) !important;
+}
+[data-theme="light"] #bannerModal button[onclick*="closeBannerModal"] {
+    background: rgba(15,23,42,0.05) !important;
+    border-color: rgba(15,23,42,0.12) !important;
+    color: rgba(15,23,42,0.45) !important;
+}
+/* Banner cards */
+[data-theme="light"] .banner-card {
+    background: #FFFFFF !important;
+    border-color: rgba(15,23,42,0.08) !important;
+}
+[data-theme="light"] .banner-card [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] .banner-card [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
+[data-theme="light"] .banner-card [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05) !important; }
+[data-theme="light"] .banner-card [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
+[data-theme="light"] #catDropdown {
+    background: #FFFFFF !important;
+    border-color: rgba(249,115,22,0.30) !important;
+}
+[data-theme="light"] .cat-item:hover { background: rgba(15,23,42,0.04) !important; }
+</style>
+@endpush
+
 @endsection

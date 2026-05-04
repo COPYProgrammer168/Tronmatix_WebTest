@@ -19,9 +19,9 @@ export default function Footer() {
           <div className="col-span-2">
             <img src={logo} alt="Tronmatix" className="h-20 mb-4" />
             <div className="font-bold mb-2" style={{ fontSize: 20, color: heading }}>ADDRESS</div>
-            <p style={{ fontSize: 18, color: text, lineHeight: 1.7 }}>
+            <Link to="/contact" target="_blank" rel="noopener noreferrer" style={{ fontSize: 18, color: text, lineHeight: 1.7 }}>
               ផ្លូវលេខ: 162 | ផ្ទះលេខ: 232 | កែងផ្លូវ: 237 | ផ្សារដេប៉ូ១ | ទួលគោក
-            </p>
+            </Link>
           </div>
           <div>
             <div className="font-bold mb-3" style={{ fontSize: 20, color: heading }}>SOCIAL MEDIA</div>
