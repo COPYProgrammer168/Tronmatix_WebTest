@@ -27,7 +27,7 @@ export function clearAuthStorage() {
 
 // ── Axios instance ────────────────────────────────────────────────────────────
 const instance = axios.create({
-  baseURL,
+  baseURL: '',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

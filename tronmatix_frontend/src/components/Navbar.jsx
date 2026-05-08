@@ -391,7 +391,7 @@ export default function Navbar({ onAuthOpen }) {
                     <Link
                       to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
                       className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
-                      style={{ fontFamily: navbFont, fontSize: 13, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                      style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                       onMouseLeave={e => e.currentTarget.style.color = textColor}
                       onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
@@ -471,7 +471,7 @@ export default function Navbar({ onAuthOpen }) {
                   ].map(({ labelKey, icon, path }) => (
                     <button key={path}
                       className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
-                      style={{ fontFamily: navFont, fontSize: 14, color: textColor }}
+                      style={{ fontFamily: navbFont, fontSize: 14, color: textColor }}
                       onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
                       onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
                       onClick={() => { setUserMenu(false); navigate(path) }}>
@@ -530,7 +530,7 @@ export default function Navbar({ onAuthOpen }) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                 </svg>
                 <div>
-                  <div style={{ fontFamily: navFont, fontSize: 13, color: subTextColor, fontWeight: 700, letterSpacing: isKhmer ? 0 : 0.5 }}>
+                  <div style={{ fontFamily: navbFont, fontSize: 13, color: subTextColor, fontWeight: 700, letterSpacing: isKhmer ? 0 : 0.5 }}>
                     {isKhmer ? 'ទំនាក់ទំនងយើង' : 'Call us now'}
                   </div>
                   <div style={{ fontFamily: navFont, fontSize: 13, fontWeight: 700, color: textColor, letterSpacing: isKhmer ? 0 : 0.5  }}>{isKhmer ? '096 733 3725 / 077 711 126' : '096 733 3725 / 077 711 126'}</div>
@@ -799,7 +799,7 @@ export default function Navbar({ onAuthOpen }) {
               ].map(({ to, labelKey, icon }) => (
                 <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
-                  style={{ fontFamily: navFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
+                  style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
                   onMouseEnter={e => e.currentTarget.style.background = ddHover}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                   {icon} {t(labelKey)}

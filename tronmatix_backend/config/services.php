@@ -45,9 +45,8 @@ return [
         'mini_app_url'   => env('TELEGRAM_MINI_APP_URL', env('APP_URL', '')),
     ],
 
-    'openai' => [
-        'key' => env('OPENAI_API_KEY'),
-    ],
+    'gemini' => ['key' => env('GEMINI_API_KEY')],
+    'groq' => ['key' => env('GROQ_API_KEY')],
 
     // ── Bakong / KHQR ──────────────────────────────────────────────────────────
     'bakong' => [

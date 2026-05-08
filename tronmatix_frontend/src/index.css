@@ -18,7 +18,7 @@
 @font-face {
   font-family: 'Kh_Jrung_Thom';
   src: url('/src/assets/Kh_Jrung_Thom.ttf') format('truetype');
-  font-weight: 400 900;
+  font-weight: 400 700;
   font-style: normal;
   font-display: block;
 }
@@ -32,6 +32,14 @@
   font-display: block;
 }
 
+/* @font-face {
+  font-family: 'Kh-Kangrey';
+  src: url('/src/assets/Kh-Kangrey.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: block;
+} */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -44,6 +52,7 @@
   --font-en-body:    'Rajdhani', sans-serif;
   --font-kh-heading: 'Kh_Jrung_Thom', 'Khmer OS', 'Khmer OS System', sans-serif;
   --font-kh-body:    'KantumruyPro', 'Khmer OS', 'Khmer OS System', sans-serif;
+  /* --font-kh-body:   'Kh-Kangrey', 'Khmer OS', 'Khmer OS System', sans-serif; */
   --lh-kh-body:    1.95;
   --lh-kh-heading: 1.65;
   --lh-kh-btn:     1.6;

@@ -97,6 +97,7 @@
         }
         .form-control::placeholder { color: rgba(255,255,255,0.2); }
         .form-control.is-invalid   { border-color: #EF4444; }
+        .form-control.is-valid     { border-color: #22C55E; }
 
         select.form-control {
             appearance: none;
@@ -113,6 +114,20 @@
         .pass-toggle:hover { color: var(--orange); }
 
         .field-error { color: #EF4444; font-size: 11px; margin-top: 4px; }
+
+        /* ── Gmail status icon inside input (right side) ──────────────────── */
+        .email-status-icon {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 14px; line-height: 1; pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        /* ── Gmail hint line below input ──────────────────────────────────── */
+        .email-hint {
+            font-size: 11px; font-weight: 600; margin-top: 4px;
+            letter-spacing: 0.5px; min-height: 16px;
+            transition: color 0.2s;
+        }
 
         .strength-bar  { height: 3px; background: rgba(255,255,255,0.07); border-radius: 3px; margin-top: 8px; overflow: hidden; }
         .strength-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; width: 0%; }
@@ -225,9 +240,9 @@
                 </div>
             </div>
 
-            {{-- Email --}}
+            {{-- Email — Gmail only, with real-time client-side hint ──────── --}}
             <div class="form-group">
-                <label class="form-label">Email Address</label>
+                <label class="form-label">Gmail Address</label>
                 <div class="input-wrap">
                     <span class="input-icon">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -235,10 +250,15 @@
                             <polyline points="22,6 12,13 2,6"/>
                         </svg>
                     </span>
-                    <input type="email" name="email"
+                    <input type="email" name="email" id="emailInput"
                            class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
-                           value="{{ old('email') }}" placeholder="you@tronmatix.com" />
+                           value="{{ old('email') }}" placeholder="yourname@gmail.com"
+                           oninput="checkGmail(this.value)" />
+                    {{-- Status icon injected here by JS --}}
+                    <span class="email-status-icon" id="emailStatusIcon"></span>
                 </div>
+                {{-- Real-time hint line --}}
+                <div class="email-hint" id="emailHint"></div>
                 @error('email')<div class="field-error">{{ $message }}</div>@enderror
             </div>
 
@@ -335,6 +355,43 @@
         input.type = input.type === 'password' ? 'text' : 'password';
     }
 
+    // ── Gmail real-time client-side hint ──────────────────────────────────────
+    // Note: this only checks FORMAT. The actual mailbox existence is verified
+    // server-side by GmailVerified rule (MX + SMTP probe) on form submit.
+    function checkGmail(val) {
+        const input  = document.getElementById('emailInput');
+        const hint   = document.getElementById('emailHint');
+        const icon   = document.getElementById('emailStatusIcon');
+
+        // Reset
+        input.classList.remove('is-valid', 'is-invalid');
+        hint.textContent  = '';
+        icon.textContent  = '';
+
+        if (!val || !val.includes('@')) return;
+
+        const isGmailFormat = /^[a-zA-Z0-9._%+\-]+@gmail\.com$/i.test(val);
+        const domain        = val.split('@')[1] || '';
+
+        if (isGmailFormat) {
+            // ✓ Valid Gmail format — server will do deep check on submit
+            input.classList.add('is-valid');
+            icon.textContent   = '✓';
+            icon.style.color   = '#22C55E';
+            hint.textContent   = 'Gmail format valid — mailbox will be verified on submit';
+            hint.style.color   = '#22C55E';
+        } else if (domain && domain !== 'gmail.com') {
+            // ✗ Wrong domain
+            input.classList.add('is-invalid');
+            icon.textContent   = '✗';
+            icon.style.color   = '#EF4444';
+            hint.textContent   = `"@${domain}" not accepted — only @gmail.com`;
+            hint.style.color   = '#EF4444';
+        }
+        // Partial typing (e.g. "user@gmai") — stay silent, don't confuse user
+    }
+
+    // ── Password strength meter ───────────────────────────────────────────────
     function checkStrength(val) {
         const fill  = document.getElementById('strengthFill');
         const label = document.getElementById('strengthLabel');
@@ -348,8 +405,8 @@
             { pct: '0%',   color: 'transparent', text: '' },
             { pct: '25%',  color: '#EF4444',      text: 'Weak' },
             { pct: '50%',  color: '#EAB308',      text: 'Fair' },
-            { pct: '75%',  color: '#3B82F6',       text: 'Good' },
-            { pct: '100%', color: '#22C55E',       text: 'Strong ✓' },
+            { pct: '75%',  color: '#3B82F6',      text: 'Good' },
+            { pct: '100%', color: '#22C55E',      text: 'Strong ✓' },
         ];
         const level = val.length === 0 ? 0 : score;
         fill.style.width      = levels[level].pct;
@@ -358,11 +415,20 @@
         label.style.color     = levels[level].color;
     }
 
+    // ── Submit loading state ──────────────────────────────────────────────────
     document.getElementById('requestForm').addEventListener('submit', function () {
         const btn = document.getElementById('submitBtn');
         btn.classList.add('loading');
         btn.disabled = true;
     });
+
+    // ── Pre-fill hint if old() value was repopulated after server error ───────
+    (function () {
+        const emailInput = document.getElementById('emailInput');
+        if (emailInput && emailInput.value) {
+            checkGmail(emailInput.value);
+        }
+    })();
 </script>
 
 </body>
