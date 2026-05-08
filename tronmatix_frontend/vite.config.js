@@ -3,7 +3,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-oxc' // faster than plugin-react (no Babel)
 
-const backendUrl = process.env.VITE_DEV_API_URL || 'http://127.0.0.1:8000'
+const backendUrl = process.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 export default defineConfig({
   plugins: [react()],
