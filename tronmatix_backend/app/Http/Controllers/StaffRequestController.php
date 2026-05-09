@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\Staff;
 use App\Models\StaffRequest;
+use App\Rules\GmailVerified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -39,10 +40,14 @@ class StaffRequestController extends Controller
 
         $request->validate([
             'name'           => ['required', 'string', 'max:100'],
-            'email'          => ['required', 'email',
+            'email'          => [
+                                 'required',
+                                 'email',
                                  'unique:admins,email',
                                  'unique:staff,email',
-                                 'unique:staff_requests,email'],
+                                 'unique:staff_requests,email',
+                                 new GmailVerified(), // ← Gmail format + MX + SMTP probe
+                                ],
             'username'       => ['required', 'string', 'min:3', 'max:50', 'alpha_dash',
                                  'unique:admins,username',
                                  'unique:staff,username',

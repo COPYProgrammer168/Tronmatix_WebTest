@@ -54,9 +54,13 @@ export default function DevLoginPage() {
       }
 
       // Store in localStorage — same keys as AuthContext
+// Store token + force page reload so AuthContext re-reads localStorage
       localStorage.setItem('token', token)
       localStorage.setItem('tronmatix_user', JSON.stringify(devUser))
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+      // Use window.location so AuthContext re-initializes from scratch
+      window.location.href = '/dev/dashboard'
 
       navigate('/dev/dashboard', { replace: true })
     } catch (err) {

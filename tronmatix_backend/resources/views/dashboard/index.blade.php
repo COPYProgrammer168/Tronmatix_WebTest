@@ -323,7 +323,7 @@
                         <td style="font-weight:600;">{{ $order->user?->username ?? 'Guest' }}</td>
                         <td style="color:#F97316; font-weight:700;">${{ number_format($order->total, 2) }}</td>
                         <td><span class="badge badge-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
-                        <td style="color:rgba(255,255,255,0.4); font-size:12px;">{{ $order->created_at->format('d M Y') }}</td>
+                        <td style="color:var(--date-cell-color, rgba(255,255,255,0.4)); font-size:12px;">{{ $order->created_at->format('d M Y') }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -571,18 +571,45 @@ const categoryChart = new Chart(document.getElementById('categoryChart').getCont
 window.__updateChartTheme = function(t) {
     applyChartDefaults();
     const c  = themeColors();
-    const bd = t === 'light' ? '#F1F5F9' : '#111';
+    const bd = t === 'light' ? '#FFFFFF' : '#111';
+    Chart.defaults.elements.point.borderColor = bd;
+    // Update grid + tick colors on all 4 axis charts
     [revenueChart, ordersChart, dailyChart, usersChart].forEach(ch => {
-        ch.options.scales.x.grid.color = c.grid;
-        ch.options.scales.y.grid.color = c.grid;
+        ch.options.scales.x.grid.color  = c.grid;
+        ch.options.scales.y.grid.color  = c.grid;
+        ch.options.scales.x.ticks.color = c.text;
+        ch.options.scales.y.ticks.color = c.text;
         ch.update('none');
     });
+
+    // Regenerate gradients for line charts
+    revenueChart.data.datasets[0].backgroundColor = makeGradient(
+        revenueChart.ctx, 'rgba(249,115,22,0.25)', 'rgba(249,115,22,0)'
+    );
+    revenueChart.data.datasets[0].pointBorderColor = bd;
+    revenueChart.data.datasets[0].pointBackgroundColor = orange;
+    revenueChart.update('none');
+
+    dailyChart.data.datasets[0].backgroundColor = makeGradient(
+        dailyChart.ctx, 'rgba(59,130,246,0.25)', 'rgba(59,130,246,0)'
+    );
+    dailyChart.data.datasets[0].pointBorderColor = bd;
+    dailyChart.data.datasets[0].pointBackgroundColor = blue;
+    dailyChart.update('none');
+    // Regenerate gradients for bar charts
+    ordersChart.data.datasets[0].backgroundColor = makeGradient(
+        ordersChart.ctx, 'rgba(249,115,22,0.6)', 'rgba(249,115,22,0.15)'
+    );
+    ordersChart.update('none');
+
+    usersChart.data.datasets[0].backgroundColor = makeGradient(
+        usersChart.ctx, 'rgba(34,197,94,0.6)', 'rgba(34,197,94,0.1)'
+    );
+    usersChart.update('none');
+
+    // Pie/doughnut border color
     [statusChart, categoryChart].forEach(ch => {
         ch.data.datasets[0].borderColor = bd;
-        ch.update('none');
-    });
-    [revenueChart, dailyChart].forEach(ch => {
-        ch.data.datasets[0].pointBorderColor = bd;
         ch.update('none');
     });
 };
@@ -599,10 +626,15 @@ window.__updateChartTheme = function(t) {
     border-radius: 20px;
     letter-spacing: 1px;
 }
-/* Empty state text */
-[data-theme="light"] td[style*="color:rgba(255,255,255,0.3)"],
-[data-theme="light"] td[style*="color: rgba(255,255,255,0.3)"] {
-    color: rgba(15,23,42,0.35) !important;
+[data-theme="light"] .chart-badge {
+    color: rgba(15,23,42,0.45);
+    background: rgba(15,23,42,0.06);
+}
+[data-theme="light"] td[style*="color:rgba(255,255,255,0.4)"] {
+    color: rgba(15,23,42,0.45) !important;
+}
+[data-theme="light"] .stat-card .stat-label {
+    color: rgba(15,23,42,0.55) !important;
 }
 @media (max-width: 900px) {
     .chart-grid-2 { grid-template-columns: 1fr; }

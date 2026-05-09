@@ -280,7 +280,7 @@ class SettingsController extends Controller
             'Access denied.'
         );
 
-        $roles = ['admin', 'editor', 'viewer'];
+        $roles = ['admin', 'editor', 'viewer', 'developer', 'delivery'];
         $features = ['dashboard', 'products', 'orders', 'orders_edit', 'users', 'discounts', 'settings', 'staff'];
 
         $permsToSave = [];

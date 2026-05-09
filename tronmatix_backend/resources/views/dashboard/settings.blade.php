@@ -440,8 +440,8 @@ setTimeout(closeSavePopup, 3500);
             <div style="width:42px; height:42px; border-radius:12px; background:rgba(167,139,250,0.12);
                         border:1px solid rgba(167,139,250,0.3); display:flex; align-items:center; justify-content:center; font-size:20px;">🔐</div>
             <div>
-                <div style="font-size:17px; font-weight:800; letter-spacing:2px;">ROLE PERMISSIONS</div>
-                <div style="font-size:12px; color:rgba(255,255,255,0.35); margin-top:2px;">
+                <div style="font-size:17px; font-weight:800; letter-spacing:2px; color:var(--text-main, #fff);">ROLE PERMISSIONS</div>
+                <div style="font-size:12px; color:var(--text-muted, rgba(255,255,255,0.35)); margin-top:2px;">
                     Define what each role can access across the dashboard
                 </div>
             </div>
@@ -476,7 +476,7 @@ setTimeout(closeSavePopup, 3500);
                     <thead>
                         <tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
                             <th style="padding:16px 20px; text-align:left; font-size:11px; letter-spacing:2px;
-                                       color:rgba(255,255,255,0.35); white-space:nowrap; font-weight:700; width:220px;">
+                                       color:var(--text-muted, rgba(255,255,255,0.35)); white-space:nowrap; font-weight:700; width:220px;">
                                 FEATURE / MODULE
                             </th>
 
@@ -510,14 +510,13 @@ setTimeout(closeSavePopup, 3500);
                         @foreach($permFeatures as $featureKey => $featureMeta)
                         <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                             <td style="padding:14px 20px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span style="font-size:18px;">{{ $featureMeta['icon'] }}</span>
-                                    <span style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.85);">
-                                        {{ $featureMeta['label'] }}
-                                    </span>
-                                </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:18px;">{{ $featureMeta['icon'] }}</span>
+                                <span style="font-size:14px; font-weight:600; color:var(--text-main, rgba(255,255,255,0.85));">
+                                    {{ $featureMeta['label'] }}
+                                </span>
+                            </div>
                             </td>
-
                             {{-- Superadmin always ✅ --}}
                             <td style="padding:14px; text-align:center;">
                                 <span style="display:inline-flex; align-items:center; justify-content:center;
@@ -672,7 +671,7 @@ setTimeout(closeSavePopup, 3500);
 
 /* Card titles */
 .s-card-title { font-size:15px; font-weight:800; letter-spacing:1.5px; padding:0; }
-.s-card-sub   { font-size:12px; color:rgba(255,255,255,0.3); margin-top:2px; }
+.s-card-sub   { font-size:12px; color:var(--text-muted, rgba(80,80,80,0.7)); margin-top:2px; }
 
 /* Setting row */
 .s-row {
@@ -680,11 +679,11 @@ setTimeout(closeSavePopup, 3500);
     gap:16px; padding:14px 0;
 }
 .s-info { flex:1; min-width:0; }
-.s-label { font-size:14px; font-weight:700; color:rgba(255,255,255,0.88); margin-bottom:3px; }
-.s-desc  { font-size:12px; color:rgba(255,255,255,0.3); line-height:1.5; }
+.s-label { font-size:14px; font-weight:700; color:var(--text-main, #1a1a1a); margin-bottom:3px; }
+.s-desc  { font-size:12px; color:var(--text-muted, rgba(60,60,60,0.7)); line-height:1.5; }
 .s-desc em     { color:rgba(249,115,22,0.7); font-style:normal; }
-.s-desc strong { color:rgba(255,255,255,0.7); }
-.s-divider { height:1px; background:rgba(255,255,255,0.055); }
+.s-desc strong { color:var(--text-main, #1a1a1a); }
+.s-divider { height:1px; background:var(--border-color, rgba(255,255,255,0.055)); }
 
 /* Sub option */
 .s-sub {
@@ -693,14 +692,14 @@ setTimeout(closeSavePopup, 3500);
     border-radius:10px; animation:sSubSlide .2s ease;
 }
 .s-hidden { display:none; }
-.s-sub-label { font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; }
+.s-sub-label { font-size:11px; letter-spacing:2px; color:var(--text-muted, rgba(60,60,60,0.7)); font-weight:700; }
 
 /* Toggle switch */
 .ts { position:relative; width:52px; height:28px; flex-shrink:0; cursor:pointer; }
 .ts input { opacity:0; width:0; height:0; position:absolute; }
 .ts-track {
     position:absolute; inset:0; border-radius:28px;
-    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1);
+    background:var(--border-color, rgba(255,255,255,0.1)); border:1px solid var(--border-color, rgba(255,255,255,0.1));
     transition:background .3s, border-color .3s, box-shadow .3s; cursor:pointer;
 }
 .ts-track::before {

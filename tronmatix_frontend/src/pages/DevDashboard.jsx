@@ -24,11 +24,18 @@ const NAV = [
 ]
 
 const METHOD_STYLE = {
-  GET:    { bg: 'rgba(34,197,94,0.2)',   color: '#22c55e' },
-  POST:   { bg: 'rgba(59,130,246,0.2)',  color: '#3b82f6' },
-  PUT:    { bg: 'rgba(168,85,247,0.2)',  color: '#a855f7' },
-  PATCH:  { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
-  DELETE: { bg: 'rgba(239,68,68,0.2)',  color: '#ef4444' },
+  GET:      { bg: 'rgba(34,197,94,0.2)',   color: '#22c55e' },
+  POST:     { bg: 'rgba(59,130,246,0.2)',  color: '#3b82f6' },
+  PUT:      { bg: 'rgba(168,85,247,0.2)',  color: '#a855f7' },
+  PATCH:    { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
+  DELETE:   { bg: 'rgba(239,68,68,0.2)',  color: '#ef4444' },
+  ERROR:    { bg: 'rgba(239,68,68,0.2)',  color: '#ef4444' },
+  CRITICAL: { bg: 'rgba(239,68,68,0.3)',  color: '#ff0000' },
+  WARNING:  { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
+  INFO:     { bg: 'rgba(34,197,94,0.15)', color: '#22c55e' },
+  DEBUG:    { bg: 'rgba(99,102,241,0.2)', color: '#6366f1' },
+  NOTICE:   { bg: 'rgba(59,130,246,0.15)',color: '#3b82f6' },
+  LOG:      { bg: 'rgba(75,85,99,0.2)',   color: '#9ca3af' },
 }
 
 const STATUS_STYLE = (s) => {
@@ -165,8 +172,8 @@ function SectionBox({ title, right, children }) {
 
 // ── SYSTEM TAB ────────────────────────────────────────────────────────────────
 function SystemTab() {
-  // Auto-refresh health every 30s
-  const { data, loading, error, refetch } = useFetch('/api/dev/health', { refreshInterval: 30000 })
+  // Auto-refresh health every 60s
+  const { data, loading, error, refetch } = useFetch('/api/dev/health', { refreshInterval: 60000 })
 
   const STACK = [
     { label: 'Laravel',  key: 'laravel_version',  color: '#F97316' },
@@ -235,6 +242,8 @@ function SystemTab() {
     </div>
   )
 }
+
+const methods = ['ALL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
 // ── API LOGS TAB ──────────────────────────────────────────────────────────────
 function ApiLogsTab() {

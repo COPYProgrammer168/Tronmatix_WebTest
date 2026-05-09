@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('tronmatix_theme')||'dark');</script>
     <title>Tronmatix Admin — @yield('title', __('dashboard.nav.dashboard'))</title>
 
     {{-- English font --}}
@@ -88,8 +89,8 @@
 
             /* Text */
             --text:         #FFFFFF;
+            --text-main:    #FFFFFF;
             --text-muted:   rgba(255,255,255,0.55);
-            --text-faint:   rgba(255,255,255,0.30);
             --text-xfaint:  rgba(255,255,255,0.20);
 
             /* Borders */
@@ -120,6 +121,7 @@
             --surface-3: #E2E8F0;
 
             --text:         #0F172A;
+            --text-main:    #0F172A;
             --text-muted:   rgba(15,23,42,0.60);
             --text-faint:   rgba(15,23,42,0.40);
             --text-xfaint:  rgba(15,23,42,0.25);
@@ -1603,8 +1605,36 @@
         }
 
         (function() {
-            const t = localStorage.getItem('tronmatix_theme') || 'dark';
+            const t = document.documentElement.getAttribute('data-theme') || 'dark';
             applyTheme(t);
+        })();
+
+        // ── Staff online heartbeat ──────────────────────────────────────
+        (function() {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            function sendHeartbeat() {
+                fetch('{{ route("dashboard.staff.heartbeat") }}', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf, 'Content-Type': 'application/json' },
+                    keepalive: true
+                }).catch(() => {});
+            }
+
+            function sendOffline() {
+                navigator.sendBeacon(
+                    '{{ route("dashboard.staff.offline") }}',
+                    new Blob([JSON.stringify({ _token: csrf })], { type: 'application/json' })
+                );
+            }
+
+            sendHeartbeat();
+            setInterval(sendHeartbeat, 30000);
+            window.addEventListener('beforeunload', sendOffline);
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') sendOffline();
+                else sendHeartbeat();
+            });
         })();
 
         // ── Language switcher ───────────────────────────────────────────────
@@ -1641,6 +1671,10 @@
     @keyframes atToastIn  { from{opacity:0;transform:translateX(40px) scale(.95)} to{opacity:1;transform:none} }
     @keyframes atToastOut { to{opacity:0;transform:translateX(40px) scale(.95)} }
     @keyframes atToastBar { from{width:100%} to{width:0%} }
+    @keyframes onlinePulse {
+        0%, 100% { box-shadow: 0 0 4px #22c55e; }
+        50%       { box-shadow: 0 0 12px #22c55e, 0 0 20px rgba(34,197,94,0.3); }
+    }
     </style>
 
     {{-- Staff Request Modal (superadmin only) --}}

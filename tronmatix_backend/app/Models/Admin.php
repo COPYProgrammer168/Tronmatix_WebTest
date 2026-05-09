@@ -16,21 +16,42 @@ class Admin extends Authenticatable
     const ROLES = ['superadmin', 'admin'];
 
     protected $fillable = [
-        'name', 'email', 'username', 'password',
-        'avatar', 'role', 'is_active', 'last_login_at',
+        'name',
+        'email',
+        'username',
+        'password',
+        'avatar',
+        'role',
+        'is_active',
+        'last_login_at',
+        'last_seen_at',
+        'online_status',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
-        'is_active'     => 'boolean',
+        'is_active' => 'boolean',
         'last_login_at' => 'datetime',
+        'last_seen_at' => 'datetime',
+        'online_status' => 'string',
     ];
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+    public function isOnline(): bool
+    {
+        return $this->online_status === 'online'
+            && $this->last_seen_at
+            && $this->last_seen_at->greaterThan(now()->subMinutes(2));
+    }
 
+    public function getIsOnlineAttribute(): bool
+    {
+        return $this->isOnline();
+    }
     public function isSuperAdmin(): bool
     {
         return $this->role === 'superadmin';
@@ -52,8 +73,8 @@ class Admin extends Authenticatable
 
         return strtoupper(
             count($words) >= 2
-                ? ($words[0][0] ?? '') . ($words[1][0] ?? '')
-                : substr($this->name ?? 'AD', 0, 2)
+            ? ($words[0][0] ?? '') . ($words[1][0] ?? '')
+            : substr($this->name ?? 'AD', 0, 2)
         );
     }
 }

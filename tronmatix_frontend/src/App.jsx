@@ -107,7 +107,7 @@ function AppContent() {
             <Route path="/staff/login"             element={<StaffLoginPage />} />
             <Route path="/dev/login"               element={<DevLoginPage />} />
             <Route
-              path="/staff/StaffDashboard"
+              path="/staff/dashboard"
               element={
                 <StaffGuard>
                   <StaffDashboard />
@@ -115,7 +115,7 @@ function AppContent() {
               }
             />
             <Route
-              path="/dev/DevDashboard"
+              path="/dev/dashboard"
               element={
                 <DevGuard>
                   <DevDashboard />

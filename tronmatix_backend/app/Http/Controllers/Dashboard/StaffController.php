@@ -17,7 +17,7 @@ class StaffController extends Controller
     private function me(): Admin
     {
         $user = Auth::guard('admin')->user();
-        if (! $user instanceof Admin) {
+        if (!$user instanceof Admin) {
             abort(401, 'Unauthorized');
         }
         return $user;
@@ -71,21 +71,32 @@ class StaffController extends Controller
         $this->assertAdmin();
 
         $data = $request->validate([
-            'name'     => ['required', 'string', 'max:100'],
-            'username' => ['required', 'string', 'min:3', 'max:50', 'alpha_dash',
-                           'unique:staff,username', 'unique:admins,username'],
-            'email'    => ['required', 'email',
-                           'unique:staff,email', 'unique:admins,email'],
-            'role'     => ['required', 'in:editor,seller,delivery,developer'],
+            'name' => ['required', 'string', 'max:100'],
+            'username' => [
+                'required',
+                'string',
+                'min:3',
+                'max:50',
+                'alpha_dash',
+                'unique:staff,username',
+                'unique:admins,username'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'unique:staff,email',
+                'unique:admins,email'
+            ],
+            'role' => ['required', 'in:editor,seller,delivery,developer'],
             'password' => ['required', Password::min(8)],
         ]);
 
         Staff::create([
-            'name'      => $data['name'],
-            'username'  => $data['username'],
-            'email'     => $data['email'],
-            'role'      => $data['role'],
-            'password'  => Hash::make($data['password']),
+            'name' => $data['name'],
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'role' => $data['role'],
+            'password' => Hash::make($data['password']),
             'is_active' => true,
         ]);
 
@@ -116,11 +127,36 @@ class StaffController extends Controller
         $this->assertAdmin();
 
         $member = Staff::findOrFail($id);
-        $member->update(['is_active' => ! $member->is_active]);
+        $member->update(['is_active' => !$member->is_active]);
 
         $status = $member->is_active ? 'activated' : 'deactivated';
 
         return back()->with('success', "{$member->name} has been {$status}.");
+    }
+
+    // ── heartbeat ─────────────────────────────────────────────────────────────
+
+    public function heartbeat(Request $request)
+    {
+        $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        if ($user instanceof Staff) {
+            $user->update([
+                'last_seen_at' => now(),
+                'online_status' => 'online',
+            ]);
+        }
+        return response()->json(['ok' => true]);
+    }
+
+    // ── setOffline ────────────────────────────────────────────────────────────
+
+    public function setOffline(Request $request)
+    {
+        $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        if ($user instanceof Staff) {
+            $user->update(['online_status' => 'offline']);
+        }
+        return response()->json(['ok' => true]);
     }
 
     // ── destroy ───────────────────────────────────────────────────────────────
@@ -130,7 +166,7 @@ class StaffController extends Controller
         $this->assertAdmin();
 
         $member = Staff::findOrFail($id);
-        $name   = $member->name;
+        $name = $member->name;
         $member->delete();
 
         return redirect()->route('dashboard.staff')

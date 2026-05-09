@@ -36,6 +36,9 @@ class StaffAuthenticate
                 ->with('error', 'Your account has been deactivated. Contact an administrator.');
         }
 
+        // Update activity
+        $staff->update(['last_seen_at' => now()]);
+
         return $next($request);
     }
 }
