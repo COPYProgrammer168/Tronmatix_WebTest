@@ -138,6 +138,7 @@ class ProductController extends Controller
             'name'              => 'required|string|max:255',
             'category'          => 'required|string|max:100',
             'brand'             => 'nullable|string|max:100',
+            'warranty'          => 'nullable|string|max:100',
             'price'             => 'required|numeric|min:0',
             'stock'             => 'nullable|integer|min:0',
             'rating'            => 'nullable|numeric|min:0|max:5',

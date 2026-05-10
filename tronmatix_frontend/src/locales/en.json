@@ -123,7 +123,8 @@
     "deliveryTo": "DELIVERY TO",
     "items": "ITEMS",
     "deliveryLocation": "DELIVERY LOCATION",
-    "keepIt": "Keep it"
+    "keepIt": "Keep it",
+    "warrantyLabel": "WARRANTY"
   },
   "profile": {
     "myProfile": "👤 My Profile",
@@ -169,7 +170,8 @@
     "specifications": "Specifications",
     "reviews": "Reviews",
     "notEligible": "not eligible for this discount",
-    "relatedProducts": "RELATED PRODUCTS"
+    "relatedProducts": "RELATED PRODUCTS",
+    "warranty": "WARRANTY"
   },
   "map": {
     "title": "📍 PIN YOUR LOCATION",

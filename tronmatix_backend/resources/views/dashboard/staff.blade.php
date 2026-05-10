@@ -299,6 +299,13 @@
                 </div>
             @else
                 <div style="overflow-x:auto;">
+                    <style>
+                        @media (max-width: 768px) {
+                            #staff-table .col-email, #staff-table .col-joined, #staff-table .col-status {
+                                display: none;
+                            }
+                        }
+                    </style>
                     <table style="width:100%;border-collapse:collapse;" id="staff-table">
                         <thead>
                             <tr style="border-bottom:1px solid var(--border);">
@@ -428,11 +435,11 @@
                                         @endphp
                                         <span
                                             style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
-                 border-radius:6px;font-size:11px;font-weight:700;letter-spacing:1px;
-                 background:{{ $statusBg }};border:1px solid {{ $statusBdr }};color:{{ $statusColor }};">
+                                            border-radius:6px;font-size:11px;font-weight:700;letter-spacing:1px;
+                                            background:{{ $statusBg }};border:1px solid {{ $statusBdr }};color:{{ $statusColor }};">
                                             <span
                                                 style="width:6px;height:6px;border-radius:50%;
-                     background:{{ $statusColor }};{{ $dotExtra }}"></span>
+                                                background:{{ $statusColor }};{{ $dotExtra }}"></span>
                                             {{ $statusLabel }}
                                         </span>
                                     </td>

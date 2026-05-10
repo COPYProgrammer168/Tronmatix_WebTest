@@ -243,6 +243,7 @@
                                     </datalist>
                                 </div>
                             </div>
+                            </div>
 
                             {{-- Price + Stock + Rating --}}
                             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
@@ -264,6 +265,11 @@
                                     <input type="number" name="rating" class="form-control"
                                         value="{{ old('rating', $product?->rating ?? 0) }}" step="0.1" min="0"
                                         max="5" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">WARRANTY</label>
+                                    <input type="text" name="warranty" class="form-control"
+                                        value="{{ old('warranty', $product?->warranty) }}" placeholder="e.g. 3 years" />
                                 </div>
                             </div>
 

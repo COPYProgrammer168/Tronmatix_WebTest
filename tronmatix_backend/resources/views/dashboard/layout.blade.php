@@ -580,14 +580,15 @@
             border: 1px solid var(--border-input);
             border-radius: 10px;
             padding: 10px 14px;
-            color: var(--text);
+            color: var(--text-primary);
             font-family: 'Rajdhani', var(--font-kh), sans-serif;
-            font-size: 15px;
+            font-size: 16px;
+            font-weight: 500;
             outline: none;
             transition: border-color 0.2s;
         }
         .form-control:focus  { border-color: var(--orange); }
-        .form-control::placeholder { color: var(--text-faint); }
+        .form-control::placeholder { color: var(--text-muted); opacity: 0.8; }
         .form-control option { background: var(--surface-2); color: var(--text); }
 
         .form-grid-2 {

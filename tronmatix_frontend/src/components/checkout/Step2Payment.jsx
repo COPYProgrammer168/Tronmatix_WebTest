@@ -136,6 +136,11 @@ export default function Step2Payment({
               <span style={{ color: c.itemName }}>
                 {item.name}{" "}
                 <span style={{ color: c.itemQty }}>×{item.qty}</span>
+                {item.warranty && (
+                  <div className="text-[13px] font-bold mt-0.5" style={{ color: "#F97316" }}>
+                    🛡 {t("orders.warrantyLabel")}: {item.warranty}
+                  </div>
+                )}
               </span>
               <span className="font-bold" style={{ color: c.itemPrice }}>
                 ${(item.price * item.qty).toFixed(2)}

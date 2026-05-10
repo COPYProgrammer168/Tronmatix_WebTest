@@ -17,6 +17,7 @@ class Product extends Model
         'price',
         'category',
         'brand',
+        'warranty',
         'image',
         'image_disk',
         'images',

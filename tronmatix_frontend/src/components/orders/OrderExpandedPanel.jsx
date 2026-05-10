@@ -12,7 +12,7 @@ function resolveImage(path) {
   return LARAVEL_URL + (path.startsWith("/") ? path : "/" + path);
 }
 
-// ✅ Fix 9: lat/lng are stored inside order.shipping JSON, not as top-level fields.
+// lat/lng are stored inside order.shipping JSON, not as top-level fields.
 // Also falls back to top-level delivery_lat/lng (from older API responses).
 function resolveMapCoords(order) {
   const lat =
@@ -41,13 +41,13 @@ export default function OrderExpandedPanel({ order, onShowQR, onPrint }) {
   const textSub  = dark ? "#9ca3af" : "#6b7280";
   const panelBg  = dark ? "#111827" : "#f8fafc";
 
-  // ✅ Derive once — used in multiple places below
+  // Derive once — used in multiple places below
   const isPickup     = (order.fulfillment_type ?? "delivery") === "pickup";
   const shippingData = order.shipping || order.location || {};
   const mapCoords    = resolveMapCoords(order);
   const hasMapPin    = !isPickup && mapCoords.lat && mapCoords.lng;
 
-  // ✅ Fix 7: store map for pickup — always show Tronmatix store location
+  // store map for pickup — always show Tronmatix store location
   const STORE_LAT     = 11.56298
   const STORE_LNG     = 104.899518
   const STORE_MAPS_URL = "https://goo.gl/maps/8q7eeNwZH5uz1YwZ8"
@@ -56,14 +56,14 @@ export default function OrderExpandedPanel({ order, onShowQR, onPrint }) {
   return (
     <div className="p-4" style={{ borderTop: `1px solid ${border}` }}>
 
-      {/* ✅ Fix 5: section title changes for pickup */}
+      {/* section title changes for pickup */}
       <div className="mb-5">
         <h4 className="font-black mb-2" style={{ fontSize: 13, letterSpacing: 1, color: textSub }}>
           {isPickup
             ? (isKhmer ? "ស្ថានភាពការបញ្ជាទិញ" : "ORDER STATUS")
             : (isKhmer ? t("orders.deliveryStatus") : "DELIVERY STATUS")}
         </h4>
-        {/* ✅ Fix 8: pass fulfillmentType down to DeliveryTracker */}
+        {/*pass fulfillmentType down to DeliveryTracker */}
         <DeliveryTracker
           status={order.status || "confirmed"}
           order={order}
@@ -73,7 +73,7 @@ export default function OrderExpandedPanel({ order, onShowQR, onPrint }) {
 
       <div className="grid md:grid-cols-2 gap-4">
 
-        {/* ✅ Fix 5 + 6: section shows correct content for pickup vs delivery */}
+        {/* section shows correct content for pickup vs delivery */}
         <div className="rounded-xl p-4" style={{ background: panelBg }}>
           <h4 className="font-black mb-3" style={{ fontSize: 13, letterSpacing: 1, color: textSub }}>
             {isPickup
@@ -92,7 +92,7 @@ export default function OrderExpandedPanel({ order, onShowQR, onPrint }) {
               </div>
             ))}
 
-            {/* ✅ Fix 6: address row — for pickup show store address, for delivery show customer address */}
+            {/* address row — for pickup show store address, for delivery show customer address */}
             {isPickup ? (
               <div>
                 <span style={{ color: textSub }}>
@@ -232,6 +232,11 @@ export default function OrderExpandedPanel({ order, onShowQR, onPrint }) {
                   <span className="flex-1" style={{ color: dark ? "#d1d5db" : "#374151" }}>
                     {item.name || item.product?.name}{" "}
                     <span style={{ color: textSub }}>×{item.qty}</span>
+                    {item.warranty && (
+                      <div className="text-[11px] font-bold mt-0.5" style={{ color: "#F97316" }}>
+                        🛡 {t("orders.warrantyLabel")}: {item.warranty}
+                      </div>
+                    )}
                   </span>
                   <span className="font-bold" style={{ color: textMain }}>
                     ${((item.price || item.unit_price) * item.qty).toFixed(2)}

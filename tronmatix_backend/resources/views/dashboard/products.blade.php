@@ -103,9 +103,6 @@
 @keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
 </style>
 @else
-
-
-
     {{-- ── Header ──────────────────────────────────────────────────────────────── --}}
     <div
         style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
@@ -286,6 +283,7 @@
                         <th>{{ __('dashboard.productsPage.product') }}</th>
                         <th>{{ __('dashboard.productsPage.category') }}</th>
                         <th>{{ __('dashboard.productsPage.brand') }}</th>
+                        <th>{{ __('dashboard.productsPage.warranty') }}</th>
                         <th>{{ __('dashboard.productsPage.price') }}</th>
                         <th>{{ __('dashboard.productsPage.stock') }}</th>
                         <th>{{ __('dashboard.productsPage.featured') }}</th>
@@ -326,6 +324,7 @@
                                 <span class="badge badge-orange">{{ $product->category }}</span>
                             </td>
                             <td style="color:rgba(255,255,255,0.6);">{{ $product->brand ?? '—' }}</td>
+                            <td style="color:rgba(255,255,255,0.6);">{{ $product->warranty ?? '—' }}</td>
                             <td style="color:#F97316; font-weight:700;">${{ number_format($product->price, 2) }}</td>
                             <td>
                                 <span

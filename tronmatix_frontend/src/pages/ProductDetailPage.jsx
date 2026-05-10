@@ -512,6 +512,13 @@ export default function ProductDetailPage() {
             </p>
           )}
 
+          {product.warranty && (
+            <div className="mb-5 p-3 rounded-lg" style={{ background: dark ? "rgba(249,115,22,0.05)" : "rgba(249,115,22,0.05)", border: `1px solid ${dark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.2)"}` }}>
+              <span className="font-bold" style={{ fontFamily: bodyFont, fontSize: 15, color: dark ? "#f9fafb" : "#1f2937" }}>{t("product.warranty")} : </span>
+              <span style={{ fontSize: 14, color: dark ? "#f9fafb" : "#1f2937", fontWeight: 600 }}>{product.warranty}</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 mb-5">
             <span
               className={`w-2.5 h-2.5 rounded-full ${inStock ? "bg-green-500" : "bg-red-400"}`}

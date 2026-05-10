@@ -123,7 +123,8 @@
     "deliveryTo": "ដឹកទៅ",
     "items": "ទំនិញ",
     "deliveryLocation": "ទីតាំងដឹក",
-    "keepIt": "រក្សាទុក"
+    "keepIt": "រក្សាទុក",
+    "warrantyLabel": "មានការធានារយះពេល"
   },
   "profile": {
     "myProfile": "👤 ប្រវត្តិរូបខ្ញុំ",
@@ -169,7 +170,8 @@
     "specifications": "លក្ខណៈបច្ចេកទេស",
     "reviews": "ការវាយតម្លៃ",
     "notEligible": "មិនមានសិទ្ធិទទួលបានការបញ្ចុះតម្លៃ",
-    "relatedProducts": "ផលិតផលពាក់ព័ន្ធ"
+    "relatedProducts": "ផលិតផលពាក់ព័ន្ធ",
+    "warranty": "មានការធានារយះពេល"
   },
   "map": {
     "title": "📍 កំណត់ទីតាំងរបស់អ្នក",

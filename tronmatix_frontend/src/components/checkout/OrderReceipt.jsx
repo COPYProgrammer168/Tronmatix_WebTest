@@ -74,7 +74,10 @@ export default function OrderReceipt({ order, deliveryStatus }) {
         <thead><tr><th>ITEM</th><th style="text-align:center">QTY</th><th style="text-align:right">UNIT</th><th style="text-align:right">TOTAL</th></tr></thead>
         <tbody>${(order.items || []).map((i) => `
           <tr>
-            <td>${i.name}</td>
+            <td>
+              ${i.name}
+              ${i.warranty ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 ${i.warranty}</div>` : ""}
+            </td>
             <td style="text-align:center">×${i.qty}</td>
             <td style="text-align:right">$${Number(i.price).toFixed(2)}</td>
             <td style="text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
@@ -192,7 +195,14 @@ export default function OrderReceipt({ order, deliveryStatus }) {
             <tbody>
               {(order.items || []).map((item) => (
                 <tr key={item.id} style={{ borderBottom: "1px solid #f9fafb" }}>
-                  <td className="py-2 font-semibold text-gray-700">{item.name}</td>
+                  <td className="py-2 font-semibold text-gray-700">
+                    {item.name}
+                    {item.warranty && (
+                      <div className="text-[13px] font-bold mt-0.5" style={{ color: "#F97316" }}>
+                        🛡 {item.warranty}
+                      </div>
+                    )}
+                  </td>
                   <td className="py-2 text-gray-500">×{item.qty}</td>
                   <td className="py-2 text-gray-500">${Number(item.price).toFixed(2)}</td>
                   <td className="py-2 font-bold text-gray-800">${(item.price * item.qty).toFixed(2)}</td>
