@@ -286,8 +286,8 @@
                         <th>{{ __('dashboard.productsPage.warranty') }}</th>
                         <th>{{ __('dashboard.productsPage.price') }}</th>
                         <th>{{ __('dashboard.productsPage.stock') }}</th>
-                        <th>{{ __('dashboard.productsPage.featured') }}</th>
-                        <th>{{ __('dashboard.productsPage.hot') }}</th>
+                        {{-- <th>{{ __('dashboard.productsPage.featured') }}</th>
+                        <th>{{ __('dashboard.productsPage.hot') }}</th> --}}
                         <th>{{ __('dashboard.productsPage.actions') }}</th>
                     </tr>
                 </thead>
@@ -332,7 +332,7 @@
                                     {{ $product->stock }}
                                 </span>
                             </td>
-                            <td>
+                            {{-- <td>
                                 @if ($product->is_featured)
                                     <span class="badge badge-paid">{{ __('dashboard.btn.yes') }}</span>
                                 @else
@@ -345,7 +345,7 @@
                                 @else
                                     <span class="badge badge-gray">—</span>
                                 @endif
-                            </td>
+                            </td> --}}
                             <td>
                                 <div style="display:flex; gap:6px;">
                                     <a href="{{ route('dashboard.products.edit', $product) }}"

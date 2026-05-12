@@ -232,9 +232,9 @@ export default function OrderExpandedPanel({ order, onShowQR, onPrint }) {
                   <span className="flex-1" style={{ color: dark ? "#d1d5db" : "#374151" }}>
                     {item.name || item.product?.name}{" "}
                     <span style={{ color: textSub }}>×{item.qty}</span>
-                    {item.warranty && (
+                    {item.warranty_start && item.warranty_end && (
                       <div className="text-[11px] font-bold mt-0.5" style={{ color: "#F97316" }}>
-                        🛡 {t("orders.warrantyLabel")}: {item.warranty}
+                        🛡 Warranty: {new Date(item.warranty_start).toLocaleDateString('en-GB')} - {new Date(item.warranty_end).toLocaleDateString('en-GB')}
                       </div>
                     )}
                   </span>

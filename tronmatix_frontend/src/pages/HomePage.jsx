@@ -303,21 +303,6 @@ export default function HomePage() {
               />
             )}
 
-            {/* ── Video (embed) ──────────────────────────────────────────── */}
-            {hasVideo &&
-              ["youtube", "vimeo", "facebook"].includes(videoType) &&
-              videoSrc && (
-                <iframe
-                  key={videoSrc}
-                  src={videoSrc}
-                  className="absolute inset-0 w-full h-full"
-                  style={{ opacity: 0.85, pointerEvents: "none" }}
-                  frameBorder="0"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                />
-              )}
-
             {/* ── Image ──────────────────────────────────────────────────── */}
             {imgUrl && (
               <img

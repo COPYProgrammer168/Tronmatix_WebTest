@@ -136,8 +136,7 @@ class BannerController extends Controller
     }
 
     /**
-     * Upload a new banner video, or fall back to a URL input, or keep existing.
-     * File upload always takes priority over URL.
+     * Upload a new banner video, or keep existing.
      */
     private function handleVideo(Request $request, ?string $current): ?string
     {
@@ -145,26 +144,16 @@ class BannerController extends Controller
             return $this->storage->store($request->file('video_file'), 'banners/videos');
         }
 
-        $url = trim($request->input('video_url', ''));
-
-        return $url ?: $current;
+        return $current;
     }
 
     /**
-     * Infer video_type from what was submitted (uploaded file > URL pattern > explicit input).
+     * Infer video_type. Always 'upload' if a file is present.
      */
     private function resolveVideoType(Request $request): ?string
     {
         if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
             return 'upload';
-        }
-
-        $url = trim($request->input('video_url', ''));
-
-        if ($url) {
-            if (Str::contains($url, ['youtube.com', 'youtu.be'])) return 'youtube';
-            if (Str::contains($url, 'vimeo.com'))                  return 'vimeo';
-            if (Str::contains($url, ['facebook.com', 'fb.watch'])) return 'facebook';
         }
 
         return $request->input('video_type') ?: null;
@@ -182,9 +171,7 @@ class BannerController extends Controller
             'active'       => 'nullable',
             'image_file'   => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
             'remove_image' => 'nullable|boolean',
-            'video_type'   => 'nullable|in:upload,youtube,vimeo,facebook',
             'video_file'   => 'nullable|file|max:102400|mimes:mp4,webm,ogg,mov',
-            'video_url'    => 'nullable|url|max:500',
             'remove_video' => 'nullable|boolean',
         ]);
 
@@ -192,10 +179,8 @@ class BannerController extends Controller
         unset(
             $validated['image_file'],
             $validated['video_file'],
-            $validated['video_url'],
             $validated['remove_image'],
             $validated['remove_video'],
-            $validated['video_type'], // resolved and set by caller
         );
 
         return $validated;

@@ -209,13 +209,33 @@ class OrderController extends Controller
 
                 foreach ($validated['items'] as $item) {
                     $product = $products[$item['product_id']];
+
+                    $warrantyStart = null;
+                    $warrantyEnd = null;
+
+                    if (!empty($product->warranty)) {
+                        // Assume warranty format: "2 years" or "12 months"
+                        $warrantyStart = now();
+                        $warrantyEnd = now();
+
+                        if (str_contains(strtolower($product->warranty), 'year')) {
+                            $years = (int) filter_var($product->warranty, FILTER_SANITIZE_NUMBER_INT);
+                            $warrantyEnd = now()->addYears($years);
+                        } elseif (str_contains(strtolower($product->warranty), 'month')) {
+                            $months = (int) filter_var($product->warranty, FILTER_SANITIZE_NUMBER_INT);
+                            $warrantyEnd = now()->addMonths($months);
+                        }
+                    }
+
                     OrderItem::create([
-                        'order_id'   => $order->id,
-                        'product_id' => $product->id,
-                        'name'       => $product->name,
-                        'price'      => $product->price,
-                        'qty'        => $item['qty'],
-                        'image'      => $product->image,
+                        'order_id'       => $order->id,
+                        'product_id'     => $product->id,
+                        'name'           => $product->name,
+                        'price'          => $product->price,
+                        'qty'            => $item['qty'],
+                        'image'          => $product->image,
+                        'warranty_start' => $warrantyStart,
+                        'warranty_end'   => $warrantyEnd,
                     ]);
                     if ($product->stock !== null) {
                         $product->decrement('stock', $item['qty']);

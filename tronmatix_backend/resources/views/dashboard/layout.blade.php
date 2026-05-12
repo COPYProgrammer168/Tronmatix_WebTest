@@ -1554,6 +1554,28 @@
             setTimeout(() => dismissAlertToast(id), 6000);
         }
 
+        // ── Order alert sound ──────────────────────────────────────────────
+        function playOrderAlertSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                // Two-tone "ding-dong" beep
+                [523.25, 659.25].forEach((freq, i) => {
+                    const osc  = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type      = 'sine';
+                    osc.frequency.value = freq;
+                    const start = ctx.currentTime + i * 0.18;
+                    gain.gain.setValueAtTime(0, start);
+                    gain.gain.linearRampToValueAtTime(0.45, start + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+                    osc.start(start);
+                    osc.stop(start + 0.35);
+                });
+            } catch(e) {}
+        }
+
         function dismissAlertToast(id) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -1579,6 +1601,7 @@
                     return !seen.includes(key);
                 });
 
+                if (newAlerts.length > 0) playOrderAlertSound();
                 newAlerts.forEach(a => showAlertToast(a));
 
                 const allSeen = [...new Set([...seen, ...current])].slice(-50);

@@ -72,16 +72,18 @@ export default function OrderReceipt({ order, deliveryStatus }) {
       ${snapDiscount > 0 ? `<div class="info-row"><span>Discount</span><span class="badge">${snapCode ? snapCode + " — " : ""}${discLabel}</span></div>` : ""}
       <table>
         <thead><tr><th>ITEM</th><th style="text-align:center">QTY</th><th style="text-align:right">UNIT</th><th style="text-align:right">TOTAL</th></tr></thead>
-        <tbody>${(order.items || []).map((i) => `
-          <tr>
-            <td>
-              ${i.name}
-              ${i.warranty ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 ${i.warranty}</div>` : ""}
-            </td>
-            <td style="text-align:center">×${i.qty}</td>
-            <td style="text-align:right">$${Number(i.price).toFixed(2)}</td>
-            <td style="text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
-          </tr>`).join("")}
+        ${(order.items || []).map((i) => `
+        <tr>
+        <td>
+        ${i.name}
+        ${(i.warranty_start && i.warranty_end) 
+          ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</div>` 
+          : (i.warranty ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 ${i.warranty}</div>` : "")}
+        </td>
+        <td style="text-align:center">×${i.qty}</td>
+        <td style="text-align:right">$${Number(i.price).toFixed(2)}</td>
+        <td style="text-align:right">$${(i.price * i.qty).toFixed(2)}</td>
+        </tr>`).join("")}
         </tbody>
         <tfoot>
           <tr><td colspan="3" style="text-align:right;color:#666">Subtotal</td><td style="text-align:right">$${Number(order.subtotal || order.total).toFixed(2)}</td></tr>
@@ -197,11 +199,15 @@ export default function OrderReceipt({ order, deliveryStatus }) {
                 <tr key={item.id} style={{ borderBottom: "1px solid #f9fafb" }}>
                   <td className="py-2 font-semibold text-gray-700">
                     {item.name}
-                    {item.warranty && (
+                    {(item.warranty_start && item.warranty_end) ? (
                       <div className="text-[13px] font-bold mt-0.5" style={{ color: "#F97316" }}>
-                        🛡 {item.warranty}
+                        🛡 Warranty: {new Date(item.warranty_start).toLocaleDateString('en-GB')} - {new Date(item.warranty_end).toLocaleDateString('en-GB')}
                       </div>
-                    )}
+                    ) : (item.warranty && (
+                        <div className="text-[13px] font-bold mt-0.5" style={{ color: "#F97316" }}>
+                          🛡 {item.warranty}
+                        </div>
+                    ))}
                   </td>
                   <td className="py-2 text-gray-500">×{item.qty}</td>
                   <td className="py-2 text-gray-500">${Number(item.price).toFixed(2)}</td>
@@ -325,7 +331,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
       {/* Action buttons */}
       <div className="flex gap-3 mt-6">
         <button onClick={printPDF} className="flex-1 flex items-center justify-center gap-2 bg-gray-800 text-white font-bold py-3 rounded-xl hover:bg-gray-700 transition-colors" style={{ fontFamily: receiptFont, fontSize: 14 }}>
-          🖨 PRINT / PDF
+          🖨 PRINT RECEIPT
         </button>
         <button onClick={() => navigate("/orders")} className="flex-1 flex items-center justify-center gap-2 border-2 border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-colors" style={{ fontFamily: receiptFont, fontSize: 14 }}>
           📋 MY ORDERS

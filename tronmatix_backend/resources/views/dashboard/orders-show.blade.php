@@ -357,7 +357,18 @@
                                     @else
                                         <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:18px;">📦</div>
                                     @endif
-                                    <span style="font-weight:600;">{{ $item->name }}</span>
+                                    <div>
+                                        <div style="font-weight:600;">{{ $item->name }}</div>
+                                        @if($item->warranty_start && $item->warranty_end)
+                                        <div style="font-size:10px; color:#F97316; margin-top:3px;">
+                                            🛡️ {{ $item->warranty_start->format('d M Y') }} → {{ $item->warranty_end->format('d M Y') }}
+                                        </div>
+                                        @elseif($item->warranty_start)
+                                        <div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:3px;">
+                                            🛡️ From {{ $item->warranty_start->format('d M Y') }}
+                                        </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
 
@@ -468,6 +479,17 @@
                         </div>
                     </div>
                     @endif
+                        {{-- ── Print Receipt Button ──────────────────────────────────────── --}}
+                    <button onclick="window.print()" style="
+                        width:100%; padding:13px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.12);
+                        background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7);
+                        font-family:Rajdhani,sans-serif; font-size:14px; font-weight:700;
+                        letter-spacing:2px; cursor:pointer; transition:all .2s;
+                        display:flex; align-items:center; justify-content:center; gap:8px;
+                    " onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
+                       onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.7)'">
+                        🖨️ PRINT RECEIPT
+                    </button>
                 </div>
 
                 {{-- Map — only if coordinates exist --}}
@@ -722,7 +744,7 @@
             $_editKey  = "perm_{$_editRole}_orders_edit";
             $_editDefs = ['admin_orders_edit'=>'1','editor_orders_edit'=>'0','viewer_orders_edit'=>'0'];
             $_canEdit  = $_editRole === 'superadmin'
-                || (\App\Models\AdminSetting::get($_editKey, $_editDefs["{$_editRole}_orders_edit"] ?? '0') === '1');
+                || (AdminSetting::get($_editKey, $_editDefs["{$_editRole}_orders_edit"] ?? '0') === '1');
         @endphp
         @if($_canEdit)
         <div class="card">
@@ -731,14 +753,24 @@
             </div>
             <div class="card-body">
                 @php
-                    $statusMeta = [
-                        'pending'    => ['icon'=>'⏳','color'=>'#eab308','label'=>'PENDING'],
-                        'confirmed'  => ['icon'=>'✅','color'=>'#22c55e','label'=>'CONFIRMED'],
-                        'processing' => ['icon'=>'⚙️','color'=>'#3b82f6','label'=>'PROCESSING'],
-                        'shipped'    => ['icon'=>'🚚','color'=>'#a78bfa','label'=>'SHIPPED'],
-                        'delivered'  => ['icon'=>'📦','color'=>'#F97316','label'=>'DELIVERED'],
-                        'cancelled'  => ['icon'=>'❌','color'=>'#ef4444','label'=>'CANCELLED'],
-                    ];
+                    if ($order->isPickup()) {
+                        $statusMeta = [
+                            'pending'    => ['icon'=>'⏳','color'=>'#eab308','label'=>'PENDING'],
+                            'confirmed'  => ['icon'=>'✅','color'=>'#22c55e','label'=>'CONFIRMED'],
+                            'processing' => ['icon'=>'📦','color'=>'#3b82f6','label'=>'READY'],
+                            'delivered'  => ['icon'=>'🏪','color'=>'#F97316','label'=>'PICKED UP'],
+                            'cancelled'  => ['icon'=>'❌','color'=>'#ef4444','label'=>'CANCELLED'],
+                        ];
+                    } else {
+                        $statusMeta = [
+                            'pending'    => ['icon'=>'⏳','color'=>'#eab308','label'=>'PENDING'],
+                            'confirmed'  => ['icon'=>'✅','color'=>'#22c55e','label'=>'CONFIRMED'],
+                            'processing' => ['icon'=>'⚙️','color'=>'#3b82f6','label'=>'PROCESSING'],
+                            'shipped'    => ['icon'=>'🚚','color'=>'#a78bfa','label'=>'SHIPPED'],
+                            'delivered'  => ['icon'=>'📦','color'=>'#F97316','label'=>'DELIVERED'],
+                            'cancelled'  => ['icon'=>'❌','color'=>'#ef4444','label'=>'CANCELLED'],
+                        ];
+                    }
                 @endphp
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                     @foreach($statusMeta as $key => $meta)
@@ -1027,6 +1059,90 @@
 @endif
 @endforeach
 
+{{-- ══ Thermal Receipt (print only) ══════════════════════════════════════════ --}}
+@php
+    $rName    = $order->location?->name    ?? ($order->shipping['name']    ?? '—');
+    $rPhone   = $order->location?->phone   ?? ($order->shipping['phone']   ?? '—');
+    $rAddress = $order->location?->address ?? ($order->shipping['address'] ?? '—');
+    $rCity    = $order->location?->city    ?? ($order->shipping['city']    ?? '');
+    $rNote    = $order->location?->note    ?? ($order->shipping['note']    ?? '');
+    $rHasDiscount   = $order->discount_amount > 0;
+    $rItemsSubtotal = $order->items->sum(fn($i) => $i->price * $i->qty);
+    $rDiscountRate  = ($rHasDiscount && $rItemsSubtotal > 0)
+        ? min($order->discount_amount / $rItemsSubtotal, 1.0) : 0;
+@endphp
+<div id="thermal-receipt">
+    <div class="tr-center tr-bold" style="font-size:16px;">TRONMATIX COMPUTER</div>
+    <div class="tr-center" style="font-size:11px; margin-bottom:2px;">TronmatixComputer.com</div>
+    <div class="tr-divider"></div>
+
+    <div class="tr-row"><span>Order</span><span>#{{ $order->order_id }}</span></div>
+    <div class="tr-row"><span>Date</span><span>{{ $order->created_at->setTimezone('+07:00')->format('d M Y H:i') }}</span></div>
+    <div class="tr-row"><span>Payment</span><span>{{ strtoupper($order->payment_method) }}</span></div>
+    <div class="tr-row"><span>Type</span><span>{{ $order->isPickup() ? '🏪 PICKUP' : '🚚 DELIVERY' }}</span></div>
+    <div style="font-weight:700;">{{ $item->name }}</div>
+    @if($item->warranty_start && $item->warranty_end)
+    <div style="font-size:10px; color:#444;">
+        Warranty: {{ $item->warranty_start->format('d M Y') }} - {{ $item->warranty_end->format('d M Y') }}
+    </div>
+    @elseif($item->warranty_start)
+    <div style="font-size:10px; color:#444;">
+        Warranty from: {{ $item->warranty_start->format('d M Y') }}
+    </div>
+    @endif
+    <div class="tr-divider"></div>
+
+    <div class="tr-bold" style="margin-bottom:6px; font-size:11px; letter-spacing:1px;">ITEMS</div>
+    @foreach($order->items as $item)
+    @php
+        $rLineTotal      = $item->price * $item->qty;
+        $rDiscountedLine = $rHasDiscount ? round($rLineTotal * (1 - $rDiscountRate), 2) : null;
+        $rFinal          = $rHasDiscount ? $rDiscountedLine : $rLineTotal;
+    @endphp
+    <div style="margin-bottom:4px;">
+        <div style="font-weight:700;">{{ $item->name }}</div>
+        <div class="tr-row" style="font-size:11px; color:#555;">
+            <span>${{ number_format($item->price,2) }} × {{ $item->qty }}</span>
+            <span style="font-weight:700; color:#000;">${{ number_format($rFinal,2) }}</span>
+        </div>
+        @if($rHasDiscount)
+        <div style="font-size:10px; color:#888; text-align:right;">
+            (orig. ${{ number_format($rLineTotal,2) }})
+        </div>
+        @endif
+    </div>
+    @endforeach
+    <div class="tr-divider"></div>
+
+    @if($rHasDiscount)
+    <div class="tr-row"><span>Subtotal</span><span>${{ number_format($order->subtotal ?? $order->total, 2) }}</span></div>
+    <div class="tr-row"><span>Discount{{ $order->discount_code ? ' ('.$order->discount_code.')' : '' }}</span><span>−${{ number_format($order->discount_amount,2) }}</span></div>
+    @endif
+    @if($order->delivery > 0)
+    <div class="tr-row"><span>Delivery</span><span>${{ number_format($order->delivery,2) }}</span></div>
+    @endif
+    @if($order->tax > 0)
+    <div class="tr-row"><span>Tax</span><span>${{ number_format($order->tax,2) }}</span></div>
+    @endif
+    <div class="tr-row tr-bold" style="font-size:15px; margin-top:4px;">
+        <span>TOTAL</span><span>${{ number_format($order->total,2) }}</span>
+    </div>
+    <div class="tr-divider"></div>
+
+    <div class="tr-bold" style="margin-bottom:4px; font-size:11px; letter-spacing:1px;">
+        {{ $order->isPickup() ? 'PICKUP INFO' : 'DELIVERY INFO' }}
+    </div>
+    <div style="font-size:12px; margin-bottom:2px;">👤 {{ $rName }}</div>
+    <div style="font-size:12px; margin-bottom:2px;">📞 {{ $rPhone }}</div>
+    <div style="font-size:12px; margin-bottom:2px;">📍 {{ $rAddress }}{{ $rCity ? ', '.$rCity : '' }}</div>
+    @if($rNote)<div style="font-size:11px; color:#555; font-style:italic;">Note: {{ $rNote }}</div>@endif
+
+    <div class="tr-divider"></div>
+    <div class="tr-center tr-bold" style="font-size:13px;">Thank you for your order!</div>
+    <div class="tr-center" style="font-size:10px; margin-top:2px; color:#555;">Status: {{ strtoupper($order->status) }}</div>
+    <div style="margin-top:16px;"></div>
+</div>
+
 {{-- ── Styles ─────────────────────────────────────────────────────────────────── --}}
 <style>
 @keyframes stepPulse {
@@ -1119,6 +1235,44 @@
 }
 @media (max-width: 400px) {
     div[style*="min-width:420px"] { min-width: 300px !important; }
+}
+
+#thermal-receipt { display: none; }
+
+@media print {
+    /* Hide everything */
+    body > * { visibility: hidden !important; }
+
+    /* Show only receipt */
+    #thermal-receipt { visibility: visible !important; display: block !important; }
+    #thermal-receipt * { visibility: visible !important; }
+
+    #thermal-receipt {
+        position: fixed !important;
+        top: 0 !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 72mm !important;
+        margin: 0 !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 12px !important;
+        color: #000 !important;
+        background: #fff !important;
+        padding: 4mm 2mm !important;
+        line-height: 1.5 !important;
+    }
+    .tr-divider {
+        display: block !important;
+        border-top: 1px dashed #000 !important;
+        margin: 6px 0 !important;
+    }
+    .tr-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        font-size: 12px !important;
+    }
+    .tr-bold  { font-weight: 700 !important; }
+    .tr-center { text-align: center !important; }
 }
 </style>
 

@@ -423,28 +423,8 @@ function banner_img_url(?string $path): string {
                         <span style="color:rgba(255,255,255,0.3); font-size:11px; font-weight:400;">(optional — plays as background)</span>
                     </label>
 
-                    {{-- Video type tabs --}}
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-                        @foreach(['none'=>'None','upload'=>'Upload File','youtube'=>'YouTube','vimeo'=>'Vimeo','facebook'=>'Facebook'] as $vt => $vl)
-                        <label style="cursor:pointer;">
-                            <input type="radio" name="video_source_tab" value="{{ $vt }}"
-                                   {{ $vt === 'none' ? 'checked' : '' }}
-                                   onchange="switchVideoTab('{{ $vt }}')"
-                                   style="display:none;">
-                            <span class="video-tab" data-tab="{{ $vt }}"
-                                  style="display:inline-block; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;
-                                         background:{{ $vt === 'none' ? 'rgba(249,115,22,0.2)' : 'rgba(255,255,255,0.06)' }};
-                                         color:{{ $vt === 'none' ? '#F97316' : 'rgba(255,255,255,0.5)' }};
-                                         border:1px solid {{ $vt === 'none' ? '#F97316' : 'transparent' }};
-                                         transition:all .15s; letter-spacing:.5px;">
-                                {{ $vl }}
-                            </span>
-                        </label>
-                        @endforeach
-                    </div>
-
                     {{-- Upload panel --}}
-                    <div id="videoPanel_upload" style="display:none; background:#111; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:16px;">
+                    <div id="videoPanel_upload" style="background:#111; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:16px;">
                         {{-- Current video preview --}}
                         <div id="currentVideoWrap" style="display:none; margin-bottom:10px;">
                             <video id="currentVideoPreview" src="" muted loop
@@ -458,67 +438,6 @@ function banner_img_url(?string $path): string {
                         <input type="file" name="video_file" id="fVideoFile" accept="video/mp4,video/webm,video/ogg"
                                class="form-control" style="border:none; background:transparent; padding:0; font-size:13px;">
                         <p style="color:rgba(255,255,255,0.3); font-size:11px; margin-top:6px;">MP4, WebM, OGG — max 50 MB. Will autoplay muted on loop.</p>
-                    </div>
-
-                    {{-- YouTube / Vimeo / Facebook embed panel --}}
-                    <div id="videoPanel_embed" style="display:none;">
-                        <input type="url" name="video_url" id="fVideoUrl" class="form-control"
-                               placeholder="Paste YouTube, Vimeo, or Facebook video URL…">
-
-                        {{-- Per-platform hints --}}
-                        <div id="hintYoutube" style="display:none; margin-top:6px;">
-                            <p style="color:rgba(255,255,255,0.35); font-size:11px;">
-                                YouTube embed:
-                                <code style="color:#F97316;">https://www.youtube.com/embed/VIDEO_ID?autoplay=1&mute=1&loop=1&playlist=VIDEO_ID</code>
-                            </p>
-                        </div>
-                        <div id="hintVimeo" style="display:none; margin-top:6px;">
-                            <p style="color:rgba(255,255,255,0.35); font-size:11px;">
-                                Vimeo embed:
-                                <code style="color:#F97316;">https://player.vimeo.com/video/VIDEO_ID?autoplay=1&muted=1&loop=1</code>
-                            </p>
-                        </div>
-                        <div id="hintFacebook" style="display:none; margin-top:8px;">
-                            {{-- ⚠ Important requirements notice --}}
-                            <div style="background:rgba(24,119,242,0.1); border:1px solid rgba(24,119,242,0.3);
-                                        border-radius:8px; padding:10px 14px; margin-bottom:8px;">
-                                <div style="color:#60a5fa; font-weight:800; font-size:12px; margin-bottom:4px;">
-                                    📋 Facebook Video Requirements
-                                </div>
-                                <ul style="color:rgba(255,255,255,0.55); font-size:11px; line-height:1.8; margin:0; padding-left:16px;">
-                                    <li>Video privacy must be set to <strong style="color:#fff;">Public</strong></li>
-                                    <li>Paste the normal Facebook video page URL — e.g.<br>
-                                        <code style="color:#F97316;">https://www.facebook.com/watch/?v=VIDEO_ID</code><br>
-                                        <code style="color:#F97316;">https://www.facebook.com/PageName/videos/VIDEO_ID</code>
-                                    </li>
-                                    <li><strong style="color:#fff;">Do not</strong> paste the <code>plugins/video.php</code> URL — it will not work</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        {{-- Preview container: iframe for YT/Vimeo, FB SDK div for Facebook --}}
-
-                        {{-- YouTube / Vimeo iframe preview --}}
-                        <div id="embedPreviewWrap" style="display:none; margin-top:10px; border-radius:10px; overflow:hidden; position:relative; padding-top:33%;">
-                            <iframe id="embedPreview" src="" frameborder="0"
-                                    allow="autoplay; encrypted-media" allowfullscreen
-                                    style="position:absolute; inset:0; width:100%; height:100%;"></iframe>
-                        </div>
-
-                        {{-- Facebook SDK preview --}}
-                        <div id="fbPreviewWrap" style="display:none; margin-top:10px; border-radius:10px; overflow:hidden; text-align:center; background:#111; padding:10px;">
-                            <div id="fb-root"></div>
-                            <div id="fbVideoEmbed" class="fb-video"
-                                 data-href=""
-                                 data-width="460"
-                                 data-autoplay="true"
-                                 data-allowfullscreen="false"
-                                 data-show-text="false">
-                            </div>
-                            <p style="color:rgba(255,255,255,0.35); font-size:11px; margin-top:8px;">
-                                If the preview shows "Video Unavailable", the video is private or embedding is disabled on Facebook.
-                            </p>
-                        </div>
                     </div>
                 </div>
 
