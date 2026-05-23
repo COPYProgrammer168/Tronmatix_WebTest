@@ -23,7 +23,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
   const navigate = useNavigate()
   const { t, isKhmer } = useLang()
   const receiptFont = isKhmer ? "Kh_Jrung_Thom, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
-  const receiptBodyFont = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
+  const receiptBodyFont = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif"
 
   const isPickup = (order.fulfillment_type ?? "delivery") === "pickup"
   const STATUS_STEPS = isPickup ? PICKUP_STEPS : DELIVERY_STEPS
@@ -68,7 +68,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
       <div class="info-row"><span>Phone</span><span>${order.location?.phone || "—"}</span></div>
       ${!isPickup ? `<div class="info-row"><span>Address</span><span>${order.location?.address || ""}${order.location?.city ? ", " + order.location.city : ""}</span></div>` : ""}
       ${order.delivery_date ? `<div class="info-row"><span>${isPickup ? "Preferred Pickup" : "Delivery"}</span><span style="color:#F97316">${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}</span></div>` : ""}
-      <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? (isPickup ? "💵 Pay at Store" : "💵 Cash on Delivery") : "📱 ABA BAKONG KHQR"}</span></div>
+      <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? (isPickup ? "💵 Pay at Store" : "💵 Cash on Delivery") : "📱 ABA BAKONG KHQR"} ${order.payment_status === 'paid' ? '<span class="pickup-badge" style="margin-left:8px;">✅ PAID</span>' : ''}</span></div>
       ${snapDiscount > 0 ? `<div class="info-row"><span>Discount</span><span class="badge">${snapCode ? snapCode + " — " : ""}${discLabel}</span></div>` : ""}
       <table>
         <thead><tr><th>ITEM</th><th style="text-align:center">QTY</th><th style="text-align:right">UNIT</th><th style="text-align:right">TOTAL</th></tr></thead>
@@ -144,9 +144,15 @@ export default function OrderReceipt({ order, deliveryStatus }) {
             // For pickup: skip address row; for delivery: show address
             ...(!isPickup ? [["Address", `${order.location?.address || ""}${order.location?.city ? ", " + order.location.city : ""}`]] : []),
             ["Payment",
-              order.payment_method === "cash"
-                ? (isPickup ? "💵 Pay at Store" : "💵 Cash on Delivery")
-                : "📱 ABA BAKONG KHQR"],
+              <div className="flex items-center gap-2">
+                {order.payment_method === "cash"
+                  ? (isPickup ? "💵 Pay at Store" : "💵 Cash on Delivery")
+                  : "📱 ABA BAKONG KHQR"}
+                {order.payment_status === 'paid' && (
+                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-bold">✅ PAID</span>
+                )}
+              </div>
+            ],
             ...(order.delivery_date ? [[isPickup ? "Preferred Pickup" : "Delivery Date",
               `${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}`]] : []),
             ...(order.location?.note ? [["Note", order.location.note]] : []),

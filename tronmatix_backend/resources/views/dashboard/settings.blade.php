@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', 'SETTINGS')
+@section('title', strtoupper(__('dashboard.nav.settings')))
 
 @section('content')
 
@@ -28,16 +28,16 @@
         <div style="
             width:86px; height:86px; border-radius:50%; margin:0 auto 20px;
             background:linear-gradient(135deg,#22c55e,#15803d);
-            display:flex; align-items:center; justify-content:center; font-size:42px;
+            display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
             box-shadow:0 0 48px rgba(34,197,94,0.5), 0 0 0 12px rgba(34,197,94,0.08);
             animation:sPopIn .55s cubic-bezier(0.34,1.56,0.64,1) .1s both;
         ">✓</div>
-        <div style="font-size:26px; font-weight:900; color:#22c55e; letter-spacing:3px; margin-bottom:6px;">SAVED!</div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:24px;">All settings have been updated</div>
+        <div style="font-size: var(--title-size); font-weight:900; color:#22c55e; letter-spacing:3px; margin-bottom:6px;">SAVED!</div>
+        <div style="font-size: var(--title-size); color:rgba(255,255,255,0.45); margin-bottom:24px;">All settings have been updated</div>
         <button onclick="closeSavePopup()" style="
             padding:10px 32px; border-radius:10px; cursor:pointer;
             background:rgba(34,197,94,0.12); border:1.5px solid rgba(34,197,94,0.3);
-            color:#22c55e; font-family:Rajdhani,sans-serif; font-size:14px;
+            color:#22c55e; font-family:Rajdhani,sans-serif; font-size: var(--title-size);
             font-weight:700; letter-spacing:2px; transition:all .2s;
         " onmouseover="this.style.background='rgba(34,197,94,0.22)'" onmouseout="this.style.background='rgba(34,197,94,0.12)'">
             CLOSE
@@ -94,9 +94,9 @@ setTimeout(closeSavePopup, 3500);
                     <input type="number" name="notif_low_stock_threshold"
                            value="{{ sval($s,'notif_low_stock_threshold','5') }}"
                            min="1" max="999" class="s-num-input">
-                    <span style="color:rgba(255,255,255,0.35); font-size:13px;">units</span>
+                    <span style="color:rgba(255,255,255,0.35); font-size: var(--title-size);">units</span>
                     @if($counts['low_stock'] > 0)
-                    <span style="font-size:12px; color:#F97316; background:rgba(249,115,22,0.1);
+                    <span style="font-size: var(--title-size); color:#F97316; background:rgba(249,115,22,0.1);
                         border:1px solid rgba(249,115,22,0.2); border-radius:20px; padding:2px 10px;">
                         {{ $counts['low_stock'] }} products affected now
                     </span>
@@ -220,7 +220,7 @@ setTimeout(closeSavePopup, 3500);
                 </div>
             </div>
             <a href="{{ route('dashboard.settings') }}" style="
-                font-size:12px; color:rgba(255,255,255,0.3); text-decoration:none;
+                font-size: var(--title-size); color:rgba(255,255,255,0.3); text-decoration:none;
                 background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
                 border-radius:6px; padding:4px 10px; letter-spacing:1px;
                 transition:color .2s;" onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">
@@ -246,10 +246,10 @@ setTimeout(closeSavePopup, 3500);
                     {{ $count > 0 ? 'box-shadow:0 0 16px '.$bg.';' : '' }}
                 " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'"
                    onmouseout="this.style.transform='none'; this.style.boxShadow='{{ $count>0 ? '0 0 16px '.$bg : 'none' }}'">
-                    <div style="font-size:20px; margin-bottom:4px;">{{ $icon }}</div>
-                    <div style="font-size:30px; font-weight:900; color:{{ $count>0?$color:'rgba(255,255,255,0.2)' }};
+                    <div style="font-size: var(--title-size); margin-bottom:4px;">{{ $icon }}</div>
+                    <div style="font-size: var(--title-size); font-weight:900; color:{{ $count>0?$color:'rgba(255,255,255,0.2)' }};
                          line-height:1; font-family:Rajdhani,sans-serif;">{{ $count }}</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-top:5px; letter-spacing:0.5px;">{{ $label }}</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:5px; letter-spacing:0.5px;">{{ $label }}</div>
                 </a>
                 @endforeach
 
@@ -257,14 +257,14 @@ setTimeout(closeSavePopup, 3500);
                 @if(array_sum(array_column($alertGrid, 1)) === 0)
                 <div style="grid-column:1/-1; text-align:center; padding:20px;
                     background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.15); border-radius:14px;">
-                    <div style="font-size:28px; margin-bottom:6px;">🎉</div>
-                    <div style="color:#22c55e; font-weight:700; font-size:14px; letter-spacing:1px;">All Clear!</div>
-                    <div style="color:rgba(255,255,255,0.3); font-size:12px; margin-top:4px;">No alerts at the moment</div>
+                    <div style="font-size: var(--title-size); margin-bottom:6px;">🎉</div>
+                    <div style="color:#22c55e; font-weight:700; font-size: var(--title-size); letter-spacing:1px;">All Clear!</div>
+                    <div style="color:rgba(255,255,255,0.3); font-size: var(--title-size); margin-top:4px;">No alerts at the moment</div>
                 </div>
                 @endif
 
             </div>
-            <div style="margin-top:10px; font-size:11px; color:rgba(255,255,255,0.2); text-align:right;">
+            <div style="margin-top:10px; font-size: var(--title-size); color:rgba(255,255,255,0.2); text-align:right;">
                 As of {{ now()->format('d M Y, H:i:s') }}
             </div>
         </div>
@@ -306,7 +306,7 @@ setTimeout(closeSavePopup, 3500);
                     <input type="number" name="order_auto_cancel_hours"
                            value="{{ sval($s,'order_auto_cancel_hours','0') }}"
                            min="0" max="720" class="s-num-input">
-                    <span style="color:rgba(255,255,255,0.3); font-size:12px; white-space:nowrap;">hrs</span>
+                    <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); white-space:nowrap;">hrs</span>
                 </div>
             </div>
 
@@ -347,7 +347,7 @@ setTimeout(closeSavePopup, 3500);
         <button type="submit" id="save-btn" style="
             flex:2; padding:15px; border-radius:12px; border:none; cursor:pointer;
             background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
-            font-family:Rajdhani,sans-serif; font-size:16px; font-weight:800;
+            font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:800;
             letter-spacing:2px; box-shadow:0 4px 20px rgba(249,115,22,0.35);
             transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
         " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(249,115,22,0.5)'"
@@ -361,7 +361,7 @@ setTimeout(closeSavePopup, 3500);
             flex:1; padding:15px; border-radius:12px; text-align:center; text-decoration:none;
             border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
             color:rgba(255,255,255,0.4); font-family:Rajdhani,sans-serif;
-            font-size:14px; font-weight:700; letter-spacing:1px;
+            font-size: var(--title-size); font-weight:700; letter-spacing:1px;
             display:flex; align-items:center; justify-content:center; gap:6px;
             transition:all .2s;"
            onmouseover="this.style.borderColor='rgba(239,68,68,0.4)'; this.style.color='#ef4444'; this.style.background='rgba(239,68,68,0.06)'"
@@ -438,10 +438,10 @@ setTimeout(closeSavePopup, 3500);
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:42px; height:42px; border-radius:12px; background:rgba(167,139,250,0.12);
-                        border:1px solid rgba(167,139,250,0.3); display:flex; align-items:center; justify-content:center; font-size:20px;">🔐</div>
+                        border:1px solid rgba(167,139,250,0.3); display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">🔐</div>
             <div>
-                <div style="font-size:17px; font-weight:800; letter-spacing:2px; color:var(--text-main, #fff);">ROLE PERMISSIONS</div>
-                <div style="font-size:12px; color:var(--text-muted, rgba(255,255,255,0.35)); margin-top:2px;">
+                <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; color:var(--text-main, #fff);">ROLE PERMISSIONS</div>
+                <div style="font-size: var(--title-size); color:var(--text-muted, rgba(255,255,255,0.35)); margin-top:2px;">
                     Define what each role can access across the dashboard
                 </div>
             </div>
@@ -450,7 +450,7 @@ setTimeout(closeSavePopup, 3500);
             <a href="{{ route('dashboard.staff') }}"
                style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
                       border-radius:8px; border:1px solid rgba(167,139,250,0.3); background:rgba(167,139,250,0.08);
-                      color:#a78bfa; font-size:13px; font-weight:700; letter-spacing:1px; text-decoration:none;
+                      color:#a78bfa; font-size: var(--title-size); font-weight:700; letter-spacing:1px; text-decoration:none;
                       transition:all .2s;"
                onmouseover="this.style.background='rgba(167,139,250,0.16)'"
                onmouseout="this.style.background='rgba(167,139,250,0.08)'">
@@ -459,8 +459,8 @@ setTimeout(closeSavePopup, 3500);
             @if(!$canEditPerms)
             <div style="display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px;
                         background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);">
-                <span style="font-size:13px;">🔒</span>
-                <span style="font-size:12px; color:#ef4444; font-weight:700; letter-spacing:1px;">ADMIN ONLY</span>
+                <span style="font-size: var(--title-size);">🔒</span>
+                <span style="font-size: var(--title-size); color:#ef4444; font-weight:700; letter-spacing:1px;">ADMIN ONLY</span>
             </div>
             @endif
         </div>
@@ -475,7 +475,7 @@ setTimeout(closeSavePopup, 3500);
                 <table style="width:100%; border-collapse:collapse;">
                     <thead>
                         <tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
-                            <th style="padding:16px 20px; text-align:left; font-size:11px; letter-spacing:2px;
+                            <th style="padding:16px 20px; text-align:left; font-size: var(--title-size); letter-spacing:2px;
                                        color:var(--text-muted, rgba(255,255,255,0.35)); white-space:nowrap; font-weight:700; width:220px;">
                                 FEATURE / MODULE
                             </th>
@@ -485,8 +485,8 @@ setTimeout(closeSavePopup, 3500);
                                 <div style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
                                     <div style="width:36px; height:36px; border-radius:10px;
                                                 background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3);
-                                                display:flex; align-items:center; justify-content:center; font-size:18px;">👑</div>
-                                    <span style="font-size:10px; letter-spacing:1.5px; color:#F97316; font-weight:800;">SUPER</span>
+                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">👑</div>
+                                    <span style="font-size: var(--title-size); letter-spacing:1.5px; color:#F97316; font-weight:800;">SUPER</span>
                                 </div>
                             </th>
 
@@ -495,10 +495,10 @@ setTimeout(closeSavePopup, 3500);
                                 <div style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
                                     <div style="width:36px; height:36px; border-radius:10px;
                                                 background:{{ $roleMeta['color'] }}18; border:1px solid {{ $roleMeta['color'] }}44;
-                                                display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">
                                         {{ $roleMeta['icon'] }}
                                     </div>
-                                    <span style="font-size:10px; letter-spacing:1.5px; color:{{ $roleMeta['color'] }}; font-weight:800;">
+                                    <span style="font-size: var(--title-size); letter-spacing:1.5px; color:{{ $roleMeta['color'] }}; font-weight:800;">
                                         {{ strtoupper($roleMeta['label']) }}
                                     </span>
                                 </div>
@@ -511,8 +511,8 @@ setTimeout(closeSavePopup, 3500);
                         <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                             <td style="padding:14px 20px;">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <span style="font-size:18px;">{{ $featureMeta['icon'] }}</span>
-                                <span style="font-size:14px; font-weight:600; color:var(--text-main, rgba(255,255,255,0.85));">
+                                <span style="font-size: var(--title-size);">{{ $featureMeta['icon'] }}</span>
+                                <span style="font-size: var(--title-size); font-weight:600; color:var(--text-main, rgba(255,255,255,0.85));">
                                     {{ $featureMeta['label'] }}
                                 </span>
                             </div>
@@ -592,14 +592,14 @@ setTimeout(closeSavePopup, 3500);
                 background:rgba(167,139,250,0.04);
                 opacity:0; pointer-events:none; transition:opacity .25s;
             ">
-                <span style="font-size:13px; color:rgba(255,255,255,0.4);">
+                <span style="font-size: var(--title-size); color:rgba(255,255,255,0.4);">
                     ⚠️ You have unsaved permission changes
                 </span>
                 <div style="display:flex; gap:10px;">
                     <button type="button" onclick="resetPermissions()"
                             style="padding:9px 18px; border-radius:8px; border:1px solid rgba(255,255,255,0.12);
                                    background:transparent; color:rgba(255,255,255,0.5);
-                                   font-family:Rajdhani,sans-serif; font-size:13px; font-weight:700;
+                                   font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
                                    letter-spacing:1px; cursor:pointer; transition:all .2s;"
                             onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
                         DISCARD
@@ -608,7 +608,7 @@ setTimeout(closeSavePopup, 3500);
                             style="display:flex; align-items:center; gap:6px; padding:9px 20px;
                                    border-radius:8px; border:none;
                                    background:linear-gradient(135deg,#a78bfa,#7c3aed); color:#fff;
-                                   font-family:Rajdhani,sans-serif; font-size:13px; font-weight:800;
+                                   font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:800;
                                    letter-spacing:1px; cursor:pointer; transition:all .2s;
                                    box-shadow:0 4px 16px rgba(167,139,250,0.3);">
                         🔐 SAVE PERMISSIONS
@@ -618,8 +618,8 @@ setTimeout(closeSavePopup, 3500);
             @else
             <div style="padding:14px 20px; border-top:1px solid rgba(255,255,255,0.07);
                         display:flex; align-items:center; gap:8px;">
-                <span style="font-size:13px; color:rgba(239,68,68,0.7);">🔒</span>
-                <span style="font-size:13px; color:rgba(255,255,255,0.3);">
+                <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">🔒</span>
+                <span style="font-size: var(--title-size); color:rgba(255,255,255,0.3);">
                     You need <strong style="color:#F97316;">Admin</strong> or
                     <strong style="color:#F97316;">Super Admin</strong> role to modify permissions.
                 </span>
@@ -643,10 +643,10 @@ setTimeout(closeSavePopup, 3500);
         @foreach($legend as [$icon,$label,$color,$desc])
         <div style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px;
                     background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); flex:1; min-width:200px;">
-            <span style="font-size:18px;">{{ $icon }}</span>
+            <span style="font-size: var(--title-size);">{{ $icon }}</span>
             <div>
-                <div style="font-size:12px; font-weight:800; letter-spacing:1px; color:{{ $color }};">{{ $label }}</div>
-                <div style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:2px;">{{ $desc }}</div>
+                <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1px; color:{{ $color }};">{{ $label }}</div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:2px;">{{ $desc }}</div>
             </div>
         </div>
         @endforeach
@@ -666,21 +666,24 @@ setTimeout(closeSavePopup, 3500);
 /* Icon box */
 .s-icon-box {
     width:38px; height:38px; border-radius:10px; flex-shrink:0;
-    border:1px solid; display:flex; align-items:center; justify-content:center; font-size:18px;
+    border:1px solid; display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
 }
 
 /* Card titles */
-.s-card-title { font-size:15px; font-weight:800; letter-spacing:1.5px; padding:0; }
-.s-card-sub   { font-size:12px; color:var(--text-muted, rgba(80,80,80,0.7)); margin-top:2px; }
+.s-card-title { font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; padding:0; }
+.s-card-sub   { font-size: var(--title-size); color:var(--text-muted, rgba(80,80,80,0.7)); margin-top:2px; }
 
+:lang(km) .s-card-title { font-size: var(--title-size); font-weight:400; letter-spacing:1px; padding:0; }
+:lang(km) .s-card-sub   { font-size: var(--title-size); color:var(--text-muted, rgba(80,80,80,0.7)); margin-top:2px; }
+:lang(km) .s-label { font-size: var(--title-size); font-weight:400; color:var(--text-main, #1a1a1a); margin-bottom:3px; }
 /* Setting row */
 .s-row {
     display:flex; align-items:center; justify-content:space-between;
     gap:16px; padding:14px 0;
 }
 .s-info { flex:1; min-width:0; }
-.s-label { font-size:14px; font-weight:700; color:var(--text-main, #1a1a1a); margin-bottom:3px; }
-.s-desc  { font-size:12px; color:var(--text-muted, rgba(60,60,60,0.7)); line-height:1.5; }
+.s-label { font-size: var(--title-size); font-weight:700; color:var(--text-main, #1a1a1a); margin-bottom:3px; }
+.s-desc  { font-size: var(--title-size); color:var(--text-muted, rgba(60,60,60,0.7)); line-height:1.5; }
 .s-desc em     { color:rgba(249,115,22,0.7); font-style:normal; }
 .s-desc strong { color:var(--text-main, #1a1a1a); }
 .s-divider { height:1px; background:var(--border-color, rgba(255,255,255,0.055)); }
@@ -692,7 +695,7 @@ setTimeout(closeSavePopup, 3500);
     border-radius:10px; animation:sSubSlide .2s ease;
 }
 .s-hidden { display:none; }
-.s-sub-label { font-size:11px; letter-spacing:2px; color:var(--text-muted, rgba(60,60,60,0.7)); font-weight:700; }
+.s-sub-label { font-size: var(--title-size); letter-spacing:2px; color:var(--text-muted, rgba(60,60,60,0.7)); font-weight:700; }
 
 /* Toggle switch */
 .ts { position:relative; width:52px; height:28px; flex-shrink:0; cursor:pointer; }
@@ -724,7 +727,7 @@ setTimeout(closeSavePopup, 3500);
     width:100%; background:rgba(255,255,255,0.07);
     border:1.5px solid rgba(255,255,255,0.1); color:#fff;
     border-radius:10px; padding:10px 14px;
-    font-family:Rajdhani,sans-serif; font-size:15px; font-weight:600;
+    font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:600;
     outline:none; transition:border-color .2s;
 }
 .s-input:focus { border-color:#F97316; }
@@ -733,7 +736,7 @@ setTimeout(closeSavePopup, 3500);
     width:72px; background:rgba(255,255,255,0.07);
     border:1.5px solid rgba(255,255,255,0.1); color:#fff;
     border-radius:8px; padding:7px 10px;
-    font-family:Rajdhani,sans-serif; font-size:16px; font-weight:700;
+    font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
     outline:none; text-align:center; transition:border-color .2s;
 }
 .s-num-input:focus { border-color:#F97316; }
@@ -877,7 +880,7 @@ if (permsForm) {
 
 /* Perm matrix role header compact on tablet */
 @media (max-width: 860px) {
-    .perm-role-header { font-size: 9px !important; }
+    .perm-role-header { font-size: var(--title-size) !important; }
 }
 </style>
 

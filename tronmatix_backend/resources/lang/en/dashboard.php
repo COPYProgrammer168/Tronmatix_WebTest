@@ -11,6 +11,7 @@ return [
         'dashboard' => 'Dashboard',
         'products'  => 'Products',
         'orders'    => 'Orders',
+        'ordershow'    => 'Orders Information',
         'users'     => 'Users',
         'discounts' => 'Discounts',
         'staff'     => 'Staff',
@@ -39,7 +40,7 @@ return [
         'totalSaved'     => 'Total Saved ($)',
         'lowStock'       => 'Low Stock',
         'topCodes'       => 'Top Codes This Month',
-        'pendingOrders' => 'pendingOrders',
+        'pendingOrders' => 'pending Orders',
 
     ],
 

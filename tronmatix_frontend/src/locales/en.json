@@ -7,6 +7,7 @@
     "hotItem": "HOT ITEM",
     "accessory": "ACCESSORY",
     "tableChair": "TABLE CHAIR",
+    "resellItem": "RESELL ITEM",
     "contactUs": "CONTACT US",
     "search": "Search products...",
     "login": "Login",
@@ -127,8 +128,8 @@
     "warrantyLabel": "WARRANTY"
   },
   "profile": {
-    "myProfile": "👤 My Profile",
-    "myLocations": "📍 My Locations",
+    "myProfile": "👤 Profile",
+    "myLocations": "📍 Locations",
     "personalInfo": "Personal Information",
     "manageAccount": "Manage your account details",
     "edit": "✏️ EDIT",

@@ -6,6 +6,7 @@ import { useDiscount } from '../context/DiscountContext'
 import { useTheme } from '../context/ThemeContext'
 import { useLang } from '../context/LanguageContext'
 import { resolveImage } from '../lib/resolveImage'
+import { isSymbolPrice, numericPrice, displayPrice } from "../hooks/priceUtils";
 
 function PlaceholderImg({ name, dark }) {
   return (
@@ -47,9 +48,10 @@ function AddToCartBtn({ onAdd, dark, cardHovered, btnFont = 'Rajdhani, sans-seri
     <button
       onClick={handleClick}
       disabled={state !== 'idle'}
-      className="mt-auto w-full font-bold rounded transition-all duration-200"
+      className="mt-auto w-full font-extrabold rounded transition-all duration-200"
       style={{
-        fontFamily: btnFont,
+        fontFamily: `${btnFont} !important`,
+        fontWeight: 800,
         fontSize: 15,
         letterSpacing: 1,
         height: 42,
@@ -98,7 +100,9 @@ export default function ProductCard({ product }) {
   const { getItemDiscounts, bestDiscountForItem }              = useDiscount()
   const { dark }                                              = useTheme()
   const { isKhmer }                                           = useLang()
-  const btnFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const btnFont = isKhmer
+    ? "Kdam Thmor Pro, Rajdhani, sans-serif"
+    : "Rajdhani, sans-serif";
   const [hovered, setHovered]                                 = useState(false)
 
   const fav             = isFavorite(product.id)
@@ -114,13 +118,17 @@ export default function ProductCard({ product }) {
   const isDiscounted    = itemDiscounts.length > 0
   const bestDiscount    = bestDiscountForItem(product)          // best single discount for price calc
 
-  const discountedPrice = bestDiscount && product.price
-    ? Math.max(0, product.price - (
-        bestDiscount.type === 'percentage'
-          ? product.price * bestDiscount.value / 100
-          : Math.min(bestDiscount.value, product.price)
-      ))
-    : null
+  const numPrice = numericPrice(product.price);
+  const discountedPrice =
+    bestDiscount && numPrice
+      ? Math.max(
+          0,
+          numPrice -
+            (bestDiscount.type === "percentage"
+              ? (numPrice * bestDiscount.value) / 100
+              : Math.min(bestDiscount.value, numPrice)),
+        )
+      : null;
 
   // Product badge (set from admin dashboard)
   const badge = product.badge ?? null
@@ -130,6 +138,10 @@ export default function ProductCard({ product }) {
   const imgBg  = dark ? '#111827' : '#f9fafb'
   const text   = dark ? '#f9fafb' : '#1f2937'
   const favBg  = dark ? '#1f2937' : '#fff'
+
+  // Detect "Ask Price" state
+  const isAskPrice = product.price === '$$$' || (product.stock ?? 99) <= 0;
+  const telegramLink = `https://t.me/smoz_mes?text=${encodeURIComponent('Hello, I would like to ask about the price of: ' + product.name)}`;
 
   return (
     <div
@@ -256,38 +268,74 @@ export default function ProductCard({ product }) {
       <div className="p-3 text-center flex flex-col flex-1">
         <Link to={`/product/${product.id}`}>
           <h3 className="font-bold mb-1 leading-tight hover:text-primary transition-colors line-clamp-2"
-            style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', fontSize: 16, color: text, letterSpacing: isKhmer ? 0 : undefined }}>
+            style={{
+              fontSize: isKhmer ? 14 : 20,
+              color: text,
+              letterSpacing: isKhmer ? 0 : undefined
+            }}>
             {product.name}
           </h3>
         </Link>
 
         {/* Fixed-height price block — keeps ADD TO CART button aligned across all cards */}
         <div className="flex flex-col items-center justify-end mb-3" style={{ minHeight: 52 }}>
-          {discountedPrice !== null ? (
+          {isAskPrice ? (
+            <div className="font-black transition-colors" 
+                 style={{ 
+                   fontSize: 20,
+                   color: '#F97316' 
+                 }}>
+              $$$
+            </div>
+          ) : discountedPrice !== null ? (
             <>
-              <div className="text-primary font-black" style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', fontSize: 20 }}>
+              <div className="font-black transition-colors" 
+                   style={{ 
+                     fontSize: 20,
+                     color: '#F97316'
+                   }}>
                 ${discountedPrice.toFixed(2)}
               </div>
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                <span className="line-through font-semibold" style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', fontSize: 16, color: dark ? '#6b7280' : '#9ca3af' }}>
-                  ${Number(product.price).toFixed(2)}
+                <span className="line-through font-semibold" style={{ fontSize: 16, color: dark ? '#6b7280' : '#9ca3af' }}>
+                  {displayPrice(product.price)}
                 </span>
                 <span className="font-black rounded-full px-1.5 py-0.5"
                   style={{ fontSize: 11, background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}>
                   −{bestDiscount.type === 'percentage'
                     ? `${bestDiscount.value}%`
-                    : `$${Number(bestDiscount.value).toFixed(2)}`}
+                    : `${Number(bestDiscount.value).toFixed(2)}`}
                 </span>
               </div>
             </>
           ) : (
-            <div className="text-primary font-bold" style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif',fontSize: 18, color: text, letterSpacing: isKhmer ? 0 : undefined }}>
-              {product.price ? `$${Number(product.price).toFixed(2)}` : '$$$'}
+            <div className="font-bold transition-colors" 
+                 style={{ 
+                   fontSize: 18, 
+                   color: hovered ? '#F97316' : text, 
+                   letterSpacing: isKhmer ? 0 : undefined 
+                 }}>
+              {displayPrice(product.price)}
             </div>
           )}
         </div>
 
-        <AddToCartBtn onAdd={() => addItem(product)} dark={dark} cardHovered={hovered} btnFont={btnFont} isKhmer={isKhmer} />
+        {isAskPrice ? (
+          <Link to={`/product/${product.id}`}
+            className="mt-auto w-full font-bold rounded transition-all duration-200 flex items-center justify-center gap-2"
+            style={{
+              fontSize: 15, height: 42,
+              background: hovered ? '#F97316' : '#111827',
+              color: '#fff',
+              border: 'none',
+              transform: hovered ? 'scale(1.02)' : 'scale(1)',
+              boxShadow: hovered ? '0 4px 14px rgba(249,115,22,0.4)' : 'none',
+            }}>
+            {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'VIEW DETAIL'}
+          </Link>
+        ) : (
+          <AddToCartBtn onAdd={() => addItem(product)} dark={dark} cardHovered={hovered} btnFont={btnFont} isKhmer={isKhmer} />
+        )}
       </div>
     </div>
   )

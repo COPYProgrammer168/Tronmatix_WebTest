@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { createPortal } from 'react-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { useFavorites } from '../context/FavoritesContext'
@@ -52,6 +53,11 @@ const navItems = [
     categories: ['DX RACER','SECRETLAB','RAZER','CONSAIR','FANTECH','COOLER MASTER','TTR RACING'],
     sub: ['DX RACER','SECRETLAB','RAZER','CONSAIR','FANTECH','COOLER MASTER','TTR RACING'],
   },
+  {
+    label: 'RESLL ITEM', path: '/category/resell-item',
+    categories: ['Second Hand', 'Used', 'Pre-owned'],
+    sub: ['Second Hand', 'Used', 'Pre-owned'],
+  },
   { label: 'CONTACT US', path: '/contact' },
 ]
 
@@ -64,6 +70,7 @@ const NAV_LABEL_KEYS = {
   'HOT ITEM':    'nav.hotItem',
   'ACCESSORY':   'nav.accessory',
   'TABLE CHAIR': 'nav.tableChair',
+  'RESLL ITEM':  'nav.resellItem',
   'CONTACT US':  'nav.contactUs',
 }
 
@@ -149,12 +156,17 @@ function IconBtn({ onClick, className = '', style = {}, children, title }) {
 }
 
 /* ── Desktop dropdown panel ─────────────────────────────────────────────── */
-function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhmer }) {
+function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhmer, dark }) {
   const isNested = typeof item.sub[0] === 'object'
   const dropFont = isKhmer ? 'Kh_Jrung_Thom, sans-serif' : 'Rajdhani, sans-serif'
   return (
     <div className="absolute top-full left-0 shadow-2xl z-[200] py-2 min-w-[210px]"
-      style={{ background: '#1a1a1a', border: '1px solid #F97316' }}
+      style={{
+        background: dark ? 'rgba(26, 26, 26, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+      }}
       onMouseEnter={() => setOpenDrop(item.label)}
       onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
       <Link
@@ -183,11 +195,15 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
               </span>
             </div>
             {openSub === subObj.label && (
-              <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
-                style={{ background: '#111', border: '1px solid #F97316' }}
-                onMouseEnter={() => setOpenSub(subObj.label)}
-                onMouseLeave={() => setOpenSub(null)}>
-                <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
+            <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
+              style={{
+                background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+              }}
+              onMouseEnter={() => setOpenSub(subObj.label)}
+              onMouseLeave={() => setOpenSub(null)}>                <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
                   {subObj.label}
                 </div>
                 {subObj.brands.map(brand => (
@@ -231,6 +247,7 @@ export default function Navbar({ onAuthOpen }) {
   const { dark }                    = useTheme()
   const { t, isKhmer }              = useLang()
   const navigate                    = useNavigate()
+  const location                    = useLocation()
   const headerRef          = useRef(null)
   const userMenuRef        = useRef(null)
   const compactUserMenuRef = useRef(null)
@@ -283,13 +300,19 @@ export default function Navbar({ onAuthOpen }) {
     return () => { document.body.style.overflow = '' }
   }, [mobileOpen])
 
+  useEffect(() => {
+    setMobileOpen(false)
+    setMobileSub(null)
+    document.body.style.overflow = ''
+  }, [location.pathname])
+
   const handleSearch = e => {
     e.preventDefault()
     const q = search.trim().toLowerCase()
     if (q) { navigate(`/category/search?q=${encodeURIComponent(q)}`); setSearch(''); setMobileOpen(false) }
   }
 
-  const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub, isKhmer }
+  const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub, isKhmer, dark }
 
   /* ── User Avatar ─────────────────────────────────────────────────────── */
   const UserAvatar = ({ size = 10, fontSize = 16 }) => (
@@ -371,18 +394,37 @@ export default function Navbar({ onAuthOpen }) {
   )
 
   return (
-    <header ref={headerRef} className="sticky top-0 z-50"
-      style={{ background: navBg, boxShadow: scrolled ? '0 2px 20px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.06)' }}>
+    <>
+      <header ref={headerRef} className="sticky top-0 z-50 transition-all duration-300" style={{
+        background: dark ? 'rgba(17, 24, 39, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+        boxShadow: scrolled ? '0 4px 30px rgba(0,0,0,0.1)' : 'none',
+      }}>
 
       {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
       <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-        <div className="max-w-[1280px] mx-auto px-4 flex items-center gap-3" style={{ height: 64 }}>
+        <div className="max-w-[1480px] mx-auto px-4 flex items-center gap-1" style={{ height: 70 }}>
           <Link to="/" className="flex-shrink-0">
-            <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 44 }} />
+            <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
           </Link>
 
+          <div className="flex flex-col gap-0.5 ml-2">
+            <a href="tel:0967333725" className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+              <span className="font-bold text-[12px]" style={{ color: textColor }}>096 733 3725</span>
+            </a>
+            <a href="tel:077711126" className="flex items-center gap-1">
+              <span className="w-4" /> {/* Spacer for alignment */}
+              <span className="font-bold text-[13px]" style={{ color: textColor }}>077 711 126</span>
+            </a>
+          </div>
+
           {/* Inline nav tablet+ */}
-          <nav className="hidden lg:flex items-center flex-1 min-w-0">
+          <nav className="hidden lg:flex items-center flex-1 min-w-0 justify-center">
             <ul className="flex items-center flex-wrap">
               {navItems.map(item => (
                 <li key={item.label} className="relative flex-shrink-0">
@@ -391,7 +433,7 @@ export default function Navbar({ onAuthOpen }) {
                     <Link
                       to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
                       className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
-                      style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                      style={{ fontFamily: navbFont, fontSize: isKhmer ? 16 : 18, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                       onMouseLeave={e => e.currentTarget.style.color = textColor}
                       onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
@@ -412,10 +454,12 @@ export default function Navbar({ onAuthOpen }) {
 
           {/* Right icons compact */}
           <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-            <ThemeToggle />
-            <LanguageToggle />
+            <div className="hidden md:flex items-center gap-1">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
 
-            <IconBtn onClick={() => navigate('/favorites')} className="hidden lg:flex" style={{ color: textColor }}>
+            <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
               <svg className="w-5 h-5"
                 fill={favorites.length > 0 ? '#F97316' : 'none'}
                 stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
@@ -429,7 +473,7 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </IconBtn>
 
-            <IconBtn onClick={() => setCartOpen(true)} className="hidden lg:flex" style={{ color: textColor }}>
+            <IconBtn onClick={() => setCartOpen(true)} className="hidden md:flex" style={{ color: textColor }}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -644,184 +688,244 @@ export default function Navbar({ onAuthOpen }) {
         </nav>
       </div>
 
-      {/* ══════════ MOBILE DRAWER ═══════════════════════════════════════════ */}
-      {mobileOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[80]" onClick={() => setMobileOpen(false)} />
-      )}
-      <div ref={drawerRef}
-        className="fixed top-0 right-0 h-full w-[300px] z-[90] flex flex-col"
-        style={{
-          background: drawerBg,
-          transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
-          overflowY: 'auto',
-        }}>
+      </header>
 
-        {/* Drawer header */}
-        <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${drawerBorder}`, background: drawerBg }}>
-          {/* Top row: user info OR login buttons + right controls */}
-          <div className="flex items-center gap-2 px-4 py-3" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
-            {/* Left side: user info or login buttons */}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              {user ? (
-                <>
-                  <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
-                    style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.username}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>
-                        {(user.username || user.name || 'U').charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-black truncate" style={{ fontSize: 15, color: '#F97316' }}>{user.username || user.name}</div>
-                    <div style={{ fontFamily: navFont, fontSize: 11, color: subTextColor }}>
-                      {isKhmer ? 'បានចូល' : 'Logged in'}
+      {createPortal(
+      <>
+        {mobileOpen && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              zIndex: 80,
+            }}
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+        <div ref={drawerRef}
+          style={{
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            height: '100%',
+            width: 300,
+            zIndex: 90,
+            display: 'flex',
+            flexDirection: 'column',
+            /* ── Glassmorphism ── */
+            background: dark
+              ? 'rgba(15, 23, 42, 0.82)'
+              : 'rgba(255, 255, 255, 0.82)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            borderLeft: dark
+              ? '1px solid rgba(249,115,22,0.25)'
+              : '1px solid rgba(249,115,22,0.18)',
+            boxShadow: dark
+              ? '-8px 0 40px rgba(0,0,0,0.6), inset 1px 0 0 rgba(249,115,22,0.12)'
+              : '-8px 0 40px rgba(0,0,0,0.18), inset 1px 0 0 rgba(249,115,22,0.10)',
+            visibility: mobileOpen ? 'visible' : 'hidden',
+            transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
+            transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1), visibility 0.32s',
+            overflowX: 'hidden',
+            overflowY: 'auto',
+          }}>
+          {/* Drawer header — glass accent strip */}
+          <div className="flex-shrink-0" style={{
+            borderBottom: dark ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(249,115,22,0.15)',
+            background: dark ? 'rgba(249,115,22,0.06)' : 'rgba(249,115,22,0.04)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {/* top shimmer line */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+              background: 'linear-gradient(90deg, transparent 0%, #F97316 40%, #FBBF24 60%, #F97316 80%, transparent 100%)',
+              opacity: 0.8,
+            }} />
+            {/* Top row: user info OR login buttons + right controls */}
+            <div className="flex items-center gap-2 px-4 py-3" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
+              {/* Left side: user info or login buttons */}
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {user ? (
+                  <>
+                    <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
+                      style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.username}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>
+                          {(user.username || user.name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                      )}
                     </div>
+                    <div className="min-w-0">
+                      <div className="font-black truncate" style={{ fontSize: 15, color: '#F97316' }}>{user.username || user.name}</div>
+                      <div style={{ fontFamily: navFont, fontSize: 11, color: subTextColor }}>
+                        {isKhmer ? 'បានចូល' : 'Logged in'}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
+                      className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
+                      style={{ fontFamily: navFont, fontSize: 13 }}>
+                      {t('nav.login').toUpperCase()}
+                    </button>
+                    <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
+                      className="border-2 border-primary px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
+                      style={{ fontFamily: navFont, fontSize: 13, color: '#F97316' }}>
+                      {t('nav.register').toUpperCase()}
+                    </button>
                   </div>
-                </>
-              ) : (
-                <div className="flex gap-2 flex-wrap">
-                  <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
-                    className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
-                    style={{ fontFamily: navFont, fontSize: 13 }}>
-                    {t('nav.login').toUpperCase()}
-                  </button>
-                  <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
-                    className="border-2 border-primary px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
-                    style={{ fontFamily: navFont, fontSize: 13, color: '#F97316' }}>
-                    {t('nav.register').toUpperCase()}
-                  </button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            {/* Right controls: theme + lang + close — always in a row, never pushed off screen */}
-            <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
-              <ThemeToggle />
-              <LanguageToggle />
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0"
-                style={{ background: dark ? '#374151' : '#f3f4f6', color: textColor, fontSize: 18 }}>
-                ✕
+              {/* Right controls: theme + lang + close — always in a row, never pushed off screen */}
+              <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+                <ThemeToggle />
+                <LanguageToggle />
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0"
+                  style={{ background: dark ? '#374151' : '#f3f4f6', color: textColor, fontSize: 18 }}>
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile search */}
+          <form onSubmit={handleSearch} className="px-4 py-3 flex-shrink-0" style={{
+            borderBottom: dark ? '1px solid rgba(249,115,22,0.15)' : '1px solid rgba(249,115,22,0.1)',
+            background: dark ? 'rgba(249,115,22,0.03)' : 'rgba(249,115,22,0.02)',
+          }}>
+            <div className="relative">
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder={t('nav.search')}
+                className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
+                style={{
+                  fontFamily: navbFont, fontSize: 15, color: textColor,
+                  background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+                  border: dark ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(249,115,22,0.2)',
+                }} />
+              <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </button>
             </div>
-          </div>
-        </div>
+          </form>
 
-        {/* Mobile search */}
-        <form onSubmit={handleSearch} className="px-4 py-3 flex-shrink-0" style={{ borderBottom: `1px solid ${drawerBorder}` }}>
-          <div className="relative">
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder={t('nav.search')}
-              className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
-              style={{ fontFamily: navbFont, fontSize: 15, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }} />
-            <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-          </div>
-        </form>
-
-        {/* Nav items */}
-        <div className="flex-1 overflow-y-auto">
-          {navItems.map(item => (
-            <div key={item.label} style={{ borderBottom: `1px solid ${drawerBorder}` }}>
-              <div className="flex items-center justify-between px-4 py-3.5 select-none">
-                <span
-                  className="font-bold tracking-wide cursor-pointer flex-1"
-                  style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
-                  onMouseEnter={e => e.currentTarget.style.color='#F97316'}
-                  onMouseLeave={e => e.currentTarget.style.color=textColor}
-                  onClick={() => {
-                    const dest = item.categories
-                      ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
-                      : item.path
-                    navigate(dest)
-                    setMobileOpen(false)
-                  }}>
-                  {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                </span>
-                {item.sub
-                  ? <button className="p-1.5 rounded" style={{ background: 'transparent' }}
-                      onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
-                      <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${mobileSub === item.label ? 'rotate-180' : ''}`}
-                        fill="none" stroke={textColor} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          {/* Nav items */}
+          <div className="flex-1 overflow-y-auto" style={{ overflowX: 'hidden' }}>
+            {navItems.map(item => (
+              <div key={item.label} style={{
+                borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
+              }}>
+                <div className="flex items-center justify-between px-4 py-3.5 select-none">
+                  <span
+                    className="font-bold tracking-wide cursor-pointer flex-1"
+                    style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                    onMouseEnter={e => e.currentTarget.style.color='#F97316'}
+                    onMouseLeave={e => e.currentTarget.style.color=textColor}
+                    onClick={() => {
+                      const dest = item.categories
+                        ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
+                        : item.path
+                      navigate(dest)
+                      setMobileOpen(false)
+                    }}>
+                    {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                  </span>
+                  {item.sub
+                    ? <button className="p-1.5 rounded" style={{ background: 'transparent' }}
+                        onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
+                        <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${mobileSub === item.label ? 'rotate-180' : ''}`}
+                          fill="none" stroke={textColor} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
-                    </button>
-                  : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                }
-              </div>
-              {item.sub && mobileSub === item.label && (
-                <div className="pb-2" style={{ background: drawerSubBg }}>
-                  <Link
-                    to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                    className="block px-8 py-2 font-bold text-primary border-b mb-1"
-                    style={{ fontSize: 14, borderColor: drawerBorder }}
-                    onClick={() => setMobileOpen(false)}>
-                    ALL {item.label}
-                  </Link>
-                  {item.sub.map(sub => {
-                    const isObj  = typeof sub === 'object'
-                    const label  = isObj ? sub.label : sub
-                    const path   = `/category/${slugify(item.label)}/${slugify(label)}`
-                    return (
-                      <Link key={label} to={path}
-                        className="block px-8 py-1.5 font-semibold"
-                        style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.color='#F97316'}
-                        onMouseLeave={e => e.currentTarget.style.color=subTextColor}
-                        onClick={() => setMobileOpen(false)}>{label}</Link>
-                    )
-                  })}
+                  }
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Profile actions at bottom */}
-        {user && (
-          <div className="flex-shrink-0 p-4" style={{ borderTop: `1px solid ${drawerBorder}` }}>
-            <div className="flex flex-col gap-1.5 mb-3">
-              {[
-                { to: '/profile',   labelKey: 'nav.myProfile',   icon: '👤' },
-                { to: '/orders',    labelKey: 'nav.myOrders',    icon: '📦' },
-                { to: '/favorites', labelKey: 'nav.myFavorites', icon: '❤️' },
-              ].map(({ to, labelKey, icon }) => (
-                <Link key={to} to={to} onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
-                  style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = ddHover}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  {icon} {t(labelKey)}
-                </Link>
-              ))}
-            </div>
-            <button onClick={() => { logout(); setMobileOpen(false) }}
-              className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg"
-              style={{ fontFamily: navFont, fontSize: 15 }}>
-              🚪 {t('nav.logout')}
-            </button>
+                {item.sub && mobileSub === item.label && (
+                  <div className="pb-2" style={{ background: drawerSubBg }}>
+                    <Link
+                      to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+                      className="block px-8 py-2 font-bold text-primary border-b mb-1"
+                      style={{ fontSize: 14, borderColor: drawerBorder }}
+                      onClick={() => setMobileOpen(false)}>
+                      ALL {item.label}
+                    </Link>
+                    {item.sub.map(sub => {
+                      const isObj  = typeof sub === 'object'
+                      const label  = isObj ? sub.label : sub
+                      const path   = `/category/${slugify(item.label)}/${slugify(label)}`
+                      return (
+                        <Link key={label} to={path}
+                          className="block px-8 py-1.5 font-semibold"
+                          style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.color='#F97316'}
+                          onMouseLeave={e => e.currentTarget.style.color=subTextColor}
+                          onClick={() => setMobileOpen(false)}>{label}</Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        )}
-      </div>
 
-      <style>{`
-        @keyframes slideInRight {
-          from { transform: translateX(100%) }
-          to   { transform: translateX(0) }
-        }
-      `}</style>
-    </header>
+          {/* Profile actions at bottom */}
+          {user && (
+            <div className="flex-shrink-0 p-4" style={{
+              borderTop: dark ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(249,115,22,0.15)',
+              background: dark ? 'rgba(249,115,22,0.05)' : 'rgba(249,115,22,0.03)',
+            }}>
+              <div className="flex flex-col gap-1.5 mb-3">
+                {[
+                  { to: '/profile',   labelKey: 'nav.myProfile',   icon: '👤' },
+                  { to: '/orders',    labelKey: 'nav.myOrders',    icon: '📦' },
+                  { to: '/favorites', labelKey: 'nav.myFavorites', icon: '❤️' },
+                ].map(({ to, labelKey, icon }) => (
+                  <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
+                    style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = ddHover}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    {icon} {t(labelKey)}
+                  </Link>
+                ))}
+              </div>
+              <button onClick={() => { logout(); setMobileOpen(false) }}
+                className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg"
+                style={{ fontFamily: navFont, fontSize: 15 }}>
+                🚪 {t('nav.logout')}
+              </button>
+            </div>
+          )}
+        </div>
+      </>,
+      document.body
+    )}
+
+    <style>{`
+      @keyframes slideInRight {
+        from { transform: translateX(100%) }
+        to   { transform: translateX(0) }
+      }
+    `}</style>
+  </>
   )
 }
 

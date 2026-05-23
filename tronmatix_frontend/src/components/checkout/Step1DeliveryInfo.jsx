@@ -13,7 +13,7 @@ export default function Step1DeliveryInfo({
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
-  const step1Font = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
+  const step1Font = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif"
   const [showMapPicker, setShowMapPicker] = useState(false)
   // For pickup: only name + phone are required (no address)
   const canProceed = isPickup

@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/users.blade.php --}}
 @extends('dashboard.layout')
-@section('title', 'USERS')
+@section('title', strtoupper(__('dashboard.nav.users')))
 
 @push('styles')
 <style>
@@ -17,7 +17,7 @@
     border-radius: 8px;
     color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: var(--title-size);
     font-weight: 600;
     padding: 5px 10px;
     cursor: pointer;
@@ -45,7 +45,7 @@
     background: transparent;
     color: var(--text-muted);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: var(--title-size);
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -58,7 +58,7 @@
 }
 .filter-tab:hover               { border-color: var(--orange); color: var(--orange); }
 .filter-tab.active              { background: rgba(249,115,22,0.12); border-color: var(--orange); color: var(--orange); }
-.count-pill                     { background: var(--dark-700); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
+.count-pill                     { background: var(--dark-700); border-radius: 20px; padding: 1px 8px; font-size: var(--title-size); }
 .filter-tab.active .count-pill  { background: rgba(249,115,22,0.2); }
 
 /* ── Search ──────────────────────────────────────────────────────────────── */
@@ -68,7 +68,7 @@
     border-radius: 10px;
     color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 15px;
+    font-size: var(--title-size);
     padding: 8px 16px 8px 38px;
     outline: none;
     width: 230px;
@@ -96,7 +96,7 @@ tbody tr:hover td { background: var(--dark-700); }
     background: var(--dark-800); border: 1px solid var(--border);
     border-radius: 12px; padding: 12px 18px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600;
+    font-family: 'Rajdhani', sans-serif; font-size: var(--title-size); font-weight: 600;
     color: var(--text-primary); opacity: 0; transform: translateY(8px);
     transition: opacity 0.25s, transform 0.25s;
     pointer-events: none;
@@ -146,29 +146,29 @@ tbody tr:hover td { background: var(--dark-700); }
      animation:fadeUp .45s ease both;">
     <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
          background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size:46px;
+         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
          box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size:30px;font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
+    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
+    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
         Your role does not have permission to access this module.<br>
         Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
     </div>
     <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
          margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size:22px;">{{ $_pRM['icon'] }}</span>
+        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px;font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
         </div>
         <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','users')) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','users')) }}</div>
         </div>
     </div>
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
          border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
+        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
             @foreach($_pAllFeats as $_fKey => $_fIcon)
             @php
@@ -179,8 +179,8 @@ tbody tr:hover td { background: var(--dark-700); }
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
                  background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
                  border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size:18px;{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px;letter-spacing:1px;font-weight:700;
+                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
+                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
                     color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
                     {{ $_fHas ? '✓' : '✗' }}
                 </span>
@@ -191,14 +191,14 @@ tbody tr:hover td { background: var(--dark-700); }
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
+           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
            onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
             🏠 GO TO DASHBOARD
         </a>
         <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;
            background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;letter-spacing:1px;"
+           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
            onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
             ← GO BACK
         </a>
@@ -234,7 +234,7 @@ tbody tr:hover td { background: var(--dark-700); }
 <div class="stats-grid users-stats-grid" style="margin-bottom:20px;">
     @foreach(['customer','vip','reseller','banned'] as $role)
     <div class="stat-card">
-        <div class="stat-icon"><span style="font-size:20px;">{{ $roleIcons[$role] }}</span></div>
+        <div class="stat-icon"><span style="font-size: var(--title-size);">{{ $roleIcons[$role] }}</span></div>
         <div>
             <div class="stat-value">{{ $roleCounts[$role] ?? 0 }}</div>
             <div class="stat-label">{{ strtoupper($role) }}</div>
@@ -256,7 +256,7 @@ tbody tr:hover td { background: var(--dark-700); }
     @php $telegramCount = \App\Models\User::whereNotNull('telegram_chat_id')->count(); @endphp
     <div class="stat-card" style="border-color:rgba(34,158,217,0.25);background:rgba(34,158,217,0.06);">
         <div class="stat-icon" style="background:rgba(34,158,217,0.15);border-color:rgba(34,158,217,0.3);">
-            <span style="font-size:20px;">&#9992;&#65039;</span>
+            <span style="font-size: var(--title-size);">&#9992;&#65039;</span>
         </div>
         <div>
             <div class="stat-value" style="color:#229ED9;">{{ $telegramCount }}</div>
@@ -323,7 +323,7 @@ tbody tr:hover td { background: var(--dark-700); }
                 <tr id="user-row-{{ $user->id }}">
 
                     {{-- ID --}}
-                    <td style="color:rgba(255,255,255,0.3); font-size:12px;">{{ $user->id }}</td>
+                    <td style="color:rgba(255,255,255,0.3); font-size: var(--title-size);">{{ $user->id }}</td>
 
                     {{-- Avatar + username --}}
                     <td>
@@ -345,33 +345,33 @@ tbody tr:hover td { background: var(--dark-700); }
                                     <div style="display:none; width:100%; height:100%;
                                                 background:linear-gradient(135deg,#F97316,#ea580c);
                                                 align-items:center; justify-content:center;
-                                                font-weight:800; font-size:13px; color:#fff; position:absolute; inset:0;">
+                                                font-weight:800; font-size: var(--title-size); color:#fff; position:absolute; inset:0;">
                                         {{ strtoupper(substr($user->username, 0, 1)) }}
                                     </div>
                                 @else
                                     <div style="width:100%; height:100%;
                                                 background:linear-gradient(135deg,#F97316,#ea580c);
                                                 display:flex; align-items:center; justify-content:center;
-                                                font-weight:800; font-size:13px; color:#fff;">
+                                                font-weight:800; font-size: var(--title-size); color:#fff;">
                                         {{ strtoupper(substr($user->username, 0, 1)) }}
                                     </div>
                                 @endif
                             </div>
                             <div>
-                                <div style="font-weight:700; font-size:15px; cursor:pointer;"
-                                     onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ number_format((float)($user->total_spent ?? 0), 2) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
+                                <div style="font-weight:700; font-size: var(--title-size); cursor:pointer;"
+                                     onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ number_format((float)($user->orders_sum_total ?? $user->total_spent ?? 0), 2) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
                                      onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
                                     {{ $user->username }}
                                 </div>
                                 @if($user->name && $user->name !== $user->username)
-                                    <div style="font-size:11px; color:rgba(255,255,255,0.3);">{{ $user->name }}</div>
+                                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3);">{{ $user->name }}</div>
                                 @endif
                             </div>
                         </div>
                     </td>
 
-                    <td style="color:rgba(255,255,255,0.5); font-size:14px;">{{ $user->email ?? '—' }}</td>
-                    <td style="color:rgba(255,255,255,0.5); font-size:14px;">{{ $user->phone ?? '—' }}</td>
+                    <td style="color:rgba(255,255,255,0.5); font-size: var(--title-size);">{{ $user->email ?? '—' }}</td>
+                    <td style="color:rgba(255,255,255,0.5); font-size: var(--title-size);">{{ $user->phone ?? '—' }}</td>
 
                     {{-- Orders --}}
                     <td>
@@ -382,13 +382,13 @@ tbody tr:hover td { background: var(--dark-700); }
 
                     {{-- Total spent + VIP progress ─────────────────────── --}}
                     @php
-                        $spent    = (float) ($user->total_spent ?? 0);
+                        $spent = (float) ($user->orders_sum_total ?? $user->total_spent ?? 0);
                         $vipGoal  = 1000;
                         $pct      = min(100, round(($spent / $vipGoal) * 100));
                         $isVip    = ($user->role ?? 'customer') === 'vip';
                     @endphp
                     <td style="min-width:120px;">
-                        <div style="font-weight:700; font-size:14px; color:{{ $spent >= $vipGoal ? '#F97316' : '#fff' }};">
+                        <div style="font-weight:700; font-size: var(--title-size); color:{{ $spent >= $vipGoal ? '#F97316' : '#fff' }};">
                             ${{ number_format($spent, 0) }}
                         </div>
                         @if(! $isVip)
@@ -401,12 +401,12 @@ tbody tr:hover td { background: var(--dark-700); }
                                     transition:width 0.6s ease;
                                 "></div>
                             </div>
-                            <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-top:3px; letter-spacing:0.5px;">
+                            <div style="font-size: var(--text-md); color:rgba(255,255,255,0.3); margin-top:3px; letter-spacing:0.5px;">
                                 ${{ number_format($spent, 0) }} / $1,000 VIP
                             </div>
                         </div>
                         @else
-                        <div style="font-size:10px; color:#F97316; margin-top:3px; letter-spacing:1px; font-weight:700;">
+                        <div style="font-size: var(--text-sm); color:#F97316; margin-top:3px; letter-spacing:1px; font-weight:700;">
                             ⭐ VIP MEMBER
                         </div>
                         @endif
@@ -424,11 +424,11 @@ tbody tr:hover td { background: var(--dark-700); }
                     {{-- Telegram --}}
                     <td>
                         @if($user->telegram_chat_id)
-                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(34,158,217,0.15);border:1px solid rgba(34,158,217,0.3);color:#229ED9;" title="{{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}">
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size: var(--title-size);font-weight:700;background:rgba(34,158,217,0.15);border:1px solid rgba(34,158,217,0.3);color:#229ED9;" title="{{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}">
                                 ✈️ {{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}
                             </span>
                         @else
-                            <span style="font-size:11px;color:rgba(255,255,255,0.25);">—</span>
+                            <span style="font-size: var(--title-size);color:rgba(255,255,255,0.25);">—</span>
                         @endif
                     </td>
 
@@ -436,12 +436,12 @@ tbody tr:hover td { background: var(--dark-700); }
                     <td>
                         <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
                               id="role-badge-{{ $user->id }}"
-                              style="font-size:12px; letter-spacing:1px;">
+                              style="font-size: var(--title-size); letter-spacing:1px;">
                             {{ strtoupper(\App\Models\User::ROLE_LABELS[$user->role ?? 'customer'] ?? 'CUSTOMER') }}
                         </span>
                     </td>
 
-                    <td style="color:rgba(255,255,255,0.4); font-size:12px; white-space:nowrap;">
+                    <td style="color:rgba(255,255,255,0.4); font-size: var(--title-size); white-space:nowrap;">
                         {{ $user->created_at->format('d M Y') }}
                     </td>
 
@@ -466,7 +466,7 @@ tbody tr:hover td { background: var(--dark-700); }
                                 onclick="applyRole({{ $user->id }}, '{{ $user->username }}')"
                                 id="role-btn-{{ $user->id }}"
                                 class="btn btn-sm btn-outline"
-                                style="padding:5px 14px; font-size:12px; white-space:nowrap; letter-spacing:1px;">
+                                style="padding:5px 14px; font-size: var(--title-size); white-space:nowrap; letter-spacing:1px;">
                                 APPLY
                             </button>
                         </div>
@@ -475,7 +475,7 @@ tbody tr:hover td { background: var(--dark-700); }
                 @empty
                 <tr>
                     <td colspan="11" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
-                        <div style="font-size:32px; margin-bottom:10px;">👥</div>
+                        <div style="font-size: var(--title-size); margin-bottom:10px;">👥</div>
                         No users found
                     </td>
                 </tr>
@@ -509,11 +509,11 @@ tbody tr:hover td { background: var(--dark-700); }
 
         {{-- Header --}}
         <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between;">
-            <div style="font-size:16px; font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.7);">USER INFORMATION</div>
+            <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.7);">USER INFORMATION</div>
             <button onclick="closeUserInfo()"
                 style="width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,0.06);
                        border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.4);
-                       font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                       font-size: var(--title-size); cursor:pointer; display:flex; align-items:center; justify-content:center;"
                 onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
         </div>
 
@@ -523,8 +523,8 @@ tbody tr:hover td { background: var(--dark-700); }
                 border:2.5px solid #F97316; box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
             </div>
             <div>
-                <div id="ui-username" style="font-size:22px; font-weight:900; color:#fff; letter-spacing:1px;"></div>
-                <div id="ui-name" style="font-size:13px; color:rgba(255,255,255,0.4); margin-top:2px;"></div>
+                <div id="ui-username" style="font-size: var(--title-size); font-weight:900; color:#fff; letter-spacing:1px;"></div>
+                <div id="ui-name" style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:2px;"></div>
                 <div id="ui-role-badge" style="margin-top:6px;"></div>
             </div>
         </div>
@@ -532,32 +532,32 @@ tbody tr:hover td { background: var(--dark-700); }
         {{-- Info grid --}}
         <div style="padding:0 24px 8px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
-                <div id="ui-email" style="font-size:13px; color:#fff; font-weight:600; word-break:break-all;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
+                <div id="ui-email" style="font-size: var(--title-size); color:#fff; font-weight:600; word-break:break-all;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
-                <div id="ui-phone" style="font-size:13px; color:#fff; font-weight:600;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
+                <div id="ui-phone" style="font-size: var(--title-size); color:#fff; font-weight:600;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
-                <div id="ui-orders" style="font-size:18px; color:#F97316; font-weight:900;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
+                <div id="ui-orders" style="font-size: var(--title-size); color:#F97316; font-weight:900;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TOTAL SPENT</div>
-                <div id="ui-spent" style="font-size:18px; color:#22c55e; font-weight:900;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TOTAL SPENT</div>
+                <div id="ui-spent" style="font-size: var(--title-size); color:#22c55e; font-weight:900;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">JOINED</div>
-                <div id="ui-joined" style="font-size:13px; color:#fff; font-weight:600;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">JOINED</div>
+                <div id="ui-joined" style="font-size: var(--title-size); color:#fff; font-weight:600;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">2FA</div>
-                <div id="ui-2fa" style="font-size:13px; font-weight:700;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">2FA</div>
+                <div id="ui-2fa" style="font-size: var(--title-size); font-weight:700;"></div>
             </div>
             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
-                <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
-                <div id="ui-telegram" style="font-size:13px; font-weight:700;"></div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
+                <div id="ui-telegram" style="font-size: var(--title-size); font-weight:700;"></div>
             </div>
         </div>
 
@@ -565,8 +565,8 @@ tbody tr:hover td { background: var(--dark-700); }
         <div id="ui-vip-wrap" style="padding:0 24px 20px;">
             <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                    <div style="font-size:11px; color:#F97316; font-weight:700; letter-spacing:1px;">⭐ VIP PROGRESS</div>
-                    <div id="ui-vip-pct" style="font-size:11px; color:rgba(255,255,255,0.4); font-weight:600;"></div>
+                    <div style="font-size: var(--title-size); color:#F97316; font-weight:700; letter-spacing:1px;">⭐ VIP PROGRESS</div>
+                    <div id="ui-vip-pct" style="font-size: var(--title-size); color:rgba(255,255,255,0.4); font-weight:600;"></div>
                 </div>
                 <div style="height:6px; border-radius:6px; background:rgba(255,255,255,0.08); overflow:hidden;">
                     <div id="ui-vip-bar" style="height:100%; border-radius:6px; background:linear-gradient(90deg,#F97316,#fb923c); transition:width 0.6s ease;"></div>
@@ -579,7 +579,7 @@ tbody tr:hover td { background: var(--dark-700); }
             <a id="ui-view-orders-btn" href="#"
                 style="display:block; text-align:center; padding:11px; border-radius:10px;
                        background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
-                       font-size:14px; font-weight:800; letter-spacing:1px; text-decoration:none;
+                       font-size: var(--title-size); font-weight:800; letter-spacing:1px; text-decoration:none;
                        box-shadow:0 4px 16px rgba(249,115,22,0.3); transition:opacity .2s;"
                 onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
                 📦 VIEW ORDERS
@@ -612,10 +612,10 @@ function openUserInfo(id, username, name, email, phone, avatar, role, joined, or
             style="width:100%;height:100%;object-fit:cover;display:block;"
             onerror="this.style.display='none';this.nextSibling.style.display='flex'" />
             <div style="display:none;width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
-                align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;">${initial}</div>`;
+                align-items:center;justify-content:center;font-weight:900;font-size: var(--title-size);color:#fff;">${initial}</div>`;
     } else {
         avatarWrap.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
-            display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff;">${initial}</div>`;
+            display:flex;align-items:center;justify-content:center;font-weight:900;font-size: var(--title-size);color:#fff;">${initial}</div>`;
     }
 
     // Basic info
@@ -636,7 +636,7 @@ function openUserInfo(id, username, name, email, phone, avatar, role, joined, or
     // Role badge
     const rm = ROLE_COLORS[role] || ROLE_COLORS.customer;
     document.getElementById('ui-role-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;
-        padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:1px;
+        padding:4px 12px;border-radius:20px;font-size: var(--title-size);font-weight:800;letter-spacing:1px;
         background:${rm.bg};color:${rm.color};border:1px solid ${rm.border};">${rm.label}</span>`;
 
     // VIP progress
@@ -698,8 +698,8 @@ let toastTimer;
 function showToast(msg, type = 'success') {
     const el = document.getElementById('ajaxToast');
     el.innerHTML = (type === 'success'
-        ? '<span style="color:#22c55e;font-size:16px;">✓</span> '
-        : '<span style="color:#ef4444;font-size:16px;">✕</span> ') + msg;
+        ? '<span style="color:#22c55e;font-size: var(--title-size);">✓</span> '
+        : '<span style="color:#ef4444;font-size: var(--title-size);">✕</span> ') + msg;
     el.className = `flash-toast ${type} show`;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 3400);
@@ -766,7 +766,7 @@ async function applyRole(userId, username) {
             setTimeout(() => {
                 badge.className   = `badge ${ROLE_BADGE_CLASS[newRole]}`;
                 badge.textContent = ROLE_LABEL[newRole];
-                badge.style.cssText += '; font-size:12px; letter-spacing:1px; transform:scale(1.15); opacity:1; transition:all 0.2s ease;';
+                badge.style.cssText += '; font-size: var(--title-size); letter-spacing:1px; transform:scale(1.15); opacity:1; transition:all 0.2s ease;';
                 setTimeout(() => badge.style.transform = 'scale(1)', 200);
             }, 150);
 
@@ -877,10 +877,10 @@ if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
         padding: 10px 8px !important;
     }
     .users-stats-grid .stat-value {
-        font-size: 18px !important;
+        font-size: var(--title-size) !important;
     }
     .users-stats-grid .stat-label {
-        font-size: 9px !important;
+        font-size: var(--title-size) !important;
         letter-spacing: 0.5px !important;
     }
 }

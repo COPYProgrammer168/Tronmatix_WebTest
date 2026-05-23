@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', 'PRODUCTS')
+@section('title', strtoupper(__('dashboard.nav.products')))
 
 @section('content')
 
@@ -40,29 +40,29 @@
      animation:fadeUp .45s ease both;">
     <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
          background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size:46px;
+         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
          box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size:30px;font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
+    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
+    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
         Your role does not have permission to access this module.<br>
         Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
     </div>
     <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
          margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size:22px;">{{ $_pRM['icon'] }}</span>
+        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px;font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
         </div>
         <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','products')) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','products')) }}</div>
         </div>
     </div>
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
          border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
+        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
             @foreach($_pAllFeats as $_fKey => $_fIcon)
             @php
@@ -73,8 +73,8 @@
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
                  background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
                  border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size:18px;{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px;letter-spacing:1px;font-weight:700;
+                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
+                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
                     color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
                     {{ $_fHas ? '✓' : '✗' }}
                 </span>
@@ -85,14 +85,14 @@
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
+           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
            onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
             🏠 GO TO DASHBOARD
         </a>
         <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;
            background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;letter-spacing:1px;"
+           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
            onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
             ← GO BACK
         </a>
@@ -107,11 +107,11 @@
     <div
         style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
-            <p style="color:rgba(255,255,255,0.8); font-size:20px;">
+            <p style="color:rgba(255,255,255,0.8); font-size: var(--title-size);">
                 {{ $products->total() }} {{ __('dashboard.productsPage.productsTotal') }}
             </p>
         </div>
-        <a href="{{ route('dashboard.products.create') }}" class="btn btn-orange" style="font-size:16px;">
+        <a href="{{ route('dashboard.products.create') }}" class="btn btn-orange" style="font-size: var(--title-size);">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -144,14 +144,6 @@
                 </svg>
                 <select name="category" class="filter-select" onchange="this.form.submit()">
                     <option value="">{{ __('dashboard.productsPage.allCategories') }}</option>
-
-                    {{-- <optgroup label="─── NEW ADD ───────────────">
-                        @foreach (['New Arrival'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup> --}}
 
                     <optgroup label="─── PC BUILDS ───────────────">
                         @foreach (['PC BUILD UNDER 1K','PC BUILD UNDER 2K','PC BUILD UNDER 3K','PC BUILD UNDER 4K','PC BUILD UNDER 5K','PC BUILD 5K UP'] as $cat)
@@ -199,8 +191,8 @@
                         @endforeach
                     </optgroup>
 
-                    <optgroup label="─── FURNITURE ──────────────">
-                        @foreach (['CHAIR', 'DESK', 'MONITOR STAND'] as $cat)
+                    <optgroup label="─── RESELL ITEM  ──────────────">
+                        @foreach (['Second hand', 'Used', 'Pre-owned'] as $cat)
                             <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
                                 {{ $cat }}
                             </option>
@@ -306,15 +298,15 @@
                                     @if($thumbSrc)
                                         <img src="{{ $thumbSrc }}" class="product-thumb" alt=""
                                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                                        <div class="product-thumb" style="display:none;background:rgba(255,255,255,0.04);align-items:center;justify-content:center;font-size:18px;">📦</div>
+                                        <div class="product-thumb" style="display:none;background:rgba(255,255,255,0.04);align-items:center;justify-content:center;font-size: var(--title-size);">📦</div>
                                     @else
-                                        <div class="product-thumb" style="background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:18px;">📦</div>
+                                        <div class="product-thumb" style="background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size: var(--title-size);">📦</div>
                                     @endif
                                     <div>
-                                        <div style="font-weight:700; color:#fff; font-size:18px;">
+                                        <div style="font-weight:700; color:#fff; font-size: var(--title-size);">
                                             {{ Str::limit($product->name, 30) }}
                                         </div>
-                                        <div style="font-size:16px; color:rgba(255,255,255,0.7);">
+                                        <div style="font-size: var(--title-size); color:rgba(255,255,255,0.7);">
                                             ID: {{ $product->id }}
                                         </div>
                                     </div>
@@ -325,7 +317,17 @@
                             </td>
                             <td style="color:rgba(255,255,255,0.6);">{{ $product->brand ?? '—' }}</td>
                             <td style="color:rgba(255,255,255,0.6);">{{ $product->warranty ?? '—' }}</td>
-                            <td style="color:#F97316; font-weight:700;">${{ number_format($product->price, 2) }}</td>
+                            @php
+                                $p = $product->price;
+                                if (!$p || $p == 0) {
+                                    $priceDisplay = '$';
+                                } elseif (preg_match('/^\$+$/', (string)$p)) {
+                                    $priceDisplay = $p; // show $, $$, $$$ as-is
+                                } else {
+                                    $priceDisplay = '$' . number_format((float)$p, 2);
+                                }
+                            @endphp
+                            <td style="color:#F97316; font-weight:700;">{{ $priceDisplay }}</td>
                             <td>
                                 <span
                                     class="badge {{ $product->stock <= 0 ? 'badge-cancelled' : ($product->stock <= 5 ? 'badge-pending' : 'badge-paid') }}">
@@ -427,8 +429,16 @@
             padding: 9px 12px 9px 36px;
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
-            font-size: 13px;
+            font-size: var(--title-size);
             transition: border-color 0.2s;
+        }
+
+        :lang(km) .filter-input {
+            font-family: var(--font-kh) !important;
+        }
+        :lang(km) .filter-select option {
+            font-family: var(--font-kh) !important;
+            font-size: 14px;
         }
 
         .filter-input:focus {
@@ -462,8 +472,8 @@
             padding: 9px 12px 9px 32px;
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: var(--title-size);
+            font-weight: 400;
             letter-spacing: 0.5px;
             cursor: pointer;
             transition: border-color 0.2s;
@@ -474,6 +484,10 @@
             background-repeat: no-repeat;
             background-position: right 10px center;
             padding-right: 30px;
+        }
+
+        :lang(km) .filter-select {
+            font-family: var(--font-kh) !important;
         }
 
         .filter-select:focus {
@@ -491,8 +505,8 @@
 
         .filter-select optgroup {
             color: #F97316;
-            font-weight: 700;
-            font-size: 11px;
+            font-weight: 400;
+            font-size: var(--title-size);
         }
 
         .filter-select option {

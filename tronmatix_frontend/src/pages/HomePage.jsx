@@ -87,7 +87,7 @@ export default function HomePage() {
     ? "Kh_Jrung_Thom, Khmer OS, sans-serif"
     : "HurstBagod, Rajdhani, sans-serif";
   const bodyFont = isKhmer
-    ? "KantumruyPro, Khmer OS, sans-serif"
+    ? "Kdam Thmor Pro, Khmer OS, sans-serif"
     : "Rajdhani, sans-serif";
 
   const bg = dark ? "#111827" : "#fff";
@@ -478,7 +478,7 @@ export default function HomePage() {
             className="text-primary font-black tracking-widest"
             style={{
               fontFamily: headingFont,
-              fontSize: 32,
+              fontSize: 'clamp(22px, 4vw, 32px)',
               letterSpacing: isKhmer ? 0 : undefined,
             }}
           >
@@ -487,7 +487,7 @@ export default function HomePage() {
           {!isKhmer && (
             <span
               className="font-black tracking-widest"
-              style={{ fontFamily: headingFont, fontSize: 32, color: text }}
+              style={{ fontFamily: headingFont, fontSize: 'clamp(22px, 4vw, 32px)', color: text }}
             >
               ARRIVAL
             </span>
@@ -498,14 +498,14 @@ export default function HomePage() {
       {/* ── NEW PRODUCTS carousel ────────────────────────────────────────────── */}
       {newProducts.length > 0 && (
         <div className="max-w-[1280px] mx-auto px-4 mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-8 bg-primary rounded-full" />
+          <div className="flex flex-wrap items-center justify-between gap-y-2 mb-5">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-1 h-8 bg-primary rounded-full flex-shrink-0" />
               <span
-                className="font-black tracking-widest"
+                className="font-black tracking-widest truncate"
                 style={{
                   fontFamily: headingFont,
-                  fontSize: 20,
+                  fontSize: 'clamp(15px, 2vw, 20px)',
                   color: text,
                   letterSpacing: isKhmer ? 0 : undefined,
                 }}
@@ -513,22 +513,23 @@ export default function HomePage() {
                 {isKhmer ? t("home.newProducts") : "NEW PRODUCTS"}
               </span>
               <span
-                className="inline-flex items-center justify-center font-bold px-3 rounded-full"
+                className="inline-flex items-center justify-center font-bold px-2 rounded-full flex-shrink-0"
                 style={{
                   fontFamily: bodyFont,
                   background: "rgba(249,115,22,0.12)",
                   color: "#F97316",
                   border: "1px solid rgba(249,115,22,0.3)",
-                  fontSize: 12,
-                  height: 30,
+                  fontSize: 11,
+                  height: 26,
                   lineHeight: 1,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {isKhmer ? "ទើបបន្ថែមថ្មីៗ" : "just Added"}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="hidden sm:flex gap-2">
                 {["‹", "›"].map((a, i) => (
                   <button
                     key={i}
@@ -552,10 +553,10 @@ export default function HomePage() {
               </div>
               <Link
                 to="/search?sort=newest"
-                className="text-primary font-bold hover:underline"
-                style={{ fontFamily: bodyFont, fontSize: 15 }}
+                className="text-primary font-bold hover:underline whitespace-nowrap"
+                style={{ fontFamily: bodyFont, fontSize: 'clamp(12px, 1.5vw, 15px)' }}
               >
-                {isKhmer ? "មើលផលិតផលថ្មី" : "​View All New Product"} →
+                {isKhmer ? "មើលផលិតផលថ្មី" : "View All New Product"} →
               </Link>
             </div>
           </div>
@@ -765,6 +766,43 @@ export default function HomePage() {
           </div>
         );
       })}
-    </div>
-  );
-}
+      <TelegramBanner isKhmer={isKhmer} />
+      </div>
+      );
+      }
+
+      // ── Join Telegram Banner ──────────────────────────────────────────────────
+      function TelegramBanner({ isKhmer }) {
+        return (
+          <div className="my-12 mx-4 lg:mx-auto max-w-5xl rounded-3xl overflow-hidden relative"
+               style={{ background: 'linear-gradient(135deg, #0088cc 0%, #005588 100%)' }}>
+            <div className="absolute inset-0 opacity-10" 
+                 style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-6 text-white">
+              <div className="flex items-center gap-6">
+                <div className="hidden md:block">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.07-.19-.04-.27-.02-.12.08-2 1.28-5.65 3.74-.53.36-1.01.54-1.44.53-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.41-.88.03-.25.37-.51 1.03-.78 4.04-1.76 6.74-2.93 8.09-3.5 3.84-1.6 4.63-1.88 5.16-1.89.11 0 .37.02.54.16.14.12.18.28.2.45-.01.07-.01.17-.03.27z"/>
+                  </svg>
+                </div>
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
+                    {isKhmer ? 'តាមដាន TronmatixComputer លើ Telegram' : 'Follow TronmatixComputer on Telegram'}
+                  </h3>
+                  <p className="opacity-90" style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
+                    {isKhmer ? 'ទទួលបានព័ត៌មានចុងក្រោយ និងការផ្តល់ជូនពិសេស!' : 'Get the latest news and special offers!'}
+                  </p>
+                </div>
+              </div>
+              <a href="https://t.me/TronmatixComputer" target="_blank" rel="noopener noreferrer"
+                 className="px-8 py-4 bg-white text-blue-600 font-bold rounded-2xl shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
+                 style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.07-.19-.04-.27-.02-.12.08-2 1.28-5.65 3.74-.53.36-1.01.54-1.44.53-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.41-.88.03-.25.37-.51 1.03-.78 4.04-1.76 6.74-2.93 8.09-3.5 3.84-1.6 4.63-1.88 5.16-1.89.11 0 .37.02.54.16.14.12.18.28.2.45-.01.07-.01.17-.03.27z"/>
+                 </svg>
+                 {isKhmer ? 'ចូលរួមឥឡូវនេះ' : 'JOIN NOW'}
+              </a>
+            </div>
+          </div>
+        );
+      }

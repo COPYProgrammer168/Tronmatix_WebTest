@@ -66,6 +66,7 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/orders/{order}', [DashboardController::class, 'showOrder'])->name('orders.show');
         Route::put('/orders/{order}/status', [DashboardController::class, 'updateOrderStatus'])->name('orders.status');
         Route::post('/orders/{order}/confirm-delivery', [DashboardController::class, 'confirmDelivery'])->name('orders.confirm-delivery');
+        Route::post('/orders/{order}/verify-payment', [DashboardController::class, 'verifyOrderPayment'])->name('orders.verify-payment');
 
         // ── Users ─────────────────────────────────────────────────────────────
         Route::get('/users', [UserController::class, 'index'])->name('users');
@@ -126,4 +127,5 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/telegram/webhook-info', [TelegramAdminController::class, 'webhookInfo'])->name('telegram.webhook-info');
 
         Route::get('/report', [DashboardController::class, 'report'])->name('report');
+        Route::get('/stats', [DashboardController::class, 'stats'])->name('stats');
     });

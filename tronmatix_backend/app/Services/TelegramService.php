@@ -13,8 +13,8 @@ class TelegramService
 
     public function __construct()
     {
-        $this->token   = config('services.telegram.bot_token', '');
-        $this->chatId  = config('services.telegram.chat_id', '');
+        $this->token = config('services.telegram.bot_token', '');
+        $this->chatId = config('services.telegram.chat_id', '');
         $this->apiBase = "https://api.telegram.org/bot{$this->token}";
     }
 
@@ -26,7 +26,8 @@ class TelegramService
      */
     public function sendReceipt(Order $order): void
     {
-        if (! $this->token) return;
+        if (!$this->token)
+            return;
 
         $shipping = $order->shipping;
         if (is_string($shipping)) {
@@ -37,26 +38,28 @@ class TelegramService
 
         $itemLines = $order->items->map(function ($item) {
             $lineTotal = round($item->price * $item->qty, 2);
-            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}";
+            $warranty = '';
+            if ($item->warranty_start && $item->warranty_end) {
+                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
+                    . ' - ' . $item->warranty_end->format('d.m.Y');
+            }
+            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
         })->join("\n");
 
-        // ── Build address/pickup lines conditionally ──────────────────────────
         if ($isPickup) {
             $fulfillmentLine = '🏪 *STORE PICKUP* — customer will come to collect';
-            $contactLine     = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
-            $phoneLine       = '📞 Phone: '    . ($shipping['phone'] ?? '—');
-            // No address line for pickup
-            $addressLine     = null;
+            $contactLine = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
+            $phoneLine = '📞 Phone: ' . ($shipping['phone'] ?? '—');
+            $addressLine = null;
         } else {
             $fulfillmentLine = '🚚 *DELIVERY*';
-            $contactLine     = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
-            $phoneLine       = '📞 Phone: '    . ($shipping['phone'] ?? '—');
-            $addressLine     = '📍 Address: '
+            $contactLine = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
+            $phoneLine = '📞 Phone: ' . ($shipping['phone'] ?? '—');
+            $addressLine = '📍 Address: '
                 . ($shipping['address'] ?? '—')
                 . ($shipping['city'] ? ', ' . $shipping['city'] : '');
         }
 
-        // ── Scheduled date line ───────────────────────────────────────────────
         $scheduleLine = null;
         if ($order->delivery_date) {
             $dateLabel = $isPickup ? '🗓 Preferred Pickup' : '🗓 Delivery';
@@ -82,12 +85,12 @@ class TelegramService
             '',
             "💰 Subtotal: \${$order->subtotal}",
             $order->discount_amount > 0
-                ? "🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"
-                : null,
+            ? "🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"
+            : null,
             "✅ *Total: \${$order->total}*",
             '',
             '🕐 ' . $order->created_at->format('d M Y, H:i'),
-        ], fn ($line) => $line !== null);
+        ], fn($line) => $line !== null);
 
         $this->send(implode("\n", $lines));
     }
@@ -95,11 +98,12 @@ class TelegramService
     /** Notify when admin confirms delivery / pickup. */
     public function sendDeliveryConfirmed(Order $order): void
     {
-        if (! $this->token) return;
+        if (!$this->token)
+            return;
 
         $isPickup = $order->isPickup();
-        $verb     = $isPickup ? 'Picked Up' : 'Delivered';
-        $icon     = $isPickup ? '🏪' : '📦';
+        $verb = $isPickup ? 'Picked Up' : 'Delivered';
+        $icon = $isPickup ? '🏪' : '📦';
 
         $message = implode("\n", [
             "{$icon} *Order {$verb}!*",
@@ -116,28 +120,68 @@ class TelegramService
         }
     }
 
-    /** Payment confirmed via ABA webhook — notify admin. */
+    /**
+     * Payment confirmed via ABA BAKONG QR — notify admin with full order details.
+     * Called from CheckPaymentController after PayWay confirms the transaction.
+     */
     public function sendPaymentConfirmed(Order $order, string $apv): void
     {
-        if (! $this->token) return;
+        if (!$this->token)
+            return;
 
-        $message = implode("\n", [
-            '💳 *ABA BAKONG Payment Received!*',
+        // Eager-load items if not already loaded
+        if (!$order->relationLoaded('items')) {
+            $order->load('items');
+        }
+
+        $isPickup = $order->isPickup();
+        $fulfillment = $isPickup ? '🏪 STORE PICKUP' : '🚚 DELIVERY';
+
+        $itemLines = $order->items->map(function ($item) {
+            $lineTotal = number_format($item->price * $item->qty, 2);
+            $warranty = '';
+            if ($item->warranty_start && $item->warranty_end) {
+                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
+                    . ' - ' . $item->warranty_end->format('d.m.Y');
+            }
+            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
+        })->join("\n");
+
+        $lines = array_filter([
+            '✅ *ABA BAKONG Payment Confirmed!*',
             '',
             "📦 Order: `#{$order->order_id}`",
-            "💰 Amount: \${$order->total}",
-            "🔑 APV: {$apv}",
             '👤 Customer: ' . ($order->user?->username ?? 'Guest'),
+            '📞 Phone: ' . ($order->user?->phone ?? '—'),
+            $fulfillment,
+            $order->delivery_date
+            ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': ' . $order->delivery_date
+            . ($order->delivery_time_slot ? ' | ' . $order->delivery_time_slot : '')
+            : null,
+            '',
+            '*Items Paid:*',
+            $itemLines,
+            '',
+            ($order->subtotal && (float) $order->subtotal !== (float) $order->total)
+            ? "💰 Subtotal: \${$order->subtotal}"
+            : null,
+            ($order->discount_amount ?? 0) > 0
+            ? "🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"
+            : null,
+            "✅ *Total Paid: \${$order->total} USD*",
+            "🔑 APV: `{$apv}`",
+            '',
             '🕐 ' . now()->format('d M Y, H:i'),
-        ]);
+        ], fn($l) => $l !== null);
 
-        $this->send($message);
+        $this->send(implode("\n", $lines));
     }
 
     /** Send a plain text alert (for generic events). */
     public function sendAlert(string $text): void
     {
-        if (! $this->token) return;
+        if (!$this->token)
+            return;
         $this->send($text);
     }
 
@@ -147,13 +191,13 @@ class TelegramService
      */
     public function sendMessage(string $text, ?string $chatId = null): void
     {
-        if (! $this->token) return;
+        if (!$this->token)
+            return;
         $this->send($text, $chatId);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    /** Send a Markdown message to one or all configured chat IDs. */
     private function send(string $text, ?string $chatId = null): void
     {
         $targets = $chatId
@@ -165,12 +209,12 @@ class TelegramService
                 $res = Http::timeout(8)
                     ->withoutVerifying()
                     ->post("{$this->apiBase}/sendMessage", [
-                        'chat_id'    => $target,
-                        'text'       => $text,
+                        'chat_id' => $target,
+                        'text' => $text,
                         'parse_mode' => 'Markdown',
                     ]);
 
-                if (! $res->successful()) {
+                if (!$res->successful()) {
                     \Illuminate\Support\Facades\Log::error(
                         'Telegram API error: ' . $res->status() . ' — ' . $res->body()
                     );

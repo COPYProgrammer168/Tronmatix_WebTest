@@ -63,16 +63,16 @@
     <div style="
         width:96px; height:96px; border-radius:28px; margin-bottom:28px;
         background:rgba(239,68,68,0.08); border:1.5px solid rgba(239,68,68,0.25);
-        display:flex; align-items:center; justify-content:center; font-size:46px;
+        display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
         box-shadow:0 0 60px rgba(239,68,68,0.12);
         animation:lockPulse 2.5s ease-in-out infinite;
     ">🔒</div>
 
     {{-- Title --}}
-    <div style="font-size:30px; font-weight:900; letter-spacing:3px; color:#ef4444; margin-bottom:8px;">
+    <div style="font-size: var(--title-size); font-weight:900; letter-spacing:3px; color:#ef4444; margin-bottom:8px;">
         {{ strtoupper(__('dashboard.access.denied')) }}
     </div>
-    <div style="font-size:14px; color:rgba(255,255,255,0.35); margin-bottom:32px; max-width:380px; line-height:1.6;">
+    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-bottom:32px; max-width:380px; line-height:1.6;">
         {{ __('dashboard.access.desc') }}
     </div>
 
@@ -82,21 +82,21 @@
         padding:12px 24px; border-radius:16px; margin-bottom:32px;
         background:{{ $_rm['color'] }}12; border:1.5px solid {{ $_rm['color'] }}40;
     ">
-        <span style="font-size:22px;">{{ $_rm['icon'] }}</span>
+        <span style="font-size: var(--title-size);">{{ $_rm['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">
+            <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">
                 {{ strtoupper(__('dashboard.access.yourRole')) }}
             </div>
-            <div style="font-size:16px; font-weight:800; color:{{ $_rm['color'] }}; letter-spacing:1px;">
+            <div style="font-size: var(--title-size); font-weight:800; color:{{ $_rm['color'] }}; letter-spacing:1px;">
                 {{ strtoupper($_rm['label']) }}
             </div>
         </div>
         <div style="width:1px; height:32px; background:rgba(255,255,255,0.1); margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">
+            <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700;">
                 {{ strtoupper(__('dashboard.access.module')) }}
             </div>
-            <div style="font-size:16px; font-weight:800; color:rgba(255,255,255,0.6); letter-spacing:1px;">
+            <div style="font-size: var(--title-size); font-weight:800; color:rgba(255,255,255,0.6); letter-spacing:1px;">
                 {{ strtoupper(str_replace('_',' ',$_feature)) }}
             </div>
         </div>
@@ -128,7 +128,7 @@
         border-radius:16px; padding:20px 24px; margin-bottom:32px;
         max-width:480px; width:100%;
     ">
-        <div style="font-size:11px; color:rgba(255,255,255,0.3); letter-spacing:2px; font-weight:700; margin-bottom:16px; text-align:left;">
+        <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); letter-spacing:2px; font-weight:700; margin-bottom:16px; text-align:left;">
             {{ strtoupper(__('dashboard.access.overview')) }}
         </div>
         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
@@ -144,8 +144,8 @@
                 background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
                 border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};
             ">
-                <span style="font-size:18px; {{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px; letter-spacing:1px; font-weight:700;
+                <span style="font-size: var(--title-size); {{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
+                <span style="font-size: var(--title-size); letter-spacing:1px; font-weight:700;
                     color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
                     {{ $_fHas ? '✓' : '✗' }}
                 </span>
@@ -159,7 +159,7 @@
         <a href="{{ route('dashboard.index') }}" style="
             display:inline-flex; align-items:center; gap:8px;
             padding:12px 24px; border-radius:12px; text-decoration:none;
-            background:#F97316; color:#fff; font-size:14px; font-weight:700;
+            background:#F97316; color:#fff; font-size: var(--title-size); font-weight:700;
             letter-spacing:1px; transition:all .2s;
             box-shadow:0 4px 16px rgba(249,115,22,0.3);
         " onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
@@ -169,7 +169,7 @@
             display:inline-flex; align-items:center; gap:8px;
             padding:12px 24px; border-radius:12px; text-decoration:none;
             background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
-            color:rgba(255,255,255,0.6); font-size:14px; font-weight:700; letter-spacing:1px;
+            color:rgba(255,255,255,0.6); font-size: var(--title-size); font-weight:700; letter-spacing:1px;
             transition:all .2s;
         " onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
             ← {{ strtoupper(__('dashboard.btn.goBack')) }}

@@ -34,13 +34,19 @@ export default function CheckoutPage() {
   const { t, isKhmer } = useLang()
   const navigate = useNavigate()
 
-  const [step,              setStep]           = useState(1)
+  const [step, setStep] = useState(() => {
+    const s = parseInt(localStorage.getItem("checkout_step"))
+    return (s === 1 || s === 2) ? s : 1   // clamp to valid steps only
+  })
   // ── NEW: fulfillment type ────────────────────────────────────────────────
-  const [fulfillment,       setFulfillment]    = useState("delivery") // "delivery" | "pickup"
+  const [fulfillment,       setFulfillment]    = useState(localStorage.getItem("checkout_fulfillment") || "delivery") // "delivery" | "pickup"
 
-  const [location,       setLocation]       = useState({
-    name: savedLocation?.name || user?.username || "", phone: savedLocation?.phone || "",
-    address: savedLocation?.address || "", city: savedLocation?.city || "", note: savedLocation?.note || "",
+  const [location,       setLocation]       = useState(() => {
+    const saved = localStorage.getItem("checkout_location")
+    return saved ? JSON.parse(saved) : {
+      name: savedLocation?.name || user?.username || "", phone: savedLocation?.phone || "",
+      address: savedLocation?.address || "", city: savedLocation?.city || "", note: savedLocation?.note || "",
+    }
   })
   const [saveAddr,       setSaveAddr]       = useState(false)
   const [payMethod,      setPayMethod]      = useState("cash")
@@ -49,7 +55,27 @@ export default function CheckoutPage() {
   const [deliveryStatus, setDeliveryStatus] = useState(0)
   const [showAuthModal,  setShowAuthModal]  = useState(false)
   const [authMode,       setAuthMode]       = useState("login")
-  const [delivery,       setDelivery]       = useState({ date: "", timeSlot: "" })
+  const [delivery,       setDelivery]       = useState(() => {
+    const saved = localStorage.getItem("checkout_delivery")
+    return saved ? JSON.parse(saved) : { date: "", timeSlot: "" }
+  })
+  
+  // ── Sync state with localStorage ──────────────────────────────────────────
+  useEffect(() => {
+    if (step < 3) localStorage.setItem("checkout_step", step)
+    else localStorage.removeItem("checkout_step")   // never persist step 3
+  }, [step])
+  useEffect(() => { localStorage.setItem("checkout_fulfillment", fulfillment) }, [fulfillment])
+  useEffect(() => { localStorage.setItem("checkout_location", JSON.stringify(location)) }, [location])
+  useEffect(() => { localStorage.setItem("checkout_delivery", JSON.stringify(delivery)) }, [delivery])
+  
+  // ── Clean up storage on success ──────────────────────────────────────────
+  const clearCheckoutStorage = () => {
+    localStorage.removeItem("checkout_step")
+    localStorage.removeItem("checkout_fulfillment")
+    localStorage.removeItem("checkout_location")
+    localStorage.removeItem("checkout_delivery")
+  }
   const [showQrModal,    setShowQrModal]    = useState(false)
   const [savedLocations, setSavedLocations] = useState([])
   const [showLocPicker,  setShowLocPicker]  = useState(false)
@@ -172,11 +198,12 @@ export default function CheckoutPage() {
         fulfillment_type: fulfillment,
       }
 
-      clearCart(); removeDiscount(); setOrder(orderData); setDeliveryStatus(0)
-
       if (payMethod === "bakong") {
+        setOrder(orderData)
         setShowQrModal(true)
       } else {
+        clearCheckoutStorage(); 
+        clearCart(); removeDiscount(); setOrder(orderData); setDeliveryStatus(0)
         setStep(3)
         Swal.fire({
           title: isPickup ? "Order Placed! 🏪" : "Order Placed! 🎉",
@@ -232,7 +259,7 @@ export default function CheckoutPage() {
                   background: active ? (dark ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.06)') : pillBg,
                   color: active ? '#F97316' : subText,
                   fontWeight: 700, fontSize: 15,
-                  fontFamily: isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif",
+                  fontFamily: isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif",
                   cursor: "pointer", transition: "all 0.2s",
                   boxShadow: active ? '0 0 0 3px rgba(249,115,22,0.15)' : 'none',
                 }}
@@ -305,7 +332,7 @@ export default function CheckoutPage() {
                   padding: '7px 16px', borderRadius: 999,
                   background: '#F97316', color: '#fff',
                   fontSize: 13, fontWeight: 700,
-                  fontFamily: isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif",
+                  fontFamily: isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif",
                   textDecoration: 'none', letterSpacing: isKhmer ? 0 : 0.5,
                   boxShadow: '0 2px 10px rgba(249,115,22,0.35)',
                   flexShrink: 0,
@@ -355,7 +382,7 @@ export default function CheckoutPage() {
               fontSize: 12, fontWeight: 700, color: '#F97316',
               background: 'none', border: '1.5px solid rgba(249,115,22,0.4)',
               borderRadius: 999, padding: '4px 14px', cursor: 'pointer',
-              fontFamily: isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif",
+              fontFamily: isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif",
               letterSpacing: isKhmer ? 0 : 0.5,
               transition: 'all 0.15s',
             }}
@@ -429,7 +456,10 @@ export default function CheckoutPage() {
                 title="Close">✕</button>
             </div>
             <BakongQRPanel orderId={order.id ?? order.data?.id} total={order.total}
-              onPaid={() => { setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800) }} />
+              onPaid={() => { 
+                clearCheckoutStorage();
+                setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800) 
+              }} />
           </div>
           <style>{`@keyframes fadeInScale { from { opacity:0; transform:scale(.93) translateY(20px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>
         </div>

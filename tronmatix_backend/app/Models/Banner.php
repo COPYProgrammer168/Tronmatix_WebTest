@@ -15,7 +15,7 @@ class Banner extends Model
         'image', 'order', 'active',
         // ── Video support ─────────────────────────────────────────────────────
         'video',        // path or URL to video file (mp4/webm)
-        'video_type',   // 'upload' | 'youtube' | 'vimeo' | 'facebook'
+        'video_type',   // 'upload'
     ];
 
     protected $casts = [

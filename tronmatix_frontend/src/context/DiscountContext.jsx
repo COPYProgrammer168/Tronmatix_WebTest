@@ -79,17 +79,39 @@ export function DiscountProvider({ children }) {
     // 1. User-applied code discount
     if (discount) {
       const cats = discount.categories
-      const matches = !cats || cats.length === 0
-        || cats.map(c => c.toLowerCase()).includes((item.category || '').toLowerCase())
-      if (matches) result.push({ ...discount, source: 'code' })
+      const productId = discount.product_id
+      
+      let categoryMatch = false;
+      if (productId) {
+        // If it's a product discount, category doesn't matter, 
+        // it applies only to the specific product matched below.
+        categoryMatch = true; 
+      } else {
+        categoryMatch = !cats || cats.length === 0
+          || cats.map(c => c.toLowerCase()).includes((item.category || '').toLowerCase());
+      }
+      
+      const productMatch = !productId || (productId == item.id)
+
+      if (categoryMatch && productMatch) result.push({ ...discount, source: 'code' })
     }
 
     // 2. Public badge discounts — auto-shown, no code required
     publicDiscounts.forEach(pd => {
       const cats = pd.categories
-      const matches = !cats || cats.length === 0
-        || cats.map(c => c.toLowerCase()).includes((item.category || '').toLowerCase())
-      if (matches) result.push({ ...pd, source: 'badge' })
+      const productId = pd.product_id
+      
+      let categoryMatch = false;
+      if (productId) {
+        categoryMatch = true;
+      } else {
+        categoryMatch = !cats || cats.length === 0
+          || cats.map(c => c.toLowerCase()).includes((item.category || '').toLowerCase());
+      }
+        
+      const productMatch = !productId || (productId == item.id)
+      
+      if (categoryMatch && productMatch) result.push({ ...pd, source: 'badge' })
     })
 
     return result
@@ -140,8 +162,13 @@ export function DiscountProvider({ children }) {
 
     // Fallback: legacy code-discount-only logic (no items provided)
     if (!discount) return 0
-    const cats = discount.categories
-    if (cats && cats.length > 0) return 0
+    
+    // If it's a product-specific or category-specific discount, 
+    // we cannot calculate the discount correctly without item information.
+    // Return 0 if it's not a sitewide discount.
+    const isSitewide = !discount.product_id && (!discount.categories || discount.categories.length === 0);
+    if (!isSitewide) return 0;
+
     if (discount.type === 'percentage')
       return Math.round(subtotal * (discount.value / 100) * 100) / 100
     return Math.min(discount.value, subtotal)

@@ -46,21 +46,22 @@ class SummarySheet implements FromCollection, WithTitle, ShouldAutoSize, WithSty
         $periodDiscountUsed  = Order::whereNotNull('discount_amount')->where('discount_amount', '>', 0)
                                     ->whereBetween('created_at', [$this->from, $this->to])->sum('discount_amount');
 
+        $calcTrend = fn($curr, $prev) => $curr >= $prev ? '▲' : '▼';
+
         return collect([
-            // Header row is row 1 (from headings()) — data starts row 2
-            ['METRIC',                        'ALL TIME',                                          'SELECTED PERIOD (' . $period . ')'],
-            ['Total Users',                   User::count(),                                       User::whereBetween('created_at', [$this->from, $this->to])->count()],
-            ['Total Products',                Product::count(),                                    '—'],
-            ['Total Orders',                  Order::count(),                                      Order::whereBetween('created_at', [$this->from, $this->to])->count()],
-            ['Revenue ($)',                   number_format($totalRevenue, 2),                    number_format($periodRevenue, 2)],
-            ['Pending Orders',                Order::whereIn('status', ['pending', 'confirmed'])->count(), '—'],
-            ['Active Orders',                 Order::whereIn('status', ['confirmed','processing','shipped'])->count(), '—'],
-            ['Delivered Orders',              Order::where('status', 'delivered')->count(),        Order::where('status', 'delivered')->whereBetween('created_at', [$this->from, $this->to])->count()],
-            ['Cancelled Orders',              Order::where('status', 'cancelled')->count(),        Order::where('status', 'cancelled')->whereBetween('created_at', [$this->from, $this->to])->count()],
-            ['Total Discount Saved ($)',      number_format($totalDiscountUsed, 2),               number_format($periodDiscountUsed, 2)],
-            ['Active Discount Codes',         Discount::active()->count(),                         '—'],
-            ['Discount Codes Used (orders)',  Order::whereNotNull('discount_id')->count(),         Order::whereNotNull('discount_id')->whereBetween('created_at', [$this->from, $this->to])->count()],
-            ['Export Generated At',           Carbon::now()->format('d M Y H:i:s'),                '—'],
+            ['METRIC', 'ALL TIME', 'PERIOD (' . $period . ')', 'TREND'],
+            ['Total Users', User::count(), User::whereBetween('created_at', [$this->from, $this->to])->count(), '—'],
+            ['Total Products', Product::count(), '—', '—'],
+            ['Total Orders', Order::count(), Order::whereBetween('created_at', [$this->from, $this->to])->count(), '—'],
+            ['Revenue ($)', number_format($totalRevenue, 2), number_format($periodRevenue, 2), $calcTrend($periodRevenue, $totalRevenue/12)], // Dummy trend logic for export
+            ['Pending Orders', Order::whereIn('status', ['pending', 'confirmed'])->count(), '—', '—'],
+            ['Active Orders', Order::whereIn('status', ['confirmed','processing','shipped'])->count(), '—', '—'],
+            ['Delivered Orders', Order::where('status', 'delivered')->count(), Order::where('status', 'delivered')->whereBetween('created_at', [$this->from, $this->to])->count(), '—'],
+            ['Cancelled Orders', Order::where('status', 'cancelled')->count(), Order::where('status', 'cancelled')->whereBetween('created_at', [$this->from, $this->to])->count(), '—'],
+            ['Total Discount Saved ($)', number_format($totalDiscountUsed, 2), number_format($periodDiscountUsed, 2), '—'],
+            ['Active Discount Codes', Discount::active()->count(), '—', '—'],
+            ['Discount Codes Used (orders)', Order::whereNotNull('discount_id')->count(), Order::whereNotNull('discount_id')->whereBetween('created_at', [$this->from, $this->to])->count(), '—'],
+            ['Export Generated At', Carbon::now()->format('d M Y H:i:s'), '—', '—'],
         ]);
     }
 

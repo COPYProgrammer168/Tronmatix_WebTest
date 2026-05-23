@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/profile.blade.php --}}
 @extends('dashboard.layout')
-@section('title', 'MY PROFILE')
+@section('title', strtoupper(__('dashboard.nav.profile')))
 
 @section('content')
 @php
@@ -34,7 +34,7 @@
                 <div style="width:60px; height:60px; border-radius:50%;
                             background:linear-gradient(135deg,#F97316,#ea580c);
                             display:flex; align-items:center; justify-content:center;
-                            font-size:24px; font-weight:800; color:#fff;
+                            font-size: var(--title-size); font-weight:800; color:#fff;
                             box-shadow:0 4px 16px rgba(249,115,22,0.35);">
                     {{ strtoupper(substr($admin->name ?? 'A', 0, 1)) }}
                 </div>
@@ -42,15 +42,15 @@
         </div>
 
         <div>
-            <div style="font-size:24px; font-weight:800; letter-spacing:2px;">
+            <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">
                 {{ $admin->name ?? 'Admin' }}
             </div>
-            <div style="font-size:14px; color:rgba(255,255,255,0.4); margin-top:2px; letter-spacing:1px;">
+            <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:2px; letter-spacing:1px;">
                 {{ $admin->email ?? '' }}
             </div>
         </div>
         <div style="margin-left:auto;">
-            <span class="badge badge-orange" style="font-size:13px; letter-spacing:2px;">
+            <span class="badge badge-orange" style="font-size: var(--title-size); letter-spacing:2px;">
                 {{ strtoupper($admin->role ?? 'ADMIN') }}
             </span>
         </div>
@@ -60,14 +60,14 @@
     @if(session('success'))
     <div style="margin-bottom:20px; padding:14px 18px; border-radius:10px;
                 background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);
-                color:#22c55e; font-weight:700; font-size:14px;">
+                color:#22c55e; font-weight:700; font-size: var(--title-size);">
         ✓ {{ session('success') }}
     </div>
     @endif
     @if($errors->any())
     <div style="margin-bottom:20px; padding:14px 18px; border-radius:10px;
                 background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);
-                color:#ef4444; font-size:13px;">
+                color:#ef4444; font-size: var(--title-size);">
         @foreach($errors->all() as $e) <div>• {{ $e }}</div> @endforeach
     </div>
     @endif
@@ -77,7 +77,7 @@
         {{-- ── Left: Edit Profile + Avatar Upload ─────────────────────────── --}}
         <div class="card">
             <div class="card-header">
-                <span style="font-size:16px; font-weight:800; letter-spacing:2px;">✏️ EDIT PROFILE</span>
+                <span style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">✏️ EDIT PROFILE</span>
             </div>
             <div style="padding:24px;">
                 {{-- HTML forms can't send PUT directly; use POST + @method('PUT') spoofing.
@@ -100,7 +100,7 @@
                                     <img id="avatar-preview" src="{{ $avatarUrl }}" alt="Avatar"
                                          style="width:100%; height:100%; object-fit:cover;" />
                                 @else
-                                    <span id="avatar-initials" style="font-size:24px; font-weight:800; color:#F97316;">
+                                    <span id="avatar-initials" style="font-size: var(--title-size); font-weight:800; color:#F97316;">
                                         {{ strtoupper(substr($admin->name ?? 'A', 0, 1)) }}
                                     </span>
                                 @endif
@@ -111,7 +111,7 @@
                                     display:inline-flex; align-items:center; gap:6px;
                                     padding:8px 14px; border-radius:8px; cursor:pointer;
                                     background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.3);
-                                    color:#F97316; font-size:13px; font-weight:700; letter-spacing:1px;
+                                    color:#F97316; font-size: var(--title-size); font-weight:700; letter-spacing:1px;
                                     transition:all .2s;"
                                     onmouseover="this.style.background='rgba(249,115,22,0.2)'"
                                     onmouseout="this.style.background='rgba(249,115,22,0.1)'">
@@ -121,7 +121,7 @@
                                        accept="image/jpg,image/jpeg,image/png,image/webp"
                                        style="display:none;"
                                        onchange="previewAvatar(this)" />
-                                <div style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:4px;">
+                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:4px;">
                                     JPG, PNG, WEBP · Max 2MB
                                 </div>
                             </div>
@@ -132,7 +132,7 @@
                         <div style="margin-top:6px;">
                             <button type="button"
                                     onclick="document.getElementById('remove-avatar-form').submit()"
-                                    style="font-size:12px; color:rgba(239,68,68,0.7); background:none;
+                                    style="font-size: var(--title-size); color:rgba(239,68,68,0.7); background:none;
                                            border:none; cursor:pointer; padding:0; font-weight:600;"
                                     onmouseover="this.style.color='#ef4444'"
                                     onmouseout="this.style.color='rgba(239,68,68,0.7)'">
@@ -150,7 +150,7 @@
                                placeholder="Admin name" required
                                style="border-color:{{ $errors->has('name') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('name')
-                            <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
+                            <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -162,12 +162,12 @@
                                placeholder="admin@example.com" required
                                style="border-color:{{ $errors->has('email') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('email')
-                            <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
+                            <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <button type="submit" class="btn btn-orange"
-                            style="width:100%; justify-content:center; font-size:15px;">
+                            style="width:100%; justify-content:center; font-size: var(--title-size);">
                         <svg style="width:16px;height:16px" fill="none" stroke="currentColor"
                              stroke-width="2" viewBox="0 0 24 24">
                             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
@@ -183,7 +183,7 @@
         {{-- ── Right: Change Password ───────────────────────────────────────── --}}
         <div class="card">
             <div class="card-header">
-                <span style="font-size:16px; font-weight:800; letter-spacing:2px;">🔒 CHANGE PASSWORD</span>
+                <span style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">🔒 CHANGE PASSWORD</span>
             </div>
             <div style="padding:24px;">
                 <form method="POST" action="{{ route('dashboard.profile.password') }}">
@@ -195,7 +195,7 @@
                                placeholder="Enter current password"
                                style="border-color:{{ $errors->has('current_password') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('current_password')
-                            <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
+                            <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -205,7 +205,7 @@
                                placeholder="Min. 8 characters"
                                style="border-color:{{ $errors->has('password') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('password')
-                            <div style="color:#EF4444; font-size:13px; margin-top:5px;">{{ $message }}</div>
+                            <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -217,7 +217,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-outline"
-                            style="width:100%; justify-content:center; font-size:15px;">
+                            style="width:100%; justify-content:center; font-size: var(--title-size);">
                         <svg style="width:16px;height:16px" fill="none" stroke="currentColor"
                              stroke-width="2" viewBox="0 0 24 24">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -234,7 +234,7 @@
     {{-- ── Account Info ─────────────────────────────────────────────────────── --}}
     <div class="card" style="margin-top:20px;">
         <div class="card-header">
-            <span style="font-size:16px; font-weight:800; letter-spacing:2px;">📋 ACCOUNT INFORMATION</span>
+            <span style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">📋 ACCOUNT INFORMATION</span>
         </div>
         <div style="padding:20px;">
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
@@ -251,10 +251,10 @@
                             background:rgba(255,255,255,0.03);
                             border:1px solid rgba(255,255,255,0.06);
                             text-align:center;">
-                    <div style="font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:8px;">
+                    <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:8px;">
                         {{ $info['label'] }}
                     </div>
-                    <div style="font-size:18px; font-weight:700; color:#fff;">
+                    <div style="font-size: var(--title-size); font-weight:700; color:#fff;">
                         {{ $info['value'] }}
                     </div>
                 </div>

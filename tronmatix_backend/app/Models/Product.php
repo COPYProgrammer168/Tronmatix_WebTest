@@ -30,7 +30,7 @@ class Product extends Model
 
     // ── Casts ─────────────────────────────────────────────────────────────────
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'string',
         'rating' => 'decimal:1',
         'stock' => 'integer',
         'is_featured' => 'boolean',
@@ -47,6 +47,11 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class);
     }
 
     // ── Accessors ─────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { useDiscount } from "../context/DiscountContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { useTheme } from "../context/ThemeContext";
 import { useLang } from "../context/LanguageContext";
+import { isSymbolPrice, numericPrice, displayPrice } from "../hooks/priceUtils";
 import ProductCard from "../components/ProductCard";
 import axios from "../lib/axios";
 
@@ -120,17 +121,21 @@ export default function ProductDetailPage() {
       : [null];
   const images = rawImages.map((img) => resolveImage(img));
   const inStock = (product.stock ?? 99) > 0;
+  const isAskPrice = product.price === '$$$' || !inStock;
+  const telegramLink = `https://t.me/smoz_mes?text=${encodeURIComponent('Hello, I would like to ask about the price of: ' + product.name)}`;
   const maxQty = product.stock ?? 99;
 
   const itemDiscounts = getItemDiscounts(product);
   const productDiscounted = itemDiscounts.length > 0;
   const bestDiscount = bestDiscountForItem(product);
-  const singleDiscount = bestDiscount
-    ? bestDiscount.type === "percentage"
-      ? (product.price * bestDiscount.value) / 100
-      : Math.min(bestDiscount.value, product.price)
-    : 0;
-  const discountedPrice = Math.max(0, (product?.price ?? 0) - singleDiscount);
+  const numPrice = numericPrice(product.price);
+  const singleDiscount =
+    bestDiscount && numPrice
+      ? bestDiscount.type === "percentage"
+        ? (numPrice * bestDiscount.value) / 100
+        : Math.min(bestDiscount.value, numPrice)
+      : 0;
+  const discountedPrice = Math.max(0, (numPrice ?? 0) - singleDiscount);
 
   function handleAddToCart() {
     for (let i = 0; i < qty; i++) addItem(product);
@@ -148,7 +153,7 @@ export default function ProductDetailPage() {
     ? "Kh_Jrung_Thom, Khmer OS, sans-serif"
     : "HurstBagod, Rajdhani, sans-serif";
   const bodyFont = isKhmer
-    ? "KantumruyPro, Khmer OS, sans-serif"
+    ? "Kdam Thmor Pro, sans-serif"
     : "Rajdhani, sans-serif";
 
   return (
@@ -388,7 +393,7 @@ export default function ProductDetailPage() {
                   className="text-primary font-black"
                   style={{ fontFamily: headingFont, fontSize: 32 }}
                 >
-                  ${discountedPrice.toFixed(2)}
+                  ${displayPrice(discountedPrice)}
                 </div>
                 <div
                   className="line-through"
@@ -398,7 +403,7 @@ export default function ProductDetailPage() {
                     color: dark ? "#6b7280" : "#9ca3af",
                   }}
                 >
-                  ${Number(product.price).toFixed(2)}
+                  {displayPrice(product.price)}
                 </div>
               </div>
             ) : (
@@ -406,7 +411,7 @@ export default function ProductDetailPage() {
                 className="text-primary font-black"
                 style={{ fontFamily: headingFont, fontSize: 32 }}
               >
-                ${Number(product.price).toFixed(2)}
+                {displayPrice(product.price)}
               </div>
             )}
 
@@ -461,10 +466,12 @@ export default function ProductDetailPage() {
                       style={{ fontSize: 12, color: "#22c55e" }}
                     >
                       You save $
-                      {(d.type === "percentage"
-                        ? (product.price * d.value) / 100
-                        : Math.min(d.value, product.price)
-                      ).toFixed(2)}{" "}
+                      {numPrice
+                        ? (d.type === "percentage"
+                            ? (numPrice * d.value) / 100
+                            : Math.min(d.value, numPrice)
+                          ).toFixed(2)
+                        : "—"}{" "}
                       on this item
                       {d.categories?.length > 0 && (
                         <span
@@ -513,9 +520,34 @@ export default function ProductDetailPage() {
           )}
 
           {product.warranty && (
-            <div className="mb-5 p-3 rounded-lg" style={{ background: dark ? "rgba(249,115,22,0.05)" : "rgba(249,115,22,0.05)", border: `1px solid ${dark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.2)"}` }}>
-              <span className="font-bold" style={{ fontFamily: bodyFont, fontSize: 15, color: dark ? "#f9fafb" : "#1f2937" }}>{t("product.warranty")} : </span>
-              <span style={{ fontSize: 14, color: dark ? "#f9fafb" : "#1f2937", fontWeight: 600 }}>{product.warranty}</span>
+            <div
+              className="mb-5 p-3 rounded-lg"
+              style={{
+                background: dark
+                  ? "rgba(249,115,22,0.05)"
+                  : "rgba(249,115,22,0.05)",
+                border: `1px solid ${dark ? "rgba(249,115,22,0.2)" : "rgba(249,115,22,0.2)"}`,
+              }}
+            >
+              <span
+                className="font-bold"
+                style={{
+                  fontFamily: bodyFont,
+                  fontSize: 15,
+                  color: dark ? "#f9fafb" : "#1f2937",
+                }}
+              >
+                {t("product.warranty")} :{" "}
+              </span>
+              <span
+                style={{
+                  fontSize: 14,
+                  color: dark ? "#f9fafb" : "#1f2937",
+                  fontWeight: 600,
+                }}
+              >
+                {product.warranty}
+              </span>
             </div>
           )}
 
@@ -533,60 +565,74 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap mt-auto">
-            <div
-              className="flex items-center rounded-lg overflow-hidden"
-              style={{ border: `1px solid ${dark ? "#4b5563" : "#d1d5db"}` }}
-            >
-              <button
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="w-10 h-10 flex items-center justify-center font-bold text-lg"
-                style={{
-                  color: dark ? "#9ca3af" : "#4b5563",
-                  background: dark ? "#374151" : "#f3f4f6",
-                }}
+            {!isAskPrice && (
+              <div
+                className="flex items-center rounded-lg overflow-hidden"
+                style={{ border: `1px solid ${dark ? "#4b5563" : "#d1d5db"}` }}
               >
-                −
-              </button>
-              <span
-                className="w-10 text-center font-bold"
+                <button
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="w-10 h-10 flex items-center justify-center font-bold text-lg"
+                  style={{
+                    color: dark ? "#9ca3af" : "#4b5563",
+                    background: dark ? "#374151" : "#f3f4f6",
+                  }}
+                >
+                  −
+                </button>
+                <span
+                  className="w-10 text-center font-bold"
+                  style={{
+                    fontSize: 16,
+                    color: dark ? "#f9fafb" : "#6b7280",
+                    background: dark ? "#1f2937" : "#fff",
+                  }}
+                >
+                  {qty}
+                </span>
+                <button
+                  onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                  className="w-10 h-10 flex items-center justify-center font-bold text-lg"
+                  style={{
+                    color: dark ? "#9ca3af" : "#4b5563",
+                    background: dark ? "#374151" : "#f3f4f6",
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            )}
+
+            {isAskPrice ? (
+              <a href={telegramLink} target="_blank" rel="noopener noreferrer"
+                className="flex-1 font-bold py-3 px-8 rounded-lg transition-all text-white flex items-center justify-center gap-2"
                 style={{
+                  background: '#0088cc', fontSize: 16,
+                }}>
+                <span>{isKhmer ? 'សាកសួរតម្លៃ' : 'ASK PRICE'}</span>
+              </a>
+            ) : (
+              <button
+                onClick={handleAddToCart}
+                disabled={!inStock}
+                className={`flex-1 font-bold py-3 px-8 rounded-lg transition-all text-white flex items-center justify-center gap-2
+                  ${inStock ? (added ? "bg-green-500" : "bg-primary hover:bg-orange-600 hover:scale-[1.02]") : "bg-gray-300 cursor-not-allowed"}`}
+                style={{
+                  fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : bodyFont,
                   fontSize: 16,
-                  color: dark ? "#f9fafb" : "#6b7280",
-                  background: dark ? "#1f2937" : "#fff",
+                  letterSpacing: isKhmer ? 0 : 1,
+                  fontWeight: 800,
                 }}
               >
-                {qty}
-              </span>
-              <button
-                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                className="w-10 h-10 flex items-center justify-center font-bold text-lg"
-                style={{
-                  color: dark ? "#9ca3af" : "#4b5563",
-                  background: dark ? "#374151" : "#f3f4f6",
-                }}
-              >
-                +
+                {added
+                  ? isKhmer
+                    ? `✓ ${t("product.added")}`
+                    : "✓ ADDED!"
+                  : isKhmer
+                    ? `🛒 ${t("product.addToCart")}`
+                    : "🛒 ADD TO CART"}
               </button>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              disabled={!inStock}
-              className={`flex-1 font-bold py-3 px-8 rounded-lg transition-all text-white flex items-center justify-center gap-2
-                ${inStock ? (added ? "bg-green-500" : "bg-primary hover:bg-orange-600 hover:scale-[1.02]") : "bg-gray-300 cursor-not-allowed"}`}
-              style={{
-                fontFamily: bodyFont,
-                fontSize: 16,
-                letterSpacing: isKhmer ? 0 : 1,
-              }}
-            >
-              {added
-                ? isKhmer
-                  ? `✓ ${t("product.added")}`
-                  : "✓ ADDED!"
-                : isKhmer
-                  ? `🛒 ${t("product.addToCart")}`
-                  : "🛒 ADD TO CART"}
-            </button>
+            )}
 
             <button
               onClick={() => toggleFavorite(product)}
@@ -629,7 +675,9 @@ export default function ProductDetailPage() {
                 className="font-black"
                 style={{ fontSize: 18, color: dark ? "#4ade80" : "#15803d" }}
               >
-                ${(discountedPrice * qty).toFixed(2)}
+                {isSymbolPrice(product.price)
+                  ? displayPrice(product.price)
+                  : `$${(discountedPrice * qty).toFixed(2)}`}
               </span>
             </div>
           )}

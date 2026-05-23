@@ -21,7 +21,9 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
   // FIX: authFont was missing from AuthModal scope — declared only in ProfileSetupModal above,
   // causing ReferenceError: authFont is not defined (at socialBtnBase object, line ~406)
   const authFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
-  const authBodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'  : 'Rajdhani, sans-serif'
+  const authBodyFont = isKhmer
+    ? "Kdam Thmor Pro, sans-serif"
+    : "Rajdhani, sans-serif";
 
   const [form, setForm]           = useState({ usernameOrEmail: '', username: '', email: '', password: '', confirm: '' })
   const [error, setError]         = useState('')

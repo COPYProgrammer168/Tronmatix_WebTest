@@ -1,7 +1,8 @@
 <?php
 
 // app/Services/TelegramUserService.php
-// FIX: Switched from MarkdownV2 to HTML parse_mode — same reason as TelegramBotService.
+// FIX: Switched from MarkdownV2 to HTML parse_mode.
+// NEW:  onPaymentConfirmed() — notifies the user when BAKONG QR payment is confirmed.
 
 namespace App\Services;
 
@@ -94,7 +95,7 @@ class TelegramUserService
             "Hi {$uname}! Your Telegram is now connected.", '',
             '<b>You will receive:</b>',
             '🧾 Order receipts after checkout',
-            '✅ Order confirmation alerts',
+            '✅ Payment confirmations',
             '🚚 Shipping &amp; delivery updates',
             '🚫 Cancellation notifications', '',
             'To disconnect, go to your profile settings on our website.',
@@ -195,6 +196,62 @@ class TelegramUserService
         ]));
     }
 
+    /**
+     * NEW: Notify user when their BAKONG QR payment is confirmed.
+     * Called from CheckPaymentController after PayWay verifies the transaction.
+     */
+    public function onPaymentConfirmed(Order $order, string $apv): void
+    {
+        if (! $tgId = $order->user?->telegram_chat_id) return;
+
+        // Eager-load items if not already loaded
+        if (! $order->relationLoaded('items')) {
+            $order->load('items');
+        }
+
+        $id    = $this->e($order->order_id ?? (string) $order->id);
+        $total = number_format((float) $order->total, 2);
+        $apvE  = $this->e($apv);
+
+        $isPickup    = $order->isPickup();
+        $fulfillment = $isPickup
+            ? '🏪 You selected <b>Store Pickup</b> — please come to collect your order.'
+            : '🚚 Your order will be <b>delivered</b> to your address.';
+
+        $itemLines = $order->items->map(function ($item) {
+            $lineTotal = number_format($item->price * $item->qty, 2);
+            $name      = $this->e($item->name);
+            return "  • {$name} ×{$item->qty} → \${$lineTotal}";
+        })->join("\n");
+
+        $lines = array_filter([
+            '✅ <b>Payment Confirmed!</b>', '',
+            "📦 Order: <code>#{$id}</code>",
+            "💳 Paid via: <b>ABA BAKONG QR</b>",
+            "🔑 Reference: <code>{$apvE}</code>",
+            '',
+            '<b>Items paid:</b>',
+            $itemLines,
+            '',
+            ($order->discount_amount ?? 0) > 0
+                ? "🏷 Discount: −\$" . $this->e((string) $order->discount_amount)
+                : null,
+            "✅ <b>Total Paid: \${$total} USD</b>",
+            '',
+            $fulfillment,
+            $order->delivery_date
+                ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': '
+                    . $this->e($order->delivery_date)
+                    . ($order->delivery_time_slot ? ' | ' . $this->e($order->delivery_time_slot) : '')
+                : null,
+            '',
+            "Thank you for your payment! We'll start preparing your order now. 💙",
+            '🕐 '.$this->ts(),
+        ], fn ($l) => $l !== null);
+
+        $this->sendToUser($tgId, implode("\n", $lines));
+    }
+
     public function sendReceiptToUser(Order $order): void
     {
         if ($tgId = $order->user?->telegram_chat_id) {
@@ -231,7 +288,7 @@ class TelegramUserService
                 ->post("{$this->apiBase}/sendMessage", [
                     'chat_id'    => $chatId,
                     'text'       => $text,
-                    'parse_mode' => 'HTML',  // FIX: was MarkdownV2
+                    'parse_mode' => 'HTML',
                 ]);
 
             if (! $res->successful()) {
@@ -256,7 +313,10 @@ class TelegramUserService
         if (is_string($shipping)) $shipping = json_decode($shipping, true) ?? [];
 
         $id       = $this->e($order->order_id ?? (string) $order->id);
-        $address  = $this->e(($shipping['address'] ?? '—').(isset($shipping['city']) && $shipping['city'] ? ', '.$shipping['city'] : ''));
+        $address  = $this->e(
+            ($shipping['address'] ?? '—')
+            . (isset($shipping['city']) && $shipping['city'] ? ', '.$shipping['city'] : '')
+        );
         $method   = $this->e(strtoupper($order->payment_method ?? ''));
         $subtotal = $this->e((string) ($order->subtotal ?? $order->total));
         $total    = $this->e((string) $order->total);
@@ -264,7 +324,12 @@ class TelegramUserService
         $itemLines = $order->items->map(function ($item) {
             $lineTotal = round($item->price * $item->qty, 2);
             $name      = $this->e($item->name);
-            return "  • {$name} ×{$item->qty} → \${$lineTotal}";
+            $warranty  = '';
+            if ($item->warranty_start && $item->warranty_end) {
+                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
+                          . ' - ' . $item->warranty_end->format('d.m.Y');
+            }
+            return "  • {$name} ×{$item->qty} → \${$lineTotal}{$warranty}";
         })->join("\n");
 
         $lines = array_filter([
@@ -288,14 +353,6 @@ class TelegramUserService
         ], fn($l) => $l !== null);
 
         return implode("\n", $lines);
-    }
-
-    private function itemSummaryLine(Order $order): string
-    {
-        $count = $order->items->sum('qty');
-        $names = $order->items->pluck('name')->take(3)->join(', ');
-        $more  = $order->items->count() > 3 ? '...' : '';
-        return "{$count} item(s): {$names}{$more}";
     }
 
     private function e(string $text): string

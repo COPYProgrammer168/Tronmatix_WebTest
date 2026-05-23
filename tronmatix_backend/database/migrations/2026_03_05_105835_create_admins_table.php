@@ -15,11 +15,13 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->string('avatar')->nullable();
-            $table->enum('role', ['superadmin', 'admin', 'editor'])->default('admin');
+            $table->enum('role', ['superadmin', 'admin'])->default('admin');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_pending')->default(false);
             $table->text('request_note')->nullable();
             $table->timestamp('last_login_at')->nullable();
+            $table->timestamp('last_seen_at')->nullable()->after('last_login_at');
+            $table->enum('online_status', ['online', 'offline'])->default('offline')->after('last_seen_at');
             $table->rememberToken();
             $table->timestamps();
         });

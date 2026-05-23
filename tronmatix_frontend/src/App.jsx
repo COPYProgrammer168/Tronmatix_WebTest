@@ -14,6 +14,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartSlider from "./components/CartSlider";
 import SupportChat from "./components/SupportChat";
+import Notification from "./components/Notification";
+import { useCart } from "./context/CartContext";
 
 import { StaffGuard, DevGuard } from "./components/guards/PortalGuards";
 
@@ -28,9 +30,7 @@ const DevDashboard   = lazy(() => import("./pages/DevDashboard"));
 const HomePage          = lazy(() => import("./pages/HomePage"));
 const CartPage          = lazy(() => import("./pages/CartPage"));
 const CheckoutPage      = lazy(() => import("./pages/CheckoutPage"));
-const CategoryPage      = lazy(() =>
-  import("./pages/CategoryPage").then((m) => ({ default: m.CategoryPage }))
-);
+const CategoryPage      = lazy(() =>import("./pages/CategoryPage").then((m) => ({ default: m.CategoryPage })));
 const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
 const OrdersPage        = lazy(() => import("./pages/OrdersPage"));
 const FavoritesPage     = lazy(() => import("./pages/FavoritesPage"));
@@ -57,6 +57,7 @@ function AppContent() {
   const { dark }    = useTheme();
   const { isKhmer } = useLang();
   const location    = useLocation();
+  const { notification, setNotification } = useCart();
 
   const isPortal =
     location.pathname.startsWith("/staff") ||
@@ -79,6 +80,12 @@ function AppContent() {
       {!isPortal && <Navbar onAuthOpen={(mode) => setAuthMode(mode)} />}
       {!isPortal && <CartSlider />}
       {!isPortal && <SupportChat />}
+      {!isPortal && notification && (
+        <Notification
+          message={notification}
+          onClose={() => setNotification(null)}
+        />
+      )}
 
       {authMode && (
         <Suspense fallback={null}>

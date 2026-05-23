@@ -15,7 +15,7 @@ return [
         'emailPlaceholder' => 'email@example.com',
         'passwordLabel' => 'លេខសំងាត់',
         'passwordPlaceholder' => 'លេខសំងាត់',
-        'rememberMe'  => 'ចងចាំខ្ញុំ',
+        'rememberMe'  => 'ចងចាំ',
         'forgotPassword' => 'ភ្លេចលេខសំងាត់?',
         'loginButton' => 'ចូល',
         'noAccount'   => 'មិនទាន់មានគណនី?',

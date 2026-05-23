@@ -139,7 +139,7 @@ class ProductController extends Controller
             'category'          => 'required|string|max:100',
             'brand'             => 'nullable|string|max:100',
             'warranty'          => 'nullable|string|max:100',
-            'price'             => 'required|numeric|min:0',
+            'price'             => ['required', 'string', 'max:20', 'regex:/^\$+$|^\$?[0-9]+(\.[0-9]{1,2})?$/'],
             'stock'             => 'nullable|integer|min:0',
             'rating'            => 'nullable|numeric|min:0|max:5',
             'description'       => 'nullable|string',
@@ -150,6 +150,15 @@ class ProductController extends Controller
             'is_featured'       => 'nullable|boolean',
             'is_hot'            => 'nullable|boolean',
         ]);
+
+        $raw = trim($validated['price'] ?? '');
+        if ($raw === '' || preg_match('/^\$+$/', $raw)) {
+            // $, $$, $$$ → store as-is (e.g. "$$$")
+            $validated['price'] = $raw ?: null;
+        } else {
+            // $299.99 or 299.99 → strip $ and save as numeric string
+            $validated['price'] = (string) (float) str_replace(['$', ','], '', $raw);
+        }
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_hot']      = $request->boolean('is_hot');

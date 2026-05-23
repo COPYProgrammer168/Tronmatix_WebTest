@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', 'REPORTS')
+@section('title', strtoupper(__('dashboard.nav.reports')))
 
 @section('content')
 
@@ -9,10 +9,10 @@
     <div style="display:flex; align-items:center; gap:14px;">
         <div style="width:48px; height:48px; border-radius:14px; background:rgba(249,115,22,0.12);
                     border:1px solid rgba(249,115,22,0.3); display:flex; align-items:center;
-                    justify-content:center; font-size:24px;">📊</div>
+                    justify-content:center; font-size: var(--title-size);">📊</div>
         <div>
-            <div style="font-size:22px; font-weight:900; letter-spacing:3px;">REPORTS</div>
-            <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">
+            <div style="font-size: var(--title-size); font-weight:900; letter-spacing:3px;">REPORTS</div>
+            <div style="font-size: var(--title-size); color:var(--text-muted); margin-top:2px;">
                 Analytics overview &amp; data export
             </div>
         </div>
@@ -21,7 +21,7 @@
        style="display:inline-flex; align-items:center; gap:6px; padding:9px 18px;
               border-radius:9px; border:1px solid rgba(255,255,255,0.1);
               background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5);
-              font-family:Rajdhani,sans-serif; font-size:13px; font-weight:700;
+              font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
               letter-spacing:1px; text-decoration:none; transition:all .2s;"
        onmouseover="this.style.color='var(--text-primary)'"
        onmouseout="this.style.color='rgba(255,255,255,0.5)'">
@@ -37,10 +37,10 @@
         <div style="display:flex; align-items:center; gap:10px;">
             <div style="width:36px; height:36px; border-radius:9px; background:rgba(249,115,22,0.1);
                         border:1px solid rgba(249,115,22,0.25); display:flex; align-items:center;
-                        justify-content:center; font-size:17px; flex-shrink:0;">⬇</div>
+                        justify-content:center; font-size: var(--title-size); flex-shrink:0;">⬇</div>
             <div>
                 <span class="card-title">EXPORT DATA</span>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:1px;">
+                <div style="font-size: var(--title-size); color:var(--text-muted); margin-top:1px;">
                     Excel exports all 8 sheets &middot; CSV exports Summary sheet only
                 </div>
             </div>
@@ -52,29 +52,29 @@
         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
             <div style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">THIS MONTH SAVED</div>
-                <div style="font-size:26px; font-weight:800; color:#A855F7; letter-spacing:1px;">
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">THIS MONTH SAVED</div>
+                <div style="font-size: var(--text-2xl); font-weight:800; color:#A855F7; letter-spacing:1px;">
                     ${{ number_format($stats['monthly_discount_used'], 2) }}
                 </div>
             </div>
             <div style="background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">DISCOUNT USES (30 DAYS)</div>
-                <div style="font-size:26px; font-weight:800; color:#F97316; letter-spacing:1px;">
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">DISCOUNT USES (30 DAYS)</div>
+                <div style="font-size: var(--text-2xl); font-weight:800; color:#F97316; letter-spacing:1px;">
                     {{ number_format($stats['monthly_discount_count']) }}
                 </div>
             </div>
             <div style="background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.18);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TOTAL REVENUE</div>
-                <div style="font-size:26px; font-weight:800; color:#22C55E; letter-spacing:1px;">
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TOTAL REVENUE</div>
+                <div style="font-size: var(--text-2xl); font-weight:800; color:#22C55E; letter-spacing:1px;">
                     ${{ number_format($stats['total_revenue'], 0) }}
                 </div>
             </div>
             <div style="background:rgba(59,130,246,0.07); border:1px solid rgba(59,130,246,0.18);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TOTAL ORDERS</div>
-                <div style="font-size:26px; font-weight:800; color:#3B82F6; letter-spacing:1px;">
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TOTAL ORDERS</div>
+                <div style="font-size: var(--text-2xl); font-weight:800; color:#3B82F6; letter-spacing:1px;">
                     {{ number_format($stats['total_orders']) }}
                 </div>
             </div>
@@ -87,7 +87,7 @@
                      border:1px solid rgba(255,255,255,0.07); border-radius:12px;">
 
             <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FROM MONTH</label>
+                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FROM MONTH</label>
                 <input type="month" name="from"
                        class="export-input"
                        value="{{ now()->subMonth()->format('Y-m') }}"
@@ -95,7 +95,7 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">TO MONTH</label>
+                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">TO MONTH</label>
                 <input type="month" name="to"
                        class="export-input"
                        value="{{ now()->format('Y-m') }}"
@@ -103,7 +103,7 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FORMAT</label>
+                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FORMAT</label>
                 <select name="format" class="export-input export-select">
                     <option value="xlsx">📊 Excel (.xlsx) — All 8 sheets</option>
                     <option value="csv">📄 CSV (.csv) — Summary only</option>
@@ -120,7 +120,7 @@
         @if($errors->has('export'))
         <div style="margin-top:12px; padding:10px 16px; background:rgba(239,68,68,0.1);
              border:1px solid rgba(239,68,68,0.3); border-radius:8px;
-             color:#ef4444; font-size:13px; font-weight:600;">
+             color:#ef4444; font-size: var(--title-size); font-weight:600;">
             ⚠ {{ $errors->first('export') }}
         </div>
         @endif
@@ -153,7 +153,7 @@
                 @foreach($top_discount_codes as $dc)
                 <tr>
                     <td>
-                        <span style="font-family:monospace; font-size:13px; font-weight:700;
+                        <span style="font-family:monospace; font-size: var(--title-size); font-weight:700;
                               color:#F97316; background:rgba(249,115,22,0.08);
                               padding:3px 8px; border-radius:6px;">
                             {{ $dc->code }}
@@ -286,7 +286,7 @@
                                 @if($thumbSrc)
                                     <img src="{{ $thumbSrc }}" class="product-thumb" alt="" onerror="this.style.display='none'" />
                                 @else
-                                    <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:16px;">📦</div>
+                                    <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">📦</div>
                                 @endif
                                 <span style="font-weight:600;">{{ Str::limit($product->name, 22) }}</span>
                             </div>
@@ -329,7 +329,7 @@
                                 @if($thumbSrc)
                                     <img src="{{ $thumbSrc }}" class="product-thumb" alt="" onerror="this.style.display='none'" />
                                 @else
-                                    <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:16px;">📦</div>
+                                    <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">📦</div>
                                 @endif
                                 <span style="font-weight:600;">{{ Str::limit($product->name, 22) }}</span>
                             </div>
@@ -515,7 +515,7 @@ window.__updateChartTheme = function(t) {
 @push('styles')
 <style>
 .chart-badge {
-    font-size: 11px;
+    font-size: var(--title-size);
     color: rgba(255,255,255,0.35);
     background: rgba(255,255,255,0.05);
     padding: 3px 10px;
@@ -530,7 +530,7 @@ window.__updateChartTheme = function(t) {
     color: #fff;
     border-radius: 8px;
     padding: 9px 13px;
-    font-size: 14px;
+    font-size: var(--title-size);
     font-family: Rajdhani, sans-serif;
     font-weight: 500;
     transition: border-color .2s;

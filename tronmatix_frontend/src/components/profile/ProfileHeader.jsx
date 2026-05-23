@@ -31,7 +31,7 @@ const THEMES = {
 export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
   const { isKhmer } = useLang()
   const headerFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
-  const bodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
   const role       = user?.role || 'customer'
   const spent      = totalSpent ?? 0
   const pct        = Math.min(100, Math.round((spent / VIP_GOAL) * 100))

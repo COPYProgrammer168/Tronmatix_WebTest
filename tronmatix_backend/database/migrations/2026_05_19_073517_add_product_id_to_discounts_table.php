@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->string('warranty', 100)->nullable()->after('brand');
+        Schema::table('discounts', function (Blueprint $table) {
+            $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade')->after('categories');
         });
     }
 
@@ -21,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('warranty');
+        Schema::table('discounts', function (Blueprint $table) {
+            $table->dropForeign(['product_id']);
+            $table->dropColumn('product_id');
         });
     }
 };

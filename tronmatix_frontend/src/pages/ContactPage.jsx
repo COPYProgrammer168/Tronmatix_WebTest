@@ -2,6 +2,7 @@
 import { useTheme } from '../context/ThemeContext'
 import logo from '../assets/logo.png'
 import { useLang } from '../context/LanguageContext'
+import FeedbackForm from '../components/FeedbackForm'
 
 const GOOGLE_MAPS_URL = 'https://goo.gl/maps/8q7eeNwZH5uz1YwZ8'
 const FACEBOOK_URL    = 'https://www.facebook.com/TronmatixComputer'
@@ -78,7 +79,7 @@ export default function ContactPage() {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
   const headingFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
-  const bodyFont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont    = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
 
   const bg       = dark ? '#111827' : '#f1f5f9'
   const cardBg   = dark ? '#1e293b' : '#ffffff'
@@ -169,17 +170,17 @@ export default function ContactPage() {
                 {t('contact.title')}
               </h1>
 
-              <p style={{ fontFamily:"Kh_Jrung_Thom", fontSize: 14, color: dark ? '#94a3b8' : '#64748b', maxWidth: 340, lineHeight: 1.8 }}>
+              <p style={{ fontSize: 14, color: dark ? '#94a3b8' : '#64748b', maxWidth: 340, lineHeight: 1.8 }}>
                 សម្រាប់បងៗដែលកំពុងស្វែងរក Laptoq & Desktoq សម្រាប់ Design, Rendering, Gaming —
                 មានការធានា <span className="font-bold" style={{ color: '#F97316' }}>1–3 ឆ្នាំ</span> នៅរាល់ផលិតផល។
               </p>
 
               {/* Phone pills */}
               <div className="flex flex-wrap gap-2 mt-5 justify-center">
-                <a href="tel:+85596733 3725"
+                <a href="tel:+855967333725"
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full font-black text-white transition-all hover:scale-105 hover:shadow-lg"
-                  style={{ background: '#F97316', fontSize: 13, boxShadow: '0 4px 15px rgba(249,115,22,0.35)', fontFamily: bodyFont, }}>
-                  <PhoneIcon size={13} /> <h5>{isKhmer ? '096 733 3725': "096 733 3725"}</h5>
+                  style={{ background: '#F97316', fontSize: 13, boxShadow: '0 4px 15px rgba(249,115,22,0.35)' }}>
+                  <PhoneIcon size={13} />{isKhmer ? '096 733 3725': "096 733 3725"}
                 </a>
                 <a href="tel:+85577711126"
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full font-black transition-all hover:scale-105"
@@ -187,7 +188,6 @@ export default function ContactPage() {
                     background: dark ? 'rgba(249,115,22,0.10)' : 'rgba(249,115,22,0.08)',
                     border: '1.5px solid rgba(249,115,22,0.45)',
                     color: '#F97316', fontSize: 13,
-                    fontFamily: bodyFont,
                   }}>
                   <PhoneIcon size={13} /> {isKhmer ? '077 711 126': "077 711 126"}
                 </a>
@@ -217,15 +217,15 @@ export default function ContactPage() {
                   label: 'PHONE',
                   content: (
                     <div className="flex flex-col gap-0.5">
-                      <a href="tel:+85596733 3725"
+                      <a href="tel:+855967333725"
                         className="font-black hover:text-primary transition-colors"
-                        style={{ fontSize: 16, color: dark ? '#f1f5f9' : '#111827', fontFamily: bodyFont, }}>
+                        style={{ fontSize: 16, color: dark ? '#f1f5f9' : '#111827' }}>
                         {isKhmer ? '096 733 3725': "096 733 3725"}
                       </a>
                       <a href="tel:+85577711126"
                         className="font-black hover:text-primary transition-colors"
-                        style={{ fontSize: 16, color: dark ? '#f1f5f9' : '#111827', fontFamily: bodyFont, }}>
-                        {isKhmer ? '077 711 128': "077 711 126"}
+                        style={{ fontSize: 16, color: dark ? '#f1f5f9' : '#111827' }}>
+                        {isKhmer ? '077 711 126': "077 711 126"}
                       </a>
                     </div>
                   )
@@ -387,6 +387,11 @@ export default function ContactPage() {
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
+        </div>
+
+        {/* ── Bottom: Feedback Form ── */}
+        <div className="mt-16">
+          <FeedbackForm />
         </div>
       </div>
     </div>

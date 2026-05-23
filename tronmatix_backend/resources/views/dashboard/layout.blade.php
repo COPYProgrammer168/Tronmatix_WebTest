@@ -6,48 +6,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('tronmatix_theme')||'dark');</script>
-    <title>Tronmatix Admin — @yield('title', __('dashboard.nav.dashboard'))</title>
 
     {{-- English font --}}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    {{-- Khmer font — KantumruyPro via Google Fonts CDN (variable weight, display=swap) --}}
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet" />
+    {{-- Khmer font — Kdam Thmor Pro via Google Fonts CDN --}}
+    <link href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap" rel="stylesheet" />
 
-    {{-- Local fallback: place KantumruyPro.ttf in /public/fonts/ --}}
     <style>
-        @font-face {
-            font-family: 'KantumruyPro';
-            src: url('../fonts/KantumruyPro.ttf') format('truetype');
-            font-weight: 100 700;
-            font-style: normal;
-            font-display: swap;
-        }
-
         /* ── i18n typography vars ────────────────────────────────────────────── */
         :root {
             --font-en: 'Rajdhani', sans-serif;
-            --font-kh: 'KantumruyPro', 'KantumruyPro', 'Noto Sans Khmer', sans-serif;
+            --font-kh: 'Kdam Thmor Pro', sans-serif;
             --lh-en: 1.5;
-            --lh-kh: 1.5;    /* Khmer needs tall line-height for diacritics above/below */
+            --lh-kh: 1.5;   /* Khmer needs more line height for diacritics */
+
+            /* ── English type scale (default) ─────────────────────────────────── */
+            --text-nav:  20px;   /* nav items  */
+            --text-xs:   12px;   /* badges, faint labels          */
+            --text-sm:   14px;   /* table cells, secondary text   */
+            --text-base: 16px;   /* body, buttons      */
+            --text-md:   18px;   /* card titles, topbar items     */
+            --text-lg:   20px;   /* topbar page title             */
+            --text-xl:   22px;   /* section headings              */
+            --text-2xl:  26px;   /* prominent titles              */
+
+            --title-size: var(--text-md);
+            --heading-size: var(--text-xl);
+            --label-size:   var(--text-xs);
+            --icon-size:    20px;
+        }
+
+        /* ── Khmer type scale — slightly larger across the board ─────────────── */
+        /* Khmer glyphs are visually smaller at the same px + need stacking room  */
+        :lang(km) {
+            --text-nav:  16px;
+            --text-xs:   12px;
+            --text-sm:   14px;
+            --text-base: 15px;
+            --text-md:   16px;
+            --text-lg:   20px;
+            --text-xl:   22px;
+            --font-size: var(--text-base);
+        }
+
+        .dashboard-font {
+            font-size: var(--text-base);
+            line-height: 1.5;
+        }
+        :lang(km) .chart-badge{
+            font-family: var(--font-kh) !important;
+            line-height: var(--lh-kh);
+            font-size: var(--text-xs) !important;
+            font-weight: 400 !important;
+        }
+        :lang(km) .card-title{
+            font-family: var(--font-kh) !important;
+            line-height: var(--lh-kh);
+            font-size: var(--text-md) !important;
+            font-weight: 400 !important;
+        }
+
+        :lang(km) .nav-section-label,
+        :lang(km) .nav-item {
+            font-family: var(--font-kh) !important;
+            line-height: var(--lh-kh);
+            font-size: var(--text-nav) !important;
+            font-weight: 400 !important;
+        }
+        :lang(km) thead th,
+        :lang(km) tbody td {
+            font-family: var(--font-kh) !important;
+            line-height: var(--lh-kh);
+            font-size: var(--text-md) !important;
+            font-weight: 400 !important;
+        }
+        :lang(km) h1, :lang(km) h2, :lang(km) h3, :lang(km) h4, :lang(km) h5, :lang(km) h6,
+        :lang(km) .card-font {
+            font-size: var(--text-md) !important;
+        }
+
+        :lang(km) .stat-label{
+            font-size: var(--text-sm) !important;
+            font-weight: 400 !important;
+            margin-top: 5px !important;
+        }
+        :lang(km) .stat-value {
+            font-size: clamp(1.4rem, 1.8vw + 1rem, 1.4rem) !important;
         }
 
         /* Apply Khmer font when lang=km is set on <html> */
         :lang(km) body,
-        :lang(km) .nav-item,
-        :lang(km) .card-title,
-        :lang(km) thead th,
-        :lang(km) tbody td,
         :lang(km) .btn,
-        :lang(km) .form-label,
-        :lang(km) .stat-label,
-        :lang(km) .topbar-title,
+        /* :lang(km) .form-label, */
+        :lang(km) .topbar-font,
         :lang(km) .badge,
-        :lang(km) .input,
-        :lang(km) .nav-section-label {
+        :lang(km) .input {
             font-family: var(--font-kh) !important;
             line-height: var(--lh-kh);
+            font-size: var(--text-base) !important;
+            font-weight: 400 !important;
+        }
+
+        :lang(km) span {
+            font-size: var(--text-sm);
+            font-weight: 400;
+
         }
 
         /* Buttons need auto height so Khmer text doesn't clip */
@@ -148,7 +213,8 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            font-size: 17px;
+            font-size: var(--font-size);
+            line-height: 1.6;
             transition: background 0.2s, color 0.2s;
         }
 
@@ -181,14 +247,14 @@
         }
 
         .brand-name {
-            font-size: 17px;
+            font-size: var(--text-md);
             font-weight: 700;
             letter-spacing: 2px;
             color: var(--text);
         }
 
         .brand-sub {
-            font-size: 11px;
+            font-size: var(--text-xs);
             font-weight: 700;
             letter-spacing: 4px;
             color: var(--orange);
@@ -202,22 +268,23 @@
         }
 
         .nav-section-label {
-            font-size: 15px;
+            font-size: var(--text-md);
             color: var(--text-faint);
             padding: 8px 20px 5px;
             text-transform: uppercase;
             font-weight: 700;
-            margin-top: 4px;
+            margin-top: 1px;
+            letter-spacing: 1px;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 11px 20px;
+            gap: 12px;
+            padding: 8px 22px;
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 15px;
+            font-size: var(--text-nav);
             font-weight: 600;
             transition: all 0.2s;
             border-left: 3px solid transparent;
@@ -244,7 +311,7 @@
         .sidebar-footer {
             padding: 14px 20px;
             border-top: 1px solid var(--border);
-            font-size: 12px;
+            font-size: var(--text-xs);
             color: var(--text-xfaint);
             display: flex;
             align-items: center;
@@ -280,7 +347,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
+            padding: 10px 25px 5px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -289,13 +356,19 @@
         .topbar-left {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
         }
 
-        .topbar-title {
-            font-size: 19px;
-            font-weight: 700;
-            letter-spacing: 2px;
+        :lang(en) .topbar-title {
+            font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
+            font-size: var(--text-2xl) !important;
+            font-weight: 600 !important;
+        }
+
+        :lang(km) .topbar-title {
+            font-family: var(--font-kh) !important;
+            font-size: var(--text-lg) !important;
+            font-weight: 400 !important;
         }
 
         .topbar-right {
@@ -330,11 +403,10 @@
         .topbar-badge {
             background: var(--orange);
             color: #fff;
-            font-size: 12px;
+            font-size: var(--text-md);
             font-weight: 700;
             padding: 3px 10px;
             border-radius: 20px;
-            letter-spacing: 1px;
             white-space: nowrap;
         }
 
@@ -347,7 +419,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 14px;
+            font-size: var(--text-sm);
             flex-shrink: 0;
             overflow: hidden;
             border: 2px solid rgba(249,115,22,0.4);
@@ -361,7 +433,7 @@
         }
 
         .admin-name {
-            font-size: 14px;
+            font-size: var(--text-sm);
             font-weight: 600;
             color: var(--text-muted);
             white-space: nowrap;
@@ -391,8 +463,8 @@
             gap: 8px;
         }
 
-        .card-title {
-            font-size: 17px;
+        .card-font {
+            font-size: var(--text-md);
             font-weight: 700;
         }
 
@@ -412,10 +484,11 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 18px;
+            padding: 22px 20px;
+            min-height: 100px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
             transition: border-color 0.2s, transform 0.2s;
         }
 
@@ -443,15 +516,16 @@
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: clamp(1.7rem, 1vw + 1rem, 1.8rem);
             font-weight: 700;
             line-height: 1;
         }
 
         .stat-label {
-            font-size: 13px;
-            color: var(--text);
-            margin-top: 4px;
+            font-size: clamp(1.1rem, 1.6vw + 1.5rem, 1rem);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
         }
 
         /* ── Chart grid ───────────────────────────────────────────────────────── */
@@ -462,14 +536,18 @@
             margin-bottom: 16px;
         }
 
+        .card-title {
+            font-size: var(--text-lg);
+            font-weight: 700;
+        }
+
         .chart-badge {
-            font-size: 12px;
-            color: var(--text);
-            background: var(--chart-badge);
+            font-size: var(--text-sm);
+            color: rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.05);
             padding: 3px 10px;
             border-radius: 20px;
             letter-spacing: 1px;
-            white-space: nowrap;
         }
 
         /* ── Table ────────────────────────────────────────────────────────────── */
@@ -478,17 +556,17 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: var(--text-sm);
         }
 
         thead th {
             text-align: left;
             padding: 12px 16px;
-            font-size: 14px;
+            font-size: var(--text-lg);
             color: var(--text-muted);
             border-bottom: 1px solid var(--border);
             white-space: nowrap;
-            font-weight: 700;
+            font-weight: 600;
         }
 
         tbody td {
@@ -496,7 +574,7 @@
             border-bottom: 1px solid var(--border-faint);
             color: var(--text-muted);
             vertical-align: middle;
-            font-size: 17px;
+            font-size: var(--text-md);
         }
 
         tbody tr:last-child td { border-bottom: none; }
@@ -507,8 +585,8 @@
             display: inline-block;
             padding: 3px 10px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: var(--title-size);
+            font-weight: 500;
             letter-spacing: 0.5px;
             white-space: nowrap;
         }
@@ -532,7 +610,7 @@
             padding: 9px 18px;
             border-radius: 8px;
             font-family: 'Rajdhani', var(--font-kh), sans-serif;
-            font-size: 14px;
+            font-size: var(--font-size);
             font-weight: 700;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -560,14 +638,14 @@
         }
         .btn-danger:hover { background: rgba(239,68,68,0.2); }
 
-        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        .btn-sm { padding: 5px 12px; font-size: var(--font-size); }
 
         /* ── Forms ────────────────────────────────────────────────────────────── */
         .form-group { margin-bottom: 18px; }
 
         .form-label {
             display: block;
-            font-size: 12px;
+            font-size: var(--font-size);
             letter-spacing: 1.5px;
             color: var(--text-faint);
             margin-bottom: 7px;
@@ -582,7 +660,7 @@
             padding: 10px 14px;
             color: var(--text-primary);
             font-family: 'Rajdhani', var(--font-kh), sans-serif;
-            font-size: 16px;
+            font-size: var(--font-size);
             font-weight: 500;
             outline: none;
             transition: border-color 0.2s;
@@ -628,7 +706,7 @@
             padding: 12px 18px;
             border-radius: 10px;
             margin-bottom: 0;
-            font-size: 15px;
+            font-size: var(--font-size);
             font-weight: 600;
         }
         .alert-success {
@@ -659,7 +737,7 @@
             height: 36px;
             padding: 0 8px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: var(--font-size);
             font-weight: 600;
             text-decoration: none;
             border: 1px solid var(--border-input);
@@ -671,8 +749,8 @@
 
         /* ── Product thumb ────────────────────────────────────────────────────── */
         .product-thumb {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 8px;
             background: var(--hover-bg);
@@ -729,7 +807,7 @@
             gap: 2px;
         }
         .sidebar-lt-btn {
-            font-size: 11px;
+            font-size: var(--font-size);
         }
         @media (max-width: 768px) {
             .sidebar-lang-toggle { display: flex; }
@@ -751,7 +829,7 @@
         .lt-btn {
             padding: 4px 11px;
             border-radius: 999px;
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 700;
             border: none;
             background: transparent;
@@ -765,7 +843,7 @@
             background: var(--orange);
             color: #fff;
         }
-        .lt-btn.km-btn { font-family: var(--font-kh); font-size: 11px; }
+        .lt-btn.km-btn { font-family: var(--font-kh); font-size: 13px; font-weight: 500; }
 
         /* ══════════════════════════════════════════════════════════════════════
            LIGHT THEME OVERRIDES
@@ -777,14 +855,14 @@
         [data-theme="light"] .stat-label { color: rgba(15,23,42,0.45); }
         [data-theme="light"] .sidebar { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
         [data-theme="light"] .topbar  { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .topbar-title { color: #0F172A; }
+        [data-theme="light"] .topbar-font { color: #0F172A; }
         [data-theme="light"] .nav-item { color: rgba(15,23,42,0.55); }
         [data-theme="light"] .nav-item:hover { color: #0F172A; background: rgba(15,23,42,0.04); }
         [data-theme="light"] .nav-section-label { color: rgba(15,23,42,0.40); }
         [data-theme="light"] .brand-name { color: #0F172A; }
         [data-theme="light"] .sidebar-footer { color: rgba(15,23,42,0.30); }
         [data-theme="light"] .card-header { border-color: rgba(15,23,42,0.07); }
-        [data-theme="light"] .card-title  { color: #0F172A; }
+        [data-theme="light"] .card-font  { color: #0F172A; }
         [data-theme="light"] thead th  { color: rgba(15,23,42,0.55); border-color: rgba(15,23,42,0.08); }
         [data-theme="light"] tbody td  { color: rgba(15,23,42,0.7);  border-color: rgba(15,23,42,0.04); }
         [data-theme="light"] tbody tr:hover td { background: rgba(15,23,42,0.02); }
@@ -815,7 +893,7 @@
         [data-theme="light"] .search-input::placeholder { color: rgba(15,23,42,0.35); }
         [data-theme="light"] .role-select { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
         [data-theme="light"] .flash-toast { background: #FFFFFF; border-color: rgba(15,23,42,0.12); color: #0F172A; }
-        [data-theme="light"] .s-card-title { color: #0F172A; }
+        [data-theme="light"] .s-card-font { color: #0F172A; }
         [data-theme="light"] .s-card-sub   { color: rgba(15,23,42,0.45); }
         [data-theme="light"] .s-label { color: rgba(15,23,42,0.85); }
         [data-theme="light"] .s-desc  { color: rgba(15,23,42,0.45); }
@@ -912,14 +990,15 @@
             .content  { padding: 14px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .stat-card  { padding: 14px; gap: 10px; }
-            .stat-value { font-size: 22px; }
+            .stat-value { font-size: clamp(1.4rem, 4vw, 2.0rem); }
             .stat-icon  { width: 38px; height: 38px; }
             .chart-grid-2 { grid-template-columns: 1fr; }
             .card-header { flex-direction: column; align-items: flex-start; }
             .topbar { padding: 0 14px; }
-            table { font-size: 14px; }
-            thead th { padding: 10px 10px; font-size: 11px; }
-            tbody td  { padding: 10px 10px; font-size: 14px; }
+            .topbar-font { font-size: var(--text-md); letter-spacing: 1px; }
+            table { font-size: var(--text-xs); }
+            thead th { padding: 10px 10px; font-size: var(--text-xs); }
+            tbody td  { padding: 10px 10px; font-size: var(--text-xs); }
         }
 
         @media (max-width: 480px) {
@@ -927,7 +1006,7 @@
             .topbar-badge { display: none; }
             .content  { padding: 10px; }
             .stat-card { padding: 12px; gap: 8px; }
-            .stat-value { font-size: 20px; }
+            .stat-value { font-size: clamp(1.2rem, 3.5vw, 1.6rem); }
             .card-header { padding: 12px 14px; }
             .card-body   { padding: 14px; }
             #lang-toggle { display: none; }
@@ -1075,7 +1154,7 @@
 
         {{-- Language toggle in sidebar (visible on mobile/tablet) --}}
         <div class="sidebar-lang-toggle">
-            <span style="font-size:11px; font-weight:700; color:var(--text-faint);">LANGUAGE</span>
+            <span style="font-size: var(--font-size); font-weight:700; color:var(--text-faint);">LANGUAGE</span>
             <div class="sidebar-lt-wrap">
                 <button class="lt-btn sidebar-lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
                         onclick="setAppLang('en')" type="button" data-lang="en">EN</button>
@@ -1112,17 +1191,17 @@
                 {{-- ── Language Toggle ────────────────────────────────────────── --}}
                 <div id="lang-toggle">
                     <button class="lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
-                            onclick="setAppLang('en')" type="button" title="English" data-lang="en">EN</button>
+                            onclick="setAppLang('en')" type="button" font="English" data-lang="en">EN</button>
                     <button class="lt-btn km-btn {{ app()->getLocale() === 'km' ? 'active' : '' }}"
-                            onclick="setAppLang('km')" type="button" title="ភាសាខ្មែរ" data-lang="km">ខ្មែរ</button>
+                            onclick="setAppLang('km')" type="button" font="ភាសាខ្មែរ" data-lang="km">ខ្មែរ</button>
                 </div>
 
                 {{-- Theme toggle --}}
-                <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark theme" style="
+                <button id="theme-toggle" onclick="toggleTheme()" font="Toggle light/dark theme" style="
                     background:var(--bell-bg); border:1.5px solid var(--bell-border);
                     border-radius:10px; width:40px; height:40px;
                     display:flex; align-items:center; justify-content:center;
-                    cursor:pointer; transition:all .2s; font-size:18px;
+                    cursor:pointer; transition:all .2s; font-size: var(--font-size);
                 " onmouseover="this.style.borderColor='#F97316'"
                    onmouseout="this.style.borderColor=''">
                     <span id="theme-icon">☀️</span>
@@ -1134,7 +1213,7 @@
                         position:relative; background:var(--bell-bg);
                         border:1.5px solid var(--bell-border); border-radius:10px;
                         width:40px; height:40px; display:flex; align-items:center; justify-content:center;
-                        cursor:pointer; transition:all .2s; font-size:18px;
+                        cursor:pointer; transition:all .2s; font-size: var(--font-size);
                     " onmouseover="this.style.borderColor='#F97316'"
                        onmouseout="if(!bellOpen)this.style.borderColor=''">
                         🔔
@@ -1155,10 +1234,10 @@
                     ">
                         <div style="padding:14px 18px; border-bottom:1px solid var(--border);
                              display:flex; align-items:center; justify-content:space-between;">
-                            <span style="font-size:13px; font-weight:800; letter-spacing:2px; color:var(--text-muted);">
+                            <span style="font-size: var(--font-size); font-weight:800; letter-spacing:2px; color:var(--text-muted);">
                                 {{ strtoupper(__('dashboard.common.alerts')) }}
                             </span>
-                            <a href="{{ route('dashboard.settings') }}" style="font-size:11px; color:rgba(249,115,22,0.6);
+                            <a href="{{ route('dashboard.settings') }}" style="font-size: var(--font-size); color:rgba(249,115,22,0.6);
                                 text-decoration:none; letter-spacing:1px;"
                                onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(249,115,22,0.6)'">
                                 ⚙ {{ strtoupper(__('dashboard.nav.settings')) }}
@@ -1166,12 +1245,12 @@
                         </div>
                         <div id="bell-list" style="max-height:min(320px, calc(100vh - 160px)); overflow-y:auto; padding:8px 0;">
                             <div style="padding:24px; text-align:center; color:var(--text-faint); font-family:Rajdhani,sans-serif;">
-                                <div style="font-size:24px; margin-bottom:6px;">⏳</div>
+                                <div style="font-size: var(--font-size); margin-bottom:6px;">⏳</div>
                                 Loading…
                             </div>
                         </div>
                         <div style="padding:10px 18px; border-top:1px solid var(--border); text-align:center;">
-                            <a href="{{ route('dashboard.settings') }}" style="font-size:12px; color:var(--text-faint);
+                            <a href="{{ route('dashboard.settings') }}" style="font-size: var(--font-size); color:var(--text-faint);
                                 text-decoration:none; letter-spacing:1px;"
                                onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
                                 {{ __('dashboard.settings.store') }} →
@@ -1192,13 +1271,13 @@
                             : asset('storage/' . $_topbarAdmin->avatar))
                         : null;
                 @endphp
-                <a href="{{ route('dashboard.profile') }}" class="admin-profile-link" title="{{ __('dashboard.profile.editProfile') }}">
+                <a href="{{ route('dashboard.profile') }}" class="admin-profile-link" font="{{ __('dashboard.profile.editProfile') }}">
                     <div class="admin-avatar">
                         @if($_topbarAvatar)
                             <img src="{{ $_topbarAvatar }}"
                                  alt="{{ $_topbarAdmin->name }}"
                                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:700;font-size:14px;">
+                            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:400;font-size: var(--font-size);">
                                 {{ strtoupper(substr($_topbarAdmin->name ?? 'A', 0, 1)) }}
                             </span>
                         @else
@@ -1327,7 +1406,7 @@
             noAlerts:     '{{ __("dashboard.common.noAlerts") }}',
             allClear:     '{{ __("dashboard.common.allClear") }}',
             failedAlerts: '{{ __("dashboard.common.failedAlerts") }}',
-            alertsTitle:  '{{ strtoupper(__("dashboard.common.alerts")) }}',
+            alertsfont:  '{{ strtoupper(__("dashboard.common.alerts")) }}',
             staffAccess:  '{{ __("dashboard.common.staffAccess") }}',
             review:       '{{ strtoupper(__("dashboard.btn.view")) }}',
             accept:       '✓ {{ strtoupper(__("dashboard.btn.confirm")) }}',
@@ -1349,9 +1428,9 @@
                 if (!data.alerts || data.alerts.length === 0) {
                     list.innerHTML = `
                         <div style="padding:28px; text-align:center; font-family:Rajdhani,sans-serif;">
-                            <div style="font-size:30px; margin-bottom:8px;">🎉</div>
-                            <div style="color:#22c55e; font-weight:700; font-size:14px; letter-spacing:1px;">${_i18n.allClear}</div>
-                            <div style="color:${mutedColor}; font-size:12px; margin-top:4px;">${_i18n.noAlerts}</div>
+                            <div style="font-size: var(--font-size); margin-bottom:8px;">🎉</div>
+                            <div style="color:#22c55e; font-weight:700; font-size: var(--font-size); letter-spacing:1px;">${_i18n.allClear}</div>
+                            <div style="color:${mutedColor}; font-size: var(--font-size); margin-top:4px;">${_i18n.noAlerts}</div>
                         </div>`;
                     return;
                 }
@@ -1362,20 +1441,20 @@
                             <div style="display:flex;align-items:flex-start;gap:12px;">
                                 <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;
                                      background:${a.color}18;border:1px solid ${a.color}44;
-                                     display:flex;align-items:center;justify-content:center;font-size:18px;">
+                                     display:flex;align-items:center;justify-content:center;font-size: var(--font-size);">
                                      ${a.icon}
                                 </div>
                                 <div style="flex:1;min-width:0;">
-                                    <div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
-                                         color:${a.color};letter-spacing:.5px;">${a.title}</div>
-                                    <div style="font-size:12px;color:${mutedColor};margin-top:2px;line-height:1.4;">${a.body}</div>
-                                    ${a.request_message ? `<div style="font-size:11px;color:${faintColor};margin-top:3px;font-style:italic;">"${a.request_message}"</div>` : ''}
+                                    <div style="font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
+                                         color:${a.color};letter-spacing:.5px;">${a.font}</div>
+                                    <div style="font-size: var(--font-size);color:${mutedColor};margin-top:2px;line-height:1.4;">${a.body}</div>
+                                    ${a.request_message ? `<div style="font-size: var(--font-size);color:${faintColor};margin-top:3px;font-style:italic;">"${a.request_message}"</div>` : ''}
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;padding-left:48px;">
                                 <button onclick="openStaffRequestModal(${JSON.stringify(a).replace(/"/g,'&quot;')})"
                                     style="flex:1;padding:7px 0;border-radius:8px;background:#a78bfa22;border:1px solid #a78bfa44;
-                                           color:#a78bfa;font-family:Rajdhani,sans-serif;font-size:11px;
+                                           color:#a78bfa;font-family:Rajdhani,sans-serif;font-size: var(--font-size);
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
                                     onmouseover="this.style.background='#a78bfa33'"
                                     onmouseout="this.style.background='#a78bfa22'">
@@ -1383,7 +1462,7 @@
                                 </button>
                                 <button onclick="handleStaffRequest(${a.request_id},'accept',this)"
                                     style="flex:1;padding:7px 0;border-radius:8px;background:#22c55e22;border:1px solid #22c55e44;
-                                           color:#22c55e;font-family:Rajdhani,sans-serif;font-size:11px;
+                                           color:#22c55e;font-family:Rajdhani,sans-serif;font-size: var(--font-size);
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
                                     onmouseover="this.style.background='#22c55e33'"
                                     onmouseout="this.style.background='#22c55e22'">
@@ -1391,7 +1470,7 @@
                                 </button>
                                 <button onclick="handleStaffRequest(${a.request_id},'reject',this)"
                                     style="flex:1;padding:7px 0;border-radius:8px;background:#ef444422;border:1px solid #ef444444;
-                                           color:#ef4444;font-family:Rajdhani,sans-serif;font-size:11px;
+                                           color:#ef4444;font-family:Rajdhani,sans-serif;font-size: var(--font-size);
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
                                     onmouseover="this.style.background='#ef444433'"
                                     onmouseout="this.style.background='#ef444422'">
@@ -1404,15 +1483,15 @@
                     <a href="${a.url}" class="bell-item" onclick="closeBell()">
                         <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;
                              background:${a.color}18;border:1px solid ${a.color}44;
-                             display:flex;align-items:center;justify-content:center;font-size:18px;">
+                             display:flex;align-items:center;justify-content:center;font-size: var(--font-size);">
                              ${a.icon}
                         </div>
                         <div style="flex:1;min-width:0;">
-                            <div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
-                                 color:${a.color};letter-spacing:.5px;">${a.title}</div>
-                            <div style="font-size:12px;color:${mutedColor};margin-top:2px;line-height:1.4;">${a.body}</div>
+                            <div style="font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
+                                 color:${a.color};letter-spacing:.5px;">${a.font}</div>
+                            <div style="font-size: var(--font-size);color:${mutedColor};margin-top:2px;line-height:1.4;">${a.body}</div>
                         </div>
-                        <div style="font-size:16px;color:${arrowColor};flex-shrink:0;">›</div>
+                        <div style="font-size: var(--font-size);color:${arrowColor};flex-shrink:0;">›</div>
                     </a>`;
                 }).join('');
             })
@@ -1420,7 +1499,7 @@
                 const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
                 const failColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.4)';
                 document.getElementById('bell-list').innerHTML =
-                    `<div style="padding:20px;text-align:center;color:${failColor};font-size:13px;">${_i18n.failedAlerts}</div>`;
+                    `<div style="padding:20px;text-align:center;color:${failColor};font-size: var(--font-size);">${_i18n.failedAlerts}</div>`;
             });
         }
 
@@ -1472,7 +1551,7 @@
             el.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);
                 z-index:99999;background:${modalBg};border:1px solid ${color}55;
                 color:${color};padding:12px 24px;border-radius:12px;
-                font-family:Rajdhani,sans-serif;font-size:14px;font-weight:700;
+                font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
                 letter-spacing:1px;box-shadow:0 8px 32px rgba(0,0,0,0.25);
                 animation:atToastIn .3s ease;white-space:nowrap;`;
             el.textContent = msg;
@@ -1524,21 +1603,21 @@
             el.innerHTML = `
                 <div style="width:40px;height:40px;border-radius:12px;flex-shrink:0;
                      background:${c.bg};border:1px solid ${c.border};
-                     display:flex;align-items:center;justify-content:center;font-size:20px;">
+                     display:flex;align-items:center;justify-content:center;font-size: var(--font-size);">
                     ${alert.icon}
                 </div>
                 <div style="flex:1;min-width:0;">
-                    <div style="font-size:13px;font-weight:800;color:${c.text};letter-spacing:1px;margin-bottom:2px;">
-                        ${alert.title}
+                    <div style="font-size: var(--font-size);font-weight:800;color:${c.text};letter-spacing:1px;margin-bottom:2px;">
+                        ${alert.font}
                     </div>
-                    <div style="font-size:12px;color:${bodyTextColor};line-height:1.4;">
+                    <div style="font-size: var(--font-size);color:${bodyTextColor};line-height:1.4;">
                         ${alert.body}
                     </div>
                 </div>
                 <button onclick="event.stopPropagation();dismissAlertToast('${id}')"
                     style="flex-shrink:0;width:24px;height:24px;border-radius:6px;background:${closeBtnBg};
                            border:1px solid ${closeBtnBorder};color:${closeBtnColor};
-                           font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+                           font-size: var(--font-size);cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
                 <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;overflow:hidden;">
                     <div style="height:100%;background:${c.text};animation:atToastBar 6s linear forwards;border-radius:inherit;"></div>
                 </div>
@@ -1595,9 +1674,9 @@
                 if (!data.alerts || data.alerts.length === 0) return;
 
                 const seen    = getSeenAlerts();
-                const current = data.alerts.map(a => a.id || a.title + a.body);
+                const current = data.alerts.map(a => a.id || a.font + a.body);
                 const newAlerts = data.alerts.filter(a => {
-                    const key = a.id || a.title + a.body;
+                    const key = a.id || a.font + a.body;
                     return !seen.includes(key);
                 });
 
@@ -1719,42 +1798,42 @@
             <div style="padding:28px 32px 32px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
                     <div>
-                        <div style="font-size:11px;letter-spacing:3px;color:var(--text-faint);margin-bottom:3px;">
+                        <div style="font-size: var(--font-size);letter-spacing:3px;color:var(--text-faint);margin-bottom:3px;">
                             {{ strtoupper(__('dashboard.common.staffAccess')) }}
                         </div>
-                        <div style="font-size:20px;font-weight:800;letter-spacing:1px;color:#a78bfa;" id="srm-name">—</div>
+                        <div style="font-size: var(--font-size);font-weight:800;letter-spacing:1px;color:#a78bfa;" id="srm-name">—</div>
                     </div>
                     <button onclick="closeStaffReqModal()" style="
                         width:36px;height:36px;border-radius:10px;border:1px solid var(--border-input);
                         background:var(--hover-bg);color:var(--text-muted);
-                        font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+                        font-size: var(--font-size);cursor:pointer;display:flex;align-items:center;justify-content:center;
                     ">×</button>
                 </div>
 
                 <div style="display:grid;gap:12px;margin-bottom:22px;">
                     <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
-                        <div style="font-size:20px;width:36px;text-align:center;">📧</div>
+                        <div style="font-size: var(--font-size);width:36px;text-align:center;">📧</div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                            <div style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
                                 {{ strtoupper(__('dashboard.form.email')) }}
                             </div>
-                            <div style="font-size:14px;font-weight:600;color:var(--text);" id="srm-email">—</div>
+                            <div style="font-size: var(--font-size);font-weight:600;color:var(--text);" id="srm-email">—</div>
                         </div>
                     </div>
                     <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
-                        <div style="font-size:20px;width:36px;text-align:center;">👤</div>
+                        <div style="font-size: var(--font-size);width:36px;text-align:center;">👤</div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                            <div style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
                                 {{ strtoupper(__('dashboard.access.yourRole')) }}
                             </div>
-                            <div style="font-size:14px;font-weight:700;color:#a78bfa;letter-spacing:2px;" id="srm-role">—</div>
+                            <div style="font-size: var(--font-size);font-weight:700;color:#a78bfa;letter-spacing:2px;" id="srm-role">—</div>
                         </div>
                     </div>
                     <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
-                        <div style="font-size:20px;width:36px;text-align:center;">💬</div>
+                        <div style="font-size: var(--font-size);width:36px;text-align:center;">💬</div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">MESSAGE</div>
-                            <div style="font-size:13px;color:var(--text-muted);font-style:italic;" id="srm-msg">—</div>
+                            <div style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">MESSAGE</div>
+                            <div style="font-size: var(--font-size);color:var(--text-muted);font-style:italic;" id="srm-msg">—</div>
                         </div>
                     </div>
                 </div>
@@ -1763,7 +1842,7 @@
                     <button id="srm-reject" style="
                         padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);
                         background:rgba(239,68,68,0.08);color:#ef4444;
-                        font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
+                        font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
                         letter-spacing:2px;cursor:pointer;transition:all .2s;
                     " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
                        onmouseout="this.style.background='rgba(239,68,68,0.08)'">
@@ -1772,7 +1851,7 @@
                     <button id="srm-accept" style="
                         padding:13px;border-radius:12px;border:none;
                         background:#22c55e;color:#fff;
-                        font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;
+                        font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
                         letter-spacing:2px;cursor:pointer;transition:all .2s;
                     " onmouseover="this.style.background='#16a34a'"
                        onmouseout="this.style.background='#22c55e'">

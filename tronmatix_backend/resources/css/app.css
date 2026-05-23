@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-
 @import 'tw-animate-css';
+@import url('https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap');
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -14,8 +14,8 @@
         'Noto Color Emoji';
 
     --font-khmer-title: 'Kh_Jrung_Thom', ui-sans-serif, system-ui, sans-serif;
-    --font-khmer-body: 'KantumruyPro', ui-sans-serif, system-ui, sans-serif;
-
+    --font-khmer-body: 'Kdam Thmor Pro', ui-sans-serif, system-ui, sans-serif;
+...
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -148,14 +148,6 @@
     @font-face {
         font-family: 'Kh_Jrung_Thom';
         src: url('/fonts/Kh_Jrung_Thom.ttf') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-        font-display: swap;
-    }
-
-    @font-face {
-        font-family: 'KantumruyPro';
-        src: url('/fonts/KantumruyPro.ttf') format('truetype');
         font-weight: normal;
         font-style: normal;
         font-display: swap;

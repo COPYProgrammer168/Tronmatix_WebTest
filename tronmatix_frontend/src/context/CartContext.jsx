@@ -21,6 +21,7 @@ export function CartProvider({ children }) {
   // FIX: lazy init from localStorage — survives page reload
   const [items,    setItems]    = useState(() => loadCart())
   const [cartOpen, setCartOpen] = useState(false)
+  const [notification, setNotification] = useState(null)
 
   // FIX: persist to localStorage on every change
   useEffect(() => { saveCart(items) }, [items])
@@ -31,7 +32,7 @@ export function CartProvider({ children }) {
       if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
       return [...prev, { ...product, qty: 1, warranty: product.warranty }]
     })
-    setCartOpen(true)
+    setNotification(`${product.name || 'Item'} added to cart!`)
   }
 
   const removeItem = (id) => setItems(prev => prev.filter(i => i.id !== id))
@@ -51,7 +52,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider value={{
-      items, cartOpen, setCartOpen,
+      items, cartOpen, setCartOpen, notification, setNotification,
       addItem, removeItem, updateQty, clearCart,
       subtotal, total, count,
     }}>

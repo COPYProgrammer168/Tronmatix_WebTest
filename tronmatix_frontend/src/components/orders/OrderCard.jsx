@@ -18,7 +18,7 @@ export default function OrderCard({
 }) {
   const { dark } = useTheme();
   const { t, isKhmer } = useLang();
-  const cardFont = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif";
+  const cardFont = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif";
   const cardBg   = dark ? "#1f2937" : "#ffffff";
   const border   = dark ? "#374151" : "#e5e7eb";
   const textMain = dark ? "#f9fafb" : "#111827";

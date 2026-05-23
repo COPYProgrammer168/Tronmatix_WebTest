@@ -17,7 +17,9 @@ export default function CartSlider() {
   const prevCountRef = useRef(0)
   const { t, isKhmer } = useLang()
   const khfont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
-  const bodyFont  = isKhmer ? 'KantumruyPro, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont = isKhmer
+    ? "Kdam Thmor Pro, sans-serif"
+    : "Rajdhani, sans-serif";
 
   useEffect(() => {
     const current = items.reduce((s, i) => s + i.qty, 0)
@@ -103,14 +105,23 @@ export default function CartSlider() {
                   )}
 
                   <div className="flex items-center gap-2 mt-1">
-                    <button onClick={() => updateQty(item.id, -1)}
-                      className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
-                      style={{ fontSize: 16, lineHeight: 1 }}>−</button>
-                    <span className="text-white font-bold" style={{ fontSize: 18, minWidth: 14, textAlign: 'center' }}>{item.qty}</span>
-                    <button onClick={() => updateQty(item.id, 1)}
-                      className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
-                      style={{ fontSize: 16, lineHeight: 1 }}>+</button>
-                    <span className="text-primary font-bold ml-1" style={{ fontSize: 18 }}>${(item.price * item.qty).toFixed(2)}</span>
+                    {item.price === '$$$' ? (
+                      <button onClick={() => { setCartOpen(false); navigate(`/product/${item.id}`) }}
+                        className="bg-primary text-white font-bold px-3 py-1 rounded text-sm hover:bg-orange-600 transition-colors">
+                        {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'View Detail'}
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => updateQty(item.id, -1)}
+                          className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
+                          style={{ fontSize: 16, lineHeight: 1 }}>−</button>
+                        <span className="text-white font-bold" style={{ fontSize: 18, minWidth: 14, textAlign: 'center' }}>{item.qty}</span>
+                        <button onClick={() => updateQty(item.id, 1)}
+                          className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
+                          style={{ fontSize: 16, lineHeight: 1 }}>+</button>
+                        <span className="text-primary font-bold ml-1" style={{ fontSize: 18 }}>${(item.price * item.qty).toFixed(2)}</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <button onClick={() => removeItem(item.id)}

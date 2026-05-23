@@ -102,7 +102,7 @@ export default function useOrders() {
         <div class="info-row"><span>Customer</span><span>${(order.shipping || order.location)?.name || "—"}</span></div>
         <div class="info-row"><span>Phone</span><span>${(order.shipping || order.location)?.phone || "—"}</span></div>
         <div class="info-row"><span>Address</span><span>${(order.shipping || order.location)?.address || ""}${(order.shipping || order.location)?.city ? ", " + (order.shipping || order.location).city : ""}</span></div>
-        <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? "💵 Cash on Delivery" : "📱 ABA BAKONG KHQR"}</span></div>
+        <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? "💵 Cash on Delivery" : "📱 ABA BAKONG KHQR"} ${order.payment_status === 'paid' ? '<span style="background:#dcfce7;color:#15803d;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;">✅ PAID</span>' : ''}</span></div>
         ${discount > 0 ? `<div class="info-row"><span>Discount</span><span style="color:#16a34a">${order.discount_code || "—"} — −$${discount.toFixed(2)}</span></div>` : ""}
         <table border="1" style="width:100%; border-collapse:collapse; margin:20px 0;">
           <thead><tr style="background:#f9fafb;"><th>ITEM</th><th>QTY</th><th>UNIT</th><th>TOTAL</th></tr></thead>

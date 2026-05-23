@@ -116,7 +116,7 @@ export function CategoryPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4" style={{ fontFamily: 'KantumruyPro, Rajdhani, sans-serif', fontSize: 15, color: textSub }}>
+          <p className="mb-4" style={{ fontFamily: 'Kh-Koulen, Rajdhani, sans-serif', fontSize: 15, color: textSub }}>
             {isSearch && products.length === 0
               ? `${t('common.searchNo')} "${qParam}"`
               : products.length === 1
@@ -127,7 +127,7 @@ export function CategoryPage() {
           {isSearch && products.length === 0 && (
             <div className="flex flex-col items-center py-20 gap-4" style={{ color: textSub }}>
               <div style={{ fontSize: 48 }}>🔍</div>
-              <p style={{ fontFamily: 'KantumruyPro, Rajdhani, sans-serif', fontSize: 18 }}>
+              <p style={{ fontFamily: 'Kh-Koulen, Rajdhani, sans-serif', fontSize: 18 }}>
                 {t('common.searchNo')} <strong style={{ color: text }}>"{qParam}"</strong>
               </p>
               <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>

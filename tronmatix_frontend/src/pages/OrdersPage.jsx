@@ -20,7 +20,7 @@ export default function OrdersPage() {
   const [expanded, setExpanded] = useState(null);
   const [qrOrder,  setQrOrder]  = useState(null);
   const headfont  = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
-  const bodyFont  = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont  = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
 
   const {
     orders, loading, cancelling, deleting,

@@ -184,12 +184,12 @@ class Payment extends Model
 
     public function markAsExpired(): bool
     {
-        return $this->update(['status' => self::STATUS_EXPIRED,        'paid' => false]);
+        return $this->update(['status' => self::STATUS_EXPIRED,'paid' => false]);
     }
 
     public function markAsFailed(): bool
     {
-        return $this->update(['status' => self::STATUS_FAILED,         'paid' => false]);
+        return $this->update(['status' => self::STATUS_FAILED,'paid' => false]);
     }
 
     public function markAsManualPending(): bool
@@ -222,6 +222,12 @@ class Payment extends Model
     public function getEffectiveExpiration(): ?Carbon
     {
         return $this->qr_expires_at ?? $this->expires_at ?? null;
+    }
+
+    /** Read qr_md5 column with meta fallback */
+    public function getQrMd5Value(): ?string
+    {
+        return $this->qr_md5 ?? $this->meta['qr_md5'] ?? null;
     }
 
     /** Badge data for blade views */

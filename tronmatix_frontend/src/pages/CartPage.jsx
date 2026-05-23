@@ -90,13 +90,21 @@ export default function CartPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => updateQty(item.id, -1)}
-                      className="hover:text-primary font-bold text-lg" style={{ color: textSub }}>−</button>
-                    <span className="text-primary font-bold" style={{ fontSize: 20 }}>
-                      {item.qty}x = <span>${(item.price * item.qty).toFixed(2)}</span>
-                    </span>
-                    <button onClick={() => updateQty(item.id, 1)}
-                      className="hover:text-primary font-bold text-lg" style={{ color: textSub }}>+</button>
+                    {item.price === '$$$' ? (
+                      <Link to={`/product/${item.id}`} className="bg-primary text-white font-bold px-4 py-2 rounded text-sm hover:bg-orange-600">
+                        {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'View Detail'}
+                      </Link>
+                    ) : (
+                      <>
+                        <button onClick={() => updateQty(item.id, -1)}
+                          className="hover:text-primary font-bold text-lg" style={{ color: textSub }}>−</button>
+                        <span className="text-primary font-bold" style={{ fontSize: 20 }}>
+                          {item.qty}x = <span>${(item.price * item.qty).toFixed(2)}</span>
+                        </span>
+                        <button onClick={() => updateQty(item.id, 1)}
+                          className="hover:text-primary font-bold text-lg" style={{ color: textSub }}>+</button>
+                      </>
+                    )}
                   </div>
                   <button onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600 ml-2">✕</button>
                 </div>

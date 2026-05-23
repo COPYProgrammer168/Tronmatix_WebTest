@@ -17,7 +17,7 @@ const FILTER_KEYS = {
 export default function OrderFilters({ filter, setFilter, orders }) {
   const { dark }        = useTheme();
   const { t, isKhmer } = useLang();
-  const filterFont = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif";
+  const filterFont = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif";
   const filterBg   = dark ? "#1f2937" : "#f3f4f6";
   const textSub    = dark ? "#9ca3af" : "#374151";
 

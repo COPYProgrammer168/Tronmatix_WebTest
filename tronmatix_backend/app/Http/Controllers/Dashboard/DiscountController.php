@@ -18,6 +18,7 @@ class DiscountController extends Controller
             'type'                => 'required|in:percentage,fixed',
             'value'               => 'required|numeric|min:0',
             'kind'                => 'nullable|in:code,badge',
+            'product_id'          => 'nullable|exists:products,id',
             'min_order'           => 'nullable|numeric|min:0',
             'max_uses'            => 'nullable|integer|min:1',
             'expires_at'          => 'nullable|date',
@@ -40,7 +41,10 @@ class DiscountController extends Controller
 
         $data['kind']         = $request->input('kind', 'code');
         $data['is_active']    = $request->boolean('is_active', true);
-        $data['categories']   = $request->input('categories', []) ?: null;
+        $data['product_id']   = $request->input('product_id') ?: null;
+        
+        // Ensure exclusivity: if product_id is provided, ignore categories
+        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
 
         Discount::create($data);
@@ -57,7 +61,10 @@ class DiscountController extends Controller
 
         $data['kind']         = $request->input('kind', $discount->kind ?? 'code');
         $data['is_active']    = $request->boolean('is_active', false);
-        $data['categories']   = $request->input('categories', []) ?: null;
+        $data['product_id']   = $request->input('product_id') ?: null;
+        
+        // Ensure exclusivity: if product_id is provided, ignore categories
+        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
 
         $discount->update($data);

@@ -1,13 +1,11 @@
 <?php
-
-// app/Http/Controllers/Api/CheckPaymentController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\TelegramService;
+use App\Services\TelegramUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -15,39 +13,61 @@ use Illuminate\Support\Facades\Log;
 
 class CheckPaymentController extends Controller
 {
-    private string $apiUrl;
-
-    private string $token;
+    private string $merchantId;
+    private string $apiBase;
 
     public function __construct()
     {
-        $this->apiUrl = rtrim(config('services.bakong.api_url', 'https://api-bakong.nbc.gov.kh/v1'), '/');
-        $this->token = config('services.bakong.token', '');
+        $this->merchantId = config('services.payway.merchant_id', '');
+        $this->apiBase    = rtrim(config('services.payway.api_url', ''), '/');
     }
 
-    // =========================================================================
-    // GET /api/payment/verify   (polled by BakongQRPanel every 4 s)
-    // =========================================================================
+    // ── Hash helper ───────────────────────────────────────────────────────────
+
+    /**
+     * Build HMAC-SHA512 hash required by PayWay.
+     * Key = PAYWAY_API_KEY raw string — MUST match GenerateKhqrController exactly.
+     * Do NOT use hex2bin() here — GenerateKhqrController does not, so both must be identical.
+     */
+    private function makeHash(string $data): string
+    {
+        $apiKey = config('services.payway.api_key', '');
+
+        if (!$apiKey) {
+            throw new \RuntimeException(
+                'PayWay API key not set. Add PAYWAY_API_KEY to your .env file.'
+            );
+        }
+
+        return base64_encode(hash_hmac('sha512', $data, $apiKey, true));
+    }
+
+    private function reqTime(): string
+    {
+        return now()->format('YmdHis');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /api/payment/verify   (polled by BakongQRPanel every 4s)
+    // ─────────────────────────────────────────────────────────────────────────
+
     public function verify(Request $request): JsonResponse
     {
         $request->validate(['order_id' => 'required|integer']);
 
         $order = Order::find($request->order_id);
-        if (! $order) {
+        if (!$order) {
             return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
         }
-
-        // Ownership guard
         if ($order->user_id !== $request->user()?->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        // Fast-path: already confirmed
+        // Fast-path: already paid (no need to poll PayWay again)
         if ($order->payment_status === 'paid') {
             return response()->json([
                 'success' => true,
-                'status' => 'paid',
-                'bakong_hash' => $order->payment_ref,
+                'status'  => 'paid',
                 'paid_at' => $order->updated_at?->toIso8601String(),
             ]);
         }
@@ -56,182 +76,290 @@ class CheckPaymentController extends Controller
             ->where('status', Payment::STATUS_PENDING)
             ->latest()->first();
 
-        if (! $payment) {
-            // FIX [3]: success:false + 404 → frontend keeps polling correctly
-            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No pending payment found.'], 404);
+        if (!$payment) {
+            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No pending payment.'], 404);
         }
 
-        // FIX [2]: use model's isExpired() — checks qr_expires_at, expires_at AND legacy BIGINT ms
+        // Check expiry before hitting PayWay
         if ($payment->isExpired()) {
             $payment->markAsExpired();
-
             return response()->json(['success' => false, 'status' => 'expired', 'message' => 'QR code has expired.'], 400);
         }
 
-        if (! $payment->qr_md5) {
-            // FIX: qr_md5 is null when Bakong API failed and static PayWay URL was used as fallback.
-            // Return 404 (pending) not 400 — so frontend keeps polling instead of treating it as expired.
-            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No QR MD5 — waiting for Bakong registration.'], 404);
+        $tranId = $payment->meta['tran_id'] ?? $payment->tran_id ?? null;
+        if (!$tranId) {
+            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'Payment reference not ready.'], 404);
         }
 
-        // FIX [8]: handle null (network error) — treat as still-pending, never crash
-        $result = $this->checkByMd5($payment->qr_md5);
+        // Poll PayWay check-transaction-2
+        $result = $this->checkTransaction($tranId);
 
         if ($result === null) {
-            // Network blip — keep polling
-            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'Bakong API unreachable.'], 404);
+            // PayWay unreachable — keep frontend polling
+            return response()->json(['success' => false, 'status' => 'pending', 'message' => 'PayWay unreachable.'], 200);
         }
 
         if ($result['paid']) {
-            // FIX [4,5,10]: use Payment::markAsPaid() which sets status='paid', paid=true,
-            //               paid_at=now() (Carbon), bakong_hash, and syncs order payment_status
-            $payment->markAsPaid($result['hash'], $result['data']);
+            // ── Step 1: persist payment as paid ──────────────────────────────
+            $apv = $result['apv'] ?? $tranId;
+            $payment->markAsPaid($apv, $result['data'] ?? []);
 
-            Log::info('Payment confirmed via polling ✅', ['order_id' => $order->id]);
+            Log::info('Payment confirmed via PayWay polling ✅', [
+                'order_id' => $order->id,
+                'tran_id'  => $tranId,
+                'apv'      => $apv,
+            ]);
 
-            // FIX [9]: Telegram notification
+            // ── Step 2: reload fresh order with all relations ─────────────────
+            $freshOrder = Order::with('items', 'user')->find($order->id);
+
+            // ── Step 3: send Telegram receipt to ADMIN ────────────────────────
             try {
-                app(TelegramService::class)->sendPaymentConfirmed($order->fresh(), $result['hash']);
+                app(TelegramService::class)->sendPaymentConfirmed($freshOrder, $apv);
+                Log::info('Admin Telegram receipt sent ✅', ['order_id' => $order->id]);
             } catch (\Throwable $e) {
-                Log::warning('Telegram confirm failed: '.$e->getMessage());
+                // Log but never let this break the payment confirmation response
+                Log::warning('Telegram admin receipt failed: ' . $e->getMessage());
             }
 
+            // ── Step 4: send Telegram receipt to CUSTOMER ─────────────────────
+            try {
+                app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $apv);
+                Log::info('Customer Telegram receipt sent ✅', [
+                    'order_id'   => $order->id,
+                    'chat_id'    => $freshOrder->user?->telegram_chat_id ?? 'not connected',
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Telegram customer receipt failed: ' . $e->getMessage());
+            }
+
+            // ── Step 5: return paid status to frontend ────────────────────────
             return response()->json([
                 'success' => true,
-                'status' => 'paid',
-                'bakong_hash' => $result['hash'],
+                'status'  => 'paid',
                 'paid_at' => $payment->paid_at?->toIso8601String(),
             ]);
         }
 
-        // FIX [3]: not found → success:false + 404 keeps frontend poll alive
-        return response()->json(['success' => false, 'status' => 'pending'], 404);
+        // Still pending — frontend keeps polling
+        return response()->json(['success' => false, 'status' => 'pending'], 200);
     }
 
-    // =========================================================================
-    // POST /api/payment/confirm-manual   ("I paid" fallback button)
-    // =========================================================================
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /api/payment/confirm-manual
+    // ─────────────────────────────────────────────────────────────────────────
+
     public function confirmManual(Request $request): JsonResponse
     {
         $request->validate(['order_id' => 'required|integer']);
 
         $order = Order::find($request->order_id);
-        if (! $order) {
+        if (!$order) {
             return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
         }
         if ($order->user_id !== $request->user()?->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        // FIX [7]: only transition pending → manual_pending, never force-set 'paid'
-        if (! in_array($order->payment_status, ['paid'])) {
+        if ($order->payment_status !== 'paid') {
             $order->update(['payment_status' => 'manual_pending']);
-
             $payment = Payment::where('order_id', $order->id)->latest()->first();
             $payment?->markAsManualPending();
+
+            // Notify admin on Telegram so they can verify manually
+            try {
+                $freshOrder = Order::with('items', 'user')->find($order->id);
+                app(TelegramService::class)->sendAlert(
+                    "⚠️ *Manual Payment Claim*\n\n"
+                    . "📦 Order: `#{$freshOrder->order_id}`\n"
+                    . "👤 Customer: " . ($freshOrder->user?->username ?? 'Guest') . "\n"
+                    . "💰 Amount: \${$freshOrder->total}\n"
+                    . "🕐 " . now()->format('d M Y, H:i') . "\n\n"
+                    . "Please verify and confirm manually in the admin panel."
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Manual claim Telegram alert failed: ' . $e->getMessage());
+            }
         }
 
         return response()->json(['success' => true, 'status' => 'manual_pending']);
     }
 
-    // =========================================================================
-    // POST /api/payment/webhook   (ABA PayWay → server — no auth middleware)
-    // =========================================================================
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /api/payment/webhook   (PayWay → backend, no auth middleware)
+    // PayWay posts to PAYWAY_CALLBACK_URL (prod) or PAYWAY_CALLBACK_LOCAL_URL (dev)
+    // ─────────────────────────────────────────────────────────────────────────
+
     public function webhook(Request $request): JsonResponse
     {
         $data = $request->all();
-        Log::info('ABA PayWay webhook received', $data);
+        Log::info('PayWay webhook received', $data);
 
-        $tranId = $data['tran_id'] ?? $data['bill_number'] ?? null;
-        if (! $tranId) {
-            Log::warning('ABA webhook: missing tran_id', $data);
-
-            return response()->json(['status' => 'ok']); // 200 stops retries
+        $tranId = $data['tran_id'] ?? null;
+        if (!$tranId) {
+            Log::warning('PayWay webhook: missing tran_id', $data);
+            return response()->json(['status' => 'ok']);
         }
 
-        // Strategy 1: match by qr_md5
-        $payment = Payment::where('qr_md5', $tranId)->first();
-
-        // Strategy 2: extract numeric order ID from 'TRX-00000123'
-        if (! $payment) {
-            $numericId = (int) preg_replace('/\D/', '', $tranId);
-            $payment = $numericId
-                ? Payment::where('order_id', $numericId)->latest()->first()
-                : null;
-        }
-
-        if (! $payment) {
-            Log::warning('ABA webhook: payment not found', ['tran_id' => $tranId]);
-
+        $payment = Payment::where('tran_id', $tranId)->first();
+        if (!$payment) {
+            Log::warning('PayWay webhook: payment not found', ['tran_id' => $tranId]);
             return response()->json(['status' => 'ok']);
         }
 
         $order = Order::find($payment->order_id);
-        if (! $order) {
-            Log::warning('ABA webhook: order missing for payment', ['payment_id' => $payment->id]);
-
+        if (!$order) {
             return response()->json(['status' => 'ok']);
         }
 
-        // ABA PayWay: status 0 = success
-        if ((int) ($data['status'] ?? -1) === 0 && ! $order->isPaid()) {
-            $apv = $data['apv'] ?? $data['externalRef'] ?? $tranId;
-            $payment->markAsPaid($apv); // syncs order.payment_status via model
+        // PayWay webhook: status 0 = success
+        $statusCode = (int) ($data['status'] ?? -1);
 
-            Log::info('Order paid via ABA PayWay webhook', ['order_id' => $order->id]);
+        if ($statusCode === 0 && !$order->isPaid()) {
+            $apv = $data['apv'] ?? $tranId;
+            $payment->markAsPaid($apv);
 
+            Log::info('Order paid via PayWay webhook ✅', [
+                'order_id' => $order->id,
+                'tran_id'  => $tranId,
+                'apv'      => $apv,
+            ]);
+
+            $freshOrder = Order::with('items', 'user')->find($order->id);
+
+            // Admin Telegram receipt
             try {
-                app(TelegramService::class)->sendPaymentConfirmed($order->fresh(), $apv);
+                app(TelegramService::class)->sendPaymentConfirmed($freshOrder, $apv);
+                Log::info('Admin Telegram webhook receipt sent ✅', ['order_id' => $order->id]);
             } catch (\Throwable $e) {
-                Log::warning('Telegram webhook alert failed: '.$e->getMessage());
+                Log::warning('Telegram admin webhook receipt failed: ' . $e->getMessage());
+            }
+
+            // Customer Telegram receipt
+            try {
+                app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $apv);
+                Log::info('Customer Telegram webhook receipt sent ✅', [
+                    'order_id' => $order->id,
+                    'chat_id'  => $freshOrder->user?->telegram_chat_id ?? 'not connected',
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Telegram customer webhook receipt failed: ' . $e->getMessage());
             }
         }
 
         return response()->json(['status' => 'ok']);
     }
 
-    // =========================================================================
-    // PRIVATE
-    // =========================================================================
+    // ─────────────────────────────────────────────────────────────────────────
+    // PRIVATE: Poll PayWay check-transaction-2
+    // Hash formula (from ABA PayWay API spec):
+    //   merchant_auth + request_time + merchant_id
+    // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Poll Bakong NBC API for transaction by QR MD5.
-     * Returns ['paid'=>bool, 'hash'=>string, 'data'=>array] on success,
-     * or null on network / HTTP error.
-     *
-     * FIX [1,8]: method was named checkBakongTransaction() in old verify() call — now consistently checkByMd5().
-     */
-    private function checkByMd5(string $md5): ?array
+    private function checkTransaction(string $tranId): ?array
     {
+        $reqTime     = $this->reqTime();
+        $merchantId  = $this->merchantId;
+
+        // ── Build merchant_auth (RSA-encrypted JSON, then base64) ─────────────
+        // Per ABA PayWay docs: encrypt JSON {mc_id, tran_id} with RSA public key
+        $rsaKeyPath = config('services.payway.rsa_public_key', '');
+
+        if (!$rsaKeyPath) {
+            Log::error('PayWay RSA public key path not set. Add PAYWAY_RSA_PUBLIC_KEY to .env');
+            return null;
+        }
+
+        // Resolve path: relative to Laravel base_path()
+        $fullPath = base_path($rsaKeyPath);
+
+        if (!file_exists($fullPath)) {
+            Log::error('PayWay RSA public key file not found', ['path' => $fullPath]);
+            return null;
+        }
+
+        $rsaPublicKey = file_get_contents($fullPath);
+
+        if (!$rsaPublicKey || openssl_pkey_get_public($rsaPublicKey) === false) {
+            Log::error('PayWay RSA public key file is invalid', ['path' => $fullPath]);
+            return null;
+        }
+
+        $dataObject = json_encode([
+            'mc_id'   => $merchantId,
+            'tran_id' => $tranId,
+        ]);
+
+        $maxLength       = 117;
+        $encryptedOutput = '';
+        $chunk           = $dataObject;
+
+        while ($chunk !== '') {
+            $input = substr($chunk, 0, $maxLength);
+            $chunk = substr($chunk, $maxLength);
+            if (!openssl_public_encrypt($input, $encryptedChunk, $rsaPublicKey)) {
+                Log::error('PayWay merchant_auth RSA encryption failed', ['tran_id' => $tranId]);
+                return null;
+            }
+            $encryptedOutput .= $encryptedChunk;
+        }
+
+        $merchantAuth = base64_encode($encryptedOutput);
+
+        // ── Build hash: merchant_auth + request_time + merchant_id ────────────
+        $hashData = $merchantAuth . $reqTime . $merchantId;
+
         try {
-            $response = Http::withToken($this->token)
-                ->timeout(10)
-                ->post("{$this->apiUrl}/check_transaction_by_md5", ['md5' => $md5]);
+            $hash = $this->makeHash($hashData);
+        } catch (\Throwable $e) {
+            Log::error('PayWay check-transaction hash failed: ' . $e->getMessage());
+            return null;
+        }
+
+        $payload = [
+            'merchant_id'   => $merchantId,
+            'merchant_auth' => $merchantAuth,
+            'request_time'  => $reqTime,
+            'hash'          => $hash,
+        ];
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post("{$this->apiBase}/check-transaction-2", $payload);
 
             if ($response->failed()) {
-                Log::warning('Bakong check_transaction_by_md5 HTTP error', [
-                    'http' => $response->status(),
-                    'body' => $response->body(),
+                Log::warning('PayWay check-transaction HTTP error', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
                 ]);
-
-                return null; // FIX [8]: null = network error → caller keeps polling
+                return null;
             }
 
             $body = $response->json();
 
-            $paid = isset($body['responseCode'])
-                && (int) $body['responseCode'] === 0
-                && ! empty($body['data']['hash']);
+            Log::info('PayWay check-transaction response', [
+                'tran_id'      => $tranId,
+                'status_code'  => $body['status']['code']              ?? 'n/a',
+                'payment_code' => $body['data']['payment_status_code'] ?? 'n/a',
+                'status'       => $body['data']['payment_status']      ?? 'n/a',
+                'full_body'    => $body,
+            ]);
+
+            // Paid when: status.code == "00" AND payment_status_code == 0
+            $paid = isset($body['status']['code'])
+                && $body['status']['code'] === '00'
+                && isset($body['data']['payment_status_code'])
+                && (int) $body['data']['payment_status_code'] === 0;
 
             return [
                 'paid' => $paid,
-                'hash' => $body['data']['hash'] ?? '',
-                'data' => $body['data'] ?? [],
+                'apv'  => $body['data']['apv'] ?? '',
+                'data' => $body['data']        ?? [],
             ];
 
         } catch (\Throwable $e) {
-            Log::error('Bakong checkByMd5 exception', ['error' => $e->getMessage()]);
-
+            Log::error('PayWay checkTransaction exception: ' . $e->getMessage());
             return null;
         }
     }

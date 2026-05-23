@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', 'DASHBOARD')
+@section('title', strtoupper(__('dashboard.nav.dashboard')))
 
 @section('content')
 
@@ -44,33 +44,33 @@
 @if(!$_pAccess)
 {{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-     min-height:60vh;text-align:center;padding:40px 20px;font-family:Rajdhani,sans-serif;
+     min-height:60vh;text-align:center;padding:40px 20px;
      animation:fadeUp .45s ease both;">
     <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
          background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size:46px;
+         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
          box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size:30px;font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
+    <div style="font-size: var(--text-xl);font-weight:900;letter-spacing:3px;color:#ef4444;...">ACCESS DENIED</div>
+    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
         Your role does not have permission to access this module.<br>
         Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
     </div>
     <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
          margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size:22px;">{{ $_pRM['icon'] }}</span>
+        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px;font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
         </div>
         <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','dashboard')) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','dashboard')) }}</div>
         </div>
     </div>
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
          border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
+        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
             @foreach($_pAllFeats as $_fKey => $_fIcon)
             @php
@@ -81,8 +81,8 @@
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
                  background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
                  border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size:18px;{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px;letter-spacing:1px;font-weight:700;
+                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
+                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
                     color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
                     {{ $_fHas ? '✓' : '✗' }}
                 </span>
@@ -93,14 +93,14 @@
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
+           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
            onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
             🏠 GO TO DASHBOARD
         </a>
         <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;
            background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;letter-spacing:1px;"
+           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
            onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
             ← GO BACK
         </a>
@@ -125,8 +125,9 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value">{{ number_format($stats['total_users']) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.totalUsers') }}</div>
+            <div class="stat-value" id="stat-total-users">{{ number_format($stats['total_users']) }}</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalUsers') }}
+            </div>
         </div>
     </div>
 
@@ -137,7 +138,7 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value">{{ number_format($stats['total_products']) }}</div>
+            <div class="stat-value" id="stat-total-products">{{ number_format($stats['total_products']) }}</div>
             <div class="stat-label">{{ __('dashboard.stats.totalProducts') }}</div>
         </div>
     </div>
@@ -150,8 +151,9 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value">{{ number_format($stats['total_orders']) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.totalOrders') }}</div>
+            <div class="stat-value" id="stat-total-orders">{{ number_format($stats['total_orders']) }}</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalOrders') }}
+            </div>
         </div>
     </div>
 
@@ -163,8 +165,9 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value">${{ number_format($stats['total_revenue'], 0) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.totalRevenue') }}</div>
+            <div class="stat-value" id="stat-total-revenue">${{ number_format($stats['total_revenue'], 0) }}</div>
+            <div class="stat-label">{{ __('dashboard.stats.totalRevenue') }}
+            </div>
         </div>
     </div>
 
@@ -316,14 +319,14 @@
                     <tr>
                         <td>
                             <a href="{{ route('dashboard.orders.show', $order) }}"
-                               style="color:#F97316; font-weight:700; font-family:monospace; font-size:12px; text-decoration:none;">
+                               style="color:#F97316; font-weight:700; font-family:monospace; font-size: var(--title-size); text-decoration:none;">
                                 {{ $order->order_id }}
                             </a>
                         </td>
                         <td style="font-weight:600;">{{ $order->user?->username ?? 'Guest' }}</td>
                         <td style="color:#F97316; font-weight:700;">${{ number_format($order->total, 2) }}</td>
                         <td><span class="badge badge-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
-                        <td style="color:var(--date-cell-color, rgba(255,255,255,0.4)); font-size:12px;">{{ $order->created_at->format('d M Y') }}</td>
+                        <td style="color:var(--date-cell-color, rgba(255,255,255,0.4)); font-size: var(--title-size);">{{ $order->created_at->format('d M Y') }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -362,7 +365,7 @@
                                     @if($thumbSrc)
                                         <img src="{{ $thumbSrc }}" class="product-thumb" alt="" onerror="this.style.display='none'" />
                                     @else
-                                        <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:16px;">📦</div>
+                                        <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">📦</div>
                                     @endif
                                     <span style="font-weight:600;">{{ Str::limit($product->name, 22) }}</span>
                                 </div>
@@ -404,7 +407,7 @@
                                     @if($thumbSrc)
                                         <img src="{{ $thumbSrc }}" class="product-thumb" alt="" onerror="this.style.display='none'" />
                                     @else
-                                        <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:16px;">📦</div>
+                                        <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">📦</div>
                                     @endif
                                     <span style="font-weight:600;">{{ Str::limit($product->name, 22) }}</span>
                                 </div>
@@ -613,19 +616,25 @@ window.__updateChartTheme = function(t) {
         ch.update('none');
     });
 };
+
+// ── Polling for Trend Updates ──────────────────────────────────────────────
+setInterval(async () => {
+    try {
+        const response = await fetch('{{ route('dashboard.stats') }}');
+        const data = await response.json();
+        // Update values
+        document.getElementById('stat-total-users').innerText = data.total_users.toLocaleString();
+        document.getElementById('stat-total-products').innerText = data.total_products.toLocaleString();
+        document.getElementById('stat-total-orders').innerText = '$' + data.total_orders.toLocaleString();
+        document.getElementById('stat-total-revenue').innerText = '$' + data.total_revenue.toLocaleString();
+
+    } catch (e) { console.error('Failed to update stats:', e); }
+}, 30000); // 30 seconds
 </script>
 @endpush
 
 @push('styles')
 <style>
-.chart-badge {
-    font-size: 11px;
-    color: rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.05);
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: 1px;
-}
 [data-theme="light"] .chart-badge {
     color: rgba(15,23,42,0.45);
     background: rgba(15,23,42,0.06);

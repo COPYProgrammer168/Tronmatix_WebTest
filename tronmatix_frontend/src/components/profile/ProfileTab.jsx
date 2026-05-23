@@ -9,7 +9,7 @@ import TelegramConnect from './TelegramConnect'
 // inputStyle is now a factory called inside the component with dark context
 const getLabelStyleProfile = (isKhmer) => ({
   display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 2,
-  fontFamily: isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif',
+  fontFamily: isKhmer ? 'Kh-Koulen, sans-serif' : 'Rajdhani, sans-serif',
   color: '#9CA3AF', marginBottom: 8,
   textTransform: isKhmer ? 'none' : 'uppercase',
 })
@@ -42,7 +42,7 @@ const fmt = (n) => '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 })
 export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify, dark }) {
   const { t, isKhmer } = useLang()
   const khFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
-  const khBodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'   : 'Rajdhani,sans-serif'
+  const khBodyFont = isKhmer ? 'Kh-Koulen, sans-serif'   : 'Rajdhani,sans-serif'
   // Bind context-aware helpers
   const labelStyle  = getLabelStyleProfile(isKhmer)
   const inputStyle  = (hasError, editable = true) => getInputStyle(hasError, editable, dark)

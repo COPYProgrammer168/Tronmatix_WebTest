@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', 'ORDER #' . $order->order_id)
+@section('title', strtoupper(__('dashboard.nav.ordershow')) . ' #' . $order->order_id)
 
 {{-- Suppress the layout's inline flash — this page uses floating toast messages instead --}}
 @section('suppress_flash') @endsection
@@ -43,29 +43,29 @@
      animation:fadeUp .45s ease both;">
     <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
          background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size:46px;
+         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
          box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size:30px;font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
+    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
+    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
         Your role does not have permission to access this module.<br>
         Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
     </div>
     <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
          margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size:22px;">{{ $_pRM['icon'] }}</span>
+        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px;font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
         </div>
         <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','orders')) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','orders')) }}</div>
         </div>
     </div>
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
          border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
+        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
             @foreach($_pAllFeats as $_fKey => $_fIcon)
             @php
@@ -76,8 +76,8 @@
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
                  background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
                  border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size:18px;{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px;letter-spacing:1px;font-weight:700;
+                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
+                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
                     color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
                     {{ $_fHas ? '✓' : '✗' }}
                 </span>
@@ -88,14 +88,14 @@
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
+           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
            onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
             🏠 GO TO DASHBOARD
         </a>
         <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;
            background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;letter-spacing:1px;"
+           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
            onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
             ← GO BACK
         </a>
@@ -115,12 +115,12 @@
     position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
     background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff;
     border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
-    font-size:15px; font-weight:700; letter-spacing:1px;
+    font-size: var(--title-size); font-weight:700; letter-spacing:1px;
     box-shadow:0 8px 32px rgba(34,197,94,0.4);
     display:flex; align-items:center; gap:10px;
     animation:slideDown .35s cubic-bezier(0.34,1.56,0.64,1);
 ">
-    <span style="font-size:20px;">✅</span> {{ session('success') }}
+    <span style="font-size: var(--title-size);">✅</span> {{ session('success') }}
 </div>
 <script>
     setTimeout(() => {
@@ -135,12 +135,12 @@
     position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
     background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
     border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
-    font-size:15px; font-weight:700; letter-spacing:1px;
+    font-size: var(--title-size); font-weight:700; letter-spacing:1px;
     box-shadow:0 8px 32px rgba(239,68,68,0.4);
     display:flex; align-items:center; gap:10px;
     animation:slideDown .35s cubic-bezier(0.34,1.56,0.64,1);
 ">
-    <span style="font-size:20px;">⚠️</span> {{ session('error') }}
+    <span style="font-size: var(--title-size);">⚠️</span> {{ session('error') }}
 </div>
 <script>
     setTimeout(() => {
@@ -166,21 +166,28 @@
             <div class="card-header">
                 <span class="card-title">ORDER INFORMATION</span>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                    {{-- Fulfillment type badge --}}
+                    {{-- Fulfillment type badge & Payment status --}}
                     @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
                         <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
-                            border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;
+                            border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                             background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;">
                             🏪 PICKUP
                         </span>
                     @else
                         <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
-                            border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;
+                            border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                             background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">
                             🚚 DELIVERY
                         </span>
                     @endif
-                    <span class="badge badge-{{ $order->status }}" style="font-size:13px;">
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                        border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
+                        background:{{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }};
+                        border:1px solid {{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }};
+                        color:{{ ($order->payment_status ?? 'pending') === 'paid' ? '#22c55e' : '#ef4444' }};">
+                        {{ strtoupper($order->payment_status ?? 'pending') }}
+                    </span>
+                    <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">
                         {{ strtoupper($order->status) }}
                     </span>
                 </div>
@@ -194,16 +201,18 @@
                         'Date'           => $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i').' (ICT)',
                     ] as $label => $value)
                     <div>
-                        <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">
+                        <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">
                             {{ strtoupper($label) }}
                         </div>
-                        <div style="font-weight:700; color:#fff;">{{ $value }}</div>
+                        <div style="font-weight:700; color:{{ $label === 'Payment Status' && $value === 'PAID' ? '#22c55e' : '#fff' }};">
+                            {{ $value }}
+                        </div>
                     </div>
                     @endforeach
 
                     @if($order->delivery_date)
                     <div>
-                        <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">DELIVERY DATE</div>
+                        <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">DELIVERY DATE</div>
                         <div style="font-weight:700; color:#F97316;">
                             🗓 {{ \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') }}
                             @if($order->delivery_time_slot) · {{ $order->delivery_time_slot }} @endif
@@ -213,7 +222,7 @@
 
                     @if($order->delivery_confirmed_at)
                     <div>
-                        <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">CONFIRMED AT</div>
+                        <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">CONFIRMED AT</div>
                         <div style="font-weight:700; color:#22c55e;">
                             ✅ {{ $order->delivery_confirmed_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i') }} (ICT)
                         </div>
@@ -254,8 +263,8 @@
                 @if($order->status === 'cancelled')
                 <div style="text-align:center; padding:20px; border-radius:12px;
                     background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);">
-                    <div style="font-size:28px; margin-bottom:6px;">❌</div>
-                    <div style="font-size:14px; font-weight:800; color:#ef4444; letter-spacing:2px;">ORDER CANCELLED</div>
+                    <div style="font-size: var(--title-size); margin-bottom:6px;">❌</div>
+                    <div style="font-size: var(--title-size); font-weight:800; color:#ef4444; letter-spacing:2px;">ORDER CANCELLED</div>
                 </div>
                 @else
                 <div style="overflow-x:auto; padding-bottom:8px;">
@@ -266,7 +275,7 @@
                             {{-- Step circle --}}
                             <div style="
                                 width:46px; height:46px; border-radius:50%;
-                                display:flex; align-items:center; justify-content:center; font-size:18px;
+                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
                                 background: {{ $i < $current ? $colors[$i].'22' : ($i === $current ? $colors[$i] : 'rgba(255,255,255,0.06)') }};
                                 border: 2px solid {{ $i <= $current ? $colors[$i] : 'rgba(255,255,255,0.1)' }};
                                 box-shadow: {{ $i === $current ? '0 0 20px '.$colors[$i].'55' : 'none' }};
@@ -275,13 +284,13 @@
                                 position:relative; z-index:2;
                             ">
                                 @if($i < $current)
-                                    <span style="color:{{ $colors[$i] }}; font-size:16px;">✓</span>
+                                    <span style="color:{{ $colors[$i] }}; font-size: var(--title-size);">✓</span>
                                 @else
                                     {{ $icons[$i] }}
                                 @endif
                             </div>
                             {{-- Step label --}}
-                            <div style="margin-top:8px; font-size:10px; text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
+                            <div style="margin-top:8px; font-size: var(--title-size); text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
                                 color: {{ $i <= $current ? $colors[$i] : 'rgba(255,255,255,0.2)' }};">
                                 {{ $labels[$i] }}
                                 @if($i === $current)
@@ -308,7 +317,7 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">ORDER ITEMS</span>
-                <span style="color:rgba(255,255,255,0.4); font-size:13px;">
+                <span style="color:rgba(255,255,255,0.4); font-size: var(--title-size);">
                     {{ $order->items->count() }} item(s)
                 </span>
             </div>
@@ -353,18 +362,18 @@
                                     @if($thumbSrc)
                                         <img src="{{ $thumbSrc }}" class="product-thumb" alt="{{ $item->name }}"
                                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                                        <div class="product-thumb" style="display:none; align-items:center; justify-content:center; font-size:18px;">📦</div>
+                                        <div class="product-thumb" style="display:none; align-items:center; justify-content:center; font-size: var(--title-size);">📦</div>
                                     @else
-                                        <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size:18px;">📦</div>
+                                        <div class="product-thumb" style="display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">📦</div>
                                     @endif
                                     <div>
                                         <div style="font-weight:600;">{{ $item->name }}</div>
                                         @if($item->warranty_start && $item->warranty_end)
-                                        <div style="font-size:10px; color:#F97316; margin-top:3px;">
+                                        <div style="font-size: var(--title-size); color:#F97316; margin-top:3px;">
                                             🛡️ {{ $item->warranty_start->format('d M Y') }} → {{ $item->warranty_end->format('d M Y') }}
                                         </div>
                                         @elseif($item->warranty_start)
-                                        <div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:3px;">
+                                        <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:3px;">
                                             🛡️ From {{ $item->warranty_start->format('d M Y') }}
                                         </div>
                                         @endif
@@ -375,7 +384,7 @@
                             {{-- Unit price — strike-through if discounted --}}
                             <td>
                                 @if($hasDiscount)
-                                    <span style="text-decoration:line-through; color:rgba(255,255,255,0.35); font-size:12px;">
+                                    <span style="text-decoration:line-through; color:rgba(255,255,255,0.35); font-size: var(--title-size);">
                                         ${{ number_format($item->price, 2) }}
                                     </span>
                                 @else
@@ -387,7 +396,7 @@
                             @if($hasDiscount)
                             <td style="color:#4ade80; font-weight:700;">
                                 ${{ number_format($discountedUnit, 2) }}
-                                <div style="font-size:10px; color:rgba(74,222,128,0.6); margin-top:1px;">
+                                <div style="font-size: var(--title-size); color:rgba(74,222,128,0.6); margin-top:1px;">
                                     −{{ round($discountRate * 100, 1) }}%
                                 </div>
                             </td>
@@ -399,7 +408,7 @@
                             <td style="color:#F97316; font-weight:700;">
                                 ${{ number_format($hasDiscount ? $discountedLine : $lineTotal, 2) }}
                                 @if($hasDiscount)
-                                <div style="font-size:10px; text-decoration:line-through; color:rgba(255,255,255,0.25);">
+                                <div style="font-size: var(--title-size); text-decoration:line-through; color:rgba(255,255,255,0.25);">
                                     ${{ number_format($lineTotal, 2) }}
                                 </div>
                                 @endif
@@ -437,7 +446,7 @@
                     <span class="card-title">🚚 SHIPPING ADDRESS & DELIVERY MAP</span>
                 @endif
                 @if($order->location)
-                <span style="font-size:11px; color:#F97316; letter-spacing:1px;">
+                <span style="font-size: var(--title-size); color:#F97316; letter-spacing:1px;">
                     📌 SAVED #{{ $order->location->id }}
                     @if($order->location->is_default) · DEFAULT @endif
                 </span>
@@ -448,34 +457,34 @@
                 {{-- Address info row --}}
                 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:{{ $mapLat && $mapLng ? '20px' : '0' }};">
                     <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size:18px;">👤</span>
+                        <span style="font-size: var(--title-size);">👤</span>
                         <div>
-                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NAME</div>
-                            <div style="font-weight:700; color:#fff; font-size:14px;">{{ $name }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NAME</div>
+                            <div style="font-weight:700; color:#fff; font-size: var(--title-size);">{{ $name }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size:18px;">📞</span>
+                        <span style="font-size: var(--title-size);">📞</span>
                         <div>
-                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">PHONE</div>
-                            <div style="font-weight:700; color:#F97316; font-size:14px;">{{ $phone }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">PHONE</div>
+                            <div style="font-weight:700; color:#F97316; font-size: var(--title-size);">{{ $phone }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size:18px;">📍</span>
+                        <span style="font-size: var(--title-size);">📍</span>
                         <div>
-                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">ADDRESS</div>
-                            <div style="font-weight:700; color:rgba(255,255,255,0.85); font-size:14px; line-height:1.5;">
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">ADDRESS</div>
+                            <div style="font-weight:700; color:rgba(255,255,255,0.85); font-size: var(--title-size); line-height:1.5;">
                                 {{ $address }}{{ $city ? ', '.$city : '' }}
                             </div>
                         </div>
                     </div>
                     @if($note)
                     <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size:18px;">📝</span>
+                        <span style="font-size: var(--title-size);">📝</span>
                         <div>
-                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
-                            <div style="color:rgba(255,255,255,0.5); font-size:13px; font-style:italic;">{{ $note }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
+                            <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic;">{{ $note }}</div>
                         </div>
                     </div>
                     @endif
@@ -483,7 +492,7 @@
                     <button onclick="window.print()" style="
                         width:100%; padding:13px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.12);
                         background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7);
-                        font-family:Rajdhani,sans-serif; font-size:14px; font-weight:700;
+                        font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
                         letter-spacing:2px; cursor:pointer; transition:all .2s;
                         display:flex; align-items:center; justify-content:center; gap:8px;
                     " onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
@@ -495,20 +504,20 @@
                 {{-- Map — only if coordinates exist --}}
                 @if($mapLat && $mapLng)
                 <div>
-                    <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                    <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
                         📍 PINNED DELIVERY ROUTE
-                        <span id="map-route-label" style="color:rgba(255,255,255,0.2); font-weight:400; font-size:10px;">Loading route...</span>
+                        <span id="map-route-label" style="color:rgba(255,255,255,0.2); font-weight:400; font-size: var(--title-size);">Loading route...</span>
                     </div>
                     <div id="order-map" style="height:400px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);"></div>
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; flex-wrap:wrap; gap:8px;">
                         @if($mapAddr)
-                        <div style="font-size:12px; color:rgba(255,255,255,0.4);">📍 {{ $mapAddr }}</div>
+                        <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4);">📍 {{ $mapAddr }}</div>
                         @endif
                         <div style="display:flex; gap:16px;">
-                            <span style="font-size:12px; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
+                            <span style="font-size: var(--title-size); color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
                                 <span style="width:10px;height:10px;border-radius:50%;background:#F97316;display:inline-block;"></span> Tronmatix Store
                             </span>
-                            <span style="font-size:12px; color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
+                            <span style="font-size: var(--title-size); color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
                                 <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span> Customer
                             </span>
                         </div>
@@ -708,16 +717,16 @@
         @if($nextAction && !$order->delivery_confirmed_at)
         <div class="card" style="border-color:{{ $nextAction['border'] }}; background:{{ $nextAction['bg'] }};">
             <div class="card-body" style="text-align:center;">
-                <div style="font-size:36px; margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
-                <div style="font-weight:700; color:{{ $nextAction['color'] }}; font-size:16px; margin-bottom:6px; letter-spacing:1px;">
+                <div style="font-size: var(--title-size); margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
+                <div style="font-weight:700; color:{{ $nextAction['color'] }}; font-size: var(--title-size); margin-bottom:6px; letter-spacing:1px;">
                     {!! $nextAction['title'] !!}
                 </div>
-                <div style="color:rgba(255,255,255,0.45); font-size:13px; margin-bottom:18px;">
+                <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-bottom:18px;">
                     {!! $nextAction['desc'] !!}
                 </div>
                 <button onclick="openPopup('confirm-delivery')" style="
                     background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
-                    width:100%; border:none; padding:13px; border-radius:10px; font-size:15px;
+                    width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
                     letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
                     box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
                 " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
@@ -729,9 +738,9 @@
         @elseif($order->delivery_confirmed_at)
         <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
             <div class="card-body" style="text-align:center;">
-                <div style="font-size:32px; margin-bottom:8px;">✅</div>
-                <div style="font-weight:700; color:#22c55e; font-size:15px;">Delivery Confirmed</div>
-                <div style="color:rgba(255,255,255,0.35); font-size:12px; margin-top:4px;">
+                <div style="font-size: var(--title-size); margin-bottom:8px;">✅</div>
+                <div style="font-weight:700; color:#22c55e; font-size: var(--title-size);">Delivery Confirmed</div>
+                <div style="color:rgba(255,255,255,0.35); font-size: var(--title-size); margin-top:4px;">
                     {{ $order->delivery_confirmed_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i') }} (ICT)
                 </div>
             </div>
@@ -780,7 +789,7 @@
                         style="
                         display:flex; align-items:center; gap:7px;
                         padding:9px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
-                        font-size:12px; font-weight:700; letter-spacing:1px;
+                        font-size: var(--title-size); font-weight:700; letter-spacing:1px;
                         cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
                         border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.1)' }};
                         background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.03)' }};
@@ -791,7 +800,7 @@
                     "
                     onmouseover="if(!this.disabled){ this.style.borderColor='{{ $meta['color'] }}'; this.style.color='{{ $meta['color'] }}'; this.style.background='rgba(255,255,255,0.06)'; }"
                     onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.45)'; this.style.background='rgba(255,255,255,0.03)'; }">
-                        <span style="font-size:14px;">{{ $meta['icon'] }}</span>
+                        <span style="font-size: var(--title-size);">{{ $meta['icon'] }}</span>
                         {{ $meta['label'] }}
                         @if($isCurrentStatus)
                             <span style="margin-left:auto; width:7px; height:7px; border-radius:50%;
@@ -800,9 +809,42 @@
                     </button>
                     @endforeach
                 </div>
+                {{-- Payment Verification Button --}}
+                <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07);">
+                    <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
+                        @csrf
+                        <button type="submit" style="
+                            width: 100%; padding: 10px; border-radius: 10px; border: none;
+                            background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
+                            font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
+                            align-items: center; justify-content: center; gap: 8px;
+                        ">
+                            💳 VERIFY PAYMENT
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
         @endif {{-- orders_edit permission --}}
+
+        {{-- Payment Verification Card — visible if order status is pending and payment is not paid --}}
+        @if($order->status === 'pending' && ($order->payment_status ?? 'pending') !== 'paid')
+        <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
+            <div class="card-body">
+                <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
+                    @csrf
+                    <button type="submit" style="
+                        width: 100%; padding: 12px; border-radius: 10px; border: none;
+                        background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
+                        font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
+                        align-items: center; justify-content: center; gap: 8px;
+                    ">
+                        💳 VERIFY PAYMENT
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
 
         {{-- Order Summary --}}
         <div class="card">
@@ -812,22 +854,22 @@
             <div class="card-body">
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     {{-- Subtotal --}}
-                    <div style="display:flex; justify-content:space-between; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
                         <span style="color:rgba(255,255,255,0.4);">Subtotal</span>
                         <span>${{ number_format($order->subtotal ?? $order->total, 2) }}</span>
                     </div>
 
                     {{-- Discount — show code + amount, handle both code-based and public discounts --}}
                     @if($order->discount_amount > 0)
-                    <div style="display:flex; justify-content:space-between; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
                         <span style="color:rgba(255,255,255,0.4);">
                             Discount
                             @if($order->discount_code)
-                                <span style="font-family:monospace; font-size:11px; background:rgba(74,222,128,0.1);
+                                <span style="font-family:monospace; font-size: var(--title-size); background:rgba(74,222,128,0.1);
                                     border:1px solid rgba(74,222,128,0.25); border-radius:4px; padding:1px 6px;
                                     color:#4ade80; margin-left:4px;">{{ $order->discount_code }}</span>
                             @else
-                                <span style="font-size:11px; color:rgba(74,222,128,0.6); margin-left:4px;">(auto)</span>
+                                <span style="font-size: var(--title-size); color:rgba(74,222,128,0.6); margin-left:4px;">(auto)</span>
                             @endif
                         </span>
                         <span style="color:#22c55e; font-weight:700;">−${{ number_format($order->discount_amount, 2) }}</span>
@@ -836,7 +878,7 @@
 
                     {{-- Delivery --}}
                     @if($order->delivery > 0)
-                    <div style="display:flex; justify-content:space-between; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
                         <span style="color:rgba(255,255,255,0.4);">Delivery</span>
                         <span>${{ number_format($order->delivery, 2) }}</span>
                     </div>
@@ -844,7 +886,7 @@
 
                     {{-- Tax --}}
                     @if($order->tax > 0)
-                    <div style="display:flex; justify-content:space-between; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
                         <span style="color:rgba(255,255,255,0.4);">Tax</span>
                         <span>${{ number_format($order->tax, 2) }}</span>
                     </div>
@@ -853,7 +895,7 @@
                     <div style="border-top:1px solid rgba(255,255,255,0.07); padding-top:12px;
                                 display:flex; justify-content:space-between; font-weight:700;">
                         <span>TOTAL</span>
-                        <span style="color:#F97316; font-size:18px;">${{ number_format($order->total, 2) }}</span>
+                        <span style="color:#F97316; font-size: var(--title-size);">${{ number_format($order->total, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -868,7 +910,7 @@
                     <span class="card-title">SHIPPING ADDRESS</span>
                 @endif
                 @if($order->location)
-                <span style="font-size:11px; color:#F97316; letter-spacing:1px;">
+                <span style="font-size: var(--title-size); color:#F97316; letter-spacing:1px;">
                     📌 SAVED #{{ $order->location->id }}
                     @if($order->location->is_default) · DEFAULT @endif
                 </span>
@@ -885,19 +927,19 @@
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     @foreach([['👤','NAME',$name,'#fff'],['📞','PHONE',$phone,'#F97316'],['📍','ADDRESS',$address.($city ? "\n".$city : ''),'rgba(255,255,255,0.85)']] as [$icon,$label,$val,$color])
                     <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size:16px;">{{ $icon }}</span>
+                        <span style="font-size: var(--title-size);">{{ $icon }}</span>
                         <div>
-                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ $label }}</div>
-                            <div style="font-weight:700; color:{{ $color }}; font-size:13px; line-height:1.5; white-space:pre-line;">{{ $val }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ $label }}</div>
+                            <div style="font-weight:700; color:{{ $color }}; font-size: var(--title-size); line-height:1.5; white-space:pre-line;">{{ $val }}</div>
                         </div>
                     </div>
                     @endforeach
                     @if($note)
                     <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size:16px;">📝</span>
+                        <span style="font-size: var(--title-size);">📝</span>
                         <div>
-                            <div style="font-size:10px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
-                            <div style="color:rgba(255,255,255,0.5); font-size:13px; font-style:italic;">{{ $note }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
+                            <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic;">{{ $note }}</div>
                         </div>
                     </div>
                     @endif
@@ -921,13 +963,13 @@
                 width:80px; height:80px; border-radius:50%; margin:0 auto 12px;
                 background:{{ $nextAction['gradient'] }};
                 display:flex; align-items:center; justify-content:center;
-                font-size:40px; box-shadow:0 0 32px {{ $nextAction['shadow'] }};
+                font-size: var(--title-size); box-shadow:0 0 32px {{ $nextAction['shadow'] }};
                 animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $nextAction['icon'] }}</div>
-            <div style="font-size:22px; font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+            <div style="font-size: var(--title-size); font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
                 {!! $nextAction['title'] !!}
             </div>
-            <div style="color:rgba(255,255,255,0.45); font-size:13px; margin-top:6px;">
+            <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-top:6px;">
                 Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong> will move to
                 <strong style="color:{{ $nextAction['color'] }};">{{ ucfirst($nextAction['status']) }}</strong> status.
             </div>
@@ -954,7 +996,7 @@
             $targetIdx  = array_search($nextAction['status'], array_keys($popupSteps));
         @endphp
         <div style="background:{{ $nextAction['color'] }}11; border:1px solid {{ $nextAction['color'] }}33; border-radius:12px; padding:14px 16px; margin-bottom:20px;">
-            <div style="font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:10px;">FLOW</div>
+            <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:10px;">FLOW</div>
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 @foreach($popupSteps as $sKey => $sData)
                 @php
@@ -965,14 +1007,14 @@
                     $sFuture = $sIdx > $targetIdx;
                 @endphp
                 <div style="display:flex; align-items:center; gap:4px;">
-                    <div style="padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.5px;
+                    <div style="padding:4px 10px; border-radius:20px; font-size: var(--title-size); font-weight:700; letter-spacing:0.5px;
                         background: {{ $sTarget ? $sData['color'].'22' : ($sDone||$sCurrent ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)') }};
                         border: 1px solid {{ $sTarget ? $sData['color'] : ($sDone||$sCurrent ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)') }};
                         color: {{ $sTarget ? $sData['color'] : ($sDone||$sCurrent ? '#22c55e' : 'rgba(255,255,255,0.25)') }};
                         opacity: {{ $sFuture ? '0.45' : '1' }};">
                         {{ ($sDone||$sCurrent) && !$sTarget ? '✓ ' : '' }}{{ $sData['label'] }}{{ $sTarget ? ' ◀' : '' }}
                     </div>
-                    @if(!$loop->last)<span style="color:rgba(255,255,255,0.2);font-size:10px;">›</span>@endif
+                    @if(!$loop->last)<span style="color:rgba(255,255,255,0.2);font-size: var(--title-size);">›</span>@endif
                 </div>
                 @endforeach
             </div>
@@ -1012,34 +1054,34 @@
             <div style="
                 width:72px; height:72px; border-radius:50%; margin:0 auto 14px;
                 background:{{ $meta['gradient'] }};
-                display:flex; align-items:center; justify-content:center; font-size:34px;
+                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
                 box-shadow:0 0 28px {{ $meta['color'] }}55;
                 animation:popIn .45s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $meta['icon'] }}</div>
-            <div style="font-size:20px; font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+            <div style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
                 SET TO {{ $meta['label'] }}
             </div>
-            <div style="color:rgba(255,255,255,0.4); font-size:13px; margin-top:6px;">
+            <div style="color:rgba(255,255,255,0.4); font-size: var(--title-size); margin-top:6px;">
                 Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong>
             </div>
         </div>
 
         <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; font-size: var(--title-size); margin-bottom:8px;">
                 <span style="color:rgba(255,255,255,0.4);">Current status</span>
-                <span class="badge badge-{{ $order->status }}" style="font-size:11px;">{{ strtoupper($order->status) }}</span>
+                <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">{{ strtoupper($order->status) }}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:13px;">
+            <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
                 <span style="color:rgba(255,255,255,0.4);">New status</span>
-                <span style="font-weight:800; color:{{ $meta['color'] }}; font-size:13px;">{{ $meta['icon'] }} {{ $meta['label'] }}</span>
+                <span style="font-weight:800; color:{{ $meta['color'] }}; font-size: var(--title-size);">{{ $meta['icon'] }} {{ $meta['label'] }}</span>
             </div>
-            <div style="margin-top:10px; font-size:12px; color:rgba(255,255,255,0.4); border-top:1px solid rgba(255,255,255,0.07); padding-top:10px;">
+            <div style="margin-top:10px; font-size: var(--title-size); color:rgba(255,255,255,0.4); border-top:1px solid rgba(255,255,255,0.07); padding-top:10px;">
                 {{ $meta['msg'] }}
             </div>
         </div>
 
         @if($key === 'cancelled')
-        <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:11px 14px; margin-bottom:16px; font-size:12px; color:rgba(255,255,255,0.5); display:flex; gap:8px;">
+        <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:11px 14px; margin-bottom:16px; font-size: var(--title-size); color:rgba(255,255,255,0.5); display:flex; gap:8px;">
             <span>⚠️</span> <span>Cancellation cannot be undone. Stock will be restored if applicable.</span>
         </div>
         @endif
@@ -1072,8 +1114,8 @@
         ? min($order->discount_amount / $rItemsSubtotal, 1.0) : 0;
 @endphp
 <div id="thermal-receipt">
-    <div class="tr-center tr-bold" style="font-size:16px;">TRONMATIX COMPUTER</div>
-    <div class="tr-center" style="font-size:11px; margin-bottom:2px;">TronmatixComputer.com</div>
+    <div class="tr-center tr-bold" style="font-size: var(--title-size);">TRONMATIX COMPUTER</div>
+    <div class="tr-center" style="font-size: var(--title-size); margin-bottom:2px;">TronmatixComputer.com</div>
     <div class="tr-divider"></div>
 
     <div class="tr-row"><span>Order</span><span>#{{ $order->order_id }}</span></div>
@@ -1082,17 +1124,17 @@
     <div class="tr-row"><span>Type</span><span>{{ $order->isPickup() ? '🏪 PICKUP' : '🚚 DELIVERY' }}</span></div>
     <div style="font-weight:700;">{{ $item->name }}</div>
     @if($item->warranty_start && $item->warranty_end)
-    <div style="font-size:10px; color:#444;">
+    <div style="font-size: var(--title-size); color:#444;">
         Warranty: {{ $item->warranty_start->format('d M Y') }} - {{ $item->warranty_end->format('d M Y') }}
     </div>
     @elseif($item->warranty_start)
-    <div style="font-size:10px; color:#444;">
+    <div style="font-size: var(--title-size); color:#444;">
         Warranty from: {{ $item->warranty_start->format('d M Y') }}
     </div>
     @endif
     <div class="tr-divider"></div>
 
-    <div class="tr-bold" style="margin-bottom:6px; font-size:11px; letter-spacing:1px;">ITEMS</div>
+    <div class="tr-bold" style="margin-bottom:6px; font-size: var(--title-size); letter-spacing:1px;">ITEMS</div>
     @foreach($order->items as $item)
     @php
         $rLineTotal      = $item->price * $item->qty;
@@ -1101,12 +1143,12 @@
     @endphp
     <div style="margin-bottom:4px;">
         <div style="font-weight:700;">{{ $item->name }}</div>
-        <div class="tr-row" style="font-size:11px; color:#555;">
+        <div class="tr-row" style="font-size: var(--title-size); color:#555;">
             <span>${{ number_format($item->price,2) }} × {{ $item->qty }}</span>
             <span style="font-weight:700; color:#000;">${{ number_format($rFinal,2) }}</span>
         </div>
         @if($rHasDiscount)
-        <div style="font-size:10px; color:#888; text-align:right;">
+        <div style="font-size: var(--title-size); color:#888; text-align:right;">
             (orig. ${{ number_format($rLineTotal,2) }})
         </div>
         @endif
@@ -1124,22 +1166,22 @@
     @if($order->tax > 0)
     <div class="tr-row"><span>Tax</span><span>${{ number_format($order->tax,2) }}</span></div>
     @endif
-    <div class="tr-row tr-bold" style="font-size:15px; margin-top:4px;">
+    <div class="tr-row tr-bold" style="font-size: var(--title-size); margin-top:4px;">
         <span>TOTAL</span><span>${{ number_format($order->total,2) }}</span>
     </div>
     <div class="tr-divider"></div>
 
-    <div class="tr-bold" style="margin-bottom:4px; font-size:11px; letter-spacing:1px;">
-        {{ $order->isPickup() ? 'PICKUP INFO' : 'DELIVERY INFO' }}
+    <div class="tr-bold" style="margin-bottom:4px; font-size: var(--title-size); letter-spacing:1px;">
+        {{ $order->isPickup() ? 'PICKUP' : 'DELIVERY' }} TO Customer INFO
     </div>
-    <div style="font-size:12px; margin-bottom:2px;">👤 {{ $rName }}</div>
-    <div style="font-size:12px; margin-bottom:2px;">📞 {{ $rPhone }}</div>
-    <div style="font-size:12px; margin-bottom:2px;">📍 {{ $rAddress }}{{ $rCity ? ', '.$rCity : '' }}</div>
-    @if($rNote)<div style="font-size:11px; color:#555; font-style:italic;">Note: {{ $rNote }}</div>@endif
+    <div style="font-size: var(--title-size); margin-bottom:2px;">👤 {{ $rName }}</div>
+    <div style="font-size: var(--title-size); margin-bottom:2px;">📞 {{ $rPhone }}</div>
+    <div style="font-size: var(--title-size); margin-bottom:2px;">📍 {{ $rAddress }}{{ $rCity ? ', '.$rCity : '' }}</div>
+    @if($rNote)<div style="font-size: var(--title-size); color:#555; font-style:italic;">Note: {{ $rNote }}</div>@endif
 
     <div class="tr-divider"></div>
-    <div class="tr-center tr-bold" style="font-size:13px;">Thank you for your order!</div>
-    <div class="tr-center" style="font-size:10px; margin-top:2px; color:#555;">Status: {{ strtoupper($order->status) }}</div>
+    <div class="tr-center tr-bold" style="font-size: var(--title-size);">Thank you for your order!</div>
+    <div class="tr-center" style="font-size: var(--title-size); margin-top:2px; color:#555;">Status: {{ strtoupper($order->status) }}</div>
     <div style="margin-top:16px;"></div>
 </div>
 
@@ -1195,13 +1237,13 @@
     flex:1; padding:12px; border-radius:10px;
     border:1.5px solid rgba(255,255,255,0.12);
     background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.6);
-    font-family:Rajdhani,sans-serif; font-size:14px; font-weight:700;
+    font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
     letter-spacing:1px; cursor:pointer; transition:all .15s;
 }
 .popup-btn-cancel:hover { background:rgba(255,255,255,0.1); color:#fff; }
 .popup-btn-confirm {
     flex:2; padding:12px; border-radius:10px; border:none;
-    color:#fff; font-family:Rajdhani,sans-serif; font-size:14px; font-weight:700;
+    color:#fff; font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
     letter-spacing:1px; cursor:pointer; transition:transform .15s;
     box-shadow:0 4px 16px rgba(0,0,0,0.3);
 }
@@ -1255,7 +1297,7 @@
         width: 72mm !important;
         margin: 0 !important;
         font-family: 'Courier New', monospace !important;
-        font-size: 12px !important;
+        font-size: var(--title-size) !important;
         color: #000 !important;
         background: #fff !important;
         padding: 4mm 2mm !important;
@@ -1269,7 +1311,7 @@
     .tr-row {
         display: flex !important;
         justify-content: space-between !important;
-        font-size: 12px !important;
+        font-size: var(--title-size) !important;
     }
     .tr-bold  { font-weight: 700 !important; }
     .tr-center { text-align: center !important; }

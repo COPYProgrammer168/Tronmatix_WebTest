@@ -40,29 +40,29 @@
      animation:fadeUp .45s ease both;">
     <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
          background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size:46px;
+         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
          box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size:30px;font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
+    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
+    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
         Your role does not have permission to access this module.<br>
         Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
     </div>
     <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
          margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size:22px;">{{ $_pRM['icon'] }}</span>
+        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px;font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
         </div>
         <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
         <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','products')) }}</div>
+            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
+            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','products')) }}</div>
         </div>
     </div>
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
          border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
+        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
             @foreach($_pAllFeats as $_fKey => $_fIcon)
             @php
@@ -73,8 +73,8 @@
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
                  background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
                  border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size:18px;{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px;letter-spacing:1px;font-weight:700;
+                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
+                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
                     color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
                     {{ $_fHas ? '✓' : '✗' }}
                 </span>
@@ -85,14 +85,14 @@
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
+           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
            onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
             🏠 GO TO DASHBOARD
         </a>
         <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
            padding:12px 24px;border-radius:12px;text-decoration:none;
            background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;letter-spacing:1px;"
+           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
            onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
             ← GO BACK
         </a>
@@ -109,7 +109,7 @@
         </a>
         <div class="card">
             <div class="card-header">
-                <span class="card-title" style="font-size:25px;">
+                <span class="card-title" style="font-size: var(--title-size);">
                     {{ $product ? 'EDIT: ' . Str::limit($product->name, 40) : 'ADD NEW PRODUCT' }}
                 </span>
                 @if ($product)
@@ -151,22 +151,13 @@
 
                             {{-- Category + Brand --}}
                             <div class="form-grid-2">
-                                <div class="form-group" style="font-size:18px;">
+                                <div class="form-group" style="font-size: var(--title-size);">
                                     <label class="form-label">CATEGORY *</label>
                                     <select name="category" class="form-control" required>
                                         <option value="" disabled
                                             {{ old('category', $product?->category) ? '' : 'selected' }}>
                                             — Select Category —
                                         </option>
-
-                                        {{-- <optgroup label="─── NEW ADD ───────────────">
-                                            @foreach (['New Arrival'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ request('category') === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup> --}}
 
                                         <optgroup label="─── PC BUILDS ───────────────">
                                             @foreach (['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'] as $cat)
@@ -220,8 +211,8 @@
                                             @endforeach
                                         </optgroup>
 
-                                        <optgroup label="─── FURNITURE ──────────────">
-                                            @foreach (['CHAIR', 'DESK', 'MONITOR STAND'] as $cat)
+                                        <optgroup label="─── RESELL ITEM  ──────────────">
+                                            @foreach (['Second hand', 'Used', 'Pre-owned'] as $cat)
                                                 <option value="{{ $cat }}"
                                                     {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
                                                     {{ $cat }}
@@ -237,7 +228,7 @@
                                         value="{{ old('brand', $product?->brand) }}" placeholder="e.g. AMD, Intel, NVIDIA"
                                         list="brandList" />
                                     <datalist id="brandList">
-                                        @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'G.Skill', 'Kingston', 'Samsung', 'WD', 'Seagate', 'Noctua', 'NZXT', 'EVGA', 'Seasonic', 'Lian Li', 'Fractal', 'Logitech', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
+                                        @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
                                             <option value="{{ $brand }}">
                                         @endforeach
                                     </datalist>
@@ -249,10 +240,13 @@
                             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
                                 <div class="form-group">
                                     <label class="form-label">PRICE (USD) *</label>
-                                    <input type="number" name="price"
+                                    <input type="text" name="price"
                                         class="form-control {{ $errors->has('price') ? 'is-invalid' : '' }}"
-                                        value="{{ old('price', $product?->price) }}" step="0.01" min="0"
-                                        placeholder="0.00" required />
+                                        value="{{ old('price', $product?->price) }}"
+                                        placeholder="$ or 0.00"
+                                        inputmode="decimal"
+                                        oninput="this.value = this.value.replace(/[^0-9$.]/g, '');"
+                                        required />
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">STOCK *</label>
@@ -289,7 +283,7 @@
                                                 {{ old('is_featured', $product?->is_featured) ? 'checked' : '' }} />
                                             <span class="toggle-slider"></span>
                                         </label>
-                                        <span style="font-size:13px; color:rgba(255,255,255,0.5);">
+                                        <span style="font-size: var(--title-size); color:rgba(255,255,255,0.5);">
                                             Show on featured section
                                         </span>
                                     </label>
@@ -303,7 +297,7 @@
                                                 {{ old('is_hot', $product?->is_hot) ? 'checked' : '' }} />
                                             <span class="toggle-slider"></span>
                                         </label>
-                                        <span style="font-size:13px; color:rgba(255,255,255,0.5);">
+                                        <span style="font-size: var(--title-size); color:rgba(255,255,255,0.5);">
                                             Mark as hot item 🔥
                                         </span>
                                     </label>
@@ -316,7 +310,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label">PRODUCT IMAGES</label>
-                                <div style="font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:8px;">
+                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-bottom:8px;">
                                     First image = main image. Drag to reorder. Max 8 images, 2MB each.
                                 </div>
 
@@ -328,10 +322,6 @@
                                     gap:8px;
                                     margin-bottom:10px;
                                 ">
-                                    {{-- Existing images (edit mode) --}}
-                                    {{-- data-raw-path = original DB value. Submit handler reads this,
-                                         NOT img.src which is a full browser URL and would get saved
-                                         back to DB causing double-prefix on next edit. --}}
                                     @if ($product?->images && count($product->images))
                                         @foreach ($product->images as $idx => $img)
                                             @php
@@ -403,7 +393,7 @@
                                 <div style="display:flex; align-items:center; gap:10px; margin:14px 0;">
                                     <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
                                     <span
-                                        style="font-size:11px; color:rgba(255,255,255,0.2); letter-spacing:1px;">OR</span>
+                                        style="font-size: var(--title-size); color:rgba(255,255,255,0.2); letter-spacing:1px;">OR</span>
                                     <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
                                 </div>
 
@@ -416,7 +406,7 @@
                                         style="white-space:nowrap; padding:0 14px;">+ ADD</button>
                                 </div>
                                 <div id="urlPreviewMsg"
-                                    style="margin-top:6px; font-size:11px; color:rgba(255,255,255,0.2);"></div>
+                                    style="margin-top:6px; font-size: var(--title-size); color:rgba(255,255,255,0.2);"></div>
 
                                 {{-- Hidden field to track new URL images --}}
                                 <div id="urlImagesContainer"></div>
@@ -427,7 +417,7 @@
                                         <label class="toggle-wrap" style="cursor:pointer;">
                                             <input type="checkbox" name="remove_image" value="1"
                                                 id="removeImageCheck" onchange="toggleRemoveImage(this)" />
-                                            <span style="font-size:12px; color:rgba(239,68,68,0.7);">
+                                            <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">
                                                 Remove all images
                                             </span>
                                         </label>
@@ -513,7 +503,7 @@
             left: 5px;
             background: #F97316;
             color: #fff;
-            font-size: 9px;
+            font-size: var(--title-size);
             font-weight: 900;
             letter-spacing: 1px;
             padding: 2px 6px;
@@ -530,7 +520,7 @@
             border-radius: 50%;
             width: 22px;
             height: 22px;
-            font-size: 11px;
+            font-size: var(--title-size);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -553,7 +543,7 @@
             justify-content: center;
             gap: 6px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: var(--title-size);
             color: rgba(255, 255, 255, 0.25);
             transition: border-color 0.2s, background 0.2s;
             background: #1A1A1A;
@@ -585,7 +575,7 @@
         select.form-control optgroup {
             color: #F97316;
             font-weight: 700;
-            font-size: 11px;
+            font-size: var(--title-size);
         }
 
         /* ── Responsive ────────────────────────────────────────────────────────── */

@@ -10,7 +10,7 @@ export default function Step2Payment({
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
-  const btnFont = isKhmer ? "KantumruyPro, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
+  const btnFont = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif"
 
   const c = {
     heading:       dark ? '#f9fafb' : '#1f2937',

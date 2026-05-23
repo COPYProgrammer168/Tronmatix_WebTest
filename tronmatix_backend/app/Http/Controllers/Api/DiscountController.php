@@ -38,7 +38,8 @@ class DiscountController extends Controller
             'badge_config.color'  => 'nullable|string|max:30',
         ]);
         $data['kind']         = $request->input('kind', 'code');
-        $data['categories']   = $request->input('categories', []) ?: null;
+        $data['product_id']   = $request->input('product_id') ?: null;
+        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
         $discount = Discount::create($data);
 
@@ -66,7 +67,8 @@ class DiscountController extends Controller
             'badge_config.color'  => 'nullable|string|max:30',
         ]);
         $data['kind']         = $request->input('kind', $discount->kind ?? 'code');
-        $data['categories']   = $request->input('categories', []) ?: null;
+        $data['product_id']   = $request->input('product_id') ?: null;
+        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
         $discount->update($data);
 
@@ -115,12 +117,12 @@ class DiscountController extends Controller
             ->filter(fn (Discount $d) => $d->isActiveForBadge())
             ->map(fn (Discount $d) => [
                 'id'           => $d->id,
-                'kind'         => $d->kind ?? 'code',   // frontend uses this to distinguish
+                'kind'         => $d->kind ?? 'code',
                 'type'         => $d->type,
                 'value'        => $d->value,
+                'product_id'   => $d->product_id,
                 'categories'   => $d->categories ?? [],
                 'badge_config' => $d->badge_config,
-                // No code, no used_count — display-only
             ])
             ->values();
 
@@ -196,6 +198,7 @@ class DiscountController extends Controller
             'code'         => $d->code,
             'type'         => $d->type,
             'value'        => $d->value,
+            'product_id'   => $d->product_id,
             'min_order'    => $d->min_order,
             'max_uses'     => $d->max_uses,
             'used_count'   => $d->used_count,

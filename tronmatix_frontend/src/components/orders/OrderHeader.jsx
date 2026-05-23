@@ -7,7 +7,7 @@ export default function OrderHeader({ username }) {
   const { dark } = useTheme();
   const { t, isKhmer}     = useLang();
   const khfont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : ' Rajdhani, sans-serif'
-  const bodyFont  = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const bodyFont  = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
   return (
     <div className="flex items-center justify-between mb-6">
       <div>

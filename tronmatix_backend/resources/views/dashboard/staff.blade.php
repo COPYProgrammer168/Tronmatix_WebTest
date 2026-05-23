@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', 'ADMINS & STAFF')
+@section('title', strtoupper(__('dashboard.nav.staff')))
 @section('suppress_flash') @endsection
 
 @php
@@ -81,16 +81,16 @@
             <div
                 style="width:38px;height:38px;border-radius:50%;background:rgba(34,197,94,0.15);flex-shrink:0;
                 border:1.5px solid rgba(34,197,94,0.4);display:flex;align-items:center;justify-content:center;
-                font-size:20px;animation:popIn .4s .15s cubic-bezier(0.34,1.6,0.64,1) both;">
+                font-size: var(--title-size);animation:popIn .4s .15s cubic-bezier(0.34,1.6,0.64,1) both;">
                 ✓</div>
             <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:800;color:#22c55e;letter-spacing:1.5px;">SUCCESS</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">{{ session('success') }}
+                <div style="font-size: var(--title-size);font-weight:800;color:#22c55e;letter-spacing:1.5px;">SUCCESS</div>
+                <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;line-height:1.4;">{{ session('success') }}
                 </div>
             </div>
             <button onclick="dismissToast('page-toast')"
                 style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.05);
-                   border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size:16px;cursor:pointer;
+                   border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size: var(--title-size);cursor:pointer;
                    display:flex;align-items:center;justify-content:center;transition:all .2s;"
                 onmouseover="this.style.color='var(--text-primary)'"
                 onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
@@ -115,16 +115,16 @@
             <div
                 style="width:38px;height:38px;border-radius:50%;background:rgba(239,68,68,0.12);flex-shrink:0;
                 border:1.5px solid rgba(239,68,68,0.4);display:flex;align-items:center;justify-content:center;
-                font-size:20px;">
+                font-size: var(--title-size);">
                 ✕</div>
             <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:800;color:#ef4444;letter-spacing:1.5px;">ERROR</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.4;">{{ session('error') }}
+                <div style="font-size: var(--title-size);font-weight:800;color:#ef4444;letter-spacing:1.5px;">ERROR</div>
+                <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;line-height:1.4;">{{ session('error') }}
                 </div>
             </div>
             <button onclick="dismissToast('page-err')"
                 style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.05);
-                   border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size:16px;cursor:pointer;
+                   border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-size: var(--title-size);cursor:pointer;
                    display:flex;align-items:center;justify-content:center;"
                 onmouseover="this.style.color='var(--text-primary)'"
                 onmouseout="this.style.color='rgba(255,255,255,0.3)'">×</button>
@@ -146,11 +146,11 @@
         <div style="display:flex;align-items:center;gap:14px;">
             <div
                 style="width:48px;height:48px;border-radius:14px;background:rgba(249,115,22,0.12);
-                    border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;">
+                    border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;font-size: var(--title-size);">
                 🛡️</div>
             <div>
-                <div style="font-size:22px;font-weight:900;letter-spacing:3px;">ADMINS & STAFF</div>
-                <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">
+                <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;">ADMINS & STAFF</div>
+                <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;">
                     Manage team members and their access levels
                     @if (!$isSuper)
                         · <span style="color:#F97316;">You cannot modify Super Admins</span>
@@ -167,7 +167,7 @@
                 <a href="{{ route('dashboard.settings') }}#staff-requests"
                     style="display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;
                   border:1px solid rgba(249,115,22,0.4);background:rgba(249,115,22,0.08);
-                  color:#F97316;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:800;
+                  color:#F97316;font-family:Rajdhani,sans-serif;font-size: var(--title-size);font-weight:800;
                   letter-spacing:1.5px;text-decoration:none;transition:all .2s;position:relative;"
                     onmouseover="this.style.background='rgba(249,115,22,0.15)'"
                     onmouseout="this.style.background='rgba(249,115,22,0.08)'">
@@ -179,7 +179,7 @@
                     </svg>
                     REQUESTS
                     <span
-                        style="background:#F97316;color:#fff;font-size:10px;font-weight:900;
+                        style="background:#F97316;color:#fff;font-size: var(--title-size);font-weight:900;
                          padding:1px 7px;border-radius:20px;letter-spacing:0.5px;">{{ $pendingCount }}</span>
                 </a>
             @endif
@@ -188,7 +188,7 @@
             <button id="invite-btn-top" onclick="openInviteModal()"
                 style="display:flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;
                        background:linear-gradient(135deg,#F97316,#ea580c);color:#fff;font-family:Rajdhani,sans-serif;
-                       font-size:14px;font-weight:800;letter-spacing:1.5px;box-shadow:0 4px 20px rgba(249,115,22,0.35);transition:all .2s;"
+                       font-size: var(--title-size);font-weight:800;letter-spacing:1.5px;box-shadow:0 4px 20px rgba(249,115,22,0.35);transition:all .2s;"
                 onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 28px rgba(249,115,22,0.45)'"
                 onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(249,115,22,0.35)'">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -210,13 +210,13 @@
             border-radius:12px;border:1px solid var(--border);width:fit-content;">
         <button class="tab-btn {{ $activeTab === 'staff' ? 'tab-active' : '' }}" onclick="switchTab('staff')"
             style="padding:9px 24px;border-radius:9px;border:none;cursor:pointer;font-family:Rajdhani,sans-serif;
-                   font-size:13px;font-weight:800;letter-spacing:1.5px;transition:all .2s;">
+                   font-size: var(--title-size);font-weight:800;letter-spacing:1.5px;transition:all .2s;">
             👥 STAFF ({{ $staff->count() }})
         </button>
         @if ($isSuper)
             <button class="tab-btn {{ $activeTab === 'admins' ? 'tab-active' : '' }}" onclick="switchTab('admins')"
                 style="padding:9px 24px;border-radius:9px;border:none;cursor:pointer;font-family:Rajdhani,sans-serif;
-                   font-size:13px;font-weight:800;letter-spacing:1.5px;transition:all .2s;">
+                   font-size: var(--title-size);font-weight:800;letter-spacing:1.5px;transition:all .2s;">
                 🛡️ ADMINS ({{ $admins->count() }})
             </button>
         @endif
@@ -235,16 +235,16 @@
                 <div class="role-card"
                     style="padding:12px 14px;border-radius:12px;background:var(--dark-700);
                     border:1px solid {{ $rMeta['color'] }}22;position:relative;overflow:hidden;">
-                    <div style="position:absolute;top:-14px;right:-8px;font-size:48px;opacity:0.06;pointer-events:none;">
+                    <div style="position:absolute;top:-14px;right:-8px;font-size: var(--title-size);opacity:0.06;pointer-events:none;">
                         {{ $rMeta['icon'] }}</div>
-                    <div style="font-size:20px;margin-bottom:2px;">{{ $rMeta['icon'] }}</div>
-                    <div style="font-size:20px;font-weight:900;color:{{ $rMeta['color'] }};line-height:1.1;">
+                    <div style="font-size: var(--title-size);margin-bottom:2px;">{{ $rMeta['icon'] }}</div>
+                    <div style="font-size: var(--title-size);font-weight:900;color:{{ $rMeta['color'] }};line-height:1.1;">
                         {{ $count }}</div>
                     <div
-                        style="font-size:11px;font-weight:700;letter-spacing:1px;color:{{ $rMeta['color'] }};margin-top:2px;">
+                        style="font-size: var(--title-size);font-weight:700;letter-spacing:1px;color:{{ $rMeta['color'] }};margin-top:2px;">
                         {{ strtoupper($rMeta['label']) }}</div>
                     <div class="role-card-desc"
-                        style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.3;">{{ $rMeta['desc'] }}
+                        style="font-size: var(--title-size);color:var(--text-muted);margin-top:3px;line-height:1.3;">{{ $rMeta['desc'] }}
                     </div>
                 </div>
             @endforeach
@@ -262,7 +262,7 @@
                     oninput="filterRows('staff')"
                     style="width:100%;padding:10px 14px 10px 42px;border-radius:10px;background:var(--dark-700);
                           border:1px solid var(--border);color:var(--text-primary);font-family:Rajdhani,sans-serif;
-                          font-size:14px;outline:none;transition:border-color .2s;"
+                          font-size: var(--title-size);outline:none;transition:border-color .2s;"
                     onfocus="this.style.borderColor='rgba(249,115,22,0.4)'" onblur="this.style.borderColor=''" />
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -270,13 +270,13 @@
                     onclick="setRoleFilter(this,'staff','all')"
                     style="padding:9px 16px;border-radius:8px;border:1px solid var(--border);
                            background:var(--dark-700);color:var(--text-primary);font-family:Rajdhani,sans-serif;
-                           font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">ALL</button>
+                           font-size: var(--title-size);font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">ALL</button>
                 @foreach ($staffRoleMeta as $rKey => $rMeta)
                     <button class="role-filter" data-table="staff" data-role="{{ $rKey }}"
                         onclick="setRoleFilter(this,'staff','{{ $rKey }}')"
                         style="padding:9px 16px;border-radius:8px;border:1px solid {{ $rMeta['color'] }}30;
                            background:{{ $rMeta['color'] }}0d;color:{{ $rMeta['color'] }};font-family:Rajdhani,sans-serif;
-                           font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">
+                           font-size: var(--title-size);font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">
                         {{ $rMeta['icon'] }} {{ strtoupper($rMeta['label']) }}
                     </button>
                 @endforeach
@@ -287,15 +287,15 @@
         <div class="card">
             <div class="card-header">
                 <div class="card-title">STAFF MEMBERS</div>
-                <div style="font-size:13px;color:var(--text-muted);">{{ $staff->count() }}
+                <div style="font-size: var(--title-size);color:var(--text-muted);">{{ $staff->count() }}
                     member{{ $staff->count() !== 1 ? 's' : '' }}</div>
             </div>
 
             @if ($staff->isEmpty())
                 <div style="padding:64px 20px;text-align:center;color:var(--text-muted);">
-                    <div style="font-size:48px;margin-bottom:12px;">👥</div>
-                    <div style="font-size:16px;font-weight:700;letter-spacing:2px;">NO STAFF YET</div>
-                    <div style="font-size:13px;margin-top:6px;">Invite your first staff member to get started.</div>
+                    <div style="font-size: var(--title-size);margin-bottom:12px;">👥</div>
+                    <div style="font-size: var(--title-size);font-weight:700;letter-spacing:2px;">NO STAFF YET</div>
+                    <div style="font-size: var(--title-size);margin-top:6px;">Invite your first staff member to get started.</div>
                 </div>
             @else
                 <div style="overflow-x:auto;">
@@ -310,22 +310,22 @@
                         <thead>
                             <tr style="border-bottom:1px solid var(--border);">
                                 <th
-                                    style="padding:14px 20px;text-align:left;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;white-space:nowrap;">
+                                    style="padding:14px 20px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;white-space:nowrap;">
                                     MEMBER</th>
                                 <th class="col-email"
-                                    style="padding:14px 14px;text-align:left;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                    style="padding:14px 14px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                     EMAIL</th>
                                 <th
-                                    style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                    style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                     ROLE</th>
                                 <th class="col-joined"
-                                    style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                    style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                     JOINED</th>
                                 <th class="col-status"
-                                    style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                    style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                     STATUS</th>
                                 <th
-                                    style="padding:14px 20px;text-align:right;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                    style="padding:14px 20px;text-align:right;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                     ACTIONS</th>
                             </tr>
                         </thead>
@@ -366,27 +366,27 @@
                                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                                                     <span
                                                         style="display:none;width:100%;height:100%;align-items:center;justify-content:center;
-                                                     font-size:14px;font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
+                                                     font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
                                                 @else
                                                     <span
-                                                        style="font-size:14px;font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
+                                                        style="font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
                                                 @endif
                                             </div>
                                             <div>
-                                                <div style="font-size:14px;font-weight:700;color:var(--text-primary);cursor:pointer;"
+                                                <div style="font-size: var(--title-size);font-weight:700;color:var(--text-primary);cursor:pointer;"
                                                     onclick="openMemberProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}', {{ $member->is_active ?? true ? 'true' : 'false' }}, false)"
                                                     onmouseover="this.style.color='#F97316'"
                                                     onmouseout="this.style.color=''">
                                                     {{ $member->name }}
                                                 </div>
-                                                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">ID
+                                                <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;">ID
                                                     #{{ $member->id }}</div>
                                             </div>
                                         </div>
                                     </td>
 
                                     <td class="col-email"
-                                        style="padding:16px 14px;font-size:13px;color:var(--text-secondary);">
+                                        style="padding:16px 14px;font-size: var(--title-size);color:var(--text-secondary);">
                                         {{ $member->email }}</td>
 
                                     <td style="padding:16px 14px;text-align:center;">
@@ -397,7 +397,7 @@
                                                 style="padding:5px 10px;border-radius:8px;cursor:pointer;
                                                background:{{ $mMeta['color'] }}18;border:1.5px solid {{ $mMeta['color'] }}44;
                                                color:{{ $mMeta['color'] }};font-family:Rajdhani,sans-serif;
-                                               font-size:12px;font-weight:700;letter-spacing:1px;outline:none;">
+                                               font-size: var(--title-size);font-weight:700;letter-spacing:1px;outline:none;">
                                                 @foreach ($staffRoles as $rOpt)
                                                     <option value="{{ $rOpt }}"
                                                         {{ $mRole === $rOpt ? 'selected' : '' }}
@@ -411,7 +411,7 @@
                                     </td>
 
                                     <td class="col-joined"
-                                        style="padding:16px 14px;text-align:center;font-size:13px;color:var(--text-muted);">
+                                        style="padding:16px 14px;text-align:center;font-size: var(--title-size);color:var(--text-muted);">
                                         {{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}
                                     </td>
 
@@ -435,7 +435,7 @@
                                         @endphp
                                         <span
                                             style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
-                                            border-radius:6px;font-size:11px;font-weight:700;letter-spacing:1px;
+                                            border-radius:6px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                                             background:{{ $statusBg }};border:1px solid {{ $statusBdr }};color:{{ $statusColor }};">
                                             <span
                                                 style="width:6px;height:6px;border-radius:50%;
@@ -453,7 +453,7 @@
                                                 <button type="submit" title="{{ $active ? 'Deactivate' : 'Activate' }}"
                                                     style="width:32px;height:32px;border-radius:8px;cursor:pointer;
                                                            display:flex;align-items:center;justify-content:center;
-                                                           transition:all .2s;font-size:14px;
+                                                           transition:all .2s;font-size: var(--title-size);
                                                            border:1px solid {{ $active ? 'rgba(249,115,22,0.3)' : 'rgba(34,197,94,0.3)' }};
                                                            background:{{ $active ? 'rgba(249,115,22,0.08)' : 'rgba(34,197,94,0.08)' }};
                                                            color:{{ $active ? '#F97316' : '#22c55e' }};"
@@ -503,15 +503,15 @@
                         style="padding:12px 14px;border-radius:12px;background:var(--dark-700);
                     border:1px solid {{ $rMeta['color'] }}22;position:relative;overflow:hidden;">
                         <div
-                            style="position:absolute;top:-14px;right:-8px;font-size:48px;opacity:0.06;pointer-events:none;">
+                            style="position:absolute;top:-14px;right:-8px;font-size: var(--title-size);opacity:0.06;pointer-events:none;">
                             {{ $rMeta['icon'] }}</div>
-                        <div style="font-size:20px;margin-bottom:2px;">{{ $rMeta['icon'] }}</div>
-                        <div style="font-size:20px;font-weight:900;color:{{ $rMeta['color'] }};line-height:1.1;">
+                        <div style="font-size: var(--title-size);margin-bottom:2px;">{{ $rMeta['icon'] }}</div>
+                        <div style="font-size: var(--title-size);font-weight:900;color:{{ $rMeta['color'] }};line-height:1.1;">
                             {{ $count }}</div>
                         <div
-                            style="font-size:11px;font-weight:700;letter-spacing:1px;color:{{ $rMeta['color'] }};margin-top:2px;">
+                            style="font-size: var(--title-size);font-weight:700;letter-spacing:1px;color:{{ $rMeta['color'] }};margin-top:2px;">
                             {{ strtoupper($rMeta['label']) }}</div>
-                        <div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.3;">
+                        <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:3px;line-height:1.3;">
                             {{ $rMeta['desc'] }}</div>
                     </div>
                 @endforeach
@@ -530,7 +530,7 @@
                         oninput="filterRows('admins')"
                         style="width:100%;padding:10px 14px 10px 42px;border-radius:10px;background:var(--dark-700);
                           border:1px solid var(--border);color:var(--text-primary);font-family:Rajdhani,sans-serif;
-                          font-size:14px;outline:none;transition:border-color .2s;"
+                          font-size: var(--title-size);outline:none;transition:border-color .2s;"
                         onfocus="this.style.borderColor='rgba(249,115,22,0.4)'" onblur="this.style.borderColor=''" />
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -538,13 +538,13 @@
                         onclick="setAdminFilter(this,'all')"
                         style="padding:9px 16px;border-radius:8px;border:1px solid var(--border);
                            background:var(--dark-700);color:var(--text-primary);font-family:Rajdhani,sans-serif;
-                           font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">ALL</button>
+                           font-size: var(--title-size);font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">ALL</button>
                     @foreach ($adminRoleMeta as $rKey => $rMeta)
                         <button class="admin-filter" data-table="admins" data-role="{{ $rKey }}"
                             onclick="setAdminFilter(this,'{{ $rKey }}')"
                             style="padding:9px 16px;border-radius:8px;border:1px solid {{ $rMeta['color'] }}30;
                            background:{{ $rMeta['color'] }}0d;color:{{ $rMeta['color'] }};font-family:Rajdhani,sans-serif;
-                           font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">
+                           font-size: var(--title-size);font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;">
                             {{ $rMeta['icon'] }} {{ strtoupper($rMeta['label']) }}
                         </button>
                     @endforeach
@@ -555,14 +555,14 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">ADMIN MEMBERS</div>
-                    <div style="font-size:13px;color:var(--text-muted);">{{ $admins->count() }}
+                    <div style="font-size: var(--title-size);color:var(--text-muted);">{{ $admins->count() }}
                         member{{ $admins->count() !== 1 ? 's' : '' }}</div>
                 </div>
 
                 @if ($admins->isEmpty())
                     <div style="padding:64px 20px;text-align:center;color:var(--text-muted);">
-                        <div style="font-size:48px;margin-bottom:12px;">🛡️</div>
-                        <div style="font-size:16px;font-weight:700;letter-spacing:2px;">NO ADMINS</div>
+                        <div style="font-size: var(--title-size);margin-bottom:12px;">🛡️</div>
+                        <div style="font-size: var(--title-size);font-weight:700;letter-spacing:2px;">NO ADMINS</div>
                     </div>
                 @else
                     <div style="overflow-x:auto;">
@@ -570,22 +570,22 @@
                             <thead>
                                 <tr style="border-bottom:1px solid var(--border);">
                                     <th
-                                        style="padding:14px 20px;text-align:left;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                        style="padding:14px 20px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                         MEMBER</th>
                                     <th class="col-email"
-                                        style="padding:14px 14px;text-align:left;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                        style="padding:14px 14px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                         EMAIL</th>
                                     <th
-                                        style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                        style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                         ROLE</th>
                                     <th class="col-joined"
-                                        style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                        style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                         JOINED</th>
                                     <th class="col-status"
-                                        style="padding:14px 14px;text-align:center;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                        style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                         STATUS</th>
                                     <th
-                                        style="padding:14px 20px;text-align:right;font-size:11px;letter-spacing:2px;color:var(--text-muted);font-weight:700;">
+                                        style="padding:14px 20px;text-align:right;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:700;">
                                         ACTIONS</th>
                                 </tr>
                             </thead>
@@ -627,33 +627,33 @@
                                                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                                                         <span
                                                             style="display:none;width:100%;height:100%;align-items:center;justify-content:center;
-                                                     font-size:14px;font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
+                                                     font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
                                                     @else
                                                         <span
-                                                            style="font-size:14px;font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
+                                                            style="font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
                                                     @endif
                                                 </div>
                                                 <div>
-                                                    <div style="font-size:14px;font-weight:700;color:var(--text-primary);cursor:pointer;"
+                                                    <div style="font-size: var(--title-size);font-weight:700;color:var(--text-primary);cursor:pointer;"
                                                         onclick="openMemberProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}', {{ $member->is_active ?? true ? 'true' : 'false' }}, {{ $isSelf ? 'true' : 'false' }})"
                                                         onmouseover="this.style.color='#F97316'"
                                                         onmouseout="this.style.color=''">
                                                         {{ $member->name }}
                                                         @if ($isSelf)
                                                             <span
-                                                                style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:600;
+                                                                style="font-size: var(--title-size);color:rgba(255,255,255,0.3);font-weight:600;
                                                      background:rgba(255,255,255,0.06);border-radius:4px;
                                                      padding:1px 6px;margin-left:4px;letter-spacing:1px;">YOU</span>
                                                         @endif
                                                     </div>
-                                                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">ID
+                                                    <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;">ID
                                                         #{{ $member->id }}</div>
                                                 </div>
                                             </div>
                                         </td>
 
                                         <td class="col-email"
-                                            style="padding:16px 14px;font-size:13px;color:var(--text-secondary);">
+                                            style="padding:16px 14px;font-size: var(--title-size);color:var(--text-secondary);">
                                             {{ $member->email }}</td>
 
                                         <td style="padding:16px 14px;text-align:center;">
@@ -666,7 +666,7 @@
                                                         style="padding:5px 10px;border-radius:8px;cursor:pointer;
                                                background:{{ $mMeta['color'] }}18;border:1.5px solid {{ $mMeta['color'] }}44;
                                                color:{{ $mMeta['color'] }};font-family:Rajdhani,sans-serif;
-                                               font-size:12px;font-weight:700;letter-spacing:1px;outline:none;">
+                                               font-size: var(--title-size);font-weight:700;letter-spacing:1px;outline:none;">
                                                         @foreach ($adminRoles as $rOpt)
                                                             <option value="{{ $rOpt }}"
                                                                 {{ $mRole === $rOpt ? 'selected' : '' }}
@@ -682,14 +682,14 @@
                                                     style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;
                                          border-radius:8px;background:{{ $mMeta['color'] }}18;
                                          border:1.5px solid {{ $mMeta['color'] }}44;
-                                         color:{{ $mMeta['color'] }};font-size:12px;font-weight:700;letter-spacing:1px;">
+                                         color:{{ $mMeta['color'] }};font-size: var(--title-size);font-weight:700;letter-spacing:1px;">
                                                     {{ $mMeta['icon'] }} {{ strtoupper($mMeta['label']) }}
                                                 </span>
                                             @endif
                                         </td>
 
                                         <td class="col-joined"
-                                            style="padding:16px 14px;text-align:center;font-size:13px;color:var(--text-muted);">
+                                            style="padding:16px 14px;text-align:center;font-size: var(--title-size);color:var(--text-muted);">
                                             {{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}
                                         </td>
 
@@ -704,7 +704,7 @@
                                                 $dotExtra    = $isOnline ? 'animation:onlinePulse 2s infinite;' : '';
                                             @endphp
                                             <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
-                                                         border-radius:6px;font-size:11px;font-weight:700;letter-spacing:1px;
+                                                         border-radius:6px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                                                          background:{{ $statusBg }};border:1px solid {{ $statusBdr }};color:{{ $statusColor }};">
                                                 <span style="width:6px;height:6px;border-radius:50%;
                                                              background:{{ $statusColor }};{{ $dotExtra }}"></span>
@@ -723,7 +723,7 @@
                                                             title="{{ $active ? 'Deactivate' : 'Activate' }}"
                                                             style="width:32px;height:32px;border-radius:8px;cursor:pointer;
                                                             display:flex;align-items:center;justify-content:center;
-                                                            transition:all .2s;font-size:14px;
+                                                            transition:all .2s;font-size: var(--title-size);
                                                             border:1px solid {{ $active ? 'rgba(249,115,22,0.3)' : 'rgba(34,197,94,0.3)' }};
                                                             background:{{ $active ? 'rgba(249,115,22,0.08)' : 'rgba(34,197,94,0.08)' }};
                                                             color:{{ $active ? '#F97316' : '#22c55e' }};"
@@ -749,7 +749,7 @@
                                                     </button>
                                                 @else
                                                     <span
-                                                        style="font-size:12px;color:var(--text-muted);font-style:italic;padding:0 4px;">
+                                                        style="font-size: var(--title-size);color:var(--text-muted);font-style:italic;padding:0 4px;">
                                                         @if ($isSelf)
                                                             (your account)
                                                         @else(protected)
@@ -785,17 +785,17 @@
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div
                         style="width:44px;height:44px;border-radius:12px;background:rgba(249,115,22,0.12);
-                            border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;">
+                            border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;font-size: var(--title-size);">
                         👤</div>
                     <div>
-                        <div id="invite-modal-title" style="font-size:17px;font-weight:800;letter-spacing:2px;">INVITE
+                        <div id="invite-modal-title" style="font-size: var(--title-size);font-weight:800;letter-spacing:2px;">INVITE
                             STAFF</div>
-                        <div style="font-size:12px;color:var(--text-muted);">Add a new team member</div>
+                        <div style="font-size: var(--title-size);color:var(--text-muted);">Add a new team member</div>
                     </div>
                 </div>
                 <button onclick="closeInviteModal()"
                     style="width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);
-                           background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;
+                           background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size: var(--title-size);cursor:pointer;
                            display:flex;align-items:center;justify-content:center;transition:all .2s;"
                     onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">×</button>
             </div>
@@ -808,12 +808,12 @@
                     @foreach ([['name', 'FULL NAME', 'e.g. John Doe', 'text'], ['username', 'USERNAME', 'e.g. johndoe', 'text'], ['email', 'EMAIL ADDRESS', 'e.g. john@example.com', 'email']] as [$fn, $fl, $fp, $ft])
                         <div>
                             <label
-                                style="display:block;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ $fl }}</label>
+                                style="display:block;font-size: var(--title-size);font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ $fl }}</label>
                             <input type="{{ $ft }}" name="{{ $fn }}"
                                 placeholder="{{ $fp }}" required
                                 style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
                                   border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani,sans-serif;
-                                  font-size:15px;outline:none;transition:border-color .2s;"
+                                  font-size: var(--title-size);outline:none;transition:border-color .2s;"
                                 onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
                                 onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
                         </div>
@@ -822,7 +822,7 @@
                     {{-- STAFF roles (shown when tab = staff) --}}
                     <div id="staff-role-section">
                         <label
-                            style="display:block;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">ASSIGN
+                            style="display:block;font-size: var(--title-size);font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">ASSIGN
                             ROLE</label>
                         <div style="display:flex;flex-direction:column;gap:10px;">
                             @foreach ($staffRoleMeta as $rOpt => $rM)
@@ -834,12 +834,12 @@
                                     <input type="radio" name="role" value="{{ $rOpt }}"
                                         {{ $rOpt === 'editor' ? 'checked' : '' }}
                                         style="accent-color:{{ $rM['color'] }};width:16px;height:16px;cursor:pointer;" />
-                                    <span style="font-size:20px;">{{ $rM['icon'] }}</span>
+                                    <span style="font-size: var(--title-size);">{{ $rM['icon'] }}</span>
                                     <div style="flex:1;">
                                         <div
-                                            style="font-size:14px;font-weight:800;letter-spacing:1px;color:{{ $rM['color'] }};">
+                                            style="font-size: var(--title-size);font-weight:800;letter-spacing:1px;color:{{ $rM['color'] }};">
                                             {{ strtoupper($rM['label']) }}</div>
-                                        <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">
+                                        <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:1px;">
                                             {{ $rM['desc'] }}</div>
                                     </div>
                                 </label>
@@ -851,7 +851,7 @@
                     @if ($isSuper)
                         <div id="admin-role-section" style="display:none;">
                             <label
-                                style="display:block;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">ASSIGN
+                                style="display:block;font-size: var(--title-size);font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">ASSIGN
                                 ADMIN ROLE</label>
                             <div style="display:flex;flex-direction:column;gap:10px;">
                                 @foreach ($adminRoleMeta as $rOpt => $rM)
@@ -863,12 +863,12 @@
                                         <input type="radio" name="admin_role" value="{{ $rOpt }}"
                                             {{ $rOpt === 'admin' ? 'checked' : '' }}
                                             style="accent-color:{{ $rM['color'] }};width:16px;height:16px;cursor:pointer;" />
-                                        <span style="font-size:20px;">{{ $rM['icon'] }}</span>
+                                        <span style="font-size: var(--title-size);">{{ $rM['icon'] }}</span>
                                         <div style="flex:1;">
                                             <div
-                                                style="font-size:14px;font-weight:800;letter-spacing:1px;color:{{ $rM['color'] }};">
+                                                style="font-size: var(--title-size);font-weight:800;letter-spacing:1px;color:{{ $rM['color'] }};">
                                                 {{ strtoupper($rM['label']) }}</div>
-                                            <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">
+                                            <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:1px;">
                                                 {{ $rM['desc'] }}</div>
                                         </div>
                                     </label>
@@ -879,21 +879,21 @@
 
                     <div>
                         <label
-                            style="display:block;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">TEMPORARY
+                            style="display:block;font-size: var(--title-size);font-weight:700;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">TEMPORARY
                             PASSWORD</label>
                         <div style="position:relative;">
                             <input type="password" name="password" id="inv-pass" placeholder="Min 8 characters"
                                 required minlength="8"
                                 style="width:100%;padding:11px 44px 11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
                                       border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani,sans-serif;
-                                      font-size:15px;outline:none;transition:border-color .2s;"
+                                      font-size: var(--title-size);outline:none;transition:border-color .2s;"
                                 onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
                                 onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
                             <button type="button" onclick="togglePassVis('inv-pass',this)"
                                 style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
-                                       background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:16px;">👁</button>
+                                       background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size: var(--title-size);">👁</button>
                         </div>
-                        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Member should change this after
+                        <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:6px;">Member should change this after
                             first login.</div>
                     </div>
                 </div>
@@ -902,13 +902,13 @@
                     <button type="button" onclick="closeInviteModal()"
                         style="padding:10px 20px;border-radius:9px;border:1px solid rgba(255,255,255,0.1);
                                background:transparent;color:rgba(255,255,255,0.5);font-family:Rajdhani,sans-serif;
-                               font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;"
+                               font-size: var(--title-size);font-weight:700;letter-spacing:1px;cursor:pointer;"
                         onmouseover="this.style.color='#fff'"
                         onmouseout="this.style.color='rgba(255,255,255,0.5)'">CANCEL</button>
                     <button type="submit" id="invite-submit-btn"
                         style="display:flex;align-items:center;gap:6px;padding:10px 22px;border-radius:9px;border:none;cursor:pointer;
                                background:linear-gradient(135deg,#F97316,#ea580c);color:#fff;font-family:Rajdhani,sans-serif;
-                               font-size:13px;font-weight:800;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);">
+                               font-size: var(--title-size);font-weight:800;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);">
                         ✉ SEND INVITE
                     </button>
                 </div>
@@ -926,9 +926,9 @@
                 background:var(--dark-800);border:1px solid rgba(239,68,68,0.25);
                 box-shadow:0 32px 80px rgba(0,0,0,0.7);text-align:center;
                 font-family:Rajdhani,sans-serif;animation:stModalIn .3s cubic-bezier(0.34,1.2,0.64,1);">
-            <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
-            <div style="font-size:18px;font-weight:900;letter-spacing:2px;margin-bottom:8px;">REMOVE MEMBER?</div>
-            <div style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">
+            <div style="font-size: var(--title-size);margin-bottom:12px;">⚠️</div>
+            <div style="font-size: var(--title-size);font-weight:900;letter-spacing:2px;margin-bottom:8px;">REMOVE MEMBER?</div>
+            <div style="font-size: var(--title-size);color:var(--text-muted);margin-bottom:24px;">
                 You are about to remove <strong id="del-name" style="color:#ef4444;"></strong> from the team. This cannot
                 be undone.
             </div>
@@ -938,13 +938,13 @@
                     <button type="button" onclick="closeDelModal()"
                         style="flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);
                                background:transparent;color:var(--text-muted);font-family:Rajdhani,sans-serif;
-                               font-size:13px;font-weight:700;cursor:pointer;"
+                               font-size: var(--title-size);font-weight:700;cursor:pointer;"
                         onmouseover="this.style.color='var(--text-primary)'"
                         onmouseout="this.style.color='var(--text-muted)'">CANCEL</button>
                     <button type="submit"
                         style="flex:1;padding:10px;border-radius:9px;border:none;
                                background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;
-                               font-family:Rajdhani,sans-serif;font-size:13px;font-weight:800;cursor:pointer;">
+                               font-family:Rajdhani,sans-serif;font-size: var(--title-size);font-weight:800;cursor:pointer;">
                         YES, REMOVE
                     </button>
                 </div>
@@ -964,12 +964,12 @@
                 animation:spModalIn .3s cubic-bezier(0.34,1.2,0.64,1);">
             <div id="mp-header-bar" style="height:4px;background:linear-gradient(90deg,#F97316,#fb923c);"></div>
             <div style="padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center;">
-                <div style="font-size:13px;font-weight:700;letter-spacing:2px;color:var(--text-muted);">MEMBER PROFILE
+                <div style="font-size: var(--title-size);font-weight:700;letter-spacing:2px;color:var(--text-muted);">MEMBER PROFILE
                 </div>
                 <button onclick="closeMemberProfile()"
                     style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.06);
                        border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);
-                       font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+                       font-size: var(--title-size);cursor:pointer;display:flex;align-items:center;justify-content:center;"
                     onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
             </div>
             <div style="padding:16px 20px;display:flex;align-items:center;gap:14px;">
@@ -979,36 +979,36 @@
                 </div>
                 <div>
                     <div id="mp-name"
-                        style="font-size:20px;font-weight:900;color:var(--text-primary);letter-spacing:1px;"></div>
-                    <div id="mp-email" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
+                        style="font-size: var(--title-size);font-weight:900;color:var(--text-primary);letter-spacing:1px;"></div>
+                    <div id="mp-email" style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;"></div>
                     <div id="mp-role-badge" style="margin-top:8px;"></div>
                 </div>
             </div>
             <div style="padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:10px;padding:12px;">
                     <div
-                        style="font-size:9px;color:var(--text-muted);letter-spacing:2px;font-weight:700;margin-bottom:4px;">
+                        style="font-size: var(--title-size);color:var(--text-muted);letter-spacing:2px;font-weight:700;margin-bottom:4px;">
                         JOINED</div>
-                    <div id="mp-joined" style="font-size:13px;color:var(--text-primary);font-weight:700;"></div>
+                    <div id="mp-joined" style="font-size: var(--title-size);color:var(--text-primary);font-weight:700;"></div>
                 </div>
                 <div style="background:var(--dark-700);border:1px solid var(--border);border-radius:10px;padding:12px;">
                     <div
-                        style="font-size:9px;color:var(--text-muted);letter-spacing:2px;font-weight:700;margin-bottom:4px;">
+                        style="font-size: var(--title-size);color:var(--text-muted);letter-spacing:2px;font-weight:700;margin-bottom:4px;">
                         STATUS</div>
-                    <div id="mp-status" style="font-size:13px;font-weight:700;"></div>
+                    <div id="mp-status" style="font-size: var(--title-size);font-weight:700;"></div>
                 </div>
             </div>
             <div id="mp-self-note"
                 style="display:none;margin:10px 20px 0;padding:10px 14px;border-radius:10px;
             background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);
-            font-size:12px;color:#F97316;font-weight:700;text-align:center;letter-spacing:1px;">
+            font-size: var(--title-size);color:#F97316;font-weight:700;text-align:center;letter-spacing:1px;">
                 👤 THIS IS YOUR ACCOUNT
             </div>
             <div style="padding:16px 20px 20px;margin-top:4px;">
                 <a id="mp-email-btn" href="#"
                     style="display:block;text-align:center;padding:10px;border-radius:10px;
                        background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-                       color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;letter-spacing:1px;
+                       color:rgba(255,255,255,0.5);font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                        text-decoration:none;transition:all .2s;"
                     onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
                     onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.5)'">
@@ -1143,9 +1143,9 @@
                 `<img src="${avatar}" alt="${name}" style="width:100%;height:100%;object-fit:cover;display:block;"
                onerror="this.style.display='none';this.nextSibling.style.display='flex'" />
            <div style="display:none;width:100%;height:100%;background:linear-gradient(135deg,${roleColor},${roleColor}88);
-               align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#fff;">${initial}</div>` :
+               align-items:center;justify-content:center;font-weight:900;font-size: var(--title-size);color:#fff;">${initial}</div>` :
                 `<div style="width:100%;height:100%;background:linear-gradient(135deg,${roleColor},${roleColor}88);
-               display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#fff;">${initial}</div>`;
+               display:flex;align-items:center;justify-content:center;font-weight:900;font-size: var(--title-size);color:#fff;">${initial}</div>`;
             document.getElementById('mp-name').textContent = name || '—';
             document.getElementById('mp-email').textContent = email || '—';
             document.getElementById('mp-joined').textContent = joined;
@@ -1154,7 +1154,7 @@
                 '<span style="color:#ef4444;">○ INACTIVE</span>';
             document.getElementById('mp-role-badge').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;
-            font-size:11px;font-weight:800;letter-spacing:1px;
+            font-size: var(--title-size);font-weight:800;letter-spacing:1px;
             background:${roleColor}18;color:${roleColor};border:1px solid ${roleColor}44;">
             ${roleIcon} ${roleLabel.toUpperCase()}
         </span>`;

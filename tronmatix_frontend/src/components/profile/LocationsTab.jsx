@@ -1,5 +1,6 @@
 // src/components/profile/LocationsTab.jsx
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useLang } from '../../context/LanguageContext'
 import axiosClient from '../../lib/axios'
 import { useTheme } from '../../context/ThemeContext'
@@ -15,7 +16,7 @@ const KH_CITIES = [
 ]
 
 const getLabelStyle = (isKhmer) => ({
-  display: 'block', fontFamily: isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif',
+  display: 'block', fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif',
   fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 2,
   color: '#6B7280', marginBottom: 6, textTransform: isKhmer ? 'none' : 'uppercase',
 })
@@ -25,7 +26,7 @@ function btnStyle(bg, color, border, isKhmer = false) {
     background: bg, color, border: `1px solid ${border}`,
     borderRadius: 8, padding: '6px 14px',
     fontSize: 13, fontWeight: 600, cursor: 'pointer',
-    fontFamily: isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif', letterSpacing: isKhmer ? 0 : 0.5,
+    fontFamily: isKhmer ? 'Kh-Koulen, sans-serif' : 'Rajdhani, sans-serif', letterSpacing: isKhmer ? 0 : 0.5,
     transition: 'opacity 0.15s',
   }
 }
@@ -122,7 +123,7 @@ function LocationModal({ loc, onClose, onSave }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
   const modalFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
-  const bodyFont  = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'  : 'Rajdhani, sans-serif'
+  const bodyFont  = isKhmer ? 'Kdam Thmor Pro, sans-serif'  : 'Rajdhani, sans-serif'
   const labelStyle = getLabelStyle(isKhmer)
   const isEdit = !!loc?.id
   const [form, setForm] = useState({
@@ -350,7 +351,7 @@ function LocationModal({ loc, onClose, onSave }) {
 export default function LocationsTab({ notify }) {
   const { t, isKhmer } = useLang()
   const tabFont  = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif'  : 'Rajdhani, sans-serif'
-  const bodyFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif'    : 'Rajdhani, sans-serif'
+  const bodyFont = isKhmer ? 'Kdam Thmor Pro  , sans-serif'    : 'Rajdhani, sans-serif'
   const [locations,  setLocations]  = useState([])
   const [locLoading, setLocLoading] = useState(false)
   const [locModal,   setLocModal]   = useState(null)
@@ -404,12 +405,13 @@ export default function LocationsTab({ notify }) {
 
   return (
     <>
-      {locModal !== null && (
+      {locModal !== null && createPortal(
         <LocationModal
           loc={locModal}
           onClose={() => setLocModal(null)}
           onSave={saveLocation}
-        />
+        />,
+        document.body
       )}
 
       <div style={{ padding: 32, animation: 'fadeUp 0.3s ease' }}>

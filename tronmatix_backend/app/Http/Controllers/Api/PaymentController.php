@@ -86,21 +86,24 @@ class PaymentController extends Controller
         $qrMd5 = null;
 
         try {
+            // Extract merchant ID from bakong ID (format: "id@bank")
+            $merchantId = explode('@', $bakongId)[0] ?? $bakongId;
+
             $merchantInfo = new MerchantInfo(
                 (string) $bakongId,
                 (string) $merchantName,
                 (string) config('services.bakong.merchant_city', 'Phnom Penh'),
-                'ABA Bank',
-                'USD'
+                (string) $merchantId,
+                'ABA Bank'
             );
             $merchantInfo->amount = $amount;
+            $merchantInfo->currency = 840; // USD numeric code
             $merchantInfo->billNumber = $tranId;
             $merchantInfo->storeLabel = 'Tronmatix';
             $merchantInfo->terminalLabel = 'Online';
             $merchantInfo->mobileNumber = ''; // '' not null — avoids length validation error
 
-            $khqr = new BakongKHQR('');
-            $result = $khqr->generateMerchant($merchantInfo);
+            $result = BakongKHQR::generateMerchant($merchantInfo);
 
             if (! is_array($result) || empty($result['qr'])) {
                 throw new \RuntimeException('KHQR generation returned empty result');

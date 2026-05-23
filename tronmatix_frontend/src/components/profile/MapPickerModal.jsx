@@ -72,7 +72,7 @@ export default function MapPickerModal({ onClose, onConfirm, initialLat, initial
   const geocoderRef  = useRef(null)
 
   const { t, isKhmer } = useLang()
-  const mapFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
+  const mapFont = isKhmer ? 'Kh-Koulen, sans-serif' : 'Rajdhani, sans-serif'
   const [lat,     setLat]     = useState(initialLat || STORE_LAT)
   const [lng,     setLng]     = useState(initialLng || STORE_LNG)
   const [address, setAddress] = useState('')

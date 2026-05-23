@@ -13,7 +13,7 @@ class Discount extends Model
     protected $fillable = [
         'code', 'type', 'value',
         'min_order', 'max_uses', 'used_count',
-        'expires_at', 'is_active', 'categories',
+        'expires_at', 'is_active', 'categories', 'product_id',
         'badge_config',  // { text, icon, bg, border, color } — shown on product cards
         'kind',          // 'code' (customer types it) | 'badge' (auto-shown, no code entry)
     ];
@@ -35,6 +35,11 @@ class Discount extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     // ── Scopes ────────────────────────────────────────────────────────────────

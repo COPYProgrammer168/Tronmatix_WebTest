@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->string('category', 100);
             $table->string('brand', 100)->nullable();
+            $table->string('warranty', 100)->nullable()->after('brand');
 
             // ── Images ────────────────────────────────────────────────────────
             $table->string('image')->nullable()

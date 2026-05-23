@@ -1,16 +1,3 @@
-// src/components/profile/TelegramConnect.jsx
-//
-// FIX: window.open(oauth.telegram.org) was blocked by browser → about:blank popup.
-// oauth.telegram.org sends X-Frame-Options / popup blocker headers.
-//
-// REAL SOLUTION for switching accounts:
-// The ONLY reliable way is to have the user:
-//   1. Open the Telegram APP (not web) and switch account there
-//   2. OR open web.telegram.org in same tab, log out, log in with other account
-//   3. Then come back and refresh the widget
-//
-// We give a direct t.me link as an <a> tag (not window.open) — browser allows this.
-
 import { useState, useEffect, useCallback } from 'react'
 import axiosClient from '../../lib/axios'
 import { useLang } from '../../context/LanguageContext'
@@ -19,7 +6,7 @@ const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
 
 export default function TelegramConnect({ user, dark, onUpdate, notify }) {
   const { t, isKhmer } = useLang()
-  const tgFont = isKhmer ? 'KantumruyPro, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
+  const tgFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
   const [status,     setStatus]     = useState(null)
   const [loading,    setLoading]    = useState(true)
   const [actionBusy, setActionBusy] = useState(false)
@@ -128,7 +115,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
         <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>✈️</div>
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, color: c.text, fontFamily: tgFont }}>{isKhmer ? t('telegram.title') : 'TELEGRAM NOTIFICATIONS'}</div>
-          <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
+          <div style={{ fontSize: 12, color: c.muted, marginTop: 1, fontFamily: tgFont, }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
         </div>
         <div style={{ marginLeft: 'auto' }}>
           {loading
@@ -139,7 +126,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
       </div>
 
       {/* Body */}
-      <div style={{ padding: '18px 20px' }}>
+      <div style={{ fontFamily: tgFont, padding: '18px 20px' }}>
         {loading ? <Skeleton dark={dark} /> : status?.connected
           ? <ConnectedView status={status} dark={dark} c={c} busy={actionBusy} testSent={testSent} onDisconnect={handleDisconnect} onTest={handleTest} isKhmer={isKhmer} t={t} />
           : <NotConnectedView
@@ -157,7 +144,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 // ── NotConnectedView ──────────────────────────────────────────────────────────
 function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh, isKhmer = false, t = (k) => k }) {
   return (
-    <div>
+    <div style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif', color: c.text }}>
       <p style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
         {isKhmer ? t('telegram.connectDesc') : 'Connect your Telegram to receive real-time order updates, receipts, shipping alerts, and delivery confirmations.'}
       </p>
@@ -206,7 +193,7 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh,
             </a>
           </div>
 
-          <button onClick={onRefresh} style={{ width: '100%', padding: '10px 0', borderRadius: 10, background: 'linear-gradient(135deg,#F97316,#ea580c)', border: 'none', color: '#fff', fontFamily: isKhmer ? 'KantumruyPro,Khmer OS,sans-serif' : 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, cursor: 'pointer' }}>
+          <button onClick={onRefresh} style={{ width: '100%', padding: '10px 0', borderRadius: 10, background: 'linear-gradient(135deg,#F97316,#ea580c)', border: 'none', color: '#fff', fontFamily: isKhmer ? 'Kh-Koulen,sans-serif' : 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, cursor: 'pointer' }}>
             🔄 {isKhmer ? t('telegram.refreshWidget') : "Refresh Widget — I've Switched Account"}
           </button>
         </div>
@@ -254,7 +241,7 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, 
           </div>
           {connectedAt && <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>{isKhmer ? `${t('telegram.connectedSince')} ${connectedAt}` : `Connected since ${connectedAt}`}</div>}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20, fontFamily: isKhmer ? 'KantumruyPro,Khmer OS,sans-serif' : 'Rajdhani,sans-serif' }}>{isKhmer ? t('telegram.active') : 'ACTIVE'}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20, fontFamily: isKhmer ? 'Kh-Koulen,sans-serif' : 'Rajdhani,sans-serif' }}>{isKhmer ? t('telegram.active') : 'ACTIVE'}</div>
       </div>
 
       <div style={{ marginBottom: 14 }}>
@@ -271,7 +258,7 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, 
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ fontFamily: tgFont, display: 'flex', gap: 8 }}>
         <button onClick={onTest} disabled={busy} style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: testSent ? 'rgba(34,197,94,0.1)' : 'linear-gradient(135deg,#229ED9,#0088cc)', border: testSent ? '1px solid rgba(34,197,94,0.3)' : 'none', color: testSent ? '#16A34A' : '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}>
           {testSent ? `✅ ${isKhmer ? t('telegram.sent') : 'SENT!'}` : busy ? '...' : `📨 ${isKhmer ? t('telegram.testMessage') : 'TEST MESSAGE'}`}
         </button>
@@ -287,7 +274,7 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, 
 
 function StatusBadge({ connected, isKhmer = false, t = (k) => k }) {
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1, background: connected ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.08)', border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.25)'}`, color: connected ? '#16A34A' : '#DC2626', fontFamily: isKhmer ? 'KantumruyPro,Khmer OS,sans-serif' : 'Rajdhani,sans-serif' }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1, background: connected ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.08)', border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.25)'}`, color: connected ? '#16A34A' : '#DC2626', fontFamily: isKhmer ? 'Kdam Thmor Pro,sans-serif' : 'Rajdhani,sans-serif' }}>
       <span style={{ fontSize: 8 }}>●</span>
       {connected ? (isKhmer ? t('telegram.connected') : 'CONNECTED ✅') : (isKhmer ? t('telegram.notConnected') : 'NOT CONNECTED ❌')}
     </div>

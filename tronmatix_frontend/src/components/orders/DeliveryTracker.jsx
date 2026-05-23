@@ -29,7 +29,7 @@ export default function DeliveryTracker({ status, order, fulfillmentType }) {
   // Pickup:   Confirmed / Ready     / Picked Up
   const labels = isPickup
     ? (isKhmer
-        ? [t("orders.confirmed"), t("orders.processing"), t("orders.delivered")]
+        ? [t("orders.confirmed"), t("orders.processing"), t("orders.pickup")]
         : ["Confirmed", "Ready", "Picked Up"])
     : (isKhmer
         ? [t("orders.confirmed"), t("orders.processing"), t("orders.shipped"), t("orders.delivered")]

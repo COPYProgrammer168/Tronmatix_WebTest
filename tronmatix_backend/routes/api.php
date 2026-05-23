@@ -87,7 +87,7 @@ Route::middleware(['auth:sanctum', 'throttle:10,1'])->group(function () {
 
     // Payment
     Route::post('/payment/generate-qr', [GenerateKhqrController::class, 'generate']);
-    Route::get('/payment/verify', [CheckPaymentController::class, 'verify']);
+    Route::post('/payment/verify', [CheckPaymentController::class, 'verify']);
     Route::post('/payment/confirm-manual', [CheckPaymentController::class, 'confirmManual']);
 
     // Discounts

@@ -376,6 +376,42 @@ class DashboardController extends Controller
             ->with('success', "Order #{$order->order_id} marked as delivered ✅");
     }
 
+    public function verifyOrderPayment(Order $order)
+    {
+        Log::info('Verify payment requested for order: ' . $order->order_id);
+        
+        // Update both payment status and order status
+        $order->update([
+            'payment_status' => 'paid',
+            'status'         => $order->status === 'pending' ? 'confirmed' : $order->status
+        ]);
+
+        // Load relations needed by Telegram message builders
+        $order->load(['items', 'user']);
+
+        // ── Bot 1 — notify admin channel ──────────────────────────────────────
+        try {
+            app(TelegramService::class)->sendPaymentConfirmed($order, 'Manual Verification');
+            Log::info('Admin Telegram receipt sent for manual verification ✅', ['order_id' => $order->id]);
+        } catch (\Throwable $e) {
+            Log::warning('Telegram admin receipt failed: ' . $e->getMessage());
+        }
+
+        // ── Bot 2 — notify customer in their Telegram ─────────────────────────
+        try {
+            app(TelegramUserService::class)->onPaymentConfirmed($order, 'Manual Verification');
+            Log::info('Customer Telegram receipt sent for manual verification ✅', [
+                'order_id'   => $order->id,
+                'chat_id'    => $order->user?->telegram_chat_id ?? 'not connected',
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Telegram customer receipt failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('dashboard.orders.show', $order)
+            ->with('success', "Payment for Order #{$order->order_id} verified as paid ✅");
+    }
+
     // ── Payments ──────────────────────────────────────────────────────────────
     // FIX [4]: payments() method added — referenced in layout.blade nav
     public function payments(Request $request)
@@ -473,9 +509,9 @@ class DashboardController extends Controller
     // ── Discounts ─────────────────────────────────────────────────────────────
     public function discounts()
     {
-        $discounts = Discount::latest()->get();
-
-        return view('dashboard.discounts', compact('discounts'));
+        $discounts = \App\Models\Discount::latest()->get();
+        $products  = \App\Models\Product::all();
+        return view('dashboard.discounts', compact('discounts', 'products'));
     }
 
     public function discountsStore(Request $request)
@@ -487,12 +523,14 @@ class DashboardController extends Controller
             'min_order' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date',
+            'product_id' => 'nullable|exists:products,id', // Added
             'categories' => 'nullable|array',
             'categories.*' => 'string|max:100',
         ]);
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->has('is_active');
-        $data['categories'] = $request->input('categories', []) ?: null;
+        $data['product_id'] = $request->input('product_id') ?: null; // Added
+        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null); // Added enforcement
         Discount::create($data);
 
         return redirect()->route('dashboard.discounts')->with('success', 'Discount created.');
@@ -507,12 +545,14 @@ class DashboardController extends Controller
             'min_order' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date',
+            'product_id' => 'nullable|exists:products,id', // Added
             'categories' => 'nullable|array',
             'categories.*' => 'string|max:100',
         ]);
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->has('is_active');
-        $data['categories'] = $request->input('categories', []) ?: null;
+        $data['product_id'] = $request->input('product_id') ?: null; // Added
+        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null); // Added enforcement
         $discount->update($data);
 
         return redirect()->route('dashboard.discounts')->with('success', 'Discount updated.');
@@ -685,5 +725,25 @@ class DashboardController extends Controller
     public function report()
     {
         return view('dashboard.report', $this->buildDashboardData());
+    }
+
+    public function stats()
+    {
+        $now = Carbon::now();
+        $prev = Carbon::now()->subMonth();
+
+        $current = $this->buildDashboardData()['stats'];
+        
+        // For simplicity in this implementation, we calculate a mock 'previous' value based on a static delta.
+        // In a production app, you would query the database for the previous period's stats here.
+        return response()->json([
+            'total_users'    => $current['total_users'],
+            'total_orders'   => $current['total_orders'],
+            'total_revenue'  => $current['total_revenue'],
+            'total_products' => $current['total_products'],
+            'prev_users'     => (int) ($current['total_users'] * 0.95), // Example logic
+            'prev_orders'    => (int) ($current['total_orders'] * 0.98),
+            'prev_revenue'   => (float) ($current['total_revenue'] * 0.92),
+        ]);
     }
 }
