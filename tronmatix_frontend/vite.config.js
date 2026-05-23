@@ -22,6 +22,7 @@ export default defineConfig({
       'axios',
       'sweetalert2',
       'qrcode.react',
+      '@emailjs/browser',
     ],
   },
 
