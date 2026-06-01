@@ -188,7 +188,7 @@ export function AuthProvider({ children }) {
     setLoading(true)
     try {
       // Step 1 — get a connection token (works without auth for login flow)
-      const tokenRes = await api.post('/api/telegram/generate-token')
+      const tokenRes = await api.post('/api/auth/telegram-generate-token')
       if (!tokenRes.data?.success) throw new Error('Failed to generate link')
 
       const connectToken = tokenRes.data.token
