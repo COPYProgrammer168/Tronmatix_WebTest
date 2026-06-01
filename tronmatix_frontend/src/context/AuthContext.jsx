@@ -20,7 +20,6 @@ function isTokenExpired(token) {
 
 function sanitizeUser(user) {
   if (!user) return null
-  // eslint-disable-next-line no-unused-vars
   const { password, password_confirmation, remember_token, ...safe } = user
   return safe
 }
@@ -96,10 +95,9 @@ export function AuthProvider({ children }) {
       })
       .catch((err) => {
         if (err.response?.status === 401) clearSession()
-        // Network error → keep cached user
       })
       .finally(() => setReady(true))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Listen for social login events dispatched by AuthModal ───────────────
   useEffect(() => {
@@ -167,8 +165,6 @@ export function AuthProvider({ children }) {
   }, [])
 
   // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────
-  // Called by AuthModal after GSI popup returns an access_token.
-  // Google users log in directly — no profile setup modal needed.
   const googleLogin = useCallback(async (accessToken) => {
     setLoading(true)
     try {
@@ -184,6 +180,51 @@ export function AuthProvider({ children }) {
       return { success: false, message: msg }
     } finally {
       setLoading(false)
+    }
+  }, [applyToken, applyUser])
+
+  // ── TELEGRAM LOGIN (from AuthModal — user not yet logged in) ─────────────
+  const telegramLogin = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Step 1 — get a connection token (works without auth for login flow)
+      const tokenRes = await api.post('/api/telegram/generate-token')
+      if (!tokenRes.data?.success) throw new Error('Failed to generate link')
+
+      const connectToken = tokenRes.data.token
+      const botUsername  = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
+      const tgUrl        = `https://t.me/${botUsername}?start=${connectToken}`
+
+      // Step 2 — open Telegram
+      window.location.href = tgUrl
+
+      // Step 3 — poll /api/auth/telegram-status until token is claimed
+      return new Promise((resolve) => {
+        const startTime = Date.now()
+        const poll = setInterval(async () => {
+          if (Date.now() - startTime > 180_000) {
+            clearInterval(poll)
+            setLoading(false)
+            resolve({ success: false, message: 'Connection timed out. Please try again.' })
+            return
+          }
+          try {
+            const res = await api.get('/api/auth/telegram-status', {
+              params: { token: connectToken }
+            })
+            if (res.data?.success) {
+              clearInterval(poll)
+              applyToken(res.data.token)
+              applyUser(res.data.user)
+              setLoading(false)
+              resolve({ success: true, isNewUser: res.data.is_new_user })
+            }
+          } catch { /* keep polling */ }
+        }, 3000)
+      })
+    } catch (e) {
+      setLoading(false)
+      return { success: false, message: e.response?.data?.message || 'Telegram login failed.' }
     }
   }, [applyToken, applyUser])
 
@@ -215,7 +256,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, token, loading, ready,
       login, register, logout, refreshUser,
-      forgotPassword, googleLogin,
+      forgotPassword, googleLogin, telegramLogin,
     }}>
       {children}
     </AuthContext.Provider>

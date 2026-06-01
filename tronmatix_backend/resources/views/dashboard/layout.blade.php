@@ -1103,6 +1103,13 @@
                 {{ strtoupper(__('dashboard.nav.users')) }}
             </a>
 
+            <a href="{{ route('dashboard.feedback') }}"
+               class="nav-item {{ request()->routeIs('dashboard.feedback*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                {{ strtoupper(__('dashboard.nav.feedback')) }}
+            </a>
             <div class="nav-section-label">{{ __('dashboard.common.promotions') }}</div>
             <a href="{{ route('dashboard.discounts') }}"
                class="nav-item {{ request()->routeIs('dashboard.discounts*') ? 'active' : '' }}">

@@ -6,7 +6,7 @@ import DiscountInput from "../DiscountInput"
 export default function Step2Payment({
   payMethod, onPayMethod, items, subtotal, discountAmount,
   discount, finalTotal, loading, onBack, onPlace,
-  isPickup,  // ← NEW
+  isPickup,
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()

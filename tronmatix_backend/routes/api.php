@@ -32,7 +32,9 @@ Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
 // Social auth — public (returns token + is_new_user flag)
 Route::post('/auth/google', [GoogleAuthController::class, 'handleCallback']);
-Route::post('/auth/telegram', [TelegramAuthController::class, 'handleCallback']); // ← ADD: was missing, AuthModal.jsx calls this
+Route::post('/auth/telegram', [TelegramAuthController::class, 'handleCallback']);
+Route::post('/auth/telegram-generate-token', [TelegramAuthController::class, 'generateLoginToken']);
+Route::get('/auth/telegram-status',          [TelegramAuthController::class, 'checkLoginToken']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -112,6 +114,7 @@ Route::middleware(['auth:sanctum', 'throttle:10,1'])->group(function () {
     // Telegram user connect/disconnect (requires login — different from social login above)
     Route::prefix('telegram')->group(function () {
         Route::post('/connect', [TelegramController::class, 'connect']);
+        Route::post('/generate-token', [TelegramController::class, 'generateToken']);
         Route::post('/disconnect', [TelegramController::class, 'disconnect']);
         Route::get('/status', [TelegramController::class, 'status']);
         Route::post('/test-message', [TelegramController::class, 'testMessage']);

@@ -172,7 +172,7 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
       <Link
         to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
         className="block px-4 py-2 font-bold text-primary border-b border-[#333] mb-1 tracking-wider"
-        style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined }}
+        style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#F97316' : '#1f2937' }}
         onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
         ALL {item.label}
       </Link>
@@ -181,10 +181,13 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
           <div key={subObj.label} className="relative"
             onMouseEnter={() => setOpenSub(subObj.label)}
             onMouseLeave={() => setOpenSub(null)}>
-            <div className="flex items-center justify-between hover:bg-[#2a2a2a] transition-colors">
+            <div className="flex items-center justify-between transition-colors"
+                 style={{ backgroundColor: openSub === subObj.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
+                 onMouseEnter={() => setOpenSub(subObj.label)}
+                 onMouseLeave={() => setOpenSub(null)}>
               <Link to={`/category/${slugify(item.label)}/${slugify(subObj.label)}`}
-                className="flex-1 px-4 py-2.5 font-semibold text-gray-300 hover:text-primary tracking-wider"
-                style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined }}
+                className="flex-1 px-4 py-2.5 font-semibold hover:text-primary tracking-wider"
+                style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
                 onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
                 {subObj.label}
               </Link>
@@ -209,8 +212,16 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
                 {subObj.brands.map(brand => (
                   <Link key={brand}
                     to={`/category/${slugify(item.label)}/${slugify(subObj.label)}?brand=${encodeURIComponent(brand)}`}
-                    className="block px-4 py-2 text-gray-300 hover:text-primary hover:bg-[#2a2a2a] tracking-wider transition-colors"
-                    style={{ fontFamily: dropFont, fontSize: 14, letterSpacing: isKhmer ? 0 : undefined }}
+                    className="block px-4 py-2 hover:text-primary tracking-wider transition-colors"
+                    style={{ 
+                      fontFamily: dropFont, 
+                      fontSize: 14, 
+                      letterSpacing: isKhmer ? 0 : undefined, 
+                      color: dark ? '#d1d5db' : '#374151',
+                      backgroundColor: 'transparent'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
                     {brand}
                   </Link>
@@ -222,8 +233,16 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
         : item.sub.map(sub => (
           <Link key={sub}
             to={`/category/${slugify(item.label)}/${slugify(sub)}`}
-            className="block px-4 py-2.5 font-semibold text-gray-300 hover:text-primary hover:bg-[#2a2a2a] tracking-wider transition-colors"
-            style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined }}
+            className="block px-4 py-2.5 font-semibold hover:text-primary tracking-wider transition-colors"
+            style={{ 
+              fontFamily: dropFont, 
+              fontSize: 15, 
+              letterSpacing: isKhmer ? 0 : undefined, 
+              color: dark ? '#d1d5db' : '#374151',
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
             onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
             {sub}
           </Link>

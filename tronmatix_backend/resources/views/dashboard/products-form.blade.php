@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', $product ? 'EDIT PRODUCT' : 'ADD PRODUCT')
+@section('title', $product ? strtoupper(__('dashboard.form.editproduct')) : strtoupper(__('dashboard.form.addproduct')))
 
 @section('content')
 
@@ -105,12 +105,12 @@
 @else
     <div style="max-width:860px;">
         <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
-            ← BACK TO PRODUCTS
+            ← {{ __('dashboard.form.btp') }}
         </a>
         <div class="card">
             <div class="card-header">
                 <span class="card-title" style="font-size: var(--title-size);">
-                    {{ $product ? 'EDIT: ' . Str::limit($product->name, 40) : 'ADD NEW PRODUCT' }}
+                    {{ $product ? __('dashboard.form.editproduct') . ' ' . Str::limit($product->name, 40) : __('dashboard.form.addproduct') }}
                 </span>
                 @if ($product)
                     <span class="badge badge-orange">ID: {{ $product->id }}</span>
@@ -142,7 +142,7 @@
 
                             {{-- Name --}}
                             <div class="form-group">
-                                <label class="form-label">PRODUCT NAME *</label>
+                                <label class="form-label">{{ __('dashboard.form.productName') }}</label>
                                 <input type="text" name="name"
                                     class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
                                     value="{{ old('name', $product?->name) }}" placeholder="e.g. AMD Ryzen 7 9800X3D"
@@ -152,7 +152,7 @@
                             {{-- Category + Brand --}}
                             <div class="form-grid-2">
                                 <div class="form-group" style="font-size: var(--title-size);">
-                                    <label class="form-label">CATEGORY *</label>
+                                    <label class="form-label">{{ __('dashboard.form.category') }}</label>
                                     <select name="category" class="form-control" required>
                                         <option value="" disabled
                                             {{ old('category', $product?->category) ? '' : 'selected' }}>
@@ -223,7 +223,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">BRAND</label>
+                                    <label class="form-label">{{ __('dashboard.form.brand') }}</label>
                                     <input type="text" name="brand" class="form-control"
                                         value="{{ old('brand', $product?->brand) }}" placeholder="e.g. AMD, Intel, NVIDIA"
                                         list="brandList" />
@@ -239,7 +239,7 @@
                             {{-- Price + Stock + Rating --}}
                             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
                                 <div class="form-group">
-                                    <label class="form-label">PRICE (USD) *</label>
+                                    <label class="form-label">{{ __('dashboard.form.price') }}</label>
                                     <input type="text" name="price"
                                         class="form-control {{ $errors->has('price') ? 'is-invalid' : '' }}"
                                         value="{{ old('price', $product?->price) }}"
@@ -249,19 +249,19 @@
                                         required />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">STOCK *</label>
+                                    <label class="form-label">{{ __('dashboard.form.stock') }}</label>
                                     <input type="number" name="stock"
                                         class="form-control {{ $errors->has('stock') ? 'is-invalid' : '' }}"
                                         value="{{ old('stock', $product?->stock ?? 0) }}" min="0" required />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">RATING (0-5)</label>
+                                    <label class="form-label">{{ __('dashboard.form.rating') }}</label>
                                     <input type="number" name="rating" class="form-control"
                                         value="{{ old('rating', $product?->rating ?? 0) }}" step="0.1" min="0"
                                         max="5" />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">WARRANTY</label>
+                                    <label class="form-label">{{ __('dashboard.form.warranty') }}</label>
                                     <input type="text" name="warranty" class="form-control"
                                         value="{{ old('warranty', $product?->warranty) }}" placeholder="e.g. 3 years" />
                                 </div>
@@ -269,14 +269,14 @@
 
                             {{-- Description --}}
                             <div class="form-group">
-                                <label class="form-label">DESCRIPTION</label>
+                                <label class="form-label">{{ __('dashboard.form.description') }}</label>
                                 <textarea name="description" class="form-control" rows="4" placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
                             </div>
 
                             {{-- Featured + Hot toggles --}}
                             <div style="display:flex; gap:32px; margin-top:4px;">
                                 <div class="form-group">
-                                    <label class="form-label">FEATURED PRODUCT</label>
+                                    <label class="form-label">{{ __('dashboard.form.featured') }}</label>
                                     <label class="toggle-wrap" style="cursor:pointer;">
                                         <label class="toggle">
                                             <input type="checkbox" name="is_featured" value="1"
@@ -290,7 +290,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">HOT ITEM</label>
+                                    <label class="form-label">{{ __('dashboard.form.hot') }}</label>
                                     <label class="toggle-wrap" style="cursor:pointer;">
                                         <label class="toggle">
                                             <input type="checkbox" name="is_hot" value="1"
@@ -309,9 +309,9 @@
                         {{-- ── RIGHT COLUMN: Image Upload ────────────────────── --}}
                         <div>
                             <div class="form-group">
-                                <label class="form-label">PRODUCT IMAGES</label>
+                                <label class="form-label">{{ __('dashboard.form.productImages') }}</label>
                                 <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-bottom:8px;">
-                                    First image = main image. Drag to reorder. Max 8 images, 2MB each.
+                                    {{ __('dashboard.form.firstimage') }}
                                 </div>
 
                                 {{-- Multi-image gallery grid --}}
@@ -367,7 +367,7 @@
                                             <line x1="12" y1="5" x2="12" y2="19" />
                                             <line x1="5" y1="12" x2="19" y2="12" />
                                         </svg>
-                                        <span>Add Images</span>
+                                        <span>{{ __('dashboard.form.addImages') }}</span>
                                     </div>
                                 </div>
 
@@ -386,7 +386,7 @@
                                         <line x1="12" y1="12" x2="12" y2="21" />
                                         <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
                                     </svg>
-                                    UPLOAD IMAGES (Multi-select)
+                                    {{ __('dashboard.form.uploadimages') }} (Multi-select)
                                 </button>
 
                                 {{-- Divider --}}
@@ -398,7 +398,7 @@
                                 </div>
 
                                 {{-- URL Input for extra images --}}
-                                <label class="form-label">ADD IMAGE BY URL</label>
+                                <label class="form-label">{{ __('dashboard.form.addImageUrl') }}</label>
                                 <div style="display:flex; gap:8px;">
                                     <input type="text" id="imageUrlInput" class="form-control"
                                         placeholder="https://example.com/image.jpg" style="flex:1;" />
@@ -418,7 +418,7 @@
                                             <input type="checkbox" name="remove_image" value="1"
                                                 id="removeImageCheck" onchange="toggleRemoveImage(this)" />
                                             <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">
-                                                Remove all images
+                                                {{__('dashboard.form.removeallimages')}}
                                             </span>
                                         </label>
                                     </div>
@@ -436,16 +436,16 @@
                                 viewBox="0 0 24 24">
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
-                            {{ $product ? 'UPDATE PRODUCT' : 'CREATE PRODUCT' }}
+                            {{ $product ? strtoupper(__('dashboard.form.updateProduct')) : strtoupper(__('dashboard.form.createProduct')) }}
                         </button>
                         <a href="{{ route('dashboard.products') }}" class="btn btn-outline">
-                            CANCEL
+                            {{__('dashboard.form.cancel')}}
                         </a>
                         @if ($product)
                             <div style="margin-left:auto;">
                                 <button type="button" class="btn btn-danger"
                                     onclick="if(confirm('Delete this product permanently?')) document.getElementById('deleteForm').submit()">
-                                    DELETE PRODUCT
+                                    {{__('dashboard.form.delete')}}
                                 </button>
                             </div>
                         @endif
@@ -469,6 +469,9 @@
 
 @push('styles')
     <style>
+        :lang(km) label {
+            font-weight: 500;
+        }
         /* ── Multi-Image Gallery ──────────────────────────────────────────────── */
         .gallery-thumb {
             position: relative;

@@ -224,4 +224,44 @@ class TelegramAuthController extends Controller
             'is_banned' => $user->is_banned ?? false,
         ];
     }
+    // Generates a token for unauthenticated login flow
+    public function generateLoginToken(Request $request): JsonResponse
+    {
+        $token = \Illuminate\Support\Str::random(32);
+
+        \App\Models\TelegramConnectionToken::create([
+            'token' => $token,
+            'user_id' => null,   // no user yet — bot will create/find on confirm
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        return response()->json(['success' => true, 'token' => $token]);
+    }
+
+    // Frontend polls this — returns auth token once bot confirms
+    public function checkLoginToken(Request $request): JsonResponse
+    {
+        $tokenStr = $request->query('token');
+        $record = \App\Models\TelegramConnectionToken::where('token', $tokenStr)
+            ->whereNotNull('user_id')           // bot has claimed it
+            ->where('expires_at', '>', now())
+            ->with('user')
+            ->first();
+
+        if (!$record || !$record->user) {
+            return response()->json(['success' => false]);
+        }
+
+        // Issue Sanctum token and clean up
+        $record->user->tokens()->delete();
+        $authToken = $record->user->createToken('auth_token')->plainTextToken;
+        $record->delete();
+
+        return response()->json([
+            'success' => true,
+            'token' => $authToken,
+            'user' => $this->userPayload($record->user),
+            'is_new_user' => false,
+        ]);
+    }
 }

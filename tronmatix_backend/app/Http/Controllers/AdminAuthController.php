@@ -1,7 +1,4 @@
 <?php
-
-// app/Http/Controllers/AdminAuthController.php
-
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
@@ -22,7 +19,8 @@ class AdminAuthController extends Controller
             return redirect()->route('dashboard.index');
         }
 
-        return view('dashboard.auth.login');
+        $isAdminEmpty = Admin::count() === 0;
+        return view('dashboard.auth.login', compact('isAdminEmpty'));
     }
 
     public function login(Request $request)

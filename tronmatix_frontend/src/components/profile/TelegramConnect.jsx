@@ -218,11 +218,109 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh,
           </svg>
           {isKhmer ? t('telegram.loginDifferent') : 'Log in with a different account'}
         </button>
-        <p style={{ fontSize: 10, color: c.muted, textAlign: 'center', margin: '2px 0 0' }}>
-          {isKhmer ? t('telegram.switchHint') : 'Switch account in Telegram app, then click Refresh'}
-        </p>
+
+        <ConnectBotButton
+            busy={actionBusy}
+            dark={dark}
+            c={c}
+            isKhmer={isKhmer}
+            t={t}
+            onConnected={async () => {
+              notify('Telegram connected! ✅', 'success')
+              await fetchStatus(true)
+              onUpdate?.({ telegram_connected: true })
+            }}
+            notify={notify}
+          />
       </div>
     </div>
+  )
+}
+
+// ── ConnectBotButton ──────────────────────────────────────────────────────────
+function ConnectBotButton({ busy, dark, c, isKhmer, t, onConnected, notify }) {
+  const [tgUrl,    setTgUrl]    = useState(null)   // set after token generated
+  const [polling,  setPolling]  = useState(false)
+  const [waiting,  setWaiting]  = useState(false)  // waiting for user to confirm in Telegram
+
+  const handleClick = async () => {
+    if (busy || polling) return
+
+    // Step 1 — generate token from backend
+    let token, url
+    try {
+      const res = await axiosClient.post('/api/telegram/generate-token')
+      if (!res.data?.success) { notify('Failed to generate link.', 'error'); return }
+      token = res.data.token
+      url   = `https://t.me/${BOT_USERNAME}?start=${token}`
+      setTgUrl(url)
+    } catch { notify('Failed to generate link.', 'error'); return }
+
+    // Step 2 — open Telegram (use location assign to avoid popup blocker)
+    window.location.href = url
+
+    // Step 3 — start polling for connection
+    setWaiting(true)
+    setPolling(true)
+
+    const startTime = Date.now()
+    const poll = setInterval(async () => {
+      // Stop after 3 minutes
+      if (Date.now() - startTime > 180_000) {
+        clearInterval(poll)
+        setPolling(false)
+        setWaiting(false)
+        notify('Connection timed out. Please try again.', 'error')
+        return
+      }
+      try {
+        const res = await axiosClient.get('/api/telegram/status')
+        if (res.data?.data?.connected) {
+          clearInterval(poll)
+          setPolling(false)
+          setWaiting(false)
+          setTgUrl(null)
+          onConnected()
+        }
+      } catch { /* ignore network hiccups */ }
+    }, 3000)
+  }
+
+  // Waiting state — user went to Telegram, not confirmed yet
+  if (waiting) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '12px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#229ED9', fontFamily: 'Rajdhani,sans-serif' }}>
+          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#229ED9', animation: 'pulse 1.2s infinite' }} />
+          Waiting for confirmation in Telegram...
+        </div>
+        <p style={{ fontSize: 11, color: c.muted, textAlign: 'center', margin: 0 }}>
+          Open your Telegram app and tap <b>✅ Confirm Connect</b>
+        </p>
+        {tgUrl && (
+          <a href={tgUrl} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, color: '#229ED9', fontWeight: 700, textDecoration: 'underline' }}>
+            Re-open Telegram →
+          </a>
+        )}
+        <button onClick={() => { setWaiting(false); setPolling(false); setTgUrl(null) }}
+          style={{ fontSize: 12, color: c.muted, background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <button onClick={handleClick} disabled={busy || polling}
+        style={{ width: '100%', padding: '9px 0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#229ED9', border: 'none', color: '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: (busy || polling) ? 'default' : 'pointer', opacity: (busy || polling) ? 0.5 : 1, marginTop: 8 }}>
+        🚀 {isKhmer ? t('telegram.connectBot') : 'Connect via Telegram'}
+      </button>
+      <p style={{ fontSize: 10, color: c.muted, textAlign: 'center', margin: '4px 0 0' }}>
+        {isKhmer ? t('telegram.switchHint') : 'Opens Telegram — tap Confirm to link your account'}
+      </p>
+    </>
   )
 }
 

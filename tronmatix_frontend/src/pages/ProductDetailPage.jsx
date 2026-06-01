@@ -9,7 +9,7 @@ import { isSymbolPrice, numericPrice, displayPrice } from "../hooks/priceUtils";
 import ProductCard from "../components/ProductCard";
 import axios from "../lib/axios";
 
-const LARAVEL_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const LARAVEL_URL = import.meta.env.VITE_API_URL_NGROK || import.meta.env.VITE_API_URL || "";
 
 function resolveImage(path) {
   if (!path) return null;

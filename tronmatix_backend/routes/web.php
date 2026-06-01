@@ -12,6 +12,7 @@ use App\Http\Controllers\Dashboard\StaffController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffRequestController;
+use App\Models\Feedback;
 use Illuminate\Support\Facades\Route;
 
 // ── Redirect root ─────────────────────────────────────────────────────────────
@@ -27,6 +28,18 @@ Route::get('/lang/{locale}', function (string $locale) {
     return redirect()->back()->withHeaders(['Cache-Control' => 'no-store']);
 })->name('lang.switch');
 
+// ── Feedback ──────────────────────────────────────────────────────────────────
+Route::get('/feedback', fn() => view('dashboard.feedback.index'))->name('feedback');
+Route::post('/feedback', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'feedback' => 'required|string',
+    ]);
+    Feedback::create($request->all());
+    return back()->with('success', 'Thank you for your feedback!');
+})->name('feedback.submit');
+
 // ── Admin Auth Routes (unauthenticated only) ──────────────────────────────────
 Route::prefix('dashboard')->name('dashboard.')
     ->middleware(\App\Http\Middleware\AdminGuest::class)
@@ -35,9 +48,6 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/login', [AdminAuthController::class, 'login'])->name('login.post');
         Route::get('/register', [AdminAuthController::class, 'showRegister'])->name('register');
         Route::post('/register', [AdminAuthController::class, 'register'])->name('register.post');
-
-        Route::get('/request-access', [StaffRequestController::class, 'showForm'])->name('request-access');
-        Route::post('/request-access', [StaffRequestController::class, 'submit'])->name('request-access.submit');
     });
 
 // ── Protected Dashboard Routes ────────────────────────────────────────────────
@@ -52,6 +62,8 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/', [DashboardController::class, 'index'])->name('index');
         Route::get('/export', [DashboardController::class, 'dashboardExport'])->name('export');
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+        Route::get('/request-access', [StaffRequestController::class, 'showForm'])->name('request-access');
+        Route::post('/request-access', [StaffRequestController::class, 'submit'])->name('request-access.submit');
 
         // ── Products ──────────────────────────────────────────────────────────
         Route::get('/products', [ProductController::class, 'index'])->name('products');
@@ -125,6 +137,9 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/telegram/setup-webhook', [TelegramAdminController::class, 'setupWebhook'])->name('telegram.setup-webhook');
         Route::post('/telegram/delete-webhook', [TelegramAdminController::class, 'deleteWebhook'])->name('telegram.delete-webhook');
         Route::get('/telegram/webhook-info', [TelegramAdminController::class, 'webhookInfo'])->name('telegram.webhook-info');
+
+        // Feedback
+        Route::get('/feedback', [\App\Http\Controllers\Dashboard\FeedbackController::class, 'index'])->name('feedback');
 
         Route::get('/report', [DashboardController::class, 'report'])->name('report');
         Route::get('/stats', [DashboardController::class, 'stats'])->name('stats');

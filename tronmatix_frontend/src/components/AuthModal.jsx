@@ -1,7 +1,3 @@
-// src/components/AuthModal.jsx
-//
-// Handles: Login, Register, Forgot Password, Google OAuth
-
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
@@ -10,16 +6,10 @@ import logo from '../assets/logo.png'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID     || ''
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ProfileSetupModal — shown after Google/Telegram login for new users
-// ─────────────────────────────────────────────────────────────────────────────
 export default function AuthModal({ mode, onClose, onSwitch }) {
-  const { login, register, forgotPassword, googleLogin, loading } = useAuth()
+  const { login, register, forgotPassword, googleLogin, telegramLogin, loading } = useAuth()
   const { dark } = useTheme()
   const { isKhmer } = useLang()
-
-  // FIX: authFont was missing from AuthModal scope — declared only in ProfileSetupModal above,
-  // causing ReferenceError: authFont is not defined (at socialBtnBase object, line ~406)
   const authFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
   const authBodyFont = isKhmer
     ? "Kdam Thmor Pro, sans-serif"
@@ -156,7 +146,7 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           return
         }
 
-        // ✅ Use googleLogin from AuthContext — clean, centralized, handles is_new_user
+        //Use googleLogin from AuthContext — clean, centralized, handles is_new_user
         const res = await googleLogin(tokenResponse.access_token)
 
         setSocialLoading(null)
@@ -312,6 +302,37 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
                   <span>{isKhmer ? 'ភ្ជាប់ជាមួយ Google' : 'Continue with Google'}</span>
+                </>
+              )}
+            </button>
+            
+            {/* Telegram */}
+            <button
+              style={socialBtnBase}
+              disabled={!!socialLoading || loading}
+              onClick={async () => {
+                setSocialLoading('telegram')
+                setError('')
+                const res = await telegramLogin()
+                setSocialLoading(null)
+                if (res?.success) {
+                  setSuccess('Signed in with Telegram!')
+                  setTimeout(onClose, 600)
+                } else if (res?.message) {
+                  setError(res.message)
+                }
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = c.socialHover; e.currentTarget.style.borderColor = '#229ED9' }}
+              onMouseLeave={e => { e.currentTarget.style.background = c.socialBg;    e.currentTarget.style.borderColor = c.socialBorder }}
+            >
+              {socialLoading === 'telegram' ? (
+                <span style={{ fontSize: 14, color: c.textMuted }}>Waiting for Telegram...</span>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#229ED9">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.            51-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.05-.2-.06-.06-.15-.04-.21-.03-.09.02-1.49.95-4.22 2.79-.4.27-.76.4-1.08.39-.36-.01-1.04-.2-1.55-.37-.62-.2-1.12-.           31-1.08-.66.02-.18.27-.36.75-.55 2.94-1.28 4.9-2.13 5.88-2.54 2.8-1.16 3.38-1.36 3.76-1.37.08 0 .27.02.39.12.1.08.13.19.14.27z"/>
+                  </svg>
+                  <span>{isKhmer ? 'ចូលជាមួយ Telegram' : 'Log in with Telegram'}</span>
                 </>
               )}
             </button>

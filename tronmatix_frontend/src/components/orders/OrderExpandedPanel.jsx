@@ -4,7 +4,7 @@ import { useLang } from "../../context/LanguageContext";
 import DeliveryTracker from "./DeliveryTracker";
 import OrderMapView from "./OrderMapView";
 
-const LARAVEL_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const LARAVEL_URL = import.meta.env.VITE_API_URL_NGROK || import.meta.env.VITE_API_URL || "";
 
 function resolveImage(path) {
   if (!path) return null;

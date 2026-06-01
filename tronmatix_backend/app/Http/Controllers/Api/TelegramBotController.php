@@ -11,11 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
- * FIX [4]: webhook() was reading config('services.telegram.webhook_secret')
- *           which is the ADMIN bot config — that key doesn't exist there.
- *           Result: $secret was always '' → security check was silently skipped,
- *           meaning ANY request could trigger the webhook (no protection).
- *           Fixed to read config('services.telegram_user.webhook_secret').
+ * webhook() was reading config('services.telegram.webhook_secret')
+ * which is the ADMIN bot config — that key doesn't exist there.
+ * Result: $secret was always '' → security check was silently skipped,
+ * meaning ANY request could trigger the webhook (no protection).
+ * Fixed to read config('services.telegram_user.webhook_secret').
  */
 class TelegramBotController extends Controller
 {
@@ -24,8 +24,6 @@ class TelegramBotController extends Controller
     // ── POST /api/telegram/bot-webhook  (PUBLIC — no Sanctum) ─────────────────
     public function webhook(Request $request): JsonResponse
     {
-        // FIX [4]: was config('services.telegram.webhook_secret') — admin bot key.
-        // Now reads the user bot key where TELEGRAM_USER_WEBHOOK_SECRET is stored.
         $secret = config('services.telegram_user.webhook_secret', '');
 
         if ($secret && $request->header('X-Telegram-Bot-Api-Secret-Token') !== $secret) {
@@ -34,6 +32,10 @@ class TelegramBotController extends Controller
         }
 
         $update = $request->all();
+        Log::info('[UserBot] webhook received', [
+            'type' => isset($update['callback_query']) ? 'callback_query'
+                : (isset($update['message']) ? 'message' : 'other'),
+        ]);
 
         if (empty($update)) {
             return response()->json(['ok' => true]);
@@ -53,20 +55,20 @@ class TelegramBotController extends Controller
     // ── POST /api/telegram/setup-webhook  (protected) ─────────────────────────
     public function setupWebhook(Request $request): JsonResponse
     {
-        $request->validate(['url' => 'required|url']);
+        $url = rtrim(config('app.url'), '/') . '/api/telegram/bot-webhook';
 
-        $result = $this->bot->registerWebhook($request->input('url'));
+        $result = $this->bot->registerWebhook($url);
+
+        Log::info('[UserBot] setupWebhook called', ['url' => $url, 'result' => $result]);
 
         return response()->json([
             'success' => $result['ok'] ?? false,
-            'result'  => $result,
+            'url' => $url,
+            'result' => $result,
         ]);
     }
 
     // ── POST /api/telegram/delete-webhook  (protected) ────────────────────────
-    // FIX: Resolves 409 "Conflict: terminated by other getUpdates request"
-    // Call this whenever you need to stop polling mode and switch to webhook,
-    // or to clear a stale webhook registration before re-registering.
     public function deleteWebhook(): JsonResponse
     {
         $result = $this->bot->deleteWebhook();
@@ -75,7 +77,7 @@ class TelegramBotController extends Controller
 
         return response()->json([
             'success' => $result['ok'] ?? false,
-            'message' => $result['ok'] ?? false
+            'message' => ($result['ok'] ?? false)
                 ? 'Webhook deleted. Bot is now in polling-free state. Call setup-webhook to re-register.'
                 : 'Failed to delete webhook.',
             'result'  => $result,

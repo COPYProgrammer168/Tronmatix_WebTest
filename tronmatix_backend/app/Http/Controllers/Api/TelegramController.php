@@ -74,10 +74,7 @@ class TelegramController extends Controller
         ]);
 
         try {
-            // FIX: disconnectUser() now sends alert to Telegram FIRST,
-            // then clears the chat_id from DB.
-            // Order matters: if we cleared DB first, we'd lose the chat_id
-            // and couldn't send the farewell message.
+
             $this->telegram->disconnectUser($user);
 
             return response()->json([
@@ -138,6 +135,23 @@ class TelegramController extends Controller
                 'telegram_username' => $user->telegram_username,
                 'connected_at'      => $connectedAt,
             ],
+        ]);
+    }
+
+    // ── POST /api/telegram/generate-token ─────────────────────────────────────
+    public function generateToken(Request $request): JsonResponse
+    {
+        $token = \Illuminate\Support\Str::random(32);
+        
+        \App\Models\TelegramConnectionToken::create([
+            'token'      => $token,
+            'user_id'    => $request->user()->id,
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'token'   => $token,
         ]);
     }
 }

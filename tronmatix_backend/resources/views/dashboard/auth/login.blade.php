@@ -272,8 +272,17 @@
             </div>
         @endif
 
+        {{-- Register Superadmin Button (if empty) --}}
+        @if($isAdminEmpty)
+            <div style="margin-bottom: 24px;">
+                <a href="{{ route('dashboard.register') }}" class="btn-submit" style="background: linear-gradient(135deg, #22C55E, #16a34a); box-shadow: 0 4px 20px rgba(34,197,94,0.35);">
+                    REGISTER SUPERADMIN
+                </a>
+            </div>
+        @endif
+
         {{-- Login Form --}}
-        <form method="POST" action="{{ route('dashboard.login.post') }}" id="loginForm">
+        <form method="POST" action="{{ route('dashboard.login.post') }}" id="loginForm" style="{{ $isAdminEmpty ? 'display:none;' : '' }}">
             @csrf
             <input type="hidden" name="mode" id="modeHint" value="admin" />
 
@@ -352,10 +361,12 @@
             </button>
         </form>
 
-        <div class="divider" id="orDivider"><span>OR</span></div>
-        <div class="auth-footer" id="requestAccessFooter" style="display:none;">
-            Need access? <a href="{{ route('dashboard.request-access') }}">Request staff access</a>
-        </div>
+        @if(!$isAdminEmpty)
+            <div class="divider" id="orDivider"><span>OR</span></div>
+            <div class="auth-footer" id="requestAccessFooter" style="display:none;">
+                Need access? <a href="{{ route('dashboard.request-access') }}">Request staff access</a>
+            </div>
+        @endif
 
     </div>
 </div>

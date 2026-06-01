@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/ProductController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -17,9 +15,6 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::query();
-
-        // 'all' is a special slug meaning no category filter — show everything
-        // Also support category[] array param (sent by HomePage for multi-sub categories like MONITOR)
         if ($request->has('category') && is_array($request->input('category'))) {
             $cats = array_values(array_filter(array_map('strtolower', $request->input('category'))));
             if (count($cats) > 0) {

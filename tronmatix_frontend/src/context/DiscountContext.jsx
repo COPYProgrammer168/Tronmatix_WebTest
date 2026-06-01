@@ -65,14 +65,6 @@ export function DiscountProvider({ children }) {
     setDiscount(null); setError(null); setSuccess(null)
   }, [])
 
-  /**
-   * getItemDiscounts(item)
-   * Returns ALL discounts that apply to this item:
-   *   1. The user-applied code discount (kind='code', if active & matches category)
-   *   2. Any public badge discounts from admin that match this item's category
-   *
-   * Returns an array so ProductCard can show multiple badges.
-   */
   const getItemDiscounts = useCallback((item) => {
     const result = []
 
@@ -83,8 +75,6 @@ export function DiscountProvider({ children }) {
       
       let categoryMatch = false;
       if (productId) {
-        // If it's a product discount, category doesn't matter, 
-        // it applies only to the specific product matched below.
         categoryMatch = true; 
       } else {
         categoryMatch = !cats || cats.length === 0
@@ -117,10 +107,6 @@ export function DiscountProvider({ children }) {
     return result
   }, [discount, publicDiscounts])
 
-  /**
-   * bestDiscountForItem(item)
-   * Returns the single best (highest saving) discount for a given item.
-   */
   const bestDiscountForItem = useCallback((item) => {
     const all = getItemDiscounts(item)
     if (all.length === 0) return null
@@ -136,11 +122,6 @@ export function DiscountProvider({ children }) {
     })
   }, [getItemDiscounts])
 
-  /**
-   * calcDiscount(subtotal, items)
-   * Returns total discount to deduct at checkout.
-   * Considers BOTH code and badge discounts; best-one-wins per item (no double-dipping).
-   */
   const calcDiscount = useCallback((subtotal, items = null) => {
     const bestSavingForItem = (item) => {
       const all = getItemDiscounts(item)
@@ -163,9 +144,6 @@ export function DiscountProvider({ children }) {
     // Fallback: legacy code-discount-only logic (no items provided)
     if (!discount) return 0
     
-    // If it's a product-specific or category-specific discount, 
-    // we cannot calculate the discount correctly without item information.
-    // Return 0 if it's not a sitewide discount.
     const isSitewide = !discount.product_id && (!discount.categories || discount.categories.length === 0);
     if (!isSitewide) return 0;
 

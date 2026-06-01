@@ -106,9 +106,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // FIX: Check ban BEFORE clearing the rate limiter.
-        // Previously, a banned user who knew their password would clear the
-        // limiter on every attempt, bypassing brute-force protection entirely.
         if ($user->is_banned) {
             // Still count this as a hit so ban-testing is rate limited too
             RateLimiter::hit($throttleKey, 60);

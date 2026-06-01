@@ -1,11 +1,3 @@
-// src/components/orders/BakongQRPanel.jsx
-// Authentic KHQR payment panel:
-//  - Uses qr_image (base64 PNG from PayWay) — official KHQR styled QR with logo
-//  - Falls back to QRCodeSVG if qr_image not returned
-//  - ABA Mobile deeplink button
-//  - App Store / Play Store download links
-//  - Auto-polls PayWay every 4s via checkpayment_api
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLang } from "../../context/LanguageContext";
 import {
@@ -16,10 +8,6 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 
 // ── QR display ────────────────────────────────────────────────────────────────
-// Uses qr_image (official PayWay KHQR template PNG).
-// The PNG has ~10% top whitespace and ~8% bottom whitespace — crop it with
-// a fixed-height overflow:hidden container + negative margins so only the
-// actual KHQR design shows, edge-to-edge and sharp.
 function QRDisplay({ qrData }) {
   if (qrData?.qr_image) {
     const src = qrData.qr_image.startsWith("data:")

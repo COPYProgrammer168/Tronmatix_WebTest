@@ -38,7 +38,7 @@ export default function CheckoutPage() {
     const s = parseInt(localStorage.getItem("checkout_step"))
     return (s === 1 || s === 2) ? s : 1   // clamp to valid steps only
   })
-  // ── NEW: fulfillment type ────────────────────────────────────────────────
+  // ── fulfillment type ────────────────────────────────────────────────
   const [fulfillment,       setFulfillment]    = useState(localStorage.getItem("checkout_fulfillment") || "delivery") // "delivery" | "pickup"
 
   const [location,       setLocation]       = useState(() => {
@@ -90,7 +90,7 @@ export default function CheckoutPage() {
       pendingOrderAfterLogin.current = false
       placeOrder()
     }
-  }, [user]) // eslint-disable-line
+  }, [user])
 
   useEffect(() => {
     if (!user) return

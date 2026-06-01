@@ -706,7 +706,6 @@ class DashboardController extends Controller
 
     private function deleteStoredFile(string $path): void
     {
-        // FIX: Handle both S3/R2 URLs and local /storage/ paths
         $this->deleteStorageFile($path);
     }
 
@@ -733,9 +732,6 @@ class DashboardController extends Controller
         $prev = Carbon::now()->subMonth();
 
         $current = $this->buildDashboardData()['stats'];
-        
-        // For simplicity in this implementation, we calculate a mock 'previous' value based on a static delta.
-        // In a production app, you would query the database for the previous period's stats here.
         return response()->json([
             'total_users'    => $current['total_users'],
             'total_orders'   => $current['total_orders'],

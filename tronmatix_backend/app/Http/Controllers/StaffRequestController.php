@@ -15,27 +15,27 @@ use Illuminate\Validation\Rules\Password;
 
 class StaffRequestController extends Controller
 {
-    // ── Show the request-access form (public, unauthenticated) ────────────────
+    // ── Show the request-access form (protected) ────────────────
 
     public function showForm()
     {
-        if (Auth::guard('admin')->check()) {
-            return redirect()->route('dashboard.index');
-        }
-
-        if (Admin::count() === 0) {
-            return redirect()->route('dashboard.register');
+        // Must be a superadmin
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->role !== 'superadmin') {
+            return redirect()->route('dashboard.login')
+                ->with('error', 'Unauthorized access.');
         }
 
         return view('dashboard.auth.request-access');
     }
 
-    // ── Submit a staff access request ─────────────────────────────────────────
+    // ── Submit a staff access request (protected) ─────────────────────────
 
     public function submit(Request $request)
     {
-        if (Admin::count() === 0) {
-            return redirect()->route('dashboard.register');
+        // Must be a superadmin
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->role !== 'superadmin') {
+            return redirect()->route('dashboard.login')
+                ->with('error', 'Unauthorized access.');
         }
 
         $request->validate([
@@ -67,8 +67,8 @@ class StaffRequestController extends Controller
             'status'         => 'pending',
         ]);
 
-        return redirect()->route('dashboard.login')
-            ->with('success', 'Your access request has been submitted. A superadmin will review it shortly.');
+        return redirect()->route('dashboard.index')
+            ->with('success', 'Staff access request created successfully.');
     }
 
     // ── Accept a request (superadmin only) ────────────────────────────────────

@@ -18,10 +18,6 @@ class PaymentController extends Controller
 {
     private const QR_EXPIRY_MINUTES = 10;
 
-    // =========================================================================
-    // 1. GENERATE QR
-    //    POST /api/payment/generate-qr
-    // =========================================================================
     public function generateQr(Request $request)
     {
         $request->validate([
@@ -45,9 +41,6 @@ class PaymentController extends Controller
             return response()->json(['success' => false, 'message' => 'This order does not belong to your account.'], 403);
         }
 
-        // ── Idempotent: return existing un-expired pending payment ────────────
-        // FIX [2,3]: was reading meta['qr_md5'] + meta['qr_expiration'] BIGINT.
-        //            Now uses real columns + Payment::isExpired() which checks both.
         $existing = Payment::where('order_id', $order->id)
             ->where('status', Payment::STATUS_PENDING)
             ->latest()->first();
@@ -86,7 +79,6 @@ class PaymentController extends Controller
         $qrMd5 = null;
 
         try {
-            // Extract merchant ID from bakong ID (format: "id@bank")
             $merchantId = explode('@', $bakongId)[0] ?? $bakongId;
 
             $merchantInfo = new MerchantInfo(
@@ -119,17 +111,14 @@ class PaymentController extends Controller
 
             return $this->staticFallbackResponse($order, $merchantName, $tranId, $expiresAt);
         }
-
-        // FIX [8]: provider was 'aba' — KHQR is bakong
-        // FIX [9]: no newline in 'qr_data' key
         Payment::updateOrCreate(
             ['order_id' => $order->id],
             [
                 'tran_id' => $tranId,
-                'provider' => 'bakong',    // FIX [8]
+                'provider' => 'bakong',    
                 'payment_method' => 'bakong',
                 'currency' => 'USD',
-                'qr_data' => $qrCode,     // FIX [9]: was 'qr_data\n'
+                'qr_data' => $qrCode,    
                 'qr_md5' => $qrMd5,
                 'qr_expires_at' => $expiresAt,
                 'amount' => $amount,
@@ -145,7 +134,7 @@ class PaymentController extends Controller
             'success' => true,
             'message' => 'khqr generated successfully!',
             'data' => [
-                'merchant_name' => $merchantName, // FIX [1]
+                'merchant_name' => $merchantName, 
                 'id' => $order->id,
                 'qr_code' => $qrCode,
                 'qr_md5' => $qrMd5,
@@ -157,7 +146,7 @@ class PaymentController extends Controller
     }
 
     // =========================================================================
-    // 2. VERIFY PAYMENT (polling)
+    //    VERIFY PAYMENT (polling)
     //    POST /api/payment/verify
     // =========================================================================
     public function verify(Request $request)
@@ -184,9 +173,8 @@ class PaymentController extends Controller
             return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No pending payment found'], 404);
         }
 
-        // FIX [6]: use isExpired() which checks qr_expires_at + expires_at + legacy ms
         if ($payment->isExpired()) {
-            $payment->markAsExpired(); // FIX [5]: was markExpired(), model method is markAsExpired()
+            $payment->markAsExpired(); 
 
             return response()->json(['success' => false, 'status' => 'expired'], 400);
         }
@@ -210,7 +198,7 @@ class PaymentController extends Controller
             $data = $response->json();
 
             if (($data['responseCode'] ?? -1) === 0 && ! empty($data['data']['hash'])) {
-                $payment->markAsPaid($data['data']['hash'], $data['data']); // syncs order too
+                $payment->markAsPaid($data['data']['hash'], $data['data']); // syncs order
 
                 Log::info('Payment confirmed via polling ✅', ['order_id' => $order->id]);
 
@@ -249,7 +237,6 @@ class PaymentController extends Controller
             return response()->json(['success' => false, 'message' => 'missing tran_id'], 400);
         }
 
-        // FIX [7]: try tran_id first, then qr_md5 fallback (matches CheckPaymentController strategy)
         $payment = Payment::where('tran_id', $tranId)->first()
             ?? Payment::where('qr_md5', $tranId)->first();
 

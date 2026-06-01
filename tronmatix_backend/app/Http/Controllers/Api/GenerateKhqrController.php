@@ -1,19 +1,4 @@
 <?php
-
-// app/Http/Controllers/Api/GenerateKhqrController.php
-//
-// ABA PayWay QR Generation
-// Docs: https://developer.payway.com.kh/qr-api-14530840e0
-//
-// HASH FORMULA (generate-qr) — 19 fields in this exact order:
-//   req_time + merchant_id + tran_id + amount + items + first_name + last_name
-//   + email + phone + purchase_type + payment_option + callback_url
-//   + return_deeplink + currency + custom_fields + return_params
-//   + payout + lifetime + qr_image_template
-//
-// Algorithm : HMAC-SHA512 → base64
-// Key       : PAYWAY_API_KEY from .env (item #2 in credential_info.txt)
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -90,11 +75,6 @@ class GenerateKhqrController extends Controller
         return base64_encode($url);
     }
 
-    /**
-     * Pick the right callback URL:
-     * - Local dev  → PAYWAY_CALLBACK_LOCAL_URL (your ngrok tunnel)
-     * - Production → PAYWAY_CALLBACK_URL (your Render URL)
-     */
     private function callbackUrl(): string
     {
         $url = app()->environment('production')
@@ -106,11 +86,7 @@ class GenerateKhqrController extends Controller
 
         return $this->encodeUrl($url ?: config('app.url') . '/api/payment/webhook');
     }
-
-    // =========================================================================
     // MAIN ENDPOINT: POST /api/payment/generate-qr
-    // =========================================================================
-
     public function generate(Request $request): JsonResponse
     {
         $request->validate(['order_id' => 'required|integer']);
@@ -149,8 +125,6 @@ class GenerateKhqrController extends Controller
         }
 
         // ── Expire stale pending payments for this order ──────────────────────
-        // Prevents qr_md5 UNIQUE constraint conflict on re-generation,
-        // and keeps the payments table clean (one active QR per order).
         Payment::where('order_id', $order->id)
             ->where('status', Payment::STATUS_PENDING)
             ->update([
@@ -224,7 +198,7 @@ class GenerateKhqrController extends Controller
             'req_time' => $reqTime,
             'merchant_id' => $merchantId,
             'tran_id' => $tranId,
-            'amount' => $amountStr, // string "0.79" — must match what was hashed exactly
+            'amount' => $amountStr,
             'items' => $items,
             'first_name' => $firstName,
             'last_name' => $lastName,
@@ -273,8 +247,8 @@ class GenerateKhqrController extends Controller
 
             // ── Extract response values ───────────────────────────────────────
             $qrString = $body['qrString'] ?? null;
-            $qrImage = $body['qrImage'] ?? null; // styled PNG with KHQR logo
-            $deeplink = $body['abapay_deeplink'] ?? null; // open ABA Mobile directly
+            $qrImage = $body['qrImage'] ?? null;
+            $deeplink = $body['abapay_deeplink'] ?? null;
             $appStore = $body['app_store'] ?? null;
             $playStore = $body['play_store'] ?? null;
 
@@ -282,7 +256,7 @@ class GenerateKhqrController extends Controller
                 throw new \RuntimeException('PayWay returned empty qrString');
             }
 
-            $md5Hash = md5($qrString); // NBC spec: MD5 of raw qrString only
+            $md5Hash = md5($qrString);
 
             $meta = [
                 'currency' => 'USD',
@@ -295,9 +269,6 @@ class GenerateKhqrController extends Controller
             ];
 
             // ── Save payment record ───────────────────────────────────────────
-            // Match by tran_id (unique per QR generation), NOT order_id.
-            // Matching by order_id would overwrite a previous generation's
-            // qr_md5 on the same row and break any in-flight NBC poll.
             Payment::updateOrCreate(
                 ['tran_id' => $tranId],
                 [
@@ -325,11 +296,7 @@ class GenerateKhqrController extends Controller
             ], 500);
         }
     }
-
-    // =========================================================================
     // SUCCESS RESPONSE
-    // =========================================================================
-
     private function buildResponse(
         Order $order,
         ?string $qrCode,

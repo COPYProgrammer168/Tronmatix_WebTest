@@ -1,34 +1,30 @@
 import React, { useState } from 'react';
-import emailjs from '@emailjs/browser';
+import axios from 'axios';
 
 const FeedbackForm = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '', rating: 5 });
+  const [formData, setFormData] = useState({ name: '', email: '', feedback: '', rating: 5 });
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setStatus('Sending...');
 
-    emailjs
-      .send(
-        "service_gdk0k9o",
-        "template_hq00yfg",
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-          rating: formData.rating,
-        },
-        "WZulSV2eLpt8vLj-Y",
-      )
-      .then(() => {
-        setStatus("Feedback sent successfully!");
-        setFormData({ name: "", email: "", message: "", rating: 5 });
-      })
-      .catch(() => setStatus("Failed to send feedback. Please try again."))
-      .finally(() => setIsSubmitting(false));
+    try {
+      // Assuming the backend API is at /feedback
+      await axios.post('/feedback', {
+        name: formData.name,
+        email: formData.email,
+        feedback: formData.feedback,
+      });
+      setStatus("Feedback sent successfully!");
+      setFormData({ name: "", email: "", feedback: "", rating: 5 });
+    } catch (error) {
+      setStatus("Failed to send feedback. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,7 +32,7 @@ const FeedbackForm = () => {
       <h2 className="text-xl font-bold mb-4">Customer Feedback</h2>
       <input type="text" placeholder="Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full p-2 mb-3 border rounded" required />
       <input type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full p-2 mb-3 border rounded" required />
-      <textarea placeholder="Your message" value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full p-2 mb-3 border rounded" required />
+      <textarea placeholder="Your message" value={formData.feedback} onChange={(e) => setFormData({...formData, feedback: e.target.value})} className="w-full p-2 mb-3 border rounded" required />
       <button type="submit" disabled={isSubmitting} className="w-full bg-primary text-white p-2 rounded font-bold">
         {isSubmitting ? 'Sending...' : 'Submit Feedback'}
       </button>

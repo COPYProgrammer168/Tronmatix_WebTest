@@ -9,13 +9,13 @@ export default function Step1DeliveryInfo({
   location, onChange, delivery, onDeliveryChange,
   saveAddr, onSaveAddr, savedLocations, onPickLocation,
   onSaveToProfile, onNext, mapPin, onMapPin,
-  isPickup,   // ← NEW: passed from CheckoutPage
+  isPickup,
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
   const step1Font = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif"
   const [showMapPicker, setShowMapPicker] = useState(false)
-  // For pickup: only name + phone are required (no address)
+
   const canProceed = isPickup
     ? (location.name && location.phone)
     : (location.name && location.phone && location.address)
