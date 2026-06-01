@@ -134,6 +134,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
               showSwitch={showSwitch}
               onClickSwitch={() => setShowSwitch(true)}
               onRefresh={handleRefresh}
+              notify={notify}
             />
         }
       </div>
@@ -142,7 +143,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 }
 
 // ── NotConnectedView ──────────────────────────────────────────────────────────
-function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh, isKhmer = false, t = (k) => k }) {
+function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh, notify, isKhmer = false, t = (k) => k }) {
   return (
     <div style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif', color: c.text }}>
       <p style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
