@@ -206,30 +206,6 @@ export function AuthProvider({ children }) {
       setWaiting(true)
       setPolling(true)
 
-      // Step 3 — poll /api/auth/telegram-status until token is claimed
-      return new Promise((resolve) => {
-        const startTime = Date.now()
-        const poll = setInterval(async () => {
-          if (Date.now() - startTime > 180_000) {
-            clearInterval(poll)
-            setLoading(false)
-            resolve({ success: false, message: 'Connection timed out. Please try again.' })
-            return
-          }
-          try {
-            const res = await api.get('/api/auth/telegram-status', {
-              params: { token: connectToken }
-            })
-            if (res.data?.success) {
-              clearInterval(poll)
-              applyToken(res.data.token)
-              applyUser(res.data.user)
-              setLoading(false)
-              resolve({ success: true, isNewUser: res.data.is_new_user })
-            }
-          } catch { /* keep polling */ }
-        }, 3000)
-      })
     } catch (e) {
       setLoading(false)
       return { success: false, message: e.response?.data?.message || 'Telegram login failed.' }
