@@ -196,7 +196,15 @@ export function AuthProvider({ children }) {
       const tgUrl        = `https://t.me/${botUsername}?start=${connectToken}`
 
       // Step 2 — open Telegram
-      window.location.href = tgUrl
+      const tgWindow = window.open(tgUrl, '_blank')
+      if (!tgWindow) {
+        // Popup was blocked — fallback: show a clickable link instead of redirecting
+        setLoading(false)
+        return { success: false, message: 'Popup blocked. Please allow popups and try again, or open Telegram manually.' }
+      }
+
+      setWaiting(true)
+      setPolling(true)
 
       // Step 3 — poll /api/auth/telegram-status until token is claimed
       return new Promise((resolve) => {

@@ -82,7 +82,7 @@ class TelegramAuthController extends Controller
                 $updates = [];
                 if ($user->telegram_chat_id !== $telegramId)         $updates['telegram_chat_id']     = $telegramId;
                 if ($telegramUsername && $user->telegram_username !== $telegramUsername)
-                    $updates['telegram_username']    = $telegramUsername;
+                                                                      $updates['telegram_username']    = $telegramUsername;
                 if ($photoUrl && ! $user->avatar)                    $updates['avatar']               = $photoUrl;
                 if (! $user->telegram_connected_at)                  $updates['telegram_connected_at'] = now();
                 if (! empty($updates)) $user->update($updates);
@@ -136,6 +136,7 @@ class TelegramAuthController extends Controller
                 'user'        => $this->userPayload($user),
                 'is_new_user' => $isNewUser,
             ]);
+
         } catch (\Throwable $e) {
             Log::channel('security')->error('TelegramAuth: exception', [
                 'ip'    => $request->ip(),

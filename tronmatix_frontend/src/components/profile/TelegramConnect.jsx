@@ -257,7 +257,11 @@ function ConnectBotButton({ busy, dark, c, isKhmer, t, onConnected, notify }) {
     } catch { notify('Failed to generate link.', 'error'); return }
 
     // Step 2 — open Telegram (use location assign to avoid popup blocker)
-    window.location.href = url
+    const tgWindow = window.open(url, '_blank')
+    if (!tgWindow) {
+      setLoading(false)
+      return { success: false, message: 'Popup blocked. Please allow popups and try again.' }
+    }
 
     // Step 3 — start polling for connection
     setWaiting(true)

@@ -102,60 +102,67 @@ class TelegramBotService
         $parts = explode(' ', $text);
         if (isset($parts[1])) {
             $tokenStr = $parts[1];
-            $record = \App\Models\TelegramConnectionToken::where('token', $tokenStr)
+
+            // Look up the token record first
+            $token = \App\Models\TelegramConnectionToken::where('token', $tokenStr)
                 ->where('expires_at', '>', now())
                 ->first();
 
-            if (!$record || !$record->user) {
-                $this->send($chatId, "❌ <b>Invalid or expired link.</b>\n\nPlease go back to the app and generate a new connection link.", $this->mainKeyboard(false));
+            if (! $token) {
+                $this->send($chatId,
+                    "❌ <b>Invalid or expired link.</b>\n\nPlease go back to the app and generate a new connection link.",
+                    $this->mainKeyboard(false)
+                );
                 return;
             }
 
-            // Check token not already claimed by another Telegram account
+            // Check if already linked to a different Telegram account
             $alreadyLinked = \App\Models\User::where('telegram_chat_id', $chatId)
-                ->where('id', '!=', $record->user_id)
+                ->when($token->user_id, fn($q) => $q->where('id', '!=', $token->user_id))
                 ->exists();
 
             if ($alreadyLinked) {
-                $this->send($chatId, "⚠️ <b>This Telegram is already linked to a different account.</b>\n\nDisconnect it first from the other account's profile.", $this->mainKeyboard(false));
+                $this->send($chatId,
+                    "⚠️ <b>This Telegram is already linked to a different account.</b>\n\nDisconnect it first from the other account's profile.",
+                    $this->mainKeyboard(false)
+                );
                 return;
             }
 
             $fname = $this->e($from['first_name'] ?? 'there');
 
-            // Login flow — null user_id means unauthenticated login (not profile connect)
-            if (!$token->user_id) {
+            // Login flow — user_id is null, find or create user from Telegram data
+            if (! $token->user_id) {
                 $user = \App\Models\User::firstOrCreate(
                     ['telegram_chat_id' => $chatId],
                     [
-                        'name' => trim(($from['first_name'] ?? '') . ' ' . ($from['last_name'] ?? '')),
-                        'username' => $this->generateUsername($from['username'] ?? ($from['first_name'] ?? 'user')),
-                        'telegram_username' => $from['username'] ?? null,
+                        'name'                  => trim(($from['first_name'] ?? '') . ' ' . ($from['last_name'] ?? '')),
+                        'username'              => $this->generateUsername($from['username'] ?? ($from['first_name'] ?? 'user')),
+                        'telegram_username'     => $from['username'] ?? null,
                         'telegram_connected_at' => now(),
-                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
-                        'role' => 'customer',
+                        'password'              => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
+                        'role'                  => 'customer',
                     ]
                 );
                 $token->update(['user_id' => $user->id]);
             }
 
-            // Send confirm message — do NOT connect yet
+            // Send confirm button — do NOT connect yet
             $this->send(
                 $chatId,
                 "👋 Hi <b>{$fname}</b>!\n\n"
                 . "Tap <b>✅ Confirm Connect</b> to link your Tronmatix account.\n\n"
                 . "⚠️ Only confirm if <i>you</i> requested this on the website.",
                 [
-                    'inline_keyboard' => [
-                        [
-                            ['text' => '✅ Confirm Connect', 'callback_data' => 'confirm_connect:' . $tokenStr],
-                            ['text' => '❌ Cancel', 'callback_data' => 'cancel_connect'],
-                        ]
-                    ],
+                    'inline_keyboard' => [[
+                        ['text' => '✅ Confirm Connect', 'callback_data' => 'confirm_connect:' . $tokenStr],
+                        ['text' => '❌ Cancel',           'callback_data' => 'cancel_connect'],
+                    ]],
                 ]
             );
             return;
         }
+
         // ── Normal /start ─────────────────────────────────────────────────────
         $user = User::where('telegram_chat_id', $chatId)->first();
 
