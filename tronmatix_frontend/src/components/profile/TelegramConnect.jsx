@@ -9,7 +9,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
   const tgFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
   const [status,     setStatus]     = useState(null)
   const [loading,    setLoading]    = useState(true)
-  const [actionBusy, setActionBusy] = useState(false)
+  const [busy, setbusy] = useState(false)
   const [testSent,   setTestSent]   = useState(false)
   const [widgetKey,  setWidgetKey]  = useState(0)
   const [showSwitch, setShowSwitch] = useState(false)
@@ -38,7 +38,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 
     window.onTelegramAuth = async (tgUser) => {
       if (!tgUser) return
-      setActionBusy(true)
+      setbusy(true)
       try {
         const res = await axiosClient.post('/api/telegram/connect', tgUser)
         if (res.data?.success) {
@@ -51,7 +51,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
         }
       } catch (err) {
         notify(err.response?.data?.message || 'Failed to connect.', 'error')
-      } finally { setActionBusy(false) }
+      } finally { setbusy(false) }
     }
 
     const container = document.getElementById('tg-widget-container')
@@ -76,7 +76,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 
   const handleDisconnect = async () => {
     if (!window.confirm('Disconnect Telegram?')) return
-    setActionBusy(true)
+    setbusy(true)
     try {
       await axiosClient.post('/api/telegram/disconnect')
       notify('Telegram disconnected.', 'success')
@@ -86,11 +86,11 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
       await fetchStatus(true)
       onUpdate?.({ telegram_connected: false })
     } catch { notify('Failed to disconnect.', 'error') }
-    finally { setActionBusy(false) }
+    finally { setbusy(false) }
   }
 
   const handleTest = async () => {
-    setActionBusy(true)
+    setbusy(true)
     try {
       const res = await axiosClient.post('/api/telegram/test-message')
       if (res.data?.success) {
@@ -99,7 +99,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
         setTimeout(() => setTestSent(false), 4000)
       } else notify(res.data?.message || 'Failed.', 'error')
     } catch { notify('Failed.', 'error') }
-    finally { setActionBusy(false) }
+    finally { setbusy(false) }
   }
 
   const handleRefresh = useCallback(() => {
@@ -128,9 +128,9 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
       {/* Body */}
       <div style={{ fontFamily: tgFont, padding: '18px 20px' }}>
         {loading ? <Skeleton dark={dark} /> : status?.connected
-          ? <ConnectedView status={status} dark={dark} c={c} busy={actionBusy} testSent={testSent} onDisconnect={handleDisconnect} onTest={handleTest} isKhmer={isKhmer} t={t} />
+          ? <ConnectedView status={status} dark={dark} c={c} busy={busy} testSent={testSent} onDisconnect={handleDisconnect} onTest={handleTest} isKhmer={isKhmer} t={t} />
           : <NotConnectedView
-              dark={dark} c={c} busy={actionBusy} isKhmer={isKhmer} t={t}
+              dark={dark} c={c} busy={busy} isKhmer={isKhmer} t={t}
               showSwitch={showSwitch}
               onClickSwitch={() => setShowSwitch(true)}
               onRefresh={handleRefresh}
@@ -220,7 +220,7 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh,
         </button>
 
         <ConnectBotButton
-            busy={actionBusy}
+            busy={busy}
             dark={dark}
             c={c}
             isKhmer={isKhmer}
@@ -330,6 +330,7 @@ function ConnectBotButton({ busy, dark, c, isKhmer, t, onConnected, notify }) {
 
 // ── ConnectedView ─────────────────────────────────────────────────────────────
 function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, isKhmer = false, t = (k) => k }) {
+  const tgFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
   const connectedAt = status.connected_at
     ? new Date(status.connected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
     : null
