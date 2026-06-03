@@ -325,6 +325,8 @@
     "testMessage": "សារសាកល្បង",
     "sent": "បានផ្ញើ!",
     "disconnect": "ផ្តាច់ការភ្ជាប់",
-    "connectBot": "ភ្ជាប់ជាមួយ BOT"
+    "connectBot": "ភ្ជាប់ជាមួយ BOT",
+    "confirmDisconnect": "ផ្តាច់ការភ្ជាប់ Telegram?",
+    "confirmDesc": "អ្នកនឹងឈប់ទទួលការជូនដំណឹង។"
   }
 }

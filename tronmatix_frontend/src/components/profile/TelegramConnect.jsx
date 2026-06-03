@@ -247,7 +247,7 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, 
           </div>
           {connectedAt && <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>{isKhmer ? `${t('telegram.connectedSince')} ${connectedAt}` : `Connected since ${connectedAt}`}</div>}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20, fontFamily: isKhmer ? 'Kh-Koulen,sans-serif' : 'Rajdhani,sans-serif' }}>{isKhmer ? t('telegram.active') : 'ACTIVE'}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20,}}>{isKhmer ? t('telegram.active') : 'ACTIVE'}</div>
       </div>
       
       <div style={{ marginBottom: 14 }}>
