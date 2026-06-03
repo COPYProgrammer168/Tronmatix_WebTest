@@ -335,6 +335,8 @@
                                     $mRole = $member->role ?? 'editor';
                                     $mMeta = $staffRoleMeta[$mRole] ?? $staffRoleMeta['editor'];
                                     $canEdit = true; // admins can always edit staff
+                                    $active = $member->is_active ?? true;
+                                    $isOnline = $active && $member->is_online;
                                     $initials = strtoupper(
                                         substr($member->name ?? '?', 0, 1) .
                                             (strpos($member->name, ' ') !== false
@@ -374,7 +376,7 @@
                                             </div>
                                             <div>
                                                 <div style="font-size: var(--title-size);font-weight:700;color:var(--text-primary);cursor:pointer;"
-                                                    onclick="openMemberProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}', {{ $member->is_active ?? true ? 'true' : 'false' }}, false)"
+                                                    onclick="openMemberProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}', {{ $active ? 'true' : 'false' }}, {{ $isOnline ? 'true' : 'false' }}, false)"
                                                     onmouseover="this.style.color='#F97316'"
                                                     onmouseout="this.style.color=''">
                                                     {{ $member->name }}
@@ -596,6 +598,8 @@
                                         $mMeta = $adminRoleMeta[$mRole] ?? $adminRoleMeta['admin'];
                                         $isSelf = $member->id === $me->id;
                                         $canEdit = $isSuper && !$isSelf;
+                                        $active = ($member->is_active ?? true);
+                                        $isOnline = $active && $member->is_online;
                                         $initials = strtoupper(
                                             substr($member->name ?? '?', 0, 1) .
                                                 (strpos($member->name, ' ') !== false
@@ -619,15 +623,15 @@
                                             <div style="display:flex;align-items:center;gap:12px;">
                                                 <div
                                                     style="width:40px;height:40px;border-radius:12px;flex-shrink:0;overflow:hidden;
-                                            background:{{ $mMeta['color'] }}18;border:1.5px solid {{ $mMeta['color'] }}44;
-                                            display:flex;align-items:center;justify-content:center;">
+                                                background:{{ $mMeta['color'] }}18;border:1.5px solid {{ $mMeta['color'] }}44;
+                                                display:flex;align-items:center;justify-content:center;">
                                                     @if ($memberAvatar)
                                                         <img src="{{ $memberAvatar }}" alt="{{ $member->name }}"
                                                             style="width:100%;height:100%;object-fit:cover;"
                                                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
                                                         <span
                                                             style="display:none;width:100%;height:100%;align-items:center;justify-content:center;
-                                                     font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
+                                                         font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
                                                     @else
                                                         <span
                                                             style="font-size: var(--title-size);font-weight:800;color:{{ $mMeta['color'] }};">{{ $initials }}</span>
@@ -635,7 +639,7 @@
                                                 </div>
                                                 <div>
                                                     <div style="font-size: var(--title-size);font-weight:700;color:var(--text-primary);cursor:pointer;"
-                                                        onclick="openMemberProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}', {{ $member->is_active ?? true ? 'true' : 'false' }}, {{ $isSelf ? 'true' : 'false' }})"
+                                                        onclick="openMemberProfile({{ $member->id }}, @js($member->name ?? ''), @js($member->email ?? ''), @js($memberAvatar ?? ''), '{{ $mRole }}', @js($mMeta['color']), @js($mMeta['icon']), @js($mMeta['label']), '{{ $member->created_at ? $member->created_at->format('d M Y') : '—' }}', {{ $active ? 'true' : 'false' }}, {{ $isOnline ? 'true' : 'false' }}, {{ $isSelf ? 'true' : 'false' }})"
                                                         onmouseover="this.style.color='#F97316'"
                                                         onmouseout="this.style.color=''">
                                                         {{ $member->name }}
@@ -1130,7 +1134,7 @@
         }
 
         // ── Profile modal ─────────────────────────────────────────────────────────────
-        function openMemberProfile(id, name, email, avatar, role, roleColor, roleIcon, roleLabel, joined, active, isSelf) {
+        function openMemberProfile(id, name, email, avatar, role, roleColor, roleIcon, roleLabel, joined, active, isOnline, isSelf) {
             const modal = document.getElementById('member-profile-modal');
             modal.style.display = 'flex';
             document.getElementById('mp-header-bar').style.background =
@@ -1149,9 +1153,11 @@
             document.getElementById('mp-name').textContent = name || '—';
             document.getElementById('mp-email').textContent = email || '—';
             document.getElementById('mp-joined').textContent = joined;
-            document.getElementById('mp-status').innerHTML = active ?
-                '<span style="color:#22c55e;">● ACTIVE</span>' :
-                '<span style="color:#ef4444;">○ INACTIVE</span>';
+            
+            const statusColor = isOnline ? '#22c55e' : (active ? '#f59e0b' : '#ef4444');
+            const statusLabel = isOnline ? 'ONLINE' : (active ? 'OFFLINE' : 'INACTIVE');
+            document.getElementById('mp-status').innerHTML = `<span style="color:${statusColor};">● ${statusLabel}</span>`;
+            
             document.getElementById('mp-role-badge').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;
             font-size: var(--title-size);font-weight:800;letter-spacing:1px;
