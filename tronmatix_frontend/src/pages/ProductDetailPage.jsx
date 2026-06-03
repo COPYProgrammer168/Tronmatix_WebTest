@@ -9,12 +9,14 @@ import { isSymbolPrice, numericPrice, displayPrice } from "../hooks/priceUtils";
 import ProductCard from "../components/ProductCard";
 import axios from "../lib/axios";
 
-const LARAVEL_URL = import.meta.env.VITE_API_URL_NGROK || import.meta.env.VITE_API_URL || "";
+const LARAVEL_URL = import.meta.env.VITE_API_URL_NGROK || "";
 
 function resolveImage(path) {
   if (!path) return null;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return LARAVEL_URL + (path.startsWith("/") ? path : "/" + path);
+  const url = LARAVEL_URL + (path.startsWith("/") ? path : "/" + path);
+  console.log('resolveImage:', { path, url });
+  return url;
 }
 
 function Stars({ rating = 0 }) {
@@ -622,6 +624,7 @@ export default function ProductDetailPage() {
                   fontSize: 16,
                   letterSpacing: isKhmer ? 0 : 1,
                   fontWeight: 800,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {added

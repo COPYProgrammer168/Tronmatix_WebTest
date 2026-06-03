@@ -54,7 +54,7 @@ function InfoCard({ icon, label, children, dark }) {
           style={{ background: 'rgba(249,115,22,0.12)' }}>
           {icon}
         </div>
-        <span className="font-black tracking-widest" style={{ fontSize: 10, color: '#F97316', letterSpacing: 2 }}>
+        <span className="font-black tracking-widest" style={{ fontSize: 14, color: '#F97316', letterSpacing: 2 }}>
           {label}
         </span>
       </div>
@@ -138,10 +138,10 @@ export default function ContactPage() {
               </div>
               {/* Brand */}
               <div className="text-center leading-snug">
-                <div className="font-black" style={{ fontSize: 15, letterSpacing: 5, color: dark ? '#fff' : '#111827' }}>
+                <div className="font-black" style={{ fontSize: isKhmer ? 20 : 30, letterSpacing: 5, color: dark ? '#fff' : '#111827' }}>
                   TRONMATIX
                 </div>
-                <div className="font-bold" style={{ fontSize: 10, color: '#F97316', letterSpacing: 7 }}>
+                <div className="font-bold" style={{ fontSize: isKhmer ? 15 : 20, color: '#F97316', letterSpacing: 4 }}>
                   COMPUTER
                 </div>
               </div>
@@ -152,7 +152,7 @@ export default function ContactPage() {
               {/* Label */}
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-px w-7" style={{ background: '#F97316' }} />
-                <span className="font-black" style={{ fontSize: 13, color: '#F97316', letterSpacing: 1 }}>
+                <span className="font-black" style={{ fontSize: isKhmer ? 13 : 18, color: '#F97316', letterSpacing: 1 }}>
                   {t('contact.Welcome')}
                 </span>
                 <div className="h-px w-6" style={{ background: '#F97316' }} />
@@ -196,7 +196,7 @@ export default function ContactPage() {
 
             {/* ── COL 3: CONTACT INFO (right) ── */}
             <div className="flex flex-col gap-4 pl-0 md:pl-6"
-              style={{ borderLeft: '1px solid rgba(249,115,22,0.18)' }}>
+              style={{ borderLeft: '1px solid rgba(249,115,22,0.18)',}}>
 
               {[
                 {
@@ -247,7 +247,7 @@ export default function ContactPage() {
                     {icon}
                   </div>
                   <div>
-                    <div className="font-black mb-1" style={{ fontSize: 10, color: '#F97316', letterSpacing: 2 }}>
+                    <div className="font-black mb-1" style={{ fontSize: 14, color: '#F97316', letterSpacing: 2 }}>
                       {label}
                     </div>
                     {content}
@@ -319,7 +319,7 @@ export default function ContactPage() {
 
             {/* Social media */}
             <div className='items-center text-center'>
-              <div className="font-black mb-3" style={{ fontSize: 15, color: '#F97316', letterSpacing: 3 }}>
+              <div className="font-black mb-3" style={{ fontSize: 16, color: '#F97316', letterSpacing: 3 }}>
                 SOCIAL MEDIA
               </div>
               <div className="flex flex-wrap gap-2.5 justify-center">
@@ -358,7 +358,7 @@ export default function ContactPage() {
                   <div key={label} className="flex items-start gap-2">
                     <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
                     <div>
-                      <div className="font-black" style={{ fontSize: 16, color: '#F97316', letterSpacing: 1.5 }}>{label.toUpperCase()}</div>
+                      <div className="font-black" style={{ fontSize: 13, color: '#F97316', letterSpacing: 1.5 }}>{label.toUpperCase()}</div>
                       <div className="font-semibold" style={{ fontSize: 16, color: textSub, lineHeight: 1.4 }}>{value}</div>
                     </div>
                   </div>

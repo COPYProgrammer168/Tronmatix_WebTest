@@ -1,5 +1,6 @@
 // src/context/CartContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react'
+import { useLang } from './LanguageContext'
 
 const CartContext  = createContext(null)
 const STORAGE_KEY  = 'tronmatix_cart'
@@ -22,6 +23,7 @@ export function CartProvider({ children }) {
   const [items,    setItems]    = useState(() => loadCart())
   const [cartOpen, setCartOpen] = useState(false)
   const [notification, setNotification] = useState(null)
+  const { t } = useLang()
 
   // FIX: persist to localStorage on every change
   useEffect(() => { saveCart(items) }, [items])
@@ -32,7 +34,7 @@ export function CartProvider({ children }) {
       if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
       return [...prev, { ...product, qty: 1, warranty: product.warranty }]
     })
-    setNotification(`${product.name || 'Item'} added to cart!`)
+    setNotification(`${product.name || 'Item'} ${t('product.added')}`)
   }
 
   const removeItem = (id) => setItems(prev => prev.filter(i => i.id !== id))
@@ -44,7 +46,10 @@ export function CartProvider({ children }) {
     )
   }
 
-  const clearCart = () => setItems([])
+  const clearCart = () => {
+    setItems([])
+    saveCart([])
+  }
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0)
   const total    = subtotal

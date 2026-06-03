@@ -135,6 +135,8 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
               onClickSwitch={() => setShowSwitch(true)}
               onRefresh={handleRefresh}
               notify={notify}
+              onUpdate={onUpdate}
+              fetchStatus={fetchStatus}
             />
         }
       </div>
@@ -143,7 +145,7 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 }
 
 // ── NotConnectedView ──────────────────────────────────────────────────────────
-function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh, notify, isKhmer = false, t = (k) => k }) {
+function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh, notify, isKhmer = false, t = (k) => k, onUpdate, fetchStatus }) {
   return (
     <div style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif', color: c.text }}>
       <p style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
@@ -159,7 +161,7 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh,
           .map(b => <div key={b} style={{ fontSize: 12, color: c.text, marginBottom: 5, fontWeight: 600 }}>{b}</div>)}
       </div>
 
-      {/* FIX: Switch instructions — use <a> links, NOT window.open() */}
+      {/* Switch instructions */}
       {showSwitch && (
         <div style={{ padding: '14px 16px', borderRadius: 12, marginBottom: 14, background: dark ? 'rgba(249,115,22,0.08)' : 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.3)' }}>
           <div style={{ fontSize: 12, fontWeight: 800, color: '#F97316', letterSpacing: 1, marginBottom: 12 }}>
@@ -173,12 +175,11 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh,
               <div key={s} style={{ fontSize: 12, color: c.text, marginBottom: 4, fontWeight: 600 }}>{s}</div>)}
           </div>
 
-          {/* Option B — web.telegram.org (use <a> tag, never window.open) */}
+          {/* Option B — web.telegram.org */}
           <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: dark ? 'rgba(34,158,217,0.06)' : 'rgba(34,158,217,0.04)', border: '1px solid rgba(34,158,217,0.2)' }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: '#229ED9', letterSpacing: isKhmer ? 0 : 1, marginBottom: 6 }}>🌐 {isKhmer ? t('telegram.optionB') : 'OPTION B — Telegram Web'}</div>
             {['1️⃣  Click the link below to open Telegram Web', '2️⃣  Click ☰ → Settings → Log Out', '3️⃣  Log in with your other account', '4️⃣  Come back here → click Refresh Widget'].map(s =>
               <div key={s} style={{ fontSize: 12, color: c.text, marginBottom: 4, fontWeight: 600 }}>{s}</div>)}
-            {/* FIX: use <a> not window.open — browser won't block <a> */}
             <a
               href="https://web.telegram.org"
               target="_blank"
@@ -260,7 +261,6 @@ function ConnectBotButton({ busy, dark, c, isKhmer, t, onConnected, notify }) {
     // Step 2 — open Telegram (use location assign to avoid popup blocker)
     const tgWindow = window.open(url, '_blank')
     if (!tgWindow) {
-      setLoading(false)
       return { success: false, message: 'Popup blocked. Please allow popups and try again.' }
     }
 

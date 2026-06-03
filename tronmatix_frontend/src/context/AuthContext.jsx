@@ -183,35 +183,6 @@ export function AuthProvider({ children }) {
     }
   }, [applyToken, applyUser])
 
-  // ── TELEGRAM LOGIN (from AuthModal — user not yet logged in) ─────────────
-  const telegramLogin = useCallback(async () => {
-    setLoading(true)
-    try {
-      // Step 1 — get a connection token (works without auth for login flow)
-      const tokenRes = await api.post('/api/auth/telegram-generate-token')
-      if (!tokenRes.data?.success) throw new Error('Failed to generate link')
-
-      const connectToken = tokenRes.data.token
-      const botUsername  = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
-      const tgUrl        = `https://t.me/${botUsername}?start=${connectToken}`
-
-      // Step 2 — open Telegram
-      const tgWindow = window.open(tgUrl, '_blank')
-      if (!tgWindow) {
-        // Popup was blocked — fallback: show a clickable link instead of redirecting
-        setLoading(false)
-        return { success: false, message: 'Popup blocked. Please allow popups and try again, or open Telegram manually.' }
-      }
-
-      setWaiting(true)
-      setPolling(true)
-
-    } catch (e) {
-      setLoading(false)
-      return { success: false, message: e.response?.data?.message || 'Telegram login failed.' }
-    }
-  }, [applyToken, applyUser])
-
   // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
   const forgotPassword = useCallback(async (email) => {
     setLoading(true)
@@ -240,7 +211,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, token, loading, ready,
       login, register, logout, refreshUser,
-      forgotPassword, googleLogin, telegramLogin,
+      forgotPassword, googleLogin,
     }}>
       {children}
     </AuthContext.Provider>

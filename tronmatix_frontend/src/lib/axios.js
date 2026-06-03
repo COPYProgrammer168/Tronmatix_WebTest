@@ -6,9 +6,9 @@ const isProd = import.meta.env.PROD
 // before React mounts, causing a blank white page.
 // Fall back to relative URLs when VITE_API_URL is not set (same-origin deploys).
 // Priority: VITE_API_URL_NGROK → VITE_API_URL → window.location.origin (auto-detects ngrok/localhost/prod)
-const VITE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const VITE_URL = (import.meta.env.VITE_API_URL_NGROK || '').replace(/\/$/, '')
 
-console.log('DEBUG: VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('DEBUG: VITE_API_URL_NGROK:', import.meta.env.VITE_API_URL_NGROK);
 
 const baseURL = VITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 

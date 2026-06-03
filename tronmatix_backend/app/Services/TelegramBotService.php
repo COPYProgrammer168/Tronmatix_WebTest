@@ -53,10 +53,6 @@ class TelegramBotService
         $msgDate = (int) ($message['date'] ?? 0);
 
         // ── Stale-update guard ────────────────────────────────────────────────
-        // Polling mode can replay old updates that predate the user's current
-        // connection (e.g. /profile sent while disconnected, processed only
-        // after reconnect).  Skip such messages silently to prevent a false
-        // "No account linked" reply arriving right after the welcome message.
         if ($msgDate > 0) {
             $linked = User::where('telegram_chat_id', $chatId)->first();
             if (
@@ -130,6 +126,7 @@ class TelegramBotService
             }
 
             $fname = $this->e($from['first_name'] ?? 'there');
+            $lname = $this->e($from['last_name'] ?? 'there');
 
             // Login flow — user_id is null, find or create user from Telegram data
             if (! $token->user_id) {
@@ -150,7 +147,7 @@ class TelegramBotService
             // Send confirm button — do NOT connect yet
             $this->send(
                 $chatId,
-                "👋 Hi <b>{$fname}</b>!\n\n"
+            "👋 Hi <b>{$fname} {$lname}</b>!\n\n"
                 . "Tap <b>✅ Confirm Connect</b> to link your Tronmatix account.\n\n"
                 . "⚠️ Only confirm if <i>you</i> requested this on the website.",
                 [
@@ -174,7 +171,8 @@ class TelegramBotService
                 . "Tap a button below or type /help";
         } else {
             $fname = $this->e($from['first_name'] ?? 'there');
-            $text = "👋 <b>Hello, {$fname}!</b>\n\n"
+            $lname = $this->e($from['last_name'] ?? 'there');
+            $text = "👋 <b>Hello, {$fname} {$lname}!</b>\n\n"
                 . "Welcome to our notification bot.\n\n"
                 . "To get order updates here:\n"
                 . "1. Log in to the app\n"

@@ -5,7 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import axios from "../lib/axios";
 import { useLang } from "../context/LanguageContext";
 
-const LARAVEL_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL_NGROK || "").replace(/\/$/, "");
+const LARAVEL_URL = (import.meta.env.VITE_API_URL_NGROK || "").replace(/\/$/, "");
 
 const FALLBACK_BANNERS = [
   {

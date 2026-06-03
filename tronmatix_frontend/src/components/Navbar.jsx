@@ -186,8 +186,8 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
                  onMouseEnter={() => setOpenSub(subObj.label)}
                  onMouseLeave={() => setOpenSub(null)}>
               <Link to={`/category/${slugify(item.label)}/${slugify(subObj.label)}`}
-                className="flex-1 px-4 py-2.5 font-semibold hover:text-primary tracking-wider"
-                style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
+                className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
+                style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
                 onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
                 {subObj.label}
               </Link>
@@ -206,16 +206,17 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
                 border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
               }}
               onMouseEnter={() => setOpenSub(subObj.label)}
-              onMouseLeave={() => setOpenSub(null)}>                <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
+              onMouseLeave={() => setOpenSub(null)}>                
+              <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
                   {subObj.label}
                 </div>
                 {subObj.brands.map(brand => (
                   <Link key={brand}
                     to={`/category/${slugify(item.label)}/${slugify(subObj.label)}?brand=${encodeURIComponent(brand)}`}
-                    className="block px-4 py-2 hover:text-primary tracking-wider transition-colors"
+                    className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
                     style={{ 
                       fontFamily: dropFont, 
-                      fontSize: 14, 
+                      fontSize: 16, 
                       letterSpacing: isKhmer ? 0 : undefined, 
                       color: dark ? '#d1d5db' : '#374151',
                       backgroundColor: 'transparent'
@@ -233,10 +234,10 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
         : item.sub.map(sub => (
           <Link key={sub}
             to={`/category/${slugify(item.label)}/${slugify(sub)}`}
-            className="block px-4 py-2.5 font-semibold hover:text-primary tracking-wider transition-colors"
+            className="block px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
             style={{ 
               fontFamily: dropFont, 
-              fontSize: 15, 
+              fontSize: 16, 
               letterSpacing: isKhmer ? 0 : undefined, 
               color: dark ? '#d1d5db' : '#374151',
               backgroundColor: 'transparent'
@@ -424,7 +425,7 @@ export default function Navbar({ onAuthOpen }) {
 
       {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
       <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-        <div className="max-w-[1480px] mx-auto px-4 flex items-center gap-1" style={{ height: 70 }}>
+        <div className="max-w-[1500px] mx-auto px-4 flex items-center gap-1" style={{ height: 70}}>
           <Link to="/" className="flex-shrink-0">
             <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
           </Link>
@@ -584,7 +585,7 @@ export default function Navbar({ onAuthOpen }) {
         <div style={{ borderBottom: `1px solid ${navBorder}` }}>
           <div className="max-w-[1280px] mx-auto px-4 flex items-center py-2 gap-3">
             <Link to="/" className="flex-shrink-0">
-              <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 90 }} />
+              <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 70 }} />
             </Link>
 
             <div className="hidden md:flex flex-col items-start ml-2 flex-shrink-0">
