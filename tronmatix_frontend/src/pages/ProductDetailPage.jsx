@@ -9,7 +9,7 @@ import { isSymbolPrice, numericPrice, displayPrice } from "../hooks/priceUtils";
 import ProductCard from "../components/ProductCard";
 import axios from "../lib/axios";
 
-const LARAVEL_URL = import.meta.env.VITE_API_URL_NGROK || "";
+const LARAVEL_URL = import.meta.env.VITE_API_URL || "";
 
 function resolveImage(path) {
   if (!path) return null;
@@ -240,20 +240,20 @@ export default function ProductDetailPage() {
                   const bc = d.badge_config;
                   const bgStyle = bc
                     ? {
-                        background: bc.bg || "rgba(249,115,22,0.18)",
-                        border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
-                      }
+                      background: bc.bg || "rgba(249,115,22,0.18)",
+                      border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
+                    }
                     : d.source === "public"
                       ? {
-                          background:
-                            "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
-                          border: "none",
-                        }
+                        background:
+                          "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                        border: "none",
+                      }
                       : {
-                          background:
-                            "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
-                          border: "none",
-                        };
+                        background:
+                          "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+                        border: "none",
+                      };
                   const badgeColor = bc ? bc.color || "#F97316" : "#fff";
                   const badgeIcon = bc ? bc.icon || "🏷" : "🏷";
                   const badgeText = bc
@@ -470,9 +470,9 @@ export default function ProductDetailPage() {
                       You save $
                       {numPrice
                         ? (d.type === "percentage"
-                            ? (numPrice * d.value) / 100
-                            : Math.min(d.value, numPrice)
-                          ).toFixed(2)
+                          ? (numPrice * d.value) / 100
+                          : Math.min(d.value, numPrice)
+                        ).toFixed(2)
                         : "—"}{" "}
                       on this item
                       {d.categories?.length > 0 && (

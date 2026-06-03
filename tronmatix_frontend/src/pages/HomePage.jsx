@@ -5,7 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import axios from "../lib/axios";
 import { useLang } from "../context/LanguageContext";
 
-const LARAVEL_URL = (import.meta.env.VITE_API_URL_NGROK || "").replace(/\/$/, "");
+const LARAVEL_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 const FALLBACK_BANNERS = [
   {
@@ -277,198 +277,198 @@ export default function HomePage() {
 `}</style>
 
       <div className="w-full mb-8">
-          <div
-            className="banner-wrap relative overflow-hidden"
-            style={{
-              background: hasMedia ? "#000" : bgColor,
-              transition: "background 4s",
-            }}
-          >
-            {/* ── Video (upload) ─────────────────────────────────────────── */}
-            {hasVideo && videoType === "upload" && videoSrc && (
-              <video
-                key={videoSrc}
-                className="absolute inset-0 w-full h-full object-cover banner-video"
-                style={{ opacity: 0.4, pointerEvents: "none" }}
-                src={videoSrc}
-                autoPlay
-                muted
-                loop
-                playsInline
-                disablePictureInPicture
-                disableRemotePlayback
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )}
-
-            {/* ── Image ──────────────────────────────────────────────────── */}
-            {imgUrl && (
-              <img
-                src={imgUrl}
-                alt={b.title}
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ opacity: hasVideo ? 0.25 : 0.7 }}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )}
-
-            {/* ── Gradient overlay ───────────────────────────────────────── */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 100%)",
+        <div
+          className="banner-wrap relative overflow-hidden"
+          style={{
+            background: hasMedia ? "#000" : bgColor,
+            transition: "background 4s",
+          }}
+        >
+          {/* ── Video (upload) ─────────────────────────────────────────── */}
+          {hasVideo && videoType === "upload" && videoSrc && (
+            <video
+              key={videoSrc}
+              className="absolute inset-0 w-full h-full object-cover banner-video"
+              style={{ opacity: 0.4, pointerEvents: "none" }}
+              src={videoSrc}
+              autoPlay
+              muted
+              loop
+              playsInline
+              disablePictureInPicture
+              disableRemotePlayback
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
               }}
             />
+          )}
 
-            {/* ── Text content ───────────────────────────────────────────── */}
-            <div
-              className="relative flex flex-col justify-center h-full"
-              style={{
-                zIndex: 2,
-                padding:
-                  "clamp(16px, 4vw, 64px) clamp(20px, 5vw, 80px)" /* responsive padding all sides */,
+          {/* ── Image ──────────────────────────────────────────────────── */}
+          {imgUrl && (
+            <img
+              src={imgUrl}
+              alt={b.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ opacity: hasVideo ? 0.25 : 0.7 }}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
               }}
-            >
-              <div style={{ maxWidth: 520 }}>
-                {/* Badge */}
-                {b.badge && (
-                  <span
-                    className="inline-block bg-primary text-white font-bold rounded-full mb-3"
-                    style={{
-                      fontSize: "clamp(9px, 1.2vw, 12px)",
-                      letterSpacing: 2,
-                      padding: "clamp(3px,0.5vw,5px) clamp(10px,1.5vw,16px)",
-                    }}
-                  >
-                    {b.badge}
-                  </span>
-                )}
+            />
+          )}
 
-                {/* Title */}
-                <div
-                  className="font-black leading-tight mb-2"
+          {/* ── Gradient overlay ───────────────────────────────────────── */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 100%)",
+            }}
+          />
+
+          {/* ── Text content ───────────────────────────────────────────── */}
+          <div
+            className="relative flex flex-col justify-center h-full"
+            style={{
+              zIndex: 2,
+              padding:
+                "clamp(16px, 4vw, 64px) clamp(20px, 5vw, 80px)" /* responsive padding all sides */,
+            }}
+          >
+            <div style={{ maxWidth: 520 }}>
+              {/* Badge */}
+              {b.badge && (
+                <span
+                  className="inline-block bg-primary text-white font-bold rounded-full mb-3"
                   style={{
-                    fontFamily: "HurstBagod, Kh_Jrung_Thom, sans-serif",
-                    fontSize:
-                      "clamp(20px, 4vw, 48px)" /* mobile: 20px | desktop: up to 48px */,
-                    color: hasMedia ? "#fff" : txtColor,
-                    lineHeight: isKhmer ? 1.6 : 1.15,
-                    letterSpacing: isKhmer ? 0 : "-0.5px",
+                    fontSize: "clamp(9px, 1.2vw, 12px)",
+                    letterSpacing: 2,
+                    padding: "clamp(3px,0.5vw,5px) clamp(10px,1.5vw,16px)",
                   }}
                 >
-                  {b.title}
-                </div>
+                  {b.badge}
+                </span>
+              )}
 
-                {/* Subtitle */}
-                {b.subtitle && (
-                  <div
-                    className="mb-4"
-                    style={{
-                      fontFamily: "Rajdhani, KantumruyPro, sans-serif",
-                      fontSize:
-                        "clamp(12px, 1.6vw, 20px)" /* mobile: 12px | desktop: up to 20px */,
-                      color: hasMedia ? "rgba(255,255,255,0.85)" : txtColor,
-                      lineHeight: isKhmer ? 1.75 : 1.55,
-                      letterSpacing: isKhmer ? 0 : 0,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {b.subtitle}
-                  </div>
-                )}
+              {/* Title */}
+              <div
+                className="font-black leading-tight mb-2"
+                style={{
+                  fontFamily: "HurstBagod, Kh_Jrung_Thom, sans-serif",
+                  fontSize:
+                    "clamp(20px, 4vw, 48px)" /* mobile: 20px | desktop: up to 48px */,
+                  color: hasMedia ? "#fff" : txtColor,
+                  lineHeight: isKhmer ? 1.6 : 1.15,
+                  letterSpacing: isKhmer ? 0 : "-0.5px",
+                }}
+              >
+                {b.title}
+              </div>
 
-                {/* Button */}
-                <Link
-                  to={detailLink}
-                  className="inline-flex items-center gap-2 font-bold rounded-lg transition-all hover:scale-105 hover:opacity-90"
+              {/* Subtitle */}
+              {b.subtitle && (
+                <div
+                  className="mb-4"
                   style={{
                     fontFamily: "Rajdhani, KantumruyPro, sans-serif",
-                    fontSize: "clamp(12px, 1.4vw, 15px)",
-                    letterSpacing: isKhmer ? 0 : 1,
-                    padding: "clamp(7px, 0.9vw, 12px) clamp(14px, 2vw, 24px)",
-                    background: hasMedia ? "#fff" : txtColor,
-                    color: hasMedia ? "#111" : bgColor,
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
+                    fontSize:
+                      "clamp(12px, 1.6vw, 20px)" /* mobile: 12px | desktop: up to 20px */,
+                    color: hasMedia ? "rgba(255,255,255,0.85)" : txtColor,
+                    lineHeight: isKhmer ? 1.75 : 1.55,
+                    letterSpacing: isKhmer ? 0 : 0,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
                   }}
                 >
-                  {isKhmer ? t("home.viewProduct") : "VIEW PRODUCT"}
-                  <svg
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </Link>
-              </div>
+                  {b.subtitle}
+                </div>
+              )}
+
+              {/* Button */}
+              <Link
+                to={detailLink}
+                className="inline-flex items-center gap-2 font-bold rounded-lg transition-all hover:scale-105 hover:opacity-90"
+                style={{
+                  fontFamily: "Rajdhani, KantumruyPro, sans-serif",
+                  fontSize: "clamp(12px, 1.4vw, 15px)",
+                  letterSpacing: isKhmer ? 0 : 1,
+                  padding: "clamp(7px, 0.9vw, 12px) clamp(14px, 2vw, 24px)",
+                  background: hasMedia ? "#fff" : txtColor,
+                  color: hasMedia ? "#111" : bgColor,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {isKhmer ? t("home.viewProduct") : "VIEW PRODUCT"}
+                <svg
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </Link>
             </div>
+          </div>
 
-            {/* ── Prev / Next buttons ─────────────────────────────────────── */}
-            {banners.length > 1 && (
-              <>
-                <button
-                  onClick={() =>
-                    setSlide((s) => (s - 1 + banners.length) % banners.length)
-                  }
-                  className="absolute top-1/2 -translate-y-1/2 bg-black/40 hover:bg-primary text-white flex items-center justify-center rounded-full transition-colors"
-                  style={{
-                    zIndex: 3,
-                    left: "clamp(8px,2vw,16px)",
-                    width: "clamp(28px,4vw,40px)",
-                    height: "clamp(28px,4vw,40px)",
-                    fontSize: "clamp(16px,2.5vw,22px)",
-                  }}
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={() => setSlide((s) => (s + 1) % banners.length)}
-                  className="absolute top-1/2 -translate-y-1/2 bg-black/40 hover:bg-primary text-white flex items-center justify-center rounded-full transition-colors"
-                  style={{
-                    zIndex: 3,
-                    right: "clamp(8px,2vw,16px)",
-                    width: "clamp(28px,4vw,40px)",
-                    height: "clamp(28px,4vw,40px)",
-                    fontSize: "clamp(16px,2.5vw,22px)",
-                  }}
-                >
-                  ›
-                </button>
-              </>
-            )}
+          {/* ── Prev / Next buttons ─────────────────────────────────────── */}
+          {banners.length > 1 && (
+            <>
+              <button
+                onClick={() =>
+                  setSlide((s) => (s - 1 + banners.length) % banners.length)
+                }
+                className="absolute top-1/2 -translate-y-1/2 bg-black/40 hover:bg-primary text-white flex items-center justify-center rounded-full transition-colors"
+                style={{
+                  zIndex: 3,
+                  left: "clamp(8px,2vw,16px)",
+                  width: "clamp(28px,4vw,40px)",
+                  height: "clamp(28px,4vw,40px)",
+                  fontSize: "clamp(16px,2.5vw,22px)",
+                }}
+              >
+                ‹
+              </button>
+              <button
+                onClick={() => setSlide((s) => (s + 1) % banners.length)}
+                className="absolute top-1/2 -translate-y-1/2 bg-black/40 hover:bg-primary text-white flex items-center justify-center rounded-full transition-colors"
+                style={{
+                  zIndex: 3,
+                  right: "clamp(8px,2vw,16px)",
+                  width: "clamp(28px,4vw,40px)",
+                  height: "clamp(28px,4vw,40px)",
+                  fontSize: "clamp(16px,2.5vw,22px)",
+                }}
+              >
+                ›
+              </button>
+            </>
+          )}
 
-            {/* ── Dot indicators ─────────────────────────────────────────── */}
-            {banners.length > 1 && (
+          {/* ── Dot indicators ─────────────────────────────────────────── */}
+          {banners.length > 1 && (
             <div
               className="absolute bottom-3 flex gap-2"
               style={{ zIndex: 3, left: "50%", transform: "translateX(-50%)" }}
             >
-                {banners.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSlide(i)}
-                    className={`banner-dot ${i === slide ? "bg-primary w-6" : "bg-white/50 w-2"}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+              {banners.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSlide(i)}
+                  className={`banner-dot ${i === slide ? "bg-primary w-6" : "bg-white/50 w-2"}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="max-w-[1280px] mx-auto px-4 pt-2 pb-2">
@@ -683,31 +683,31 @@ export default function HomePage() {
                 >
                   {isLoading
                     ? Array(6)
-                        .fill(null)
-                        .map((_, i) => (
-                          <div
-                            key={i}
-                            className="rounded-xl skeleton-shimmer flex-shrink-0"
-                            style={{
-                              width: 210,
-                              height: 300,
-                              "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                              "--sk-shine": dark ? "#374151" : "#e9eaec",
-                            }}
-                          />
-                        ))
-                    : catItems.map((p, i) => (
+                      .fill(null)
+                      .map((_, i) => (
                         <div
-                          key={p.id || i}
+                          key={i}
+                          className="rounded-xl skeleton-shimmer flex-shrink-0"
                           style={{
-                            minWidth: 210,
-                            maxWidth: 210,
-                            flexShrink: 0,
+                            width: 210,
+                            height: 300,
+                            "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                            "--sk-shine": dark ? "#374151" : "#e9eaec",
                           }}
-                        >
-                          <ProductCard product={p} />
-                        </div>
-                      ))}
+                        />
+                      ))
+                    : catItems.map((p, i) => (
+                      <div
+                        key={p.id || i}
+                        style={{
+                          minWidth: 210,
+                          maxWidth: 210,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <ProductCard product={p} />
+                      </div>
+                    ))}
                 </div>
 
                 {/* Mobile: 2-row grid horizontal scroll */}
@@ -731,24 +731,24 @@ export default function HomePage() {
                   >
                     {isLoading
                       ? Array(8)
-                          .fill(null)
-                          .map((_, i) => (
-                            <div
-                              key={i}
-                              className="rounded-xl skeleton-shimmer"
-                              style={{
-                                width: 200,
-                                height: 220,
-                                "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                                "--sk-shine": dark ? "#374151" : "#e9eaec",
-                              }}
-                            />
-                          ))
+                        .fill(null)
+                        .map((_, i) => (
+                          <div
+                            key={i}
+                            className="rounded-xl skeleton-shimmer"
+                            style={{
+                              width: 200,
+                              height: 220,
+                              "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                              "--sk-shine": dark ? "#374151" : "#e9eaec",
+                            }}
+                          />
+                        ))
                       : catItems.map((p, i) => (
-                          <div key={p.id || i} style={{ width: 200 }}>
-                            <ProductCard product={p} />
-                          </div>
-                        ))}
+                        <div key={p.id || i} style={{ width: 200 }}>
+                          <ProductCard product={p} />
+                        </div>
+                      ))}
                   </div>
                 </div>
               </>
@@ -767,42 +767,42 @@ export default function HomePage() {
         );
       })}
       <TelegramBanner isKhmer={isKhmer} />
-      </div>
-      );
-      }
+    </div>
+  );
+}
 
-      // ── Join Telegram Banner ──────────────────────────────────────────────────
-      function TelegramBanner({ isKhmer }) {
-        return (
-          <div className="my-12 mx-4 lg:mx-auto max-w-5xl rounded-3xl overflow-hidden relative"
-               style={{ background: 'linear-gradient(135deg, #0088cc 0%, #005588 100%)' }}>
-            <div className="absolute inset-0 opacity-10" 
-                 style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-6 text-white">
-              <div className="flex items-center gap-6">
-                <div className="hidden md:block">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.07-.19-.04-.27-.02-.12.08-2 1.28-5.65 3.74-.53.36-1.01.54-1.44.53-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.41-.88.03-.25.37-.51 1.03-.78 4.04-1.76 6.74-2.93 8.09-3.5 3.84-1.6 4.63-1.88 5.16-1.89.11 0 .37.02.54.16.14.12.18.28.2.45-.01.07-.01.17-.03.27z"/>
-                  </svg>
-                </div>
-                <div className="text-center md:text-left">
-                  <h3 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
-                    {isKhmer ? 'តាមដាន TronmatixComputer លើ Telegram' : 'Follow TronmatixComputer on Telegram'}
-                  </h3>
-                  <p className="opacity-90" style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
-                    {isKhmer ? 'ទទួលបានព័ត៌មានចុងក្រោយ និងការផ្តល់ជូនពិសេស!' : 'Get the latest news and special offers!'}
-                  </p>
-                </div>
-              </div>
-              <a href="https://t.me/TronmatixComputer" target="_blank" rel="noopener noreferrer"
-                 className="px-8 py-4 bg-white text-blue-600 font-bold rounded-2xl shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
-                 style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.07-.19-.04-.27-.02-.12.08-2 1.28-5.65 3.74-.53.36-1.01.54-1.44.53-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.41-.88.03-.25.37-.51 1.03-.78 4.04-1.76 6.74-2.93 8.09-3.5 3.84-1.6 4.63-1.88 5.16-1.89.11 0 .37.02.54.16.14.12.18.28.2.45-.01.07-.01.17-.03.27z"/>
-                 </svg>
-                 {isKhmer ? 'ចូលរួមឥឡូវនេះ' : 'JOIN NOW'}
-              </a>
-            </div>
+// ── Join Telegram Banner ──────────────────────────────────────────────────
+function TelegramBanner({ isKhmer }) {
+  return (
+    <div className="my-12 mx-4 lg:mx-auto max-w-5xl rounded-3xl overflow-hidden relative"
+      style={{ background: 'linear-gradient(135deg, #0088cc 0%, #005588 100%)' }}>
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-6 text-white">
+        <div className="flex items-center gap-6">
+          <div className="hidden md:block">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="white">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.07-.19-.04-.27-.02-.12.08-2 1.28-5.65 3.74-.53.36-1.01.54-1.44.53-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.41-.88.03-.25.37-.51 1.03-.78 4.04-1.76 6.74-2.93 8.09-3.5 3.84-1.6 4.63-1.88 5.16-1.89.11 0 .37.02.54.16.14.12.18.28.2.45-.01.07-.01.17-.03.27z" />
+            </svg>
           </div>
-        );
-      }
+          <div className="text-center md:text-left">
+            <h3 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
+              {isKhmer ? 'តាមដាន TronmatixComputer លើ Telegram' : 'Follow TronmatixComputer on Telegram'}
+            </h3>
+            <p className="opacity-90" style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
+              {isKhmer ? 'ទទួលបានព័ត៌មានចុងក្រោយ និងការផ្តល់ជូនពិសេស!' : 'Get the latest news and special offers!'}
+            </p>
+          </div>
+        </div>
+        <a href="https://t.me/TronmatixComputer" target="_blank" rel="noopener noreferrer"
+          className="px-8 py-4 bg-white text-blue-600 font-bold rounded-2xl shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
+          style={{ fontFamily: 'Kdam Thmor Pro, sans-serif' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.07-.19-.04-.27-.02-.12.08-2 1.28-5.65 3.74-.53.36-1.01.54-1.44.53-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.41-.88.03-.25.37-.51 1.03-.78 4.04-1.76 6.74-2.93 8.09-3.5 3.84-1.6 4.63-1.88 5.16-1.89.11 0 .37.02.54.16.14.12.18.28.2.45-.01.07-.01.17-.03.27z" />
+          </svg>
+          {isKhmer ? 'ចូលរួមឥឡូវនេះ' : 'JOIN NOW'}
+        </a>
+      </div>
+    </div>
+  );
+}

@@ -12,7 +12,7 @@
 //   1. VITE_API_URL from .env  (explicit override — useful for cross-origin prod)
 //   2. window.location.origin  (auto-detects ngrok / localhost / any domain — no .env change needed)
 
-const VITE_URL = (import.meta.env.VITE_API_URL_NGROK || '').replace(/\/$/, '')
+const VITE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 const BACKEND_URL = VITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 /**
