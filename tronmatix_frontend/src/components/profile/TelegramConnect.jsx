@@ -205,22 +205,6 @@ function NotConnectedView({ dark, c, busy, showSwitch, onClickSwitch, onRefresh,
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
         <div style={{ fontSize: 11, color: c.muted, fontWeight: 600, letterSpacing: isKhmer ? 0 : 1, marginBottom: 4 }}>{isKhmer ? t('telegram.clickToConnect') : 'CLICK BELOW TO CONNECT'}</div>
 
-        <div id="tg-widget-container" style={{ minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: busy ? 0.5 : 1, pointerEvents: busy ? 'none' : 'auto' }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', margin: '4px 0' }}>
-          <div style={{ flex: 1, height: 1, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-          <span style={{ fontSize: 10, color: c.muted, fontWeight: 700 }}>OR</span>
-          <div style={{ flex: 1, height: 1, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-        </div>
-
-        <button onClick={onClickSwitch} disabled={busy} style={{ width: '100%', padding: '9px 0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'transparent', border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : 'rgba(34,158,217,0.3)'}`, color: '#229ED9', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.5 : 1 }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
-            <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
-          </svg>
-          {isKhmer ? t('telegram.loginDifferent') : 'Log in with a different account'}
-        </button>
-
         <ConnectBotButton
             busy={busy}
             dark={dark}
