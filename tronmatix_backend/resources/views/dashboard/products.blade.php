@@ -458,5 +458,4 @@
             }, 500);
         }
     </script>
-@endif
 @endpush

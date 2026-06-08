@@ -5,7 +5,7 @@
 
     @include('dashboard._permission_check', ['feature' => 'orders'])
 
-    @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
 
     @if(!$_permDenied)
         {{-- ── Status category tabs ──────────────────────────────────────────────────── --}}
