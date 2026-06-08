@@ -1,19 +1,11 @@
-// vite.config.js
-
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-oxc' // faster than plugin-react (no Babel)
+import react from '@vitejs/plugin-react'
 
-const backendUrl = process.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const backendUrl = process.env.VITE_API_URL
 
 export default defineConfig({
   plugins: [react()],
 
-  // Explicit base path — required for Render Static Site so asset URLs are
-  // absolute (/assets/...) not relative (./assets/...). Without this,
-  // nested routes like /dashboard/orders load a blank page.
-  base: '/',
-
-  // Pre-bundle deps to avoid re-optimization on every cold start
   optimizeDeps: {
     include: [
       'react',
@@ -21,21 +13,21 @@ export default defineConfig({
       'react-router-dom',
       'axios',
       'sweetalert2',
-      'qrcode.react',
-      '@emailjs/browser',
     ],
   },
 
   server: {
     port: 5173,
+    allowedHosts: [
+      'tronmatix-frontend.onrender.com',
+    ],
 
-    // Dev proxy — forwards /api/* and /storage/* to Django backend
-    // This avoids CORS issues in development (not used in production)
     proxy: {
       '/api': {
         target: backendUrl,
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path,
       },
       '/storage': {
         target: backendUrl,
@@ -46,39 +38,24 @@ export default defineConfig({
   },
 
   build: {
-    // Output to dist/ (Render Static Site publish directory)
-    outDir: 'dist',
     chunkSizeWarningLimit: 600,
-
     rollupOptions: {
       output: {
-        // Split vendor chunks for better browser caching
         manualChunks(id) {
           if (
             id.includes('node_modules/react/') ||
             id.includes('node_modules/react-dom/') ||
             id.includes('node_modules/scheduler/')
-          ) {
-            return 'vendor-react'
-          }
+          ) return 'vendor-react'
+
           if (
             id.includes('node_modules/react-router') ||
             id.includes('node_modules/@remix-run/')
-          ) {
-            return 'vendor-router'
-          }
-          if (id.includes('node_modules/sweetalert2')) {
-            return 'vendor-swal'
-          }
-          if (id.includes('node_modules/axios')) {
-            return 'vendor-axios'
-          }
-          if (id.includes('node_modules/qrcode')) {
-            return 'vendor-qr'
-          }
-          if (id.includes('node_modules/')) {
-            return 'vendor-misc'
-          }
+          ) return 'vendor-router'
+
+          if (id.includes('node_modules/sweetalert2')) return 'vendor-swal'
+          if (id.includes('node_modules/axios')) return 'vendor-axios'
+          if (id.includes('node_modules/')) return 'vendor-misc'
         },
       },
     },
