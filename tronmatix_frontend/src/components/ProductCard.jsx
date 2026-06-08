@@ -51,7 +51,7 @@ function AddToCartBtn({ onAdd, dark, cardHovered, btnFont = 'Rajdhani, sans-seri
       className="mt-auto w-full font-extrabold rounded transition-all duration-200"
       style={{
         fontFamily: `${btnFont} !important`,
-        fontWeight: 800,
+        fontWeight: 700,
         fontSize: 15,
         letterSpacing: 1,
         height: 42,
@@ -186,8 +186,6 @@ export default function ProductCard({ product }) {
 
         {/* One badge per discount that applies to this product */}
         {itemDiscounts.map((d, idx) => {
-          // If the admin configured a custom badge for this discount, use its styling.
-          // Otherwise fall back to the default purple (public/sitewide) or orange (code) look.
           const bc = d.badge_config
           const bgStyle = bc
             ? { background: bc.bg || 'rgba(249,115,22,0.18)', border: `1.5px solid ${bc.border || 'rgba(249,115,22,0.55)'}` }
@@ -267,18 +265,24 @@ export default function ProductCard({ product }) {
 
       <div className="p-3 text-center flex flex-col flex-1">
         <Link to={`/product/${product.id}`}>
-          <h3 className="font-bold mb-1 leading-tight hover:text-primary transition-colors line-clamp-2"
-            style={{
-              fontSize: isKhmer ? 14 : 20,
+          <h3 className={'font-bold mb-1 leading-tight hover:text-primary transition-colors'}>
+            <span style={{
               color: text,
-              letterSpacing: isKhmer ? 0 : undefined
+              letterSpacing: isKhmer ? 0 : undefined,
+              fontSize: isKhmer ? 16 : 20,
             }}>
-            {product.name}
+              {product.name}
+            </span>
           </h3>
+          {product.caption && (
+            <p className="mb-2" style={{ fontSize: isKhmer ? '12px' : '15px', color: text, opacity: 0.7 }}>
+              {product.caption}
+            </p>
+          )}
         </Link>
 
         {/* Fixed-height price block — keeps ADD TO CART button aligned across all cards */}
-        <div className="flex flex-col items-center justify-end mb-3" style={{ minHeight: 52 }}>
+        <div className="flex flex-col items-center justify-end mb-3" style={{ minHeight: 30 }}>
           {isAskPrice ? (
             <div className="font-black transition-colors" 
                  style={{ 
@@ -291,17 +295,17 @@ export default function ProductCard({ product }) {
             <>
               <div className="font-black transition-colors" 
                    style={{ 
-                     fontSize: 20,
+                     fontSize: isKhmer ? 16 : 20,
                      color: '#F97316'
                    }}>
                 ${discountedPrice.toFixed(2)}
               </div>
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                <span className="line-through font-semibold" style={{ fontSize: 16, color: dark ? '#6b7280' : '#9ca3af' }}>
+                <span className="line-through font-semibold" style={{ fontSize: isKhmer ? 13 : 18, color: dark ? '#6b7280' : '#9ca3af' }}>
                   {displayPrice(product.price)}
                 </span>
                 <span className="font-black rounded-full px-1.5 py-0.5"
-                  style={{ fontSize: 11, background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}>
+                  style={{ fontSize: isKhmer ? 11 : 14, background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}>
                   −{bestDiscount.type === 'percentage'
                     ? `${bestDiscount.value}%`
                     : `${Number(bestDiscount.value).toFixed(2)}`}
@@ -311,7 +315,7 @@ export default function ProductCard({ product }) {
           ) : (
             <div className="font-bold transition-colors" 
                  style={{ 
-                   fontSize: 18, 
+                   fontSize: isKhmer ? 17 : 20, 
                    color: hovered ? '#F97316' : text, 
                    letterSpacing: isKhmer ? 0 : undefined 
                  }}>

@@ -204,7 +204,7 @@ class UserProfileController extends Controller
     {
         /** @var User $user */
         $user         = Auth::user();
-        $totalSpent   = Order::where('user_id', $user->id)->whereNotIn('status', ['cancelled'])->sum('total');
+        $totalSpent   = $user->totalSpent();
         $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
         if ($totalSpent >= $vipThreshold && ($user->role ?? 'customer') === 'customer') {

@@ -3,53 +3,9 @@
 
 @section('content')
 
-    @php
-        use App\Models\AdminSetting;
-        $_pRole = Auth::guard('admin')->user()?->role ?? 'viewer';
-        $_pFeat = 'products';
-        $_pKey = "perm_{$_pRole}_{$_pFeat}";
-        $_pDef = [
-            'admin_dashboard' => '1',
-            'admin_products' => '1',
-            'admin_orders' => '1',
-            'admin_orders_edit' => '1',
-            'admin_users' => '1',
-            'admin_discounts' => '1',
-            'admin_settings' => '1',
-            'admin_staff' => '1',
-            'editor_dashboard' => '1',
-            'editor_products' => '1',
-            'editor_orders' => '1',
-            'editor_orders_edit' => '0',
-            'editor_users' => '0',
-            'editor_discounts' => '1',
-            'editor_settings' => '0',
-            'editor_staff' => '0',
-            'viewer_dashboard' => '1',
-            'viewer_products' => '0',
-            'viewer_orders' => '1',
-            'viewer_orders_edit' => '0',
-            'viewer_users' => '0',
-            'viewer_discounts' => '0',
-            'viewer_settings' => '0',
-            'viewer_staff' => '0',
-        ];
-        $_pAccess = $_pRole === 'superadmin' || AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1';
-    @endphp
-
-    @if (!$_pAccess)
-        <div
-            style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px;font-family:Rajdhani,sans-serif;">
-            <div style="font-size: var(--title-size);margin-bottom:20px;">🔒</div>
-            <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">
-                ACCESS DENIED</div>
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:24px;">Contact a <span
-                    style="color:#F97316;font-weight:700;">Super Admin</span> to request access.</div>
-            <a href="{{ route('dashboard.index') }}"
-                style="padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;font-size: var(--title-size);font-weight:700;">🏠
-                GO TO DASHBOARD</a>
-        </div>
-    @else
+    @include('dashboard._permission_check', ['feature' => 'discounts'])
+    @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+    @if(!$_permDenied)
         @php
             $activeCount = $discounts
                 ->where('is_active', true)
@@ -719,7 +675,7 @@
                             </label>
                             <div id="catHiddenInputs"></div>
                             <div id="catTags" onclick="toggleCatDropdown(event)"
-                                style="min-height:42px; background:#111; border:1px solid rgba(255,255,255,0.15);
+                                style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15);
                                 border-radius:8px; padding:6px 36px 6px 10px; cursor:pointer;
                                 display:flex; flex-wrap:wrap; gap:6px; align-items:center;
                                 position:relative; transition:border-color .2s; box-sizing:border-box;">
@@ -1492,7 +1448,6 @@
                 chk.style.opacity = checked ? '1' : '0'
             }
         </script>
-
     @endif
 
     @push('styles')
@@ -1570,11 +1525,28 @@
                 border-bottom-color: rgba(15, 23, 42, 0.08) !important;
             }
 
-            /* Discount code cards */
-            [data-theme="light"] .discount-card {
+            /* Category dropdown */
+            [data-theme="light"] #catDropdown {
                 background: #FFFFFF !important;
-                border-color: rgba(15, 23, 42, 0.08) !important;
+                border-color: rgba(15, 23, 42, 0.15) !important;
+                box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1) !important;
             }
+
+            [data-theme="light"] #catSearch {
+                background: #F8FAFC !important;
+                border-color: rgba(15, 23, 42, 0.1) !important;
+                color: #0F172A !important;
+            }
+
+            [data-theme="light"] .cat-chip {
+                background: #F1F5F9 !important;
+                color: rgba(15, 23, 42, 0.7) !important;
+            }
+
+            [data-theme="light"] .cat-chip[style*="border-color: #F97316"] {
+                background: rgba(249, 115, 22, 0.1) !important;
+            }
+
 
             [data-theme="light"] .discount-card [style*="color:rgba(255,255,255,0.4)"] {
                 color: rgba(15, 23, 42, 0.45) !important;

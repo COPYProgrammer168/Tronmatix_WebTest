@@ -240,20 +240,20 @@ export default function ProductDetailPage() {
                   const bc = d.badge_config;
                   const bgStyle = bc
                     ? {
-                      background: bc.bg || "rgba(249,115,22,0.18)",
-                      border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
-                    }
+                        background: bc.bg || "rgba(249,115,22,0.18)",
+                        border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
+                      }
                     : d.source === "public"
                       ? {
-                        background:
-                          "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
-                        border: "none",
-                      }
+                          background:
+                            "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                          border: "none",
+                        }
                       : {
-                        background:
-                          "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
-                        border: "none",
-                      };
+                          background:
+                            "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+                          border: "none",
+                        };
                   const badgeColor = bc ? bc.color || "#F97316" : "#fff";
                   const badgeIcon = bc ? bc.icon || "🏷" : "🏷";
                   const badgeText = bc
@@ -395,7 +395,7 @@ export default function ProductDetailPage() {
                   className="text-primary font-black"
                   style={{ fontFamily: headingFont, fontSize: 32 }}
                 >
-                  ${displayPrice(discountedPrice)}
+                  {displayPrice(discountedPrice)}
                 </div>
                 <div
                   className="line-through"
@@ -470,9 +470,9 @@ export default function ProductDetailPage() {
                       You save $
                       {numPrice
                         ? (d.type === "percentage"
-                          ? (numPrice * d.value) / 100
-                          : Math.min(d.value, numPrice)
-                        ).toFixed(2)
+                            ? (numPrice * d.value) / 100
+                            : Math.min(d.value, numPrice)
+                          ).toFixed(2)
                         : "—"}{" "}
                       on this item
                       {d.categories?.length > 0 && (
@@ -553,18 +553,35 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-2 mb-5">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${inStock ? "bg-green-500" : "bg-red-400"}`}
-            />
-            <span
-              className={`font-bold text-sm ${inStock ? "text-green-600" : "text-red-500"}`}
-            >
-              {inStock
-                ? `In Stock${product.stock ? ` (${product.stock} left)` : ""}`
-                : "Out of Stock"}
-            </span>
+          <div className="flex flex-col gap-1 mb-5">
+            <div className="flex items-center gap-2">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${inStock ? "bg-green-500 animate-stock-glow" : "bg-red-500"}`}
+              />
+              <span
+                className={`font-bold text-sm ${inStock ? "text-green-600" : "text-red-500"}`}
+              >
+                {product.stock_status && !inStock ? 'Sold Out' : (product.stock_status || (inStock ? `In Stock${product.stock ? ` (${product.stock} left)` : ""}` : "Out of Stock"))}
+              </span>
+            </div>
+            {product.stock_details && (
+              <span className="text-xs italic" style={{ color: subCol }}>
+                {product.stock_details}
+              </span>
+            )}
           </div>
+
+          <style>{`
+            @keyframes stock-glow {
+              0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+              70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+              100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+            }
+            .animate-stock-glow {
+              animation: stock-glow 2s infinite;
+              box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+          `}</style>
 
           <div className="flex items-center gap-3 flex-wrap mt-auto">
             {!isAskPrice && (
@@ -609,9 +626,10 @@ export default function ProductDetailPage() {
               <a href={telegramLink} target="_blank" rel="noopener noreferrer"
                 className="flex-1 font-bold py-3 px-8 rounded-lg transition-all text-white flex items-center justify-center gap-2"
                 style={{
-                  background: '#0088cc', fontSize: 16,
+                  background: '#0088cc', 
+                  fontSize: isKhmer ? 16 : 16,
                 }}>
-                <span>{isKhmer ? 'សាកសួរតម្លៃ' : 'ASK PRICE'}</span>
+                <span>{isKhmer ? 'សាកសួរព័ត៏មាន' : 'ASK MORE INFORMATION'}</span>
               </a>
             ) : (
               <button

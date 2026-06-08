@@ -3,237 +3,204 @@
 
 @section('content')
 
-@php
-    use App\Models\AdminSetting;
-    $_pRole = Auth::guard('admin')->user()?->role ?? 'viewer';
-    $_pFeat = 'products';
-    $_pKey  = "perm_{$_pRole}_{$_pFeat}";
-    $_pDef  = [
-        'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
-        'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
-        'admin_settings'=>'1','admin_staff'=>'1',
-        'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
-        'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
-        'editor_settings'=>'0','editor_staff'=>'0',
-        'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
-        'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
-        'viewer_settings'=>'0','viewer_staff'=>'0',
-    ];
-    $_pAccess = $_pRole === 'superadmin'
-        || (AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1');
-    $_pRoleMeta = [
-        'superadmin'=>['color'=>'#F97316','icon'=>'👑','label'=>'Super Admin'],
-        'admin'     =>['color'=>'#F97316','icon'=>'🛡️','label'=>'Admin'],
-        'editor'    =>['color'=>'#3b82f6','icon'=>'✏️', 'label'=>'Editor'],
-        'viewer'    =>['color'=>'#a78bfa','icon'=>'👁️', 'label'=>'Viewer'],
-    ];
-    $_pRM = $_pRoleMeta[$_pRole] ?? $_pRoleMeta['viewer'];
-    $_pAllFeats = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋',
-                   'orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️',
-                   'settings'=>'⚙️','staff'=>'🛡️'];
-@endphp
+    @include('dashboard._permission_check', ['feature' => 'products'])
+@php if(!isset($_permDenied)) $_permDenied = false; @endphp
 
-@if(!$_pAccess)
-{{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-     min-height:60vh;text-align:center;padding:40px 20px;font-family:Rajdhani,sans-serif;
-     animation:fadeUp .45s ease both;">
-    <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
-         background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
-         box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
-        Your role does not have permission to access this module.<br>
-        Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
-    </div>
-    <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
-         margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
-        </div>
-        <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','products')) }}</div>
-        </div>
-    </div>
-    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-         border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            @foreach($_pAllFeats as $_fKey => $_fIcon)
-            @php
-                $_fPKey = "perm_{$_pRole}_{$_fKey}";
-                $_fHas  = $_pRole === 'superadmin' || (AdminSetting::get($_fPKey, $_pDef["{$_pRole}_{$_fKey}"] ?? '0') === '1');
-                $_fActive = ($_fKey === 'products');
-            @endphp
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
-                 background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
-                 border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
-                    color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
-                    {{ $_fHas ? '✓' : '✗' }}
-                </span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
-           onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
-            🏠 GO TO DASHBOARD
-        </a>
-        <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;
-           background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
-           onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ← GO BACK
-        </a>
-    </div>
-</div>
-<style>
-@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-@keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
-</style>
-@else
-    <div style="max-width:860px;">
-        <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
-            ← {{ __('dashboard.form.btp') }}
-        </a>
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title" style="font-size: var(--title-size);">
-                    {{ $product ? __('dashboard.form.editproduct') . ' ' . Str::limit($product->name, 40) : __('dashboard.form.addproduct') }}
-                </span>
-                @if ($product)
-                    <span class="badge badge-orange">ID: {{ $product->id }}</span>
-                @endif
-            </div>
-            <div class="card-body">
-
-                @if ($errors->any())
-                    <div class="alert alert-error" style="margin-bottom:20px;">
-                        @foreach ($errors->all() as $error)
-                            <div>✗ {{ $error }}</div>
-                        @endforeach
-                    </div>
-                @endif
-
-                <form method="POST"
-                    action="{{ $product ? route('dashboard.products.update', $product) : route('dashboard.products.store') }}"
-                    enctype="multipart/form-data" id="productForm">
-                    @csrf
+@if(!$_permDenied)
+        <div style="max-width:990px;">
+            <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
+                ← {{ __('dashboard.form.btp') }}
+            </a>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" style="font-size: var(--title-size);">
+                        {{ $product ? __('dashboard.form.editproduct') . ' ' . Str::limit($product->name, 40) : __('dashboard.form.addproduct') }}
+                    </span>
                     @if ($product)
-                        @method('PUT')
+                        <span class="badge badge-orange">ID: {{ $product->id }}</span>
+                    @endif
+                </div>
+                <div class="card-body">
+
+                    @if ($errors->any())
+                        <div class="alert alert-error" style="margin-bottom:20px;">
+                            @foreach ($errors->all() as $error)
+                                <div>✗ {{ $error }}</div>
+                            @endforeach
+                        </div>
                     @endif
 
-                    {{-- ── Two column layout ──────────────────────────────────── --}}
-                    <div style="display:grid; grid-template-columns:1fr 300px; gap:24px;">
+                    <form method="POST"
+                        action="{{ $product ? route('dashboard.products.update', $product) : route('dashboard.products.store') }}"
+                        enctype="multipart/form-data" id="productForm">
+                        @csrf
+                        @if ($product)
+                            @method('PUT')
+                        @endif
 
-                        {{-- ── LEFT COLUMN ──────────────────────────────────────── --}}
-                        <div>
+                        {{-- ── Two column layout ──────────────────────────────────── --}}
+                        <div style="display:grid; grid-template-columns:1fr 300px; gap:24px;">
 
-                            {{-- Name --}}
-                            <div class="form-group">
-                                <label class="form-label">{{ __('dashboard.form.productName') }}</label>
-                                <input type="text" name="name"
-                                    class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
-                                    value="{{ old('name', $product?->name) }}" placeholder="e.g. AMD Ryzen 7 9800X3D"
-                                    required />
-                            </div>
+                            {{-- ── LEFT COLUMN ──────────────────────────────────────── --}}
+                            <div>
 
-                            {{-- Category + Brand --}}
-                            <div class="form-grid-2">
-                                <div class="form-group" style="font-size: var(--title-size);">
-                                    <label class="form-label">{{ __('dashboard.form.category') }}</label>
-                                    <select name="category" class="form-control" required>
-                                        <option value="" disabled
-                                            {{ old('category', $product?->category) ? '' : 'selected' }}>
-                                            — Select Category —
-                                        </option>
-
-                                        <optgroup label="─── PC BUILDS ───────────────">
-                                            @foreach (['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                        <optgroup label="─── MONITOR ───────────────">
-                                            @foreach (['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                        <optgroup label="─── PC PARTS ───────────────">
-                                            @foreach (['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-
-                                        <optgroup label="─── HOT ITEM ────────────────">
-                                            @foreach (['BEST PRICE', 'BEST SET'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-
-                                        <optgroup label="─── ACCESSORY ────────────">
-                                            @foreach (['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-
-                                        <optgroup label="─── TABLE CHAIR ─────────────">
-                                            @foreach (['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-
-                                        <optgroup label="─── RESELL ITEM  ──────────────">
-                                            @foreach (['Second hand', 'Used', 'Pre-owned'] as $cat)
-                                                <option value="{{ $cat }}"
-                                                    {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                    {{ $cat }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                    </select>
-                                </div>
-
+                                {{-- Name --}}
                                 <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.brand') }}</label>
-                                    <input type="text" name="brand" class="form-control"
-                                        value="{{ old('brand', $product?->brand) }}" placeholder="e.g. AMD, Intel, NVIDIA"
-                                        list="brandList" />
-                                    <datalist id="brandList">
-                                        @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
-                                            <option value="{{ $brand }}">
-                                        @endforeach
-                                    </datalist>
+                                    <label class="form-label">{{ __('dashboard.form.productName') }}</label>
+                                    <input type="text" name="name"
+                                        class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
+                                        value="{{ old('name', $product?->name) }}" placeholder="e.g. AMD Ryzen 7 9800X3D"
+                                        required />
                                 </div>
-                            </div>
+
+                                {{-- Caption --}}
+                                <div class="form-group">
+                                    <label class="form-label">Caption</label>
+                                    <input type="text" name="caption"
+                                        class="form-control {{ $errors->has('caption') ? 'is-invalid' : '' }}"
+                                        value="{{ old('caption', $product?->caption) }}"
+                                        placeholder="e.g. G SKILL TRIDENT Z DDR5 32GB 6000MHZ" />
+                                </div>
+
+                                {{-- Category + Brand --}}
+                                <div class="form-grid-2">
+                                    <div class="form-group" style="font-size: var(--title-size);">
+                                        <label class="form-label">{{ __('dashboard.form.category') }}</label>
+                                        <select name="category" id="categorySelect" class="form-control" required>
+                                            <option value="" disabled
+                                                {{ old('category', $product?->category) ? '' : 'selected' }}>
+                                                — Select Category —
+                                            </option>
+
+                                            <optgroup label="─── PC BUILDS ───────────────">
+                                                @foreach (['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+                                            <optgroup label="─── MONITOR ───────────────">
+                                                @foreach (['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+                                            <optgroup label="─── PC PARTS ───────────────" id="pcPartsGroup">
+                                                @foreach (['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+
+                                            <optgroup label="─── HOT ITEM ────────────────">
+                                                @foreach (['BEST PRICE', 'BEST SET'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+
+                                            <optgroup label="─── ACCESSORY ────────────">
+                                                @foreach (['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+
+                                            <optgroup label="─── TABLE CHAIR ─────────────">
+                                                @foreach (['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+
+                                            <optgroup label="─── RESELL ITEM  ──────────────">
+                                                @foreach (['Second hand', 'Used', 'Pre-owned'] as $cat)
+                                                    <option value="{{ $cat }}"
+                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
+                                                        {{ $cat }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('dashboard.form.brand') }}</label>
+                                        <input type="text" name="brand" class="form-control"
+                                            value="{{ old('brand', $product?->brand) }}"
+                                            placeholder="e.g. AMD, Intel, NVIDIA" list="brandList" />
+                                        <datalist id="brandList">
+                                            @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
+                                                <option value="{{ $brand }}">
+                                            @endforeach
+                                        </datalist>
+                                    </div>
+                                    <div class="form-group" id="pcPartBrandGroup" style="display: none;">
+                                        <label class="form-label">PC Part Brand</label>
+                                        <select name="brand_pc_part" id="pcPartBrandSelect" class="form-control">
+                                            <option value="">— Select PC Part Brand —</option>
+                                        </select>
+                                    </div>
+
+                                    <script>
+                                        const categorySelect = document.getElementById('categorySelect');
+                                        const pcPartBrandGroup = document.getElementById('pcPartBrandGroup');
+                                        const pcPartBrandSelect = document.getElementById('pcPartBrandSelect');
+
+                                        const pcPartBrands = {
+                                            'CPU': ['INTEL 12TH', 'INTEL 13TH', 'INTEL 14TH', 'INTEL 15TH ULTRA', 'AMD ALL SERIES'],
+                                            'RAM': ['8GB DDR4', '16GB DDR4', '16GB DDR5', '32GB DDR5', '24GB DDR5', '48GB DDR5', '96GB DDR5',
+                                                'RAM DDR5 64GB X2 128GB'
+                                            ],
+                                            'MAINBOARD': ['H610 SERIES', 'B760 SERIES', 'Z790 SERIES', 'Z890 SERIES', 'X670 SERIES', 'X870 SERIES',
+                                                'B850 SERIES', 'H810 SERIES', 'B860 SERIES'
+                                            ],
+                                            'COOLING': ['THERMAL GREASE', 'COOLER', 'LIQUID 240MM', 'LIQUID 360MM', 'LIQUID WATERLOOP'],
+                                            'M2': ['256G', '500G', '1TB', '2TB', '4TB', '8TB', '4TB', 'ENCLOSURE', 'M.2 TRAY'],
+                                            'VGA': ['RTX 3050', 'RTX 5080', 'RTX 5090', 'RTX 5070TI', 'INTER VGA', 'VGA AMD ALL SERIES', 'VGA RTX5070',
+                                                'RTX5060TI', 'RTX 5060'
+                                            ],
+                                            'CASE': ['UNDER 50$', 'UNDER 100$', 'UNDER 200$', 'UNDER 300$', 'UNDER 500$', 'UNDER 1000$', 'UNDER 10000$',
+                                                'MINI ITX'
+                                            ],
+                                            'POWER SUPPLY': ['550W', '650W', '750W', '850W', '1000W', '1200W', '1600W', '2200W'],
+                                            'FAN': ['CASE FAN', 'RGB FAN', 'INDUSTRIAL FAN']
+                                        };
+
+                                        function updatePcPartBrands() {
+                                            const category = categorySelect.value;
+                                            const brands = pcPartBrands[category];
+
+                                            if (brands) {
+                                                pcPartBrandGroup.style.display = 'block';
+                                                pcPartBrandSelect.innerHTML = '<option value="">— Select PC Part Brand —</option>';
+                                                brands.forEach(b => {
+                                                    const opt = document.createElement('option');
+                                                    opt.value = b;
+                                                    opt.textContent = b;
+                                                    if (b === '{{ old('brand_pc_part', $product?->brand_pc_part) }}') opt.selected = true;
+                                                    pcPartBrandSelect.appendChild(opt);
+                                                });
+                                            } else {
+                                                pcPartBrandGroup.style.display = 'none';
+                                            }
+                                        }
+
+                                        categorySelect.addEventListener('change', updatePcPartBrands);
+                                        updatePcPartBrands();
+                                    </script>
+                                </div>
                             </div>
 
                             {{-- Price + Stock + Rating --}}
@@ -242,10 +209,8 @@
                                     <label class="form-label">{{ __('dashboard.form.price') }}</label>
                                     <input type="text" name="price"
                                         class="form-control {{ $errors->has('price') ? 'is-invalid' : '' }}"
-                                        value="{{ old('price', $product?->price) }}"
-                                        placeholder="$ or 0.00"
-                                        inputmode="decimal"
-                                        oninput="this.value = this.value.replace(/[^0-9$.]/g, '');"
+                                        value="{{ old('price', $product?->price) }}" placeholder="$ or 0.00"
+                                        inputmode="decimal" oninput="this.value = this.value.replace(/[^0-9$.]/g, '');"
                                         required />
                                 </div>
                                 <div class="form-group">
@@ -257,13 +222,37 @@
                                 <div class="form-group">
                                     <label class="form-label">{{ __('dashboard.form.rating') }}</label>
                                     <input type="number" name="rating" class="form-control"
-                                        value="{{ old('rating', $product?->rating ?? 0) }}" step="0.1" min="0"
-                                        max="5" />
+                                        value="{{ old('rating', $product?->rating ?? 0) }}" step="0.1"
+                                        min="0" max="5" />
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">{{ __('dashboard.form.warranty') }}</label>
                                     <input type="text" name="warranty" class="form-control"
                                         value="{{ old('warranty', $product?->warranty) }}" placeholder="e.g. 3 years" />
+                                </div>
+                            </div>
+
+                            {{-- Stock Status + Details --}}
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                <div class="form-group">
+                                    <label class="form-label">Stock Status</label>
+                                    <select name="stock_status" class="form-control">
+                                        <option value=""
+                                            {{ old('stock_status', $product?->stock_status) === '' ? 'selected' : '' }}>
+                                            Select Status</option>
+                                        @foreach (['Available InStock Now', 'Pre-order'] as $status)
+                                            <option value="{{ $status }}"
+                                                {{ old('stock_status', $product?->stock_status) === $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Stock Details</label>
+                                    <input type="text" name="stock_details" class="form-control"
+                                        value="{{ old('stock_details', $product?->stock_details) }}"
+                                        placeholder="e.g. Arriving next week" />
                                 </div>
                             </div>
 
@@ -276,7 +265,7 @@
                             {{-- Featured + Hot toggles --}}
                             <div style="display:flex; gap:32px; margin-top:4px;">
                                 <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.featured') }}</label>
+                                    <label class="form-label">{{ __('dashboard.form.featuredProduct') }}</label>
                                     <label class="toggle-wrap" style="cursor:pointer;">
                                         <label class="toggle">
                                             <input type="checkbox" name="is_featured" value="1"
@@ -290,7 +279,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.hot') }}</label>
+                                    <label class="form-label">{{ __('dashboard.form.hotItem') }}</label>
                                     <label class="toggle-wrap" style="cursor:pointer;">
                                         <label class="toggle">
                                             <input type="checkbox" name="is_hot" value="1"
@@ -406,7 +395,8 @@
                                         style="white-space:nowrap; padding:0 14px;">+ ADD</button>
                                 </div>
                                 <div id="urlPreviewMsg"
-                                    style="margin-top:6px; font-size: var(--title-size); color:rgba(255,255,255,0.2);"></div>
+                                    style="margin-top:6px; font-size: var(--title-size); color:rgba(255,255,255,0.2);">
+                                </div>
 
                                 {{-- Hidden field to track new URL images --}}
                                 <div id="urlImagesContainer"></div>
@@ -418,7 +408,7 @@
                                             <input type="checkbox" name="remove_image" value="1"
                                                 id="removeImageCheck" onchange="toggleRemoveImage(this)" />
                                             <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">
-                                                {{__('dashboard.form.removeallimages')}}
+                                                {{ __('dashboard.form.removeallimages') }}
                                             </span>
                                         </label>
                                     </div>
@@ -426,30 +416,30 @@
                             </div>
                         </div>
 
-                    </div>
+                </div>
 
-                    {{-- ── Submit Buttons ────────────────────────────────────── --}}
-                    <div
-                        style="display:flex; gap:12px; margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.07);">
-                        <button type="submit" class="btn btn-orange" id="submitBtn">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
-                                viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            {{ $product ? strtoupper(__('dashboard.form.updateProduct')) : strtoupper(__('dashboard.form.createProduct')) }}
-                        </button>
-                        <a href="{{ route('dashboard.products') }}" class="btn btn-outline">
-                            {{__('dashboard.form.cancel')}}
-                        </a>
-                        @if ($product)
-                            <div style="margin-left:auto;">
-                                <button type="button" class="btn btn-danger"
-                                    onclick="if(confirm('Delete this product permanently?')) document.getElementById('deleteForm').submit()">
-                                    {{__('dashboard.form.delete')}}
-                                </button>
-                            </div>
-                        @endif
-                    </div>
+                {{-- ── Submit Buttons ────────────────────────────────────── --}}
+                <div
+                    style="display:flex; gap:12px; margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.07);">
+                    <button type="submit" class="btn btn-orange" id="submitBtn">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                            viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        {{ $product ? strtoupper(__('dashboard.form.updateProduct')) : strtoupper(__('dashboard.form.createProduct')) }}
+                    </button>
+                    <a href="{{ route('dashboard.products') }}" class="btn btn-outline">
+                        {{ __('dashboard.form.cancel') }}
+                    </a>
+                    @if ($product)
+                        <div style="margin-left:auto;">
+                            <button type="button" class="btn btn-danger"
+                                onclick="if(confirm('Delete this product permanently?')) document.getElementById('deleteForm').submit()">
+                                {{ __('dashboard.form.delete') }}
+                            </button>
+                        </div>
+                    @endif
+                </div>
 
                 </form>
 
@@ -462,9 +452,9 @@
                 @endif
             </div>
         </div>
-    </div>
+        </div>
 
-@endif
+    @endif
 @endsection
 
 @push('styles')
@@ -472,6 +462,7 @@
         :lang(km) label {
             font-weight: 500;
         }
+
         /* ── Multi-Image Gallery ──────────────────────────────────────────────── */
         .gallery-thumb {
             position: relative;
@@ -596,29 +587,52 @@
 
 
 @push('styles')
-<style>
-/* ── Products Form – light theme ─────────────────────────────────────────── */
-[data-theme="light"] .gallery-thumb {
-    background: #F8FAFC !important;
-    border-color: rgba(15,23,42,0.12) !important;
-}
-[data-theme="light"] .gallery-add-slot {
-    background: #F8FAFC !important;
-    border-color: rgba(15,23,42,0.15) !important;
-    color: rgba(15,23,42,0.35) !important;
-}
-[data-theme="light"] .gallery-add-slot:hover {
-    border-color: rgba(249,115,22,0.40) !important;
-    background: rgba(249,115,22,0.03) !important;
-}
-[data-theme="light"] [style*="color:rgba(255,255,255,0.4)"] { color: rgba(15,23,42,0.45) !important; }
-[data-theme="light"] [style*="color:rgba(255,255,255,0.3)"] { color: rgba(15,23,42,0.35) !important; }
-[data-theme="light"] [style*="color:rgba(255,255,255,0.5)"] { color: rgba(15,23,42,0.55) !important; }
-[data-theme="light"] [style*="background:rgba(255,255,255,0.05)"] { background: rgba(15,23,42,0.04) !important; }
-[data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03) !important; }
-[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"] { border-color: rgba(15,23,42,0.08) !important; }
-[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]  { border-color: rgba(15,23,42,0.10) !important; }
-</style>
+    <style>
+        /* ── Products Form – light theme ─────────────────────────────────────────── */
+        [data-theme="light"] .gallery-thumb {
+            background: #F8FAFC !important;
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        [data-theme="light"] .gallery-add-slot {
+            background: #F8FAFC !important;
+            border-color: rgba(15, 23, 42, 0.15) !important;
+            color: rgba(15, 23, 42, 0.35) !important;
+        }
+
+        [data-theme="light"] .gallery-add-slot:hover {
+            border-color: rgba(249, 115, 22, 0.40) !important;
+            background: rgba(249, 115, 22, 0.03) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.4)"] {
+            color: rgba(15, 23, 42, 0.45) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.3)"] {
+            color: rgba(15, 23, 42, 0.35) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.5)"] {
+            color: rgba(15, 23, 42, 0.55) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.05)"] {
+            background: rgba(15, 23, 42, 0.04) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] {
+            background: rgba(15, 23, 42, 0.03) !important;
+        }
+
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"] {
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
+
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"] {
+            border-color: rgba(15, 23, 42, 0.10) !important;
+        }
+    </style>
 @endpush
 
 @push('scripts')

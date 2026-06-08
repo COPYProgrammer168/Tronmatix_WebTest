@@ -23,10 +23,18 @@ class ProductController extends Controller
         } elseif ($request->filled('category') && strtolower($request->category) !== 'all') {
             $query->whereRaw('LOWER(category) = ?', [strtolower($request->category)]);
         }
+if ($request->filled('brand')) {
+    $brand = strtolower($request->brand);
 
-        if ($request->filled('brand')) {
-            $query->where('brand', $request->brand);
-        }
+    // Flexible matching: check if search term is part of DB brand or vice-versa
+    $query->where(function($q) use ($brand) {
+        $q->whereRaw('LOWER(brand) LIKE CONCAT(\'%\', ?, \'%\')', [$brand])
+          ->orWhereRaw('? LIKE CONCAT(\'%\', LOWER(brand), \'%\')', [$brand])
+          ->orWhereRaw('LOWER(brand_pc_part) LIKE CONCAT(\'%\', ?, \'%\')', [$brand])
+          ->orWhereRaw('? LIKE CONCAT(\'%\', LOWER(brand_pc_part), \'%\')', [$brand]);
+    });
+}
+
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }

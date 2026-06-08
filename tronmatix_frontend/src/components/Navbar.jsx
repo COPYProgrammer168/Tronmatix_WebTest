@@ -10,8 +10,6 @@ import logo from '../assets/logo.png'
 
 const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
 
-// navItems: label is always the English slug key used for URL + NAV_LABEL_KEYS lookup.
-// URLs never change — only the displayed text translates.
 const navItems = [
   { label: 'HOME', path: '/' },
   {
@@ -29,14 +27,14 @@ const navItems = [
     categories: ['CPU','RAM','MAINBOARD','COOLING','M2','VGA','CASE','POWER SUPPLY','FAN'],
     sub: [
       { label: 'CPU',          brands: ['INTEL 12TH','INTEL 13TH','INTEL 14TH','INTEL 15TH ULTRA','AMD ALL SERIES'] },
-      { label: 'RAM',          brands: ['DDR4 16GB','DDR4 32GB','DDR5 16GB','DDR5 32GB','DDR5 64GB'] },
-      { label: 'MAINBOARD',    brands: ['ASUS','GIGABYTE','MSI','ASROCK'] },
-      { label: 'COOLING',      brands: ['NOCTUA','DEEPCOOL','BE QUIET','CORSAIR','LIAN LI'] },
-      { label: 'M2',           brands: ['SAMSUNG','WD','SEAGATE','KINGSTON','CRUCIAL'] },
-      { label: 'VGA',          brands: ['RTX 5090','RTX 5080','RTX 4090','RTX 4080','RTX 4070','RX 7900 XTX','RX 7800 XT'] },
-      { label: 'CASE',         brands: ['LIAN LI','FRACTAL','NZXT','CORSAIR','PHANTEKS'] },
-      { label: 'POWER SUPPLY', brands: ['CORSAIR','SEASONIC','EVGA','BE QUIET','COOLER MASTER'] },
-      { label: 'FAN',          brands: ['NOCTUA','BE QUIET','CORSAIR','ARCTIC','LIAN LI'] },
+      { label: 'RAM',          brands: ['8GB DDR4','16GB DDR4','16GB DDR5','32GB DDR5','24GB DDR5','48GB DDR5','96GB DDR5','RAM DDR5 64GB X2 128GB'] },
+      { label: 'MAINBOARD',    brands: ['H610 SERIES','B760 SERIES','Z790 SERIES','Z890 SERIES','X670 SERIES','X870 SERIES','B850 SERIES','H810 SERIES','B860 SERIES'] },
+      { label: 'COOLING',      brands: ['THERMAL GREASE','COOLER','LIQUID 240MM','LIQUID 360MM','LIQUID WATERLOOP'] },
+      { label: 'M2',           brands: ['256G','500G','1TB','2TB','4TB','8TB','4TB','ENCLOSURE','M.2 TRAY'] },
+      { label: 'VGA',          brands: ['RTX 3050','RTX 5080','RTX 5090','RTX 5070TI','INTER VGA','VGA AMD ALL SERIES','VGA RTX5070', 'RTX5060TI', 'RTX 5060'] },
+      { label: 'CASE',         brands: ['UNDER 50$','UNDER 100$','UNDER 200$','UNDER 300$','UNDER 500$','UNDER 1000$','UNDER 10000$','MINI ITX'] },
+      { label: 'POWER SUPPLY', brands: ['550W','650W','750W','850W','1000W','1200W','1600W', '2200W'] },
+      { label: 'FAN', brands: ['CASE FAN', 'RGB FAN', 'INDUSTRIAL FAN'] },
     ],
   },
   {
@@ -293,7 +291,7 @@ export default function Navbar({ onAuthOpen }) {
     ? 'Kh_Jrung_Thom, Rajdhani, sans-serif'
     : 'Rajdhani, sans-serif'
   const navbFont = isKhmer
-    ? 'KantumruyPro, Rajdhani, sans-serif'
+    ? 'Kdam Thmor Pro, Rajdhani, sans-serif'
     : 'Rajdhani, sans-serif'
 
   useEffect(() => {

@@ -11,16 +11,15 @@ const STAFF_ROLES = ['editor', 'seller', 'delivery']  // UPDATED roles
 
 export default function StaffLoginPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()                          // remove login/loading — not used
+  const { user, staffLogin, loading } = useAuth() 
 
   const [form,     setForm]     = useState({ email: '', password: '' })
   const [error,    setError]    = useState(null)
-  const [loading,  setLoading]  = useState(false)     // local loading state
   const [showPass, setShowPass] = useState(false)
 
   useEffect(() => {
-    if (user && STAFF_ROLES.includes(user.role)) {
-      navigate('/staff/dashboard', { replace: true })  // /staff/dashboard not /admin
+    if (user && STAFF_ROLES.includes(user.role) && window.location.pathname !== '/staff/dashboard') {
+      navigate('/staff/dashboard', { replace: true })
     }
   }, [user, navigate])
 
@@ -30,34 +29,13 @@ export default function StaffLoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
-    setLoading(true)
 
-    try {
-      // POST to /api/staff/login — queries Staff table, NOT User table
-      const res = await api.post('/api/staff/login', {
-        email:    form.email,
-        password: form.password,
-      })
-
-      const token     = res.data?.token
-      const staffUser = res.data?.user
-
-      if (!token || !staffUser) throw new Error('Unexpected response')
-
-      // Store in localStorage — same keys as AuthContext
-      localStorage.setItem('token', token)
-      localStorage.setItem('tronmatix_user', JSON.stringify(staffUser))
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
+    const result = await staffLogin(form.email, form.password)
+    
+    if (result.success) {
       navigate('/staff/dashboard', { replace: true })
-    } catch (err) {
-      const data = err.response?.data
-      let msg = 'Login failed. Check your credentials.'
-      if (data?.errors)       msg = Object.values(data.errors).flat()[0] || msg
-      else if (data?.message) msg = data.message
-      setError(msg)
-    } finally {
-      setLoading(false)
+    } else {
+      setError(result.message)
     }
   }
 

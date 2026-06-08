@@ -21,9 +21,9 @@ class ProductController extends Controller
         if ($request->filled('search')) {
             $term = '%' . $request->search . '%';
             $query->where(fn($q) => $q
-                ->where('name', 'LIKE', $term)
-                ->orWhere('category', 'LIKE', $term)
-                ->orWhere('brand', 'LIKE', $term));
+                ->where('name', 'ILIKE', $term)
+                ->orWhere('category', 'ILIKE', $term)
+                ->orWhere('brand', 'ILIKE', $term));
         }
 
         if ($request->filled('category')) {
@@ -136,11 +136,15 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name'              => 'required|string|max:255',
+            'caption'           => 'nullable|string|max:255',
             'category'          => 'required|string|max:100',
             'brand'             => 'nullable|string|max:100',
             'warranty'          => 'nullable|string|max:100',
             'price'             => ['required', 'string', 'max:20', 'regex:/^\$+$|^\$?[0-9]+(\.[0-9]{1,2})?$/'],
             'stock'             => 'nullable|integer|min:0',
+            'stock_status'      => 'nullable|string|max:100',
+            'stock_details'     => 'nullable|string|max:255',
+            'brand_pc_part'     => 'nullable|string|max:100',
             'rating'            => 'nullable|numeric|min:0|max:5',
             'description'       => 'nullable|string',
             'image_files.*'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',

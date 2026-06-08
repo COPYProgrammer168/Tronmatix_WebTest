@@ -38,7 +38,7 @@
   --font-kh-body:    'Kdam Thmor Pro', 'Khmer OS', 'Khmer OS System', sans-serif;
   --lh-kh-body:    1.5;
   --lh-kh-heading: 1.5;
-  --lh-kh-btn:     1.6;
+  --lh-kh-btn:     1.5;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -69,16 +69,28 @@ body.lang-km {
   overflow-wrap: break-word;
   font-synthesis: none;
 }
+body.lang-km h4{
+  font-family: var(--font-kh-body) !important;
+  font-size: clamp(1em, 1vw + 1em, 1.4em) !important;
+}
+body.lang-km h2{
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  font-size: clamp(1.3em, 1.5vw + 1em, 1.2em) !important;
+}
 
-body.lang-km h1,
-body.lang-km h2,
+body.lang-km h3 span {
+  font-family: var(--font-kh-body) !important;
+  font-size: 16px !important;
+}
+
 body.lang-km h3,
-body.lang-km h4,
+body.lang-km h1,
 body.lang-km h5,
 body.lang-km h6 {
   font-family: var(--font-kh-heading) !important;
   line-height: var(--lh-kh-heading) !important;
-  font-size: clamp(1.1em, 1.5vw + 1em, 1.4em) !important;
+  font-size: clamp(1.1em, 1.5vw + 1em, 1.3em) !important;
 }
 
 /* Elements with inline Rajdhani/HurstBagod → switch to Kh_Jrung_Thom */
@@ -90,8 +102,8 @@ body.lang-km [style*="HurstBagod"] {
   text-transform: none !important;
 }
 
-/* Elements with inline KantumruyPro → stay as body font */
-body.lang-km [style*="KantumruyPro"] {
+/* Elements with inline Kdam Thmor Pro → stay as body font */
+body.lang-km [style*="Kdam Thmor Pro"] {
   font-family: var(--font-kh-body) !important;
   line-height: var(--lh-kh-body) !important;
   letter-spacing: 0 !important;
@@ -155,7 +167,7 @@ body.lang-km label {
 body.lang-km nav a,
 body.lang-km nav span,
 body.lang-km nav button {
-  font-family: var(--font-kh-heading) !important;
+  font-family: var(--font-kh-body) !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
 }

@@ -13,17 +13,16 @@ import api from '../../lib/axios' // existing axios instance
 
 export default function DevLoginPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()                          // line 16: remove applyToken/applyUser — not exported from AuthContext
+  const { user, devLogin, loading } = useAuth() 
 
   const [form,     setForm]     = useState({ email: '', password: '', dev_key: '' })
   const [error,    setError]    = useState(null)
-  const [loading,  setLoading]  = useState(false)
   const [showPass, setShowPass] = useState(false)
   const [showKey,  setShowKey]  = useState(false)
 
   // Already logged in as developer → skip login
   useEffect(() => {
-    if (user?.role === 'developer') {
+    if (user?.role === 'developer' && window.location.pathname !== '/dev/dashboard') {
       navigate('/dev/dashboard', { replace: true })
     }
   }, [user, navigate])
@@ -34,43 +33,13 @@ export default function DevLoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
-    setLoading(true)
 
-    try {
-      // Call dedicated dev endpoint — validates dev_key server-side
-      const res = await api.post('/api/dev/login', {
-        email:    form.email,
-        password: form.password,
-        dev_key:  form.dev_key,
-      })
+    const result = await devLogin(form.email, form.password, form.dev_key)
 
-      const token = res.data?.token
-      const devUser = res.data?.user
-
-      if (!token || !devUser) throw new Error('Unexpected response')
-      if (devUser.role !== 'developer') {
-        setError('Access denied. Developer accounts only.')
-        return
-      }
-
-      // Store in localStorage — same keys as AuthContext
-// Store token + force page reload so AuthContext re-reads localStorage
-      localStorage.setItem('token', token)
-      localStorage.setItem('tronmatix_user', JSON.stringify(devUser))
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
-      // Use window.location so AuthContext re-initializes from scratch
-      window.location.href = '/dev/dashboard'
-
+    if (result.success) {
       navigate('/dev/dashboard', { replace: true })
-    } catch (err) {
-      const data = err.response?.data
-      let msg = 'Login failed. Check your credentials and developer key.'
-      if (data?.errors)       msg = Object.values(data.errors).flat()[0] || msg
-      else if (data?.message) msg = data.message
-      setError(msg)
-    } finally {
-      setLoading(false)
+    } else {
+      setError(result.message)
     }
   }
 

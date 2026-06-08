@@ -179,10 +179,11 @@
     "subtitle": "Tap the map or drag the blue pin to your location",
     "gettingAddress": "📍 Getting address...",
     "tapToSelect": "Tap the map to select your location",
-    "confirm": "✅ CONFIRM THIS LOCATION",
+    "confirm": "CONFIRM THIS LOCATION",
     "storeLabel": "Tronmatix Store",
     "userLabel": "Your Location (drag me)",
-    "failedLoad": "Failed to load Google Maps. Please check your API key and billing."
+    "failedLoad": "Failed to load Google Maps. Please check your API key and billing.",
+    "address" : "Address"
   },
   "discount": {
     "label": "DISCOUNT CODE",

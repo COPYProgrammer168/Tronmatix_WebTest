@@ -397,6 +397,10 @@ export default function StaffDashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  useEffect(() => {
+    console.log('StaffDashboard: user state', user);
+  }, [user]);
+
   const handleLogout = async () => {
     await logout()
     navigate('/staff/login', { replace: true })

@@ -116,9 +116,13 @@ export default function CartSlider() {
                           className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
                           style={{ fontSize: 16, lineHeight: 1 }}>−</button>
                         <span className="text-white font-bold" style={{ fontSize: 18, minWidth: 14, textAlign: 'center' }}>{item.qty}</span>
-                        <button onClick={() => updateQty(item.id, 1)}
-                          className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
-                          style={{ fontSize: 16, lineHeight: 1 }}>+</button>
+                        <button onClick={() => {
+                            if (item.qty < (item.stock ?? 99)) {
+                                updateQty(item.id, 1);
+                            }
+                        }}
+                        className="w-6 h-6 flex items-center justify-center rounded border border-[#3a3a3a] text-primary font-bold hover:border-primary transition-colors"
+                        style={{ fontSize: 16, lineHeight: 1 }}>+</button>
                         <span className="text-primary font-bold ml-1" style={{ fontSize: 18 }}>${(item.price * item.qty).toFixed(2)}</span>
                       </>
                     )}

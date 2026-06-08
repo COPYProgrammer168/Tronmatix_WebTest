@@ -28,12 +28,13 @@ export function CategoryPage() {
 
   const rawSlug   = sub || category || ''
   const slugLabel = rawSlug.replace(/-/g, ' ').toUpperCase()
+  const brandParam = searchParams.get('brand')
 
   const label = isSearch
     ? (isKhmer ? `ស្វែងរក: "${qParam.toUpperCase()}"` : `SEARCH: "${qParam.toUpperCase()}"`)
     : (!rawSlug || rawSlug === 'all')
       ? (SORT_LABELS[sortParam] || t('common.allProducts'))
-      : slugLabel
+      : (brandParam ? `${slugLabel} - ${brandParam.toUpperCase()}` : slugLabel)
 
   const parentLabel = (category || '').replace(/-/g, ' ').toUpperCase()
   const parentPath  = `/category/${category}`
@@ -51,10 +52,11 @@ export function CategoryPage() {
     const catsParam = searchParams.get('cats')
 
     const buildParams = () => {
+      const brand = searchParams.get('brand');
       if (isSearch) return { search: qParam, per_page: 999, page: 1, sort: sortVal }
       const slug = (sub || category || '').toLowerCase()
-      if (!slug || slug === 'all') return { per_page: 999, page: 1, sort: sortVal }
-      if (catsParam) return { cats: catsParam, per_page: 999, page: 1, sort: sortVal }
+      if (!slug || slug === 'all') return { per_page: 999, page: 1, sort: sortVal, brand: brand }
+      if (catsParam) return { cats: catsParam, per_page: 999, page: 1, sort: sortVal, brand: brand }
       const catName = slug.replace(/-/g, ' ')
       return { category: catName, per_page: 999, page: 1, sort: sortVal }
     }
@@ -71,6 +73,16 @@ export function CategoryPage() {
             (p.brand || '').toLowerCase().includes(qParam) ||
             (p.description || '').toLowerCase().includes(qParam)
           )
+        }
+        // Filter by brand_pc_part when browsing PC PART sub-categories
+        const brandFilter = searchParams.get('brand')
+        if (brandFilter && !isSearch && items.length > 0) {
+          const bpLower = brandFilter.toLowerCase()
+          items = items.filter(p => {
+            const pbp = (p.brand_pc_part || '').toLowerCase().trim()
+            if (!pbp) return false   // ← products with no brand_pc_part are excluded
+            return pbp.includes(bpLower) || bpLower.includes(pbp)
+          })
         }
         setProducts(items)
       })

@@ -142,6 +142,46 @@ export function AuthProvider({ children }) {
     }
   }, [applyToken, applyUser])
 
+  const staffLogin = useCallback(async (email, password) => {
+    setLoading(true)
+    try {
+      const res = await api.post('/api/staff/login', { email, password })
+      const t = res.data?.token
+      const u = res.data?.user
+      if (!t || !u) throw new Error('Unexpected staff login response')
+      applyToken(t)
+      applyUser(u)
+      return { success: true }
+    } catch (e) {
+      const data = e.response?.data
+      let msg = 'Staff login failed.'
+      if (data?.message) msg = data.message
+      return { success: false, message: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [applyToken, applyUser])
+
+  const devLogin = useCallback(async (email, password, dev_key) => {
+    setLoading(true)
+    try {
+      const res = await api.post('/api/dev/login', { email, password, dev_key })
+      const t = res.data?.token
+      const u = res.data?.user
+      if (!t || !u) throw new Error('Unexpected dev login response')
+      applyToken(t)
+      applyUser(u)
+      return { success: true }
+    } catch (e) {
+      const data = e.response?.data
+      let msg = 'Dev login failed.'
+      if (data?.message) msg = data.message
+      return { success: false, message: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [applyToken, applyUser])
+
   // ── REGISTER ──────────────────────────────────────────────────────────────
   const register = useCallback(async (username, email, password, confirm) => {
     setLoading(true)
@@ -210,7 +250,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, token, loading, ready,
-      login, register, logout, refreshUser,
+      login, staffLogin, devLogin, register, logout, refreshUser,
       forgotPassword, googleLogin,
     }}>
       {children}

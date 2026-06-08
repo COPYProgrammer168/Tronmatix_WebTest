@@ -6,106 +6,16 @@
 
 @section('content')
 
+@include('dashboard._permission_check', ['feature' => 'orders'])
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+
+@if(!$_permDenied)
+
 @php
-    use App\Models\AdminSetting;
-    $_pRole = Auth::guard('admin')->user()?->role ?? 'viewer';
-    $_pFeat = 'orders';
-    $_pKey  = "perm_{$_pRole}_{$_pFeat}";
-    $_pDef  = [
-        'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
-        'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
-        'admin_settings'=>'1','admin_staff'=>'1',
-        'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
-        'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
-        'editor_settings'=>'0','editor_staff'=>'0',
-        'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
-        'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
-        'viewer_settings'=>'0','viewer_staff'=>'0',
-    ];
-    $_pAccess = $_pRole === 'superadmin'
-        || (AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1');
-    $_pRoleMeta = [
-        'superadmin'=>['color'=>'#F97316','icon'=>'👑','label'=>'Super Admin'],
-        'admin'     =>['color'=>'#F97316','icon'=>'🛡️','label'=>'Admin'],
-        'editor'    =>['color'=>'#3b82f6','icon'=>'✏️', 'label'=>'Editor'],
-        'viewer'    =>['color'=>'#a78bfa','icon'=>'👁️', 'label'=>'Viewer'],
-    ];
-    $_pRM = $_pRoleMeta[$_pRole] ?? $_pRoleMeta['viewer'];
-    $_pAllFeats = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋',
-                   'orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️',
-                   'settings'=>'⚙️','staff'=>'🛡️'];
+    $user   = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+    $_pRole = $user?->role ?? 'editor';
 @endphp
 
-@if(!$_pAccess)
-{{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-     min-height:60vh;text-align:center;padding:40px 20px;font-family:Rajdhani,sans-serif;
-     animation:fadeUp .45s ease both;">
-    <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
-         background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
-         box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
-        Your role does not have permission to access this module.<br>
-        Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
-    </div>
-    <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
-         margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
-        </div>
-        <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','orders')) }}</div>
-        </div>
-    </div>
-    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-         border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            @foreach($_pAllFeats as $_fKey => $_fIcon)
-            @php
-                $_fPKey = "perm_{$_pRole}_{$_fKey}";
-                $_fHas  = $_pRole === 'superadmin' || (AdminSetting::get($_fPKey, $_pDef["{$_pRole}_{$_fKey}"] ?? '0') === '1');
-                $_fActive = ($_fKey === 'orders');
-            @endphp
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
-                 background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
-                 border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
-                    color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
-                    {{ $_fHas ? '✓' : '✗' }}
-                </span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
-           onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
-            🏠 GO TO DASHBOARD
-        </a>
-        <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;
-           background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
-           onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ← GO BACK
-        </a>
-    </div>
-</div>
-<style>
-@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-@keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
-</style>
-@else
 
 
 
@@ -155,11 +65,24 @@
     ← BACK TO ORDERS
 </a>
 
+<style>
+    .order-grid-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    @media (min-width: 900px) {
+        .order-grid-container {
+            grid-template-columns: 1fr 340px;
+        }
+    }
+</style>
+
 {{-- ── Two-column layout ─────────────────────────────────────────────────────── --}}
-<div style="display:grid; grid-template-columns:1fr 340px; gap:20px;">
+<div class="order-grid-container">
 
     {{-- ══ LEFT COLUMN ══════════════════════════════════════════════════════════ --}}
-    <div style="display:flex; flex-direction:column; gap:20px;">
+    <div style="display:flex; flex-direction:column; gap:20px; min-width:0;">
 
         {{-- Order Info --}}
         <div class="card">
@@ -193,7 +116,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="order-info-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
                     @foreach([
                         'Order ID'       => $order->order_id,
                         'Customer'       => $order->user?->username ?? 'Guest',
@@ -267,17 +190,17 @@
                     <div style="font-size: var(--title-size); font-weight:800; color:#ef4444; letter-spacing:2px;">ORDER CANCELLED</div>
                 </div>
                 @else
-                <div style="overflow-x:auto; padding-bottom:8px;">
-                <div style="display:flex; align-items:flex-start; min-width:420px;">
+                <div class="timeline-scroll" style="overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch;">
+                <div class="timeline-inner" style="display:flex; align-items:flex-start; min-width:420px;">
                     @foreach($steps as $i => $s)
                     <div style="display:flex; align-items:center; flex:1; min-width:0;">
                         <div style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:60px;">
                             {{-- Step circle --}}
-                            <div style="
+                            <div class="timeline-circle" style="
                                 width:46px; height:46px; border-radius:50%;
                                 display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
-                                background: {{ $i < $current ? $colors[$i].'22' : ($i === $current ? $colors[$i] : 'rgba(255,255,255,0.06)') }};
-                                border: 2px solid {{ $i <= $current ? $colors[$i] : 'rgba(255,255,255,0.1)' }};
+                                background: {{ $i < $current ? $colors[$i].'22' : ($i === $current ? $colors[$i] : 'var(--surface-3)') }};
+                                border: 2px solid {{ $i <= $current ? $colors[$i] : 'var(--border)' }};
                                 box-shadow: {{ $i === $current ? '0 0 20px '.$colors[$i].'55' : 'none' }};
                                 transition: all .5s ease;
                                 {{ $i === $current ? 'animation:stepPulse 2s ease-in-out infinite;' : '' }}
@@ -291,7 +214,7 @@
                             </div>
                             {{-- Step label --}}
                             <div style="margin-top:8px; font-size: var(--title-size); text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
-                                color: {{ $i <= $current ? $colors[$i] : 'rgba(255,255,255,0.2)' }};">
+                                color: {{ $i <= $current ? $colors[$i] : 'var(--text-xfaint)' }};">
                                 {{ $labels[$i] }}
                                 @if($i === $current)
                                 <div style="width:6px;height:6px;border-radius:50%;background:{{ $colors[$i] }};
@@ -302,7 +225,7 @@
                         {{-- Connector line --}}
                         @if($i < count($steps)-1)
                         <div style="height:2px; flex:1; margin:0 2px; border-radius:1px; margin-bottom:26px;
-                            background: {{ $i < $current ? 'linear-gradient(90deg,'.$colors[$i].','.$colors[$i+1].')' : 'rgba(255,255,255,0.07)' }};
+                            background: {{ $i < $current ? 'linear-gradient(90deg,'.$colors[$i].','.$colors[$i+1].')' : 'var(--border)' }};
                             transition: all .6s ease; min-width:10px;"></div>
                         @endif
                     </div>
@@ -460,7 +383,7 @@
                         <span style="font-size: var(--title-size);">👤</span>
                         <div>
                             <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NAME</div>
-                            <div style="font-weight:700; color:#fff; font-size: var(--title-size);">{{ $name }}</div>
+                            <div style="font-weight:500; color:#fff; font-size: var(--title-size);">{{ $name }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
@@ -474,7 +397,7 @@
                         <span style="font-size: var(--title-size);">📍</span>
                         <div>
                             <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">ADDRESS</div>
-                            <div style="font-weight:700; color:rgba(255,255,255,0.85); font-size: var(--title-size); line-height:1.5;">
+                            <div style="font-weight:500; color:#fff; font-size: var(--title-size); line-height:1.5;">
                                 {{ $address }}{{ $city ? ', '.$city : '' }}
                             </div>
                         </div>
@@ -484,7 +407,7 @@
                         <span style="font-size: var(--title-size);">📝</span>
                         <div>
                             <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
-                            <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic;">{{ $note }}</div>
+                            <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic; word-break: break-word;">{{ $note }}</div>
                         </div>
                     </div>
                     @endif
@@ -506,133 +429,65 @@
                 <div>
                     <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
                         📍 PINNED DELIVERY ROUTE
-                        <span id="map-route-label" style="color:rgba(255,255,255,0.2); font-weight:400; font-size: var(--title-size);">Loading route...</span>
                     </div>
                     <div id="order-map" style="height:400px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);"></div>
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; flex-wrap:wrap; gap:8px;">
                         @if($mapAddr)
                         <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4);">📍 {{ $mapAddr }}</div>
                         @endif
-                        <div style="display:flex; gap:16px;">
-                            <span style="font-size: var(--title-size); color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
-                                <span style="width:10px;height:10px;border-radius:50%;background:#F97316;display:inline-block;"></span> Tronmatix Store
-                            </span>
-                            <span style="font-size: var(--title-size); color:rgba(255,255,255,0.35); display:flex; align-items:center; gap:5px;">
-                                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span> Customer
-                            </span>
-                        </div>
                     </div>
                 </div>
 
+                {{-- Leaflet Setup --}}
+                <link rel="stylesheet" href="{{ asset('css/leaflet/leaflet.css') }}" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <script>
-                @if($mapLat && $mapLng)
                 (function(){
                     const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
                     const USER_LAT  = {{ (float) $mapLat }};
                     const USER_LNG  = {{ (float) $mapLng }};
-                    const KEY       = '{{ config("services.google.maps_key") }}';
 
-                    function initMap(){
-                        const g = window.google;
+                    const map = L.map('order-map').setView([USER_LAT, USER_LNG], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
 
-                        const map = new g.maps.Map(document.getElementById('order-map'), {
-                            center: { lat: (STORE_LAT + USER_LAT) / 2, lng: (STORE_LNG + USER_LNG) / 2 },
-                            zoom: 13,
-                            styles: [
-                                { elementType: 'geometry',          stylers: [{ color: '#1a1a2e' }] },
-                                { elementType: 'labels.text.fill',  stylers: [{ color: '#8ec3b9' }] },
-                                { elementType: 'labels.text.stroke',stylers: [{ color: '#1a1a2e' }] },
-                                { featureType: 'road',              elementType: 'geometry',        stylers: [{ color: '#2d3561' }] },
-                                { featureType: 'road',              elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
-                                { featureType: 'road.highway',      elementType: 'geometry',        stylers: [{ color: '#3a4d8c' }] },
-                                { featureType: 'water',             elementType: 'geometry',        stylers: [{ color: '#0f3460' }] },
-                                { featureType: 'poi',               stylers: [{ visibility: 'off' }] },
-                            ],
-                            disableDefaultUI: true,
-                            zoomControl: true,
-                            gestureHandling: 'cooperative',
-                        });
+                    // Markers
+                    L.circleMarker([STORE_LAT, STORE_LNG], { radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Store');
+                    L.circleMarker([USER_LAT, USER_LNG], { radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Customer');
 
-                        // Store pin — orange
-                        new g.maps.Marker({
-                            position: { lat: STORE_LAT, lng: STORE_LNG }, map,
-                            title: '🏪 Tronmatix Computer Store',
-                            icon: { path: g.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#F97316', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2.5 },
-                            zIndex: 2,
-                        });
+                    // Polyline route
+                    const routeLine = L.polyline([], { color: '#F97316', weight: 4, opacity: 0.9, dashArray: '10, 10' }).addTo(map);
 
-                        // Customer pin — blue
-                        new g.maps.Marker({
-                            position: { lat: USER_LAT, lng: USER_LNG }, map,
-                            title: 'Customer Location',
-                            icon: { path: g.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#3b82f6', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2.5 },
-                            zIndex: 2,
-                        });
-
-                        // Try Directions API for real road route
-                        const directionsService  = new g.maps.DirectionsService();
-                        const directionsRenderer = new g.maps.DirectionsRenderer({
-                            suppressMarkers: true,
-                            polylineOptions: {
-                                strokeColor:   '#F97316',
-                                strokeOpacity: 0.85,
-                                strokeWeight:  4,
-                            },
-                        });
-                        directionsRenderer.setMap(map);
-
-                        directionsService.route({
-                            origin:      { lat: STORE_LAT, lng: STORE_LNG },
-                            destination: { lat: USER_LAT,  lng: USER_LNG  },
-                            travelMode:  g.maps.TravelMode.DRIVING,
-                        }, function(result, status) {
-                            if (status === 'OK') {
-                                directionsRenderer.setDirections(result);
-                                const leg = result.routes[0]?.legs[0];
-                                if (leg) {
-                                    const label = document.getElementById('map-route-label');
-                                    if (label) label.textContent = leg.distance.text + ' · ' + leg.duration.text;
-                                }
+                    // Fetch real route from OSRM
+                    fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.routes && data.routes.length > 0) {
+                                routeLine.setLatLngs(decodeOSRM(data.routes[0].geometry));
                             } else {
-                                // Directions API unavailable — fall back to dashed straight line
-                                directionsRenderer.setMap(null);
-                                new g.maps.Polyline({
-                                    path: [{ lat: STORE_LAT, lng: STORE_LNG }, { lat: USER_LAT, lng: USER_LNG }],
-                                    strokeColor: '#F97316', strokeOpacity: 0,
-                                    icons: [{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3, strokeColor: '#F97316' }, offset: '0', repeat: '12px' }],
-                                    map,
-                                });
-                                const b = new g.maps.LatLngBounds();
-                                b.extend({ lat: STORE_LAT, lng: STORE_LNG });
-                                b.extend({ lat: USER_LAT,  lng: USER_LNG  });
-                                map.fitBounds(b, 60);
-                                const label = document.getElementById('map-route-label');
-                                if (label) label.textContent = '(straight-line — enable Directions API for road route)';
+                                routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]);
                             }
-                        });
-                    }
+                        })
+                        .catch(() => routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]));
 
-                    // Load Maps JS API with directions library
-                    if (window.google?.maps?.DirectionsService) {
-                        initMap();
-                    } else if (window.google?.maps) {
-                        initMap();
-                    } else {
-                        const existing = document.getElementById('google-maps-script');
-                        if (existing) {
-                            existing.addEventListener('load', initMap);
-                            if (window.google?.maps) initMap();
-                        } else {
-                            const s = document.createElement('script');
-                            s.id    = 'google-maps-script';
-                            s.src   = 'https://maps.googleapis.com/maps/api/js?key=' + KEY + '&libraries=directions';
-                            s.async = true;
-                            s.onload = initMap;
-                            document.head.appendChild(s);
-                        }
-                    }
+                    map.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
                 })();
-                @endif
+
+                function decodeOSRM(str, precision = 5) {
+                    let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null, lat_change, lng_change, factor = Math.pow(10, precision);
+                    while (index < str.length) {
+                        byte = null; shift = 0; result = 0;
+                        do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+                        lat_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+                        byte = null; shift = 0; result = 0;
+                        do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+                        lng_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+                        lat += lat_change; lng += lng_change;
+                        coordinates.push([lat / factor, lng / factor]);
+                    }
+                    return coordinates;
+                }
                 </script>
                 @endif
 
@@ -642,7 +497,7 @@
     </div>{{-- /left --}}
 
     {{-- ══ RIGHT COLUMN ═════════════════════════════════════════════════════════ --}}
-    <div style="display:flex; flex-direction:column; gap:20px;">
+    <div class="order-right-col" style="display:flex; flex-direction:column; gap:20px; min-width:0;">
 
         {{-- ── Smart next-action card ─────────────────────────────────────────────
              Advances: confirmed → processing → shipped → delivered.
@@ -749,11 +604,11 @@
 
         {{-- Update Status — only for roles with orders_edit permission --}}
         @php
-            $_editRole = Auth::guard('admin')->user()?->role ?? 'viewer';
+            $_editRole = $_pRole ?? (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor';
             $_editKey  = "perm_{$_editRole}_orders_edit";
-            $_editDefs = ['admin_orders_edit'=>'1','editor_orders_edit'=>'0','viewer_orders_edit'=>'0'];
+            $_editDefs = \App\Models\AdminSetting::getDefaults();
             $_canEdit  = $_editRole === 'superadmin'
-                || (AdminSetting::get($_editKey, $_editDefs["{$_editRole}_orders_edit"] ?? '0') === '1');
+                || (\App\Models\AdminSetting::get($_editKey, $_editDefs["{$_editRole}_orders_edit"] ?? '0') === '1');
         @endphp
         @if($_canEdit)
         <div class="card">
@@ -781,7 +636,7 @@
                         ];
                     }
                 @endphp
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div class="status-btn-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                     @foreach($statusMeta as $key => $meta)
                     @php $isCurrentStatus = $order->status === $key; @endphp
                     <button onclick="openStatusPopup('{{ $key }}')"
@@ -847,7 +702,7 @@
         @endif
 
         {{-- Order Summary --}}
-        <div class="card">
+        <div class="card" style="min-width:0;">
             <div class="card-header">
                 <span class="card-title">ORDER SUMMARY</span>
             </div>
@@ -855,47 +710,47 @@
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     {{-- Subtotal --}}
                     <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
-                        <span style="color:rgba(255,255,255,0.4);">Subtotal</span>
-                        <span>${{ number_format($order->subtotal ?? $order->total, 2) }}</span>
+                        <span style="color:rgba(255,255,255,0.4); flex-shrink: 0; margin-right: 10px;">Subtotal</span>
+                        <span style="word-break: break-all; text-align: right;">${{ number_format($order->subtotal ?? $order->total, 2) }}</span>
                     </div>
 
                     {{-- Discount — show code + amount, handle both code-based and public discounts --}}
                     @if($order->discount_amount > 0)
                     <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
-                        <span style="color:rgba(255,255,255,0.4);">
+                        <span style="color:rgba(255,255,255,0.4); flex-shrink: 1; margin-right: 10px;">
                             Discount
                             @if($order->discount_code)
                                 <span style="font-family:monospace; font-size: var(--title-size); background:rgba(74,222,128,0.1);
                                     border:1px solid rgba(74,222,128,0.25); border-radius:4px; padding:1px 6px;
-                                    color:#4ade80; margin-left:4px;">{{ $order->discount_code }}</span>
+                                    color:#4ade80; margin-left:4px; word-break: break-all;">{{ $order->discount_code }}</span>
                             @else
                                 <span style="font-size: var(--title-size); color:rgba(74,222,128,0.6); margin-left:4px;">(auto)</span>
                             @endif
                         </span>
-                        <span style="color:#22c55e; font-weight:700;">−${{ number_format($order->discount_amount, 2) }}</span>
+                        <span style="color:#22c55e; font-weight:700; flex-shrink: 0;">−${{ number_format($order->discount_amount, 2) }}</span>
                     </div>
                     @endif
 
                     {{-- Delivery --}}
                     @if($order->delivery > 0)
                     <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
-                        <span style="color:rgba(255,255,255,0.4);">Delivery</span>
-                        <span>${{ number_format($order->delivery, 2) }}</span>
+                        <span style="color:rgba(255,255,255,0.4); flex-shrink: 0; margin-right: 10px;">Delivery</span>
+                        <span style="word-break: break-all; text-align: right;">${{ number_format($order->delivery, 2) }}</span>
                     </div>
                     @endif
 
                     {{-- Tax --}}
                     @if($order->tax > 0)
                     <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
-                        <span style="color:rgba(255,255,255,0.4);">Tax</span>
-                        <span>${{ number_format($order->tax, 2) }}</span>
+                        <span style="color:rgba(255,255,255,0.4); flex-shrink: 0; margin-right: 10px;">Tax</span>
+                        <span style="word-break: break-all; text-align: right;">${{ number_format($order->tax, 2) }}</span>
                     </div>
                     @endif
 
                     <div style="border-top:1px solid rgba(255,255,255,0.07); padding-top:12px;
                                 display:flex; justify-content:space-between; font-weight:700;">
-                        <span>TOTAL</span>
-                        <span style="color:#F97316; font-size: var(--title-size);">${{ number_format($order->total, 2) }}</span>
+                        <span style="flex-shrink: 0; margin-right: 10px;">TOTAL</span>
+                        <span style="word-break: break-all; text-align: right; color:#F97316; font-size: var(--title-size);">${{ number_format($order->total, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -925,11 +780,11 @@
                     $note    = $order->location?->note    ?? ($order->shipping['note']    ?? '');
                 @endphp
                 <div style="display:flex; flex-direction:column; gap:12px;">
-                    @foreach([['👤','NAME',$name,'#fff'],['📞','PHONE',$phone,'#F97316'],['📍','ADDRESS',$address.($city ? "\n".$city : ''),'rgba(255,255,255,0.85)']] as [$icon,$label,$val,$color])
+                    @foreach([['👤','NAME',$name,'var(--text-main)'],['📞','PHONE',$phone,'#F97316'],['📍','ADDRESS',$address.($city ? "\n".$city : ''),'var(--text-main)']] as [$icon,$label,$val,$color])
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">{{ $icon }}</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ $label }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">{{ $label }}</div>
                             <div style="font-weight:700; color:{{ $color }}; font-size: var(--title-size); line-height:1.5; white-space:pre-line;">{{ $val }}</div>
                         </div>
                     </div>
@@ -939,7 +794,7 @@
                         <span style="font-size: var(--title-size);">📝</span>
                         <div>
                             <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
-                            <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic;">{{ $note }}</div>
+                            <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic; word-break: break-word;">{{ $note }}</div>
                         </div>
                     </div>
                     @endif
@@ -1255,28 +1110,83 @@
         grid-template-columns: 1fr !important;
     }
 }
-/* Order info grid: 2-col → 1-col on mobile */
-@media (max-width: 540px) {
-    div[style*="grid-template-columns:1fr 1fr; gap:16px"] {
-        grid-template-columns: 1fr !important;
+
+@media (max-width: 768px) {
+    /* ── Right column: prevent content overflow ── */
+    .order-right-col {
+        min-width: 0;
+        overflow: hidden;
     }
-    /* Status buttons: 2-col → 1-col */
-    div[style*="grid-template-columns:1fr 1fr; gap:8px"] {
-        grid-template-columns: 1fr !important;
+    .order-right-col .card {
+        min-width: 0;
+        overflow: hidden;
     }
-    /* Table horizontal scroll */
-    .table-wrap { overflow-x: auto; }
-    /* Timeline horizontal scroll */
-    div[style*="min-width:420px"] {
-        min-width: 340px !important;
+
+    /* ── ORDER INFORMATION: keep 2-col on mobile like laptop ── */
+    .order-info-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
     }
-    /* Back button full width */
+
+    /* ── UPDATE STATUS: keep 2-col, fix button min-height ── */
+    .status-btn-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    .status-btn-grid button {
+        min-height: 44px !important;
+        padding: 8px 8px !important;
+        font-size: 13px !important;
+        letter-spacing: 0 !important;
+        justify-content: flex-start !important;
+    }
+
+    /* ── ORDER SUMMARY: ensure values don't overflow ── */
+    .order-right-col .card-body div[style*="justify-content:space-between"] {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* ── Timeline: shrink circles so 5 steps fit ── */
+    .timeline-scroll { -webkit-overflow-scrolling: touch; }
+    .timeline-inner  { min-width: 320px !important; }
+    .timeline-circle {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 13px !important;
+    }
+
+    /* ── Order items table scrolls horizontally ── */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrap table { min-width: 460px; }
+    .table-wrap thead th { font-size: 13px; padding: 10px 10px; }
+    .table-wrap tbody td { font-size: 14px; padding: 10px 10px; }
+
+    /* ── Product thumb smaller ── */
+    .product-thumb { width: 44px !important; height: 44px !important; }
+
+    /* ── Back button full width ── */
     a[href*="orders"].btn { display: block; text-align: center; }
-    /* Popup box padding */
-    .popup-box { padding: 20px 16px !important; }
+
+    /* ── Popup fits screen ── */
+    .popup-box { padding: 20px 16px !important; max-width: 100% !important; }
 }
+
 @media (max-width: 400px) {
-    div[style*="min-width:420px"] { min-width: 300px !important; }
+    .order-info-grid { gap: 8px !important; }
+    .status-btn-grid button { font-size: 12px !important; padding: 7px 6px !important; }
+    .timeline-inner { min-width: 280px !important; }
+    .timeline-circle {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+    }
+    /* Shipping address 3-col → 1-col on tiny screens */
+    div[style*="grid-template-columns:1fr 1fr 1fr"],
+    div[style*="grid-template-columns:1fr 1fr 2fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    .popup-box { padding: 16px 12px !important; }
 }
 
 #thermal-receipt { display: none; }
@@ -1361,6 +1271,9 @@ document.addEventListener('keydown', e => {
 [data-theme="light"] [style*="color:rgba(255,255,255,0.35)"] { color: rgba(15,23,42,0.40) !important; }
 [data-theme="light"] [style*="color:rgba(255,255,255,0.3)"]  { color: rgba(15,23,42,0.35) !important; }
 [data-theme="light"] [style*="color:rgba(255,255,255,0.5)"]  { color: rgba(15,23,42,0.55) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.45)"] { color: rgba(15,23,42,0.50) !important; }
+[data-theme="light"] [style*="color:rgba(255,255,255,0.4)"]  { color: rgba(15,23,42,0.45) !important; }
+
 /* Status change select */
 [data-theme="light"] .status-select,
 [data-theme="light"] select.form-control {
@@ -1381,6 +1294,29 @@ document.addEventListener('keydown', e => {
 [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]  { border-color: rgba(15,23,42,0.10) !important; }
 /* Divider lines */
 [data-theme="light"] [style*="border-top:1px solid rgba(255,255,255"] { border-top-color: rgba(15,23,42,0.07) !important; }
+
+/* ── UPDATE STATUS buttons in light mode ── */
+[data-theme="light"] .status-btn-grid button {
+    color: rgba(15,23,42,0.55) !important;
+    border-color: rgba(15,23,42,0.12) !important;
+    background: rgba(15,23,42,0.03) !important;
+}
+/* active status button in light mode keeps its color */
+[data-theme="light"] .status-btn-grid button[disabled] {
+    color: inherit !important;
+    opacity: 1 !important;
+}
+/* ORDER SUMMARY labels in light mode */
+[data-theme="light"] .order-right-col [style*="color:rgba(255,255,255,0.4)"] {
+    color: rgba(15,23,42,0.45) !important;
+}
+/* Shipping address labels */
+[data-theme="light"] .order-right-col [style*="color:rgba(255,255,255,0.85)"] {
+    color: rgba(15,23,42,0.80) !important;
+}
+[data-theme="light"] .order-right-col [style*="color:rgba(255,255,255,0.3)"] {
+    color: rgba(15,23,42,0.35) !important;
+}
 </style>
 @endpush
 

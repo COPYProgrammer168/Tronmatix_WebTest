@@ -3,106 +3,10 @@
 
 @section('content')
 
-@php
-    use App\Models\AdminSetting;
-    $_pRole = Auth::guard('admin')->user()?->role ?? 'viewer';
-    $_pFeat = 'products';
-    $_pKey  = "perm_{$_pRole}_{$_pFeat}";
-    $_pDef  = [
-        'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
-        'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
-        'admin_settings'=>'1','admin_staff'=>'1',
-        'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
-        'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
-        'editor_settings'=>'0','editor_staff'=>'0',
-        'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
-        'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
-        'viewer_settings'=>'0','viewer_staff'=>'0',
-    ];
-    $_pAccess = $_pRole === 'superadmin'
-        || (AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1');
-    $_pRoleMeta = [
-        'superadmin'=>['color'=>'#F97316','icon'=>'👑','label'=>'Super Admin'],
-        'admin'     =>['color'=>'#F97316','icon'=>'🛡️','label'=>'Admin'],
-        'editor'    =>['color'=>'#3b82f6','icon'=>'✏️', 'label'=>'Editor'],
-        'viewer'    =>['color'=>'#a78bfa','icon'=>'👁️', 'label'=>'Viewer'],
-    ];
-    $_pRM = $_pRoleMeta[$_pRole] ?? $_pRoleMeta['viewer'];
-    $_pAllFeats = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋',
-                   'orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️',
-                   'settings'=>'⚙️','staff'=>'🛡️'];
-@endphp
+@include('dashboard._permission_check', ['feature' => 'products'])
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+@if(!$_permDenied)
 
-@if(!$_pAccess)
-{{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-     min-height:60vh;text-align:center;padding:40px 20px;font-family:Rajdhani,sans-serif;
-     animation:fadeUp .45s ease both;">
-    <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
-         background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
-         box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size: var(--title-size);font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
-        Your role does not have permission to access this module.<br>
-        Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
-    </div>
-    <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
-         margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
-        </div>
-        <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','products')) }}</div>
-        </div>
-    </div>
-    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-         border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            @foreach($_pAllFeats as $_fKey => $_fIcon)
-            @php
-                $_fPKey = "perm_{$_pRole}_{$_fKey}";
-                $_fHas  = $_pRole === 'superadmin' || (AdminSetting::get($_fPKey, $_pDef["{$_pRole}_{$_fKey}"] ?? '0') === '1');
-                $_fActive = ($_fKey === 'products');
-            @endphp
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
-                 background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
-                 border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
-                    color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
-                    {{ $_fHas ? '✓' : '✗' }}
-                </span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
-           onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
-            🏠 GO TO DASHBOARD
-        </a>
-        <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;
-           background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
-           onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ← GO BACK
-        </a>
-    </div>
-</div>
-<style>
-@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-@keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
-</style>
-@else
     {{-- ── Header ──────────────────────────────────────────────────────────────── --}}
     <div
         style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
@@ -554,4 +458,5 @@
             }, 500);
         }
     </script>
+@endif
 @endpush

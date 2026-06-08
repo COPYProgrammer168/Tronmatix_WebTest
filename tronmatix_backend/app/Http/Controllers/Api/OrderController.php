@@ -316,7 +316,15 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $order->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'cancelled']);
+            foreach ($order->items as $item) {
+                $product = Product::find($item->product_id);
+                if ($product && $product->stock !== null) {
+                    $product->increment('stock', $item->qty);
+                }
+            }
+        });
 
         // Load both relations — onOrderCancelled() needs items for itemSummaryLine()
         $order->load(['user', 'items']);
@@ -341,7 +349,7 @@ class OrderController extends Controller
             Log::warning('[Bot2] User cancel notification failed: ' . $e->getMessage());
         }
 
-        return response()->json(['success' => true, 'message' => 'Order cancelled successfully.']);
+        return response()->json(['success' => true, 'message' => 'Order cancelled successfully and stock restored.']);
     }
 
     // ── Delete own cancelled order ────────────────────────────────────────────

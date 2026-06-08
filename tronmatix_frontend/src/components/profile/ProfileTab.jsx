@@ -37,12 +37,12 @@ const ROLE_STYLE = {
   banned:   { bg: 'rgba(239,68,68,0.06)', border: '#FCA5A5', color: '#EF4444', icon: '🚫', label: 'BANNED', note: 'Contact support' },
 }
 
-const fmt = (n) => '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 })
+const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify, dark }) {
   const { t, isKhmer } = useLang()
   const khFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
-  const khBodyFont = isKhmer ? 'Kh-Koulen, sans-serif'   : 'Rajdhani,sans-serif'
+  const khBodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif'   : 'Rajdhani,sans-serif'
   // Bind context-aware helpers
   const labelStyle  = getLabelStyleProfile(isKhmer)
   const inputStyle  = (hasError, editable = true) => getInputStyle(hasError, editable, dark)
@@ -184,7 +184,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
         )}
       </div>
 
-        {/* ── FIX: Telegram Connect Section ───────────────────────────────────── */}
+        {/* ── Telegram Connect Section ───────────────────────────────────── */}
         <TelegramConnect
           user={localUser}
           dark={dark ?? false}
@@ -207,7 +207,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 12, color: s.color, fontWeight: 600, opacity: 0.8 }}>{s.note}</div>
-            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} spent</div>}
+            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} sqent</div>}
           </div>
         </div>
 

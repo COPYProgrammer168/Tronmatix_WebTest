@@ -417,7 +417,7 @@ export default function LocationsTab({ notify }) {
       <div style={{ padding: 32, animation: 'fadeUp 0.3s ease' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, margin: 0, fontFamily: tabFont }}>{isKhmer ? t('locations.title') : 'Delivery Locations'}</h2>
+            <h2 style={{ fontSize: isKhmer ? 18 : 20, fontWeight: 700, margin: 0, fontFamily: tabFont }}>{isKhmer ? t('locations.title') : 'Delivery Locations'}</h2>
             <div style={{ fontSize: 14, color: '#9CA3AF', marginTop: 4, fontFamily: bodyFont ?? 'Rajdhani, sans-serif' }}>
               {isKhmer
                 ? `${locations.length} ${t('locations.savedAddresses')}`

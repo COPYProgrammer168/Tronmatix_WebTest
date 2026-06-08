@@ -10,11 +10,6 @@
     $isSuper = $myRole === 'superadmin';
     $isAdmin = in_array($myRole, ['admin', 'superadmin']);
 
-    // Only admin/superadmin may view this page.
-    if (!$isAdmin) {
-        abort(403, 'Access denied.');
-    }
-
     // Roles available for ADMINS table (superadmin can assign superadmin)
     $adminRoles = $isSuper ? ['superadmin', 'admin'] : ['admin'];
 
@@ -71,6 +66,9 @@
 
 @section('content')
 
+    @include('dashboard._permission_check', ['feature' => 'staff'])
+    @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+    @if(!$_permDenied)
     {{-- Flash toasts --}}
     @if (session('success'))
         <div id="page-toast"
@@ -1153,11 +1151,11 @@
             document.getElementById('mp-name').textContent = name || '—';
             document.getElementById('mp-email').textContent = email || '—';
             document.getElementById('mp-joined').textContent = joined;
-            
+
             const statusColor = isOnline ? '#22c55e' : (active ? '#f59e0b' : '#ef4444');
             const statusLabel = isOnline ? 'ONLINE' : (active ? 'OFFLINE' : 'INACTIVE');
             document.getElementById('mp-status').innerHTML = `<span style="color:${statusColor};">● ${statusLabel}</span>`;
-            
+
             document.getElementById('mp-role-badge').innerHTML =
                 `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;
             font-size: var(--title-size);font-weight:800;letter-spacing:1px;
@@ -1404,6 +1402,8 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
         }
     </style>
+
+@endif {{-- $_permDenied --}}
 
 @endsection
 

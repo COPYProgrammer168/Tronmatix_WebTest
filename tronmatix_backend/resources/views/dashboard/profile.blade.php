@@ -4,10 +4,11 @@
 
 @section('content')
 @php
-    $admin   = Auth::guard('admin')->user();
+    $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+    
     // Resolve avatar URL — handles S3 full URL and local public disk path
     $avatarUrl = null;
-    if ($admin->avatar) {
+    if ($admin && $admin->avatar) {
         if (Str::startsWith($admin->avatar, ['http://', 'https://'])) {
             // S3 / R2 / external — already a full URL, use directly
             $avatarUrl = $admin->avatar;
@@ -43,7 +44,7 @@
 
         <div>
             <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">
-                {{ $admin->name ?? 'Admin' }}
+                {{ $admin->name ?? 'User' }}
             </div>
             <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:2px; letter-spacing:1px;">
                 {{ $admin->email ?? '' }}
@@ -51,7 +52,7 @@
         </div>
         <div style="margin-left:auto;">
             <span class="badge badge-orange" style="font-size: var(--title-size); letter-spacing:2px;">
-                {{ strtoupper($admin->role ?? 'ADMIN') }}
+                {{ strtoupper($admin->role ?? 'USER') }}
             </span>
         </div>
     </div>
@@ -101,7 +102,7 @@
                                          style="width:100%; height:100%; object-fit:cover;" />
                                 @else
                                     <span id="avatar-initials" style="font-size: var(--title-size); font-weight:800; color:#F97316;">
-                                        {{ strtoupper(substr($admin->name ?? 'A', 0, 1)) }}
+                                        {{ strtoupper(substr($admin->name ?? 'U', 0, 1)) }}
                                     </span>
                                 @endif
                             </div>
@@ -150,6 +151,17 @@
                                placeholder="Admin name" required
                                style="border-color:{{ $errors->has('name') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
                         @error('name')
+                            <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    {{-- Username --}}
+                    <div class="form-group">
+                        <label class="form-label">USERNAME</label>
+                        <input type="text" name="username" class="form-control"
+                               value="{{ old('username', $admin->username) }}"
+                               placeholder="username" required
+                               style="border-color:{{ $errors->has('username') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
+                        @error('username')
                             <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
                         @enderror
                     </div>
@@ -241,9 +253,9 @@
                 @php
                     $infos = [
                         ['label' => 'ACCOUNT ID',   'value' => '#' . ($admin->id ?? '—')],
-                        ['label' => 'ROLE',         'value' => strtoupper($admin->role ?? 'ADMIN')],
-                        ['label' => 'MEMBER SINCE', 'value' => $admin->created_at ? $admin->created_at->format('M Y') : '—'],
-                        ['label' => 'LAST UPDATED', 'value' => $admin->updated_at ? $admin->updated_at->diffForHumans() : '—'],
+                        ['label' => 'ROLE',         'value' => strtoupper($admin->role ?? 'USER')],
+                        ['label' => 'MEMBER SINCE', 'value' => (isset($admin) && $admin->created_at) ? $admin->created_at->format('M Y') : '—'],
+                        ['label' => 'LAST UPDATED', 'value' => (isset($admin) && $admin->updated_at) ? $admin->updated_at->diffForHumans() : '—'],
                     ];
                 @endphp
                 @foreach($infos as $info)

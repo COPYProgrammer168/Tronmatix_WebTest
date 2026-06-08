@@ -36,6 +36,12 @@ return new class extends Migration
                 $table->timestamp('two_factor_confirmed_at')->nullable()
                     ->comment('Set when user completes 2FA confirmation step');
 
+                // ── Telegram & Social ─────────────────────────────────────────
+                $table->string('telegram_chat_id')->nullable();
+                $table->string('telegram_username')->nullable();
+                $table->timestamp('telegram_connected_at')->nullable();
+                $table->string('google_id')->nullable();
+
                 $table->rememberToken();
                 $table->timestamps();
 
@@ -67,6 +73,18 @@ return new class extends Migration
                 }
                 if (! in_array('two_factor_confirmed_at', $cols)) {
                     $table->timestamp('two_factor_confirmed_at')->nullable();
+                }
+                if (! in_array('telegram_chat_id', $cols)) {
+                    $table->string('telegram_chat_id')->nullable();
+                }
+                if (! in_array('telegram_username', $cols)) {
+                    $table->string('telegram_username')->nullable();
+                }
+                if (! in_array('telegram_connected_at', $cols)) {
+                    $table->timestamp('telegram_connected_at')->nullable();
+                }
+                if (! in_array('google_id', $cols)) {
+                    $table->string('google_id')->nullable();
                 }
             });
         }

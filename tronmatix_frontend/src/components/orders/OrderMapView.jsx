@@ -1,134 +1,104 @@
 // src/components/orders/OrderMapView.jsx
-// Read-only Google Map — store pin, customer pin, dashed delivery line
+import { useEffect, useState } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 
-import { useEffect, useRef } from 'react'
+import icon from '../../assets/leaflet/marker-icon.png';
+import iconShadow from '../../assets/leaflet/marker-shadow.png';
 
-// ✅ FIXED: Real Tronmatix Computer Store coordinates (was 11.5625 / 104.9019)
-const STORE_LAT     = 11.56298
-const STORE_LNG     = 104.899518
-const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const STORE_LAT = 11.5629735
+const STORE_LNG = 104.8995165
+
+// Helper to decode OSRM polyline
+function decodePolyline(str, precision = 5) {
+    let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null, lat_change, lng_change, factor = Math.pow(10, precision);
+    while (index < str.length) {
+        byte = null; shift = 0; result = 0;
+        do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+        lat_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        byte = null; shift = 0; result = 0;
+        do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+        lng_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += lat_change; lng += lng_change;
+        coordinates.push([lat / factor, lng / factor]);
+    }
+    return coordinates;
+}
+
+function MapUpdater({ center }) {
+    const map = useMap();
+    useEffect(() => { if (center) map.setView(center, 13); }, [center, map]);
+    return null;
+}
 
 export default function OrderMapView({ lat, lng, address }) {
-  const mapContainer = useRef(null)
-  const mapRef       = useRef(null)
+  const [route, setRoute] = useState([])
+
+  // Ensure coordinates are valid numbers
+  const validUserLat = parseFloat(lat);
+  const validUserLng = parseFloat(lng);
+  const isValidCoords = !isNaN(validUserLat) && !isNaN(validUserLng);
+
+  // Add Leaflet CSS dynamically to head to bypass bundler/tracking issues
+  useEffect(() => {
+    if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!lat || !lng || !GOOGLE_KEY) return
-
-    const userLat = parseFloat(lat)
-    const userLng = parseFloat(lng)
-
-    const init = () => {
-      if (!mapContainer.current || mapRef.current) return
-      const google = window.google
-
-      const map = new google.maps.Map(mapContainer.current, {
-        center: {
-          lat: (STORE_LAT + userLat) / 2,
-          lng: (STORE_LNG + userLng) / 2,
-        },
-        zoom: 12,
-        styles: [
-          { elementType: 'geometry',         stylers: [{ color: '#1a1a2e' }] },
-          { elementType: 'labels.text.fill',  stylers: [{ color: '#8ec3b9' }] },
-          { featureType: 'road',              elementType: 'geometry', stylers: [{ color: '#2d3561' }] },
-          { featureType: 'water',             elementType: 'geometry', stylers: [{ color: '#0f3460' }] },
-          { featureType: 'poi',               stylers: [{ visibility: 'off' }] },
-        ],
-        disableDefaultUI: true,
-        zoomControl: true,
+    if (!isValidCoords) return;
+    
+    const start = [STORE_LAT, STORE_LNG]
+    const end = [validUserLat, validUserLng]
+    
+    const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full`
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.routes && data.routes.length > 0) {
+          setRoute(decodePolyline(data.routes[0].geometry))
+        } else {
+          setRoute([start, end])
+        }
       })
+      .catch(e => { console.error(e); setRoute([start, end]) })
+  }, [validUserLat, validUserLng])
 
-      mapRef.current = map
-
-      // Store pin (orange)
-      new google.maps.Marker({
-        position: { lat: STORE_LAT, lng: STORE_LNG },
-        map,
-        title: '🏪 Tronmatix Computer',
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 9,
-          fillColor: '#F97316',
-          fillOpacity: 1,
-          strokeColor: '#fff',
-          strokeWeight: 2,
-        },
-      })
-
-      // Customer pin (blue)
-      new google.maps.Marker({
-        position: { lat: userLat, lng: userLng },
-        map,
-        title: address || 'Customer Location',
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 9,
-          fillColor: '#3b82f6',
-          fillOpacity: 1,
-          strokeColor: '#fff',
-          strokeWeight: 2,
-        },
-      })
-
-      // Dashed delivery line
-      new google.maps.Polyline({
-        path: [
-          { lat: STORE_LAT, lng: STORE_LNG },
-          { lat: userLat,   lng: userLng   },
-        ],
-        geodesic: true,
-        strokeColor: '#F97316',
-        strokeOpacity: 0,
-        icons: [{
-          icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3, strokeColor: '#F97316' },
-          offset: '0',
-          repeat: '12px',
-        }],
-        map,
-      })
-
-      // Fit bounds to show both pins
-      const bounds = new google.maps.LatLngBounds()
-      bounds.extend({ lat: STORE_LAT, lng: STORE_LNG })
-      bounds.extend({ lat: userLat,   lng: userLng   })
-      map.fitBounds(bounds, 60)
-    }
-
-    if (window.google?.maps) { init(); return }
-
-    const existing = document.getElementById('google-maps-script')
-    if (!existing) {
-      const script = document.createElement('script')
-      script.id    = 'google-maps-script'
-      script.src   = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}`
-      script.async = true
-      script.onload = init
-      document.head.appendChild(script)
-    } else {
-      existing.addEventListener('load', init)
-      if (window.google?.maps) init()
-    }
-
-    return () => { mapRef.current = null }
-  }, [lat, lng])
-
-  if (!lat || !lng) return null
+  if (!isValidCoords) {
+    return <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: 12 }}>Coordinates not available</div>
+  }
 
   return (
-    <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <div ref={mapContainer} style={{ height: 220 }} />
-      {address && (
-        <div style={{
-          padding: '8px 12px',
-          background: 'rgba(255,255,255,0.03)',
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.5)',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-        }}>
-          📍 {address}
-        </div>
-      )}
+    <div style={{ height: 400, borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
+        <style>{`
+            .leaflet-container { height: 100% !important; width: 100% !important; z-index: 10; }
+            .marker-tag { background: #F97316; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; white-space: nowrap; }
+        `}</style>
+        <MapContainer center={[validUserLat, validUserLng]} zoom={13} style={{ height: '100%', width: '100%' }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <MapUpdater center={[validUserLat, validUserLng]} />
+            <Marker position={[STORE_LAT, STORE_LNG]}>
+              <Popup><div className="marker-tag">STORE</div></Popup>
+            </Marker>
+            <Marker position={[validUserLat, validUserLng]}>
+              <Popup><div className="marker-tag" style={{ background: '#3b82f6' }}>CUSTOMER</div>{address}</Popup>
+            </Marker>
+            <Polyline positions={route} color="#F97316" weight={4} dashArray="10, 10" />
+        </MapContainer>
     </div>
   )
 }

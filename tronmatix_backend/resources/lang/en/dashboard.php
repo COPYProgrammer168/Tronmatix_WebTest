@@ -333,7 +333,6 @@ return [
         'admin' => 'Admin',
         'editor' => 'Editor',
         'seller' => 'Seller',
-        'viewer' => 'Viewer',
         'delivery' => 'Delivery',
         'developer' => 'Developer',
     ],

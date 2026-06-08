@@ -51,10 +51,6 @@ Route::prefix('dashboard')->name('dashboard.')
     });
 
 // ── Protected Dashboard Routes ────────────────────────────────────────────────
-// AdminAuthenticate accepts BOTH admin guard AND staff guard.
-// Routes that must be admin-only are nested under a second middleware group
-// using StaffAuthenticate inverted (i.e., AdminAuthenticate checks role inside
-// the controller with assertAdmin()).
 Route::prefix('dashboard')->name('dashboard.')
     ->middleware(\App\Http\Middleware\AdminAuthenticate::class)
     ->group(function () {
@@ -100,7 +96,7 @@ Route::prefix('dashboard')->name('dashboard.')
 
         // ── Admin Profile ─────────────────────────────────────────────────────
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-        Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::match(['post', 'put'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
         Route::put('/profile/role', [ProfileController::class, 'updateRole'])->name('profile.role');
         Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');

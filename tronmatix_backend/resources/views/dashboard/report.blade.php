@@ -3,6 +3,11 @@
 
 @section('content')
 
+@include('dashboard._permission_check', ['feature' => 'report'])
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+
+@if(!$_permDenied)
+
 {{-- ── Page Header ──────────────────────────────────────────────────────────────── --}}
 <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
             gap:16px; margin-bottom:28px;">
@@ -351,6 +356,8 @@
     </div>
 
 </div>
+
+@endif
 
 @endsection
 

@@ -1,30 +1,70 @@
 // src/components/checkout/LocationPickerModal.jsx
+import { useState, useEffect } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { useLang } from "../../context/LanguageContext"
-import { useState } from "react"
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+// Fix for default marker icon
+import icon from '../../assets/leaflet/marker-icon.png';
+import iconShadow from '../../assets/leaflet/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const STORE_LAT = 11.5629735
+const STORE_LNG = 104.8995165
+
+function MapClickHandler({ setPosition }) {
+  useMapEvents({
+    click(e) {
+      setPosition({ lat: e.latlng.lat, lng: e.latlng.lng })
+    },
+  })
+  return null
+}
 
 export default function LocationPickerModal({ locations, onSelect, onClose }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
   const modalFont = isKhmer ? "Kh_Jrung_Thom, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
-  const [loading, setLoading] = useState(false);
+  
+  const [position, setPosition] = useState({ lat: STORE_LAT, lng: STORE_LNG })
+  const [address, setAddress] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // Semantic color tokens — all theme-aware
+  // Reverse Geocoding
+  const fetchAddress = async (lat, lng) => {
+    setLoading(true)
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+      const data = await response.json()
+      setAddress(data.display_name || t("map.addressNotFound"))
+    } catch (e) {
+      setAddress(t("map.error"))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAddress(position.lat, position.lng)
+  }, [position])
+
+  // Semantic color tokens
   const colors = {
     overlay:       "rgba(0,0,0,0.60)",
     modalBg:       dark ? "#1f2937" : "#ffffff",
     headerBorder:  dark ? "#374151" : "#f3f4f6",
-    footerBorder:  dark ? "#374151" : "#f3f4f6",
     titleText:     dark ? "#f9fafb" : "#111111",
     subtitleText:  dark ? "#9ca3af" : "#9ca3af",
     closeBtn:      dark ? "#6b7280" : "#9ca3af",
-    cardBg:        dark ? "#111827" : "#ffffff",
-    cardBorder:    dark ? "#374151" : "#e5e7eb",
-    cardBorderHover: "#F97316",
-    namText:       dark ? "#f9fafb" : "#111111",
-    phoneText:     dark ? "#9ca3af" : "#6b7280",
-    addressText:   dark ? "#d1d5db" : "#4b5563",
-    noteText:      dark ? "#6b7280" : "#9ca3af",
   }
 
   return (
@@ -36,6 +76,9 @@ export default function LocationPickerModal({ locations, onSelect, onClose }) {
         display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
       }}
     >
+      <style>{`
+        .leaflet-container { height: 300px !important; width: 100% !important; z-index: 10000; }
+      `}</style>
       <div style={{
         background: colors.modalBg,
         borderRadius: 20, width: "100%", maxWidth: 480,
@@ -51,10 +94,10 @@ export default function LocationPickerModal({ locations, onSelect, onClose }) {
         }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, color: colors.titleText }}>
-              {isKhmer ? t("locations.selectTitle") : "📍 Select Delivery Location"}
+              {t("map.title")}
             </div>
             <div style={{ fontSize: 13, color: colors.subtitleText, marginTop: 2 }}>
-              {isKhmer ? t("locations.chooseAddress") : "Choose from your saved addresses"}
+              {t("map.subtitle")}
             </div>
           </div>
           <button
@@ -66,78 +109,41 @@ export default function LocationPickerModal({ locations, onSelect, onClose }) {
           >✕</button>
         </div>
 
-                {/* Location list */}
-        <div style={{
-          maxHeight: 380, overflowY: "auto",
-          padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10,
-        }}>
-          {(!locations || locations.length === 0) && (
-            <p style={{ fontSize: 14, color: colors.subtitleText, textAlign: "center", padding: "24px 0" }}>
-              No saved addresses found.
-            </p>
-          )}
+        {/* Map */}
+        <div style={{ height: 300, width: '100%' }}>
+          <MapContainer center={[position.lat, position.lng]} zoom={14} style={{ height: '300px', width: '100%' }}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[position.lat, position.lng]}>
+              <Popup>{loading ? t("map.loading") : address}</Popup>
+            </Marker>
+            <MapClickHandler setPosition={setPosition} />
+          </MapContainer>
+        </div>
 
-          {Array.isArray(locations) && locations.map((loc) => (
-            <button
-              key={loc.id}
-              onClick={() => { onSelect(loc); onClose() }}
-              style={{
-                width: "100%", textAlign: "left",
-                background: colors.cardBg,
-                border: `${loc.is_default ? "2px" : "1.5px"} solid ${loc.is_default ? "#F97316" : colors.cardBorder}`,
-                borderRadius: 14, padding: "13px 15px", cursor: "pointer",
-                position: "relative", transition: "border-color 0.15s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = colors.cardBorderHover }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = loc.is_default ? "#F97316" : colors.cardBorder }}
-            >
-              {/* Default badge */}
-              {loc.is_default && (
-                <span style={{
-                  position: "absolute", top: 0, right: 14,
-                  background: "#F97316", color: "#fff",
-                  fontSize: 10, fontWeight: 700, letterSpacing: 1,
-                  padding: "2px 10px", borderRadius: "0 0 8px 8px",
-                }}>DEFAULT</span>
-              )}
-
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 22, marginTop: 1 }}>📍</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: colors.namText }}>
-                    {loc.name}
-                  </div>
-                  <div style={{ fontSize: 13, color: colors.phoneText, marginTop: 2 }}>
-                    📞 {loc.phone}
-                  </div>
-                  <div style={{ fontSize: 13, color: colors.addressText, marginTop: 3 }}>
-                    {loc.address}{loc.city ? `, ${loc.city}` : ""}
-                  </div>
-                  {loc.note && (
-                    <div style={{ fontSize: 12, color: colors.noteText, marginTop: 3, fontStyle: "italic" }}>
-                      📝 {loc.note}
-                    </div>
-                  )}
-                </div>
-                <span style={{ color: "#F97316", fontSize: 20, alignSelf: "center" }}>›</span>
-              </div>
-            </button>
-          ))}
+        {/* Address Display */}
+        <div style={{ padding: "15px 20px", fontSize: 14, color: colors.titleText }}>
+            <div style={{ fontWeight: 700, marginBottom: 5 }}>{t("map.address")}:</div>
+            {loading ? t("map.loading") : address}
         </div>
 
         {/* Footer */}
         <div style={{
           padding: "12px 20px",
-          borderTop: `1px solid ${colors.footerBorder}`,
           textAlign: "center",
         }}>
-          <a
-            href="/profile"
-            onClick={onClose}
-            style={{ fontSize: 13, color: "#F97316", fontWeight: 700, textDecoration: "none", letterSpacing: 0.5 }}
+          <button 
+            onClick={() => { onSelect({ lat: position.lat, lng: position.lng, address: address }); onClose() }}
+            style={{
+              width: "100%", padding: 14, borderRadius: 12, border: "none",
+              background: "#F97316", color: "#fff", fontWeight: 800, cursor: "pointer",
+              fontFamily: modalFont, letterSpacing: 0.5
+            }}
           >
-            + Manage addresses in My Profile
-          </a>
+            ✓ {t("map.confirm")}
+          </button>
         </div>
       </div>
     </div>

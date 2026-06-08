@@ -75,6 +75,10 @@ class TelegramService
             $contactLine,
             $phoneLine,
             $addressLine,
+            ($order->shipping['lat'] ?? null) && ($order->shipping['lng'] ?? null)
+                ? '[📍 Open in Google Maps](https://www.google.com/maps/search/?api=1&query=' . $order->shipping['lat'] . ',' . $order->shipping['lng'] . ')'
+                : null,
+            '[🔗 View Order in Dashboard](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
             $scheduleLine,
             '💳 Payment: ' . ($isPickup && $order->payment_method === 'cash'
                 ? 'CASH AT STORE'

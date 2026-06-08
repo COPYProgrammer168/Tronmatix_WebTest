@@ -475,7 +475,7 @@
         /* ── Stats grid ───────────────────────────────────────────────────────── */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 14px;
             margin-bottom: 24px;
         }
@@ -516,16 +516,18 @@
         }
 
         .stat-value {
-            font-size: clamp(1.7rem, 1vw + 1rem, 1.8rem);
+            font-size: 28px;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.2;
+            white-space: nowrap;
         }
 
         .stat-label {
-            font-size: clamp(1.1rem, 1.6vw + 1.5rem, 1rem);
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.5px;
             color: var(--text-muted);
+            white-space: nowrap;
         }
 
         /* ── Chart grid ───────────────────────────────────────────────────────── */
@@ -551,7 +553,7 @@
         }
 
         /* ── Table ────────────────────────────────────────────────────────────── */
-        .table-wrap { overflow-x: auto; }
+        .table-wrap { overflow-x: auto;}
 
         table {
             width: 100%;
@@ -809,9 +811,17 @@
         .sidebar-lt-btn {
             font-size: var(--font-size);
         }
+
         @media (max-width: 768px) {
             .sidebar-lang-toggle { display: flex; }
             #lang-toggle { display: none !important; }
+        }
+        @media (max-width: 768px) {
+            :lang(km) .topbar-title {
+                font-family: var(--font-kh) !important;
+                font-size: var(--text-sm) !important;
+                font-weight: 400 !important;
+            }
         }
 
         /* ── Language Toggle ──────────────────────────────────────────────────── */
@@ -982,34 +992,103 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar  { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main     { margin-left: 0; }
-            .hamburger { display: flex; }
-            .admin-name { display: none; }
-            .content  { padding: 14px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card  { padding: 14px; gap: 10px; }
-            .stat-value { font-size: clamp(1.4rem, 4vw, 2.0rem); }
-            .stat-icon  { width: 38px; height: 38px; }
-            .chart-grid-2 { grid-template-columns: 1fr; }
-            .card-header { flex-direction: column; align-items: flex-start; }
-            .topbar { padding: 0 14px; }
-            .topbar-font { font-size: var(--text-md); letter-spacing: 1px; }
-            table { font-size: var(--text-xs); }
-            thead th { padding: 10px 10px; font-size: var(--text-xs); }
-            tbody td  { padding: 10px 10px; font-size: var(--text-xs); }
+            /* ── Layout ── */
+            .sidebar       { transform: translateX(-100%); }
+            .sidebar.open  { transform: translateX(0); }
+            .main          { margin-left: 0; min-width: 0; }
+            .hamburger     { display: flex; }
+            .admin-name    { display: none; }
+
+            /* ── Topbar ── */
+            .topbar        { padding: 0 14px; height: 56px; }
+            .topbar-left   { min-width: 0; flex: 1; overflow: hidden; }
+            .topbar-font   { font-size: 17px; letter-spacing: 0.5px; white-space: nowrap;
+                             overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+            .topbar-right  { flex-shrink: 0; gap: 6px; }
+
+            /* ── Content ── */
+            .content       { padding: 14px; min-width: 0; }
+
+            /* ── Cards: min-width:0 so flex/grid children don't overflow ── */
+            .card          { min-width: 0; }
+            .card-header   { flex-direction: column; align-items: flex-start; gap: 6px;
+                             padding: 14px 16px; min-width: 0; }
+            .card-body     { min-width: 0; padding: 16px; }
+
+            /* ── Stats ── */
+            .stats-grid    { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card     { padding: 14px; gap: 10px; min-width: 0; }
+            .stat-value    { font-size: clamp(1.4rem, 4vw, 2.0rem); }
+            .stat-icon     { width: 38px; height: 38px; }
+            .chart-grid-2  { grid-template-columns: 1fr; }
+
+            /* ── Type scale — readable ── */
+            :root {
+                --text-xs:    13px;
+                --text-sm:    15px;
+                --text-base:  16px;
+                --text-md:    17px;
+                --text-lg:    19px;
+                --title-size: 15px;
+            }
+            :lang(km) {
+                --text-xs:   13px;
+                --text-sm:   14px;
+                --text-base: 15px;
+                --text-md:   16px;
+            }
+
+            /* ── Table ── */
+            .table-wrap    { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table          { font-size: 14px; min-width: 860px; }
+            thead th       { padding: 11px 12px; font-size: 13px; white-space: nowrap; }
+            tbody td       { padding: 11px 12px; font-size: 14px; }
+
+            /* disable sticky cols so horizontal scroll works freely */
+            thead th:first-child, tbody td:first-child,
+            thead th:last-child,  tbody td:last-child {
+                position: static !important;
+                z-index: auto !important;
+                border-left: none !important;
+                background: unset !important;
+            }
+            tbody tr:hover td:first-child,
+            tbody tr:hover td:last-child { background: var(--hover-bg) !important; }
+
+            /* ── Badges ── */
+            .badge         { font-size: 13px !important; padding: 4px 10px; }
+
+            /* ── Buttons ── */
+            .btn           { min-height: 42px; padding: 10px 16px; font-size: 15px; }
+            .btn-sm        { min-height: 36px; padding: 7px 14px; font-size: 13px; }
+
+            /* ── Forms ── */
+            .form-control  { font-size: 15px; padding: 11px 14px; }
+            .form-grid-2   { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 480px) {
-            .stats-grid  { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .topbar-badge { display: none; }
-            .content  { padding: 10px; }
-            .stat-card { padding: 12px; gap: 8px; }
-            .stat-value { font-size: clamp(1.2rem, 3.5vw, 1.6rem); }
-            .card-header { padding: 12px 14px; }
-            .card-body   { padding: 14px; }
-            #lang-toggle { display: none; }
+            .content       { padding: 10px; }
+            .topbar-badge  { display: none; }
+            #lang-toggle   { display: none; }
+            .stats-grid    { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-card     { padding: 12px; gap: 8px; }
+            .stat-value    { font-size: clamp(1.2rem, 3.5vw, 1.6rem); }
+            .card-header   { padding: 12px; }
+            .card-body     { padding: 12px; }
+
+            :root {
+                --text-xs:    13px;
+                --text-sm:    14px;
+                --text-base:  15px;
+                --text-md:    16px;
+                --title-size: 14px;
+            }
+
+            table          { font-size: 14px; }
+            thead th       { padding: 9px 10px; font-size: 13px; }
+            tbody td       { padding: 9px 10px; font-size: 14px; }
+            .badge         { font-size: 12px !important; padding: 3px 8px; }
         }
     </style>
 
@@ -1141,7 +1220,10 @@
                 {{ strtoupper(__('dashboard.nav.settings')) }}
             </a>
 
-            @php $adminRole = (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor'; @endphp
+            @php 
+                $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+                $adminRole = $user?->role ?? 'editor'; 
+            @endphp
             @if(in_array($adminRole, ['admin','superadmin']))
             <a href="{{ route('dashboard.staff') }}"
                class="nav-item {{ request()->routeIs('dashboard.staff*') ? 'active' : '' }}">
@@ -1267,7 +1349,10 @@
                 </div>
 
                 <span class="topbar-badge">
-                    {{ strtoupper((Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'STAFF') }}
+                    @php
+                        $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+                    @endphp
+                    {{ strtoupper($user?->role ?? 'STAFF') }}
                 </span>
 
                 @php

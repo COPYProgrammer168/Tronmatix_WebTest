@@ -95,6 +95,7 @@ class SettingsController extends Controller
                     'type'            => 'staff_request',
                     'icon'            => '👤',
                     'color'           => '#a78bfa',
+                    'font'            => 'ACCESS REQUEST — ' . strtoupper($req->name),
                     'title'           => 'ACCESS REQUEST — ' . strtoupper($req->name),
                     'body'            => $req->email . ' · wants ' . strtoupper($req->requested_role) . ' · ' . $req->created_at->diffForHumans(),
                     'url'             => route('dashboard.staff'),
@@ -116,6 +117,7 @@ class SettingsController extends Controller
                     'type'  => 'low_stock',
                     'icon'  => '🟠',
                     'color' => '#F97316',
+                    'font'  => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
                     'title' => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
                     'body'  => "Stock at or below {$threshold} units",
                     'url'   => route('dashboard.products'),
@@ -135,6 +137,7 @@ class SettingsController extends Controller
                     'type'  => 'new_order',
                     'icon'  => '🛒',
                     'color' => '#eab308',
+                    'font'  => 'NEW ORDER #' . ($order->order_id ?? $order->id),
                     'title' => 'NEW ORDER #' . ($order->order_id ?? $order->id),
                     'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->created_at->diffForHumans(),
                     'url'   => route('dashboard.orders.show', $order->id),
@@ -166,6 +169,7 @@ class SettingsController extends Controller
                     'type'  => 'pending_payment',
                     'icon'  => '📱',
                     'color' => '#3b82f6',
+                    'font'  => "{$count} Awaiting KHQR Payment",
                     'title' => "{$count} Awaiting KHQR Payment",
                     'body'  => 'ABA BAKONG payments not yet confirmed',
                     'url'   => route('dashboard.orders'),
@@ -200,6 +204,7 @@ class SettingsController extends Controller
                     'type'  => 'qr_confirmed',
                     'icon'  => '💳',
                     'color' => '#22c55e',
+                    'font'  => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
                     'title' => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
                     'body'  => '$' . number_format($order->total, 2) . ' paid via KHQR · ' . $order->updated_at->diffForHumans(),
                     'url'   => route('dashboard.orders.show', $order->id),
@@ -230,6 +235,7 @@ class SettingsController extends Controller
                 'type'  => 'cancelled',
                 'icon'  => '❌',
                 'color' => '#ef4444',
+                'font'  => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
                 'title' => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
                 'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->updated_at->diffForHumans(),
                 'url'   => route('dashboard.orders'),
@@ -280,8 +286,8 @@ class SettingsController extends Controller
             'Access denied.'
         );
 
-        $roles = ['admin', 'editor', 'viewer', 'developer', 'delivery'];
-        $features = ['dashboard', 'products', 'orders', 'orders_edit', 'users', 'discounts', 'settings', 'staff'];
+        $roles = ['admin', 'editor', 'seller', 'developer', 'delivery'];
+        $features = ['dashboard', 'products', 'orders', 'orders_edit', 'users', 'discounts', 'report', 'settings', 'staff'];
 
         $permsToSave = [];
 

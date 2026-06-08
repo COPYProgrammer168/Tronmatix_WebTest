@@ -345,15 +345,15 @@ class AuthController extends Controller
         return Str::lower($request->input('username', '')) . '|' . $request->ip();
     }
 
-    private function userPayload(User $user): array
+    private function userPayload($user): array
     {
         return [
             'id'        => $user->id,
             'username'  => $user->username,
             'email'     => $user->email,
             'name'      => $user->name,
-            'phone'     => $user->phone,
-            'avatar'    => $user->avatar,
+            'phone'     => $user->phone ?? null,
+            'avatar'    => $user->avatar ?? null,
             'role'      => $user->role ?? 'customer',
             'is_banned' => $user->is_banned ?? false,
         ];

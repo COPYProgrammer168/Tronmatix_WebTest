@@ -3,116 +3,9 @@
 
 @section('content')
 
-@php
-    use App\Models\AdminSetting;
-    $_pRole = (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor';
-    $_pFeat = 'dashboard';
-    $_pKey  = "perm_{$_pRole}_{$_pFeat}";
-    $_pDef  = [
-        'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
-        'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
-        'admin_settings'=>'1','admin_staff'=>'1',
-        'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
-        'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
-        'editor_settings'=>'0','editor_staff'=>'0',
-        'seller_dashboard'=>'1','seller_products'=>'1','seller_orders'=>'1',
-        'seller_orders_edit'=>'1','seller_users'=>'0','seller_discounts'=>'1',
-        'seller_settings'=>'0','seller_staff'=>'0',
-        'delivery_dashboard'=>'1','delivery_products'=>'0','delivery_orders'=>'1',
-        'delivery_orders_edit'=>'1','delivery_users'=>'0','delivery_discounts'=>'0',
-        'delivery_settings'=>'0','delivery_staff'=>'0',
-        'developer_dashboard'=>'1','developer_products'=>'1','developer_orders'=>'1',
-        'developer_orders_edit'=>'0','developer_users'=>'0','developer_discounts'=>'0',
-        'developer_settings'=>'0','developer_staff'=>'0',
-    ];
-    $_pAccess = $_pRole === 'superadmin'
-        || (AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1');
-    $_pRoleMeta = [
-        'superadmin'=>['color'=>'#F97316','icon'=>'👑','label'=>'Super Admin'],
-        'admin'     =>['color'=>'#F97316','icon'=>'🛡️','label'=>'Admin'],
-        'editor'    =>['color'=>'#3b82f6','icon'=>'✏️', 'label'=>'Editor'],
-        'seller'    =>['color'=>'#10b981','icon'=>'🏪', 'label'=>'Seller'],
-        'delivery'  =>['color'=>'#a855f7','icon'=>'🚚', 'label'=>'Delivery'],
-        'developer' =>['color'=>'#06b6d4','icon'=>'💻', 'label'=>'Developer'],
-    ];
-    $_pRM = $_pRoleMeta[$_pRole] ?? ['color'=>'#6b7280','icon'=>'❓','label'=>ucfirst($_pRole)];
-    $_pAllFeats = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋',
-                   'orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️',
-                   'settings'=>'⚙️','staff'=>'🛡️'];
-@endphp
-
-@if(!$_pAccess)
-{{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-     min-height:60vh;text-align:center;padding:40px 20px;
-     animation:fadeUp .45s ease both;">
-    <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
-         background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size: var(--title-size);
-         box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size: var(--text-xl);font-weight:900;letter-spacing:3px;color:#ef4444;...">ACCESS DENIED</div>
-    <div style="font-size: var(--title-size);color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
-        Your role does not have permission to access this module.<br>
-        Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
-    </div>
-    <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
-         margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size: var(--title-size);">{{ $_pRM['icon'] }}</span>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
-        </div>
-        <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-        <div style="text-align:left;">
-            <div style="font-size: var(--title-size);color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size: var(--title-size);font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','dashboard')) }}</div>
-        </div>
-    </div>
-    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-         border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size: var(--title-size);color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            @foreach($_pAllFeats as $_fKey => $_fIcon)
-            @php
-                $_fPKey = "perm_{$_pRole}_{$_fKey}";
-                $_fHas  = $_pRole === 'superadmin' || (AdminSetting::get($_fPKey, $_pDef["{$_pRole}_{$_fKey}"] ?? '0') === '1');
-                $_fActive = ($_fKey === 'dashboard');
-            @endphp
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
-                 background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
-                 border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size: var(--title-size);{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size: var(--title-size);letter-spacing:1px;font-weight:700;
-                    color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
-                    {{ $_fHas ? '✓' : '✗' }}
-                </span>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size: var(--title-size);font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
-           onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
-            🏠 GO TO DASHBOARD
-        </a>
-        <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;
-           background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size: var(--title-size);font-weight:700;letter-spacing:1px;"
-           onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ← GO BACK
-        </a>
-    </div>
-</div>
-<style>
-@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-@keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
-</style>
-@else
-
-
+@include('dashboard._permission_check', ['feature' => 'dashboard'])
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+@if(!$_permDenied)
 
 {{-- ── Stat Cards ────────────────────────────────────────────────────────────── --}}
 <div class="stats-grid">
@@ -125,7 +18,7 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value" id="stat-total-users">{{ number_format($stats['total_users']) }}</div>
+            <div class="stat-value" id="stat-total-users" style="overflow:hidden; text-overflow:ellipsis;">{{ number_format($stats['total_users']) }}</div>
             <div class="stat-label">{{ __('dashboard.stats.totalUsers') }}
             </div>
         </div>
@@ -138,7 +31,7 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value" id="stat-total-products">{{ number_format($stats['total_products']) }}</div>
+            <div class="stat-value" id="stat-total-products" style="overflow:hidden; text-overflow:ellipsis;">{{ number_format($stats['total_products']) }}</div>
             <div class="stat-label">{{ __('dashboard.stats.totalProducts') }}</div>
         </div>
     </div>
@@ -151,7 +44,7 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value" id="stat-total-orders">{{ number_format($stats['total_orders']) }}</div>
+            <div class="stat-value" id="stat-total-orders" style="overflow:hidden; text-overflow:ellipsis;">{{ number_format($stats['total_orders']) }}</div>
             <div class="stat-label">{{ __('dashboard.stats.totalOrders') }}
             </div>
         </div>
@@ -204,24 +97,10 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value" style="color:#A855F7;">${{ number_format($stats['total_discount_used'], 2) }}</div>
+            <div class="stat-value" style="color:#A855F7;">${{ number_format($stats['total_discount_used']) }}</div>
             <div class="stat-label">{{ __('dashboard.stats.discountsSaved') }}</div>
         </div>
     </div>
-
-    <div class="stat-card" style="border-color: rgba(34,197,94,0.25);">
-        <div class="stat-icon" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.2);">
-            <svg fill="none" stroke="#22C55E" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M9 14l2 2 4-4"/>
-                <path d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6z"/>
-            </svg>
-        </div>
-        <div>
-            <div class="stat-value" style="color:#22C55E;">{{ number_format($stats['active_discounts']) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.activeCodes') }}</div>
-        </div>
-    </div>
-
 </div>
 
 {{-- ── Row 1: Monthly Revenue + Monthly Orders ──────────────────────────────── --}}
@@ -454,10 +333,11 @@ function themeColors() {
 }
 function applyChartDefaults() {
     const c = themeColors();
+    const isMobile = window.innerWidth < 768;
     Chart.defaults.color                           = c.text;
     Chart.defaults.borderColor                     = c.grid;
     Chart.defaults.font.family                     = "'Rajdhani', sans-serif";
-    Chart.defaults.font.size                       = 12;
+    Chart.defaults.font.size                       = isMobile ? 10 : 12;
     Chart.defaults.plugins.legend.labels.boxWidth  = 12;
     Chart.defaults.plugins.legend.labels.padding   = 16;
     Chart.defaults.plugins.tooltip.backgroundColor = c.tooltipBg;
@@ -508,7 +388,7 @@ const revenueChart = new Chart(rCtx, {
         fill:true, backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), tension:0.4 }] },
     options: { responsive:true, plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
-        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
+        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
 });
 
@@ -520,7 +400,7 @@ const ordersChart = new Chart(oCtx, {
         backgroundColor:makeGradient(oCtx, orangeMid,'rgba(249,115,22,0.15)'),
         borderColor:orange, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
-        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
+        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });
 
@@ -534,7 +414,7 @@ const dailyChart = new Chart(dCtx, {
         fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
     options: { responsive:true, plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
-        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
+        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
 });
 
@@ -546,7 +426,7 @@ const usersChart = new Chart(uCtx, {
         backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
-        scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
+        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });
 
@@ -625,7 +505,7 @@ setInterval(async () => {
         // Update values
         document.getElementById('stat-total-users').innerText = data.total_users.toLocaleString();
         document.getElementById('stat-total-products').innerText = data.total_products.toLocaleString();
-        document.getElementById('stat-total-orders').innerText = '$' + data.total_orders.toLocaleString();
+        document.getElementById('stat-total-orders').innerText = data.total_orders.toLocaleString();
         document.getElementById('stat-total-revenue').innerText = '$' + data.total_revenue.toLocaleString();
 
     } catch (e) { console.error('Failed to update stats:', e); }
@@ -645,8 +525,60 @@ setInterval(async () => {
 [data-theme="light"] .stat-card .stat-label {
     color: rgba(15,23,42,0.55) !important;
 }
+
+/* ── index page responsive ───────────────────────────────────────────────── */
 @media (max-width: 900px) {
     .chart-grid-2 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    /* ── Stats: always 2 columns on mobile ── */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+    }
+    .stat-card {
+        padding: 14px 12px !important;
+        gap: 10px !important;
+        min-width: 0;
+    }
+    .stat-value {
+        font-size: clamp(1.2rem, 4vw, 1.6rem) !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .stat-label {
+        font-size: 13px !important;
+        line-height: 1.3;
+    }
+    .stat-icon {
+        width: 36px !important;
+        height: 36px !important;
+        flex-shrink: 0;
+    }
+
+    /* ── Charts: reduce x-axis label size to prevent overlap ── */
+    .card-body canvas { max-height: 180px; }
+
+    /* ── Recent orders table: min-width so ORDER ID doesn't clip ── */
+    .table-wrap table { min-width: 480px !important; }
+
+    /* ── Row 4 right column: stack top products + low stock ── */
+    .chart-grid-2 > div[style*="flex-direction:column"] {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    .stat-card { padding: 12px 10px !important; gap: 8px !important; }
+    .stat-value { font-size: clamp(1.1rem, 3.5vw, 1.4rem) !important; }
+    .stat-icon { width: 32px !important; height: 32px !important; }
+    .stat-icon svg { width: 16px !important; height: 16px !important; }
 }
 </style>
 @endpush

@@ -101,8 +101,12 @@ export default function CartPage() {
                         <span className="text-primary font-bold" style={{ fontSize: 20 }}>
                           {item.qty}x = <span>${(item.price * item.qty).toFixed(2)}</span>
                         </span>
-                        <button onClick={() => updateQty(item.id, 1)}
-                          className="hover:text-primary font-bold text-lg" style={{ color: textSub }}>+</button>
+                        <button onClick={() => {
+                            if (item.qty < (item.stock ?? 99)) {
+                                updateQty(item.id, 1);
+                            }
+                        }}
+                        className="hover:text-primary font-bold text-lg" style={{ color: textSub }}>+</button>
                       </>
                     )}
                   </div>
