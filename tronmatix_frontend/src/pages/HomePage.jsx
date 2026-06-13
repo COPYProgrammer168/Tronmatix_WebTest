@@ -280,145 +280,68 @@ export default function HomePage() {
           <div
             className="banner-wrap relative overflow-hidden"
             style={{
-              background: hasMedia ? "#000" : bgColor,
-              transition: "background 4s",
+              background: "#000",
             }}
           >
-            {/* ── Video (upload) ─────────────────────────────────────────── */}
-            {hasVideo && videoType === "upload" && videoSrc && (
-              <video
-                key={videoSrc}
-                className="absolute inset-0 w-full h-full object-cover banner-video"
-                style={{ opacity: 0.4, pointerEvents: "none" }}
-                src={videoSrc}
-                autoPlay
-                muted
-                loop
-                playsInline
-                disablePictureInPicture
-                disableRemotePlayback
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )}
+            {banners.map((banner, index) => {
+              const isActive = index === slide;
+              const imgUrl = resolveImage(banner.image);
+              const bgColor = banner.bg_color || "#111";
+              const txtColor = banner.text_color || "#fff";
+              const hasVideo = banner.has_video || !!banner.video;
+              const videoSrc = banner.video;
+              const hasMedia = imgUrl || hasVideo;
+              const detailLink = banner.link || (banner.category ? `/category/${banner.category.toLowerCase()}` : null);
 
-            {/* ── Image ──────────────────────────────────────────────────── */}
-            {imgUrl && (
-              <img
-                src={imgUrl}
-                alt={b.title}
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ opacity: hasVideo ? 0.25 : 0.7 }}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )}
-
-            {/* ── Gradient overlay ───────────────────────────────────────── */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 100%)",
-              }}
-            />
-
-            {/* ── Text content ───────────────────────────────────────────── */}
-            <div
-              className="relative flex flex-col justify-center h-full"
-              style={{
-                zIndex: 2,
-                padding:
-                  "clamp(16px, 4vw, 64px) clamp(20px, 5vw, 80px)" /* responsive padding all sides */,
-              }}
-            >
-              <div style={{ maxWidth: 520 }}>
-                {/* Badge */}
-                {b.badge && (
-                  <span
-                    className="inline-block bg-primary text-white font-bold rounded-full mb-3"
-                    style={{
-                      fontSize: "clamp(9px, 1.2vw, 12px)",
-                      letterSpacing: 2,
-                      padding: "clamp(3px,0.5vw,5px) clamp(10px,1.5vw,16px)",
-                    }}
-                  >
-                    {b.badge}
-                  </span>
-                )}
-
-                {/* Title */}
+              return (
                 <div
-                  className="font-black leading-tight mb-2"
-                  style={{
-                    fontFamily: "HurstBagod, Kh_Jrung_Thom, sans-serif",
-                    fontSize:
-                      "clamp(20px, 4vw, 48px)" /* mobile: 20px | desktop: up to 48px */,
-                    color: hasMedia ? "#fff" : txtColor,
-                    lineHeight: isKhmer ? 1.6 : 1.15,
-                    letterSpacing: isKhmer ? 0 : "-0.5px",
-                  }}
+                  key={banner.id}
+                  className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                  style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 1 : 0 }}
                 >
-                  {b.title}
-                </div>
+                  {/* Background Layer */}
+                  <div className="absolute inset-0" style={{ background: hasMedia ? "#000" : bgColor }} />
 
-                {/* Subtitle */}
-                {b.subtitle && (
-                  <div
-                    className="mb-4"
-                    style={{
-                      fontFamily: "Rajdhani, KantumruyPro, sans-serif",
-                      fontSize:
-                        "clamp(12px, 1.6vw, 20px)" /* mobile: 12px | desktop: up to 20px */,
-                      color: hasMedia ? "rgba(255,255,255,0.85)" : txtColor,
-                      lineHeight: isKhmer ? 1.75 : 1.55,
-                      letterSpacing: isKhmer ? 0 : 0,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {b.subtitle}
-                  </div>
-                )}
-
-                {/* Button */}
-                <Link
-                  to={detailLink}
-                  className="inline-flex items-center gap-2 font-bold rounded-lg transition-all hover:scale-105 hover:opacity-90"
-                  style={{
-                    fontFamily: "Rajdhani, KantumruyPro, sans-serif",
-                    fontSize: "clamp(12px, 1.4vw, 15px)",
-                    letterSpacing: isKhmer ? 0 : 1,
-                    padding: "clamp(7px, 0.9vw, 12px) clamp(14px, 2vw, 24px)",
-                    background: hasMedia ? "#fff" : txtColor,
-                    color: hasMedia ? "#111" : bgColor,
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {isKhmer ? t("home.viewProduct") : "VIEW PRODUCT"}
-                  <svg
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  {/* ── Media ──────────────────────────────────────────────── */}
+                  {hasVideo && banner.video_type === "upload" && videoSrc && (
+                    <video
+                      className="absolute inset-0 w-full h-full object-cover banner-video"
+                      style={{ opacity: 0.4, pointerEvents: "none" }}
+                      src={videoSrc}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
                     />
-                  </svg>
-                </Link>
-              </div>
-            </div>
+                  )}
+                  {imgUrl && (
+                    <img
+                      src={imgUrl}
+                      alt={banner.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ opacity: hasVideo ? 0.25 : 0.7 }}
+                    />
+                  )}
 
+                  {/* ── Gradient overlay (Desktop only) ─────────────────────────────────── */}
+                  <div
+                    className="absolute inset-0 hidden md:block"
+                    style={{
+                      background:
+                        "linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 100%)",
+                    }}
+                  />
+
+              <Link
+                to={`/category/search?q=${encodeURIComponent((banner.title || "").replace("\n", " "))}`}
+                className="absolute inset-0 z-2"
+                style={{ display: 'block' }}
+              >
+                {/* Text content removed to make banner purely a clickable image */}
+              </Link>
+                </div>
+              );
+            })}
             {/* ── Prev / Next buttons ─────────────────────────────────────── */}
             {banners.length > 1 && (
               <>
@@ -455,10 +378,10 @@ export default function HomePage() {
 
             {/* ── Dot indicators ─────────────────────────────────────────── */}
             {banners.length > 1 && (
-            <div
-              className="absolute bottom-3 flex gap-2"
-              style={{ zIndex: 3, left: "50%", transform: "translateX(-50%)" }}
-            >
+              <div
+                className="absolute bottom-3 flex gap-2"
+                style={{ zIndex: 3, left: "50%", transform: "translateX(-50%)" }}
+              >
                 {banners.map((_, i) => (
                   <button
                     key={i}
@@ -468,8 +391,8 @@ export default function HomePage() {
                 ))}
               </div>
             )}
-          </div>
-      </div>
+            </div>
+            </div>
 
       <div className="max-w-[1280px] mx-auto px-4 pt-2 pb-2">
         {/* NEW ARRIVAL heading */}

@@ -127,6 +127,7 @@ class Order extends Model
             $user = User::find($order->user_id);
             if (! $user || ! in_array($user->role, ['customer', 'vip'])) return;
 
+            /*
             $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
             $totalSpent = static::where('user_id', $order->user_id)
@@ -138,6 +139,7 @@ class Order extends Model
             } elseif ($user->role === 'vip' && $totalSpent < $vipThreshold) {
                 $user->update(['role' => 'customer']);
             }
+            */
         });
 
         static::deleted(function (Order $order) {
@@ -146,6 +148,7 @@ class Order extends Model
             $user = User::find($order->user_id);
             if (! $user || ! in_array($user->role, ['customer', 'vip'])) return;
 
+            /*
             $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
             $totalSpent = static::where('user_id', $order->user_id)
@@ -155,6 +158,7 @@ class Order extends Model
             if ($user->role === 'vip' && $totalSpent < $vipThreshold) {
                 $user->update(['role' => 'customer']);
             }
+            */
         });
     }
 

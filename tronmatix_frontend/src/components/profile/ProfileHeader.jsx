@@ -152,6 +152,7 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
           </div>
 
           {/* Right: VIP star OR mini progress */}
+          {/*
           {showVip ? (
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -190,6 +191,7 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
               </div>
             </div>
           )}
+          */}
         </div>
       </div>
     </div>

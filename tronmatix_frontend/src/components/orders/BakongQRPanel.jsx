@@ -1,11 +1,3 @@
-// src/components/orders/BakongQRPanel.jsx
-// Authentic KHQR payment panel:
-//  - Uses qr_image (base64 PNG from PayWay) — official KHQR styled QR with logo
-//  - Falls back to QRCodeSVG if qr_image not returned
-//  - ABA Mobile deeplink button
-//  - App Store / Play Store download links
-//  - Auto-polls PayWay every 4s via checkpayment_api
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLang } from "../../context/LanguageContext";
 import {
@@ -16,10 +8,6 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 
 // ── QR display ────────────────────────────────────────────────────────────────
-// Uses qr_image (official PayWay KHQR template PNG).
-// The PNG has ~10% top whitespace and ~8% bottom whitespace — crop it with
-// a fixed-height overflow:hidden container + negative margins so only the
-// actual KHQR design shows, edge-to-edge and sharp.
 function QRDisplay({ qrData }) {
   if (qrData?.qr_image) {
     const src = qrData.qr_image.startsWith("data:")
@@ -458,7 +446,8 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               background: "#fff",
               borderRadius: 24,
               overflow: "hidden",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)",
+              boxShadow:
+                "0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)",
             }}
           >
             {/* Header */}
@@ -475,7 +464,14 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 14 }}>⏱</span>
-                <span style={{ fontWeight: 900, fontSize: 16, fontFamily: "monospace", color: "#C8102E" }}>
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 16,
+                    fontFamily: "monospace",
+                    color: "#C8102E",
+                  }}
+                >
                   {countdown || "--:--"}
                 </span>
               </div>
@@ -496,11 +492,28 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               }}
             >
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 13, color: "#4b5563", marginBottom: 4 }}>
+                <div
+                  style={{ fontSize: 13, color: "#4b5563", marginBottom: 4 }}
+                >
                   Scan with ABA Mobile or any KHQR app
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite" }} />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: "#22c55e",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    }}
+                  />
                   <span style={{ fontSize: 12, color: "#6b7280" }}>
                     Auto-checking payment...
                   </span>

@@ -58,7 +58,12 @@ export default function OrderCard({
             </div>
           </div>
           <StatusBadge status={order.status || "confirmed"} fulfillmentType={fulfillmentType} />
-          <PaymentStatusBadge paymentMethod={order.payment_method} paymentStatus={order.payment_status} fulfillmentType={fulfillmentType} />
+          <PaymentStatusBadge
+            key={`${order.payment_status}-${order.payment_method}`}
+            paymentMethod={order.payment_method}
+            paymentStatus={order.payment_status}
+            fulfillmentType={fulfillmentType}
+          />
           <FulfillmentBadge type={fulfillmentType} />
         </div>
 

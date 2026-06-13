@@ -278,7 +278,7 @@
 
                                 {{-- PAY STATUS --}}
                                 <td>
-                                    @if ($payStatus === 'paid')
+                                    @if ($payStatus === 'paid' || $payStatus === 'success')
                                         <span class="badge badge-paid" style="font-size:var(--text-xs);"
                                             title="Ref: {{ $order->payment_ref ?? '—' }}">✅ PAID</span>
                                     @elseif($payStatus === 'cash')

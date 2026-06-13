@@ -279,14 +279,17 @@ tbody tr:hover td { background: var(--dark-700); }
                         {{-- Total spent + VIP progress ─────────────────────── --}}
                         @php
                             $spent = (float) ($user->orders_sum_total ?? $user->total_spent ?? 0);
+                            /*
                             $vipGoal  = 1000;
                             $pct      = min(100, round(($spent / $vipGoal) * 100));
                             $isVip    = ($user->role ?? 'customer') === 'vip';
+                            */
                         @endphp
                         <td style="min-width:120px;">
-                            <div style="font-weight:700; font-size: var(--title-size); color:{{ $spent >= $vipGoal ? '#F97316' : '#fff' }};">
+                            <div style="font-weight:700; font-size: var(--title-size); color:{{ /* $spent >= $vipGoal ? '#F97316' : */ '#fff' }};">
                                 ${{ number_format($spent, 0) }}
                             </div>
+                            {{-- 
                             @if(! $isVip)
                             <div style="margin-top:5px; position:relative;">
                                 <div style="height:4px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden;">
@@ -306,6 +309,7 @@ tbody tr:hover td { background: var(--dark-700); }
                                 ⭐ VIP MEMBER
                             </div>
                             @endif
+                            --}}
                         </td>
 
                         {{-- 2FA --}}
@@ -457,7 +461,7 @@ tbody tr:hover td { background: var(--dark-700); }
                 </div>
             </div>
 
-            {{-- VIP progress --}}
+            {{-- 
             <div id="ui-vip-wrap" style="padding:0 24px 20px;">
                 <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
@@ -469,6 +473,7 @@ tbody tr:hover td { background: var(--dark-700); }
                     </div>
                 </div>
             </div>
+            --}}
 
             {{-- Footer button --}}
             <div style="padding:0 24px 24px;">

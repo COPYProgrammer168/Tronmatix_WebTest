@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import axiosClient from '../../lib/axios'
 import { useLang } from '../../context/LanguageContext'
+import telegramIcon from '../../assets/telegram.svg'
 
 const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
 
@@ -78,7 +79,9 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 
       {/* Header */}
       <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${c.cardBorder}`, background: dark ? '#0F172A' : '#FFFFFF' }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>✈️</div>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <img src={telegramIcon} alt="Telegram" style={{ width: '60%', height: '60%' }} />
+        </div>
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, color: c.text, fontFamily: tgFont }}>{isKhmer ? t('telegram.title') : 'TELEGRAM NOTIFICATIONS'}</div>
           <div style={{ fontSize: 12, color: c.muted, marginTop: 1, fontFamily: tgFont, }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
@@ -223,7 +226,8 @@ function ConnectBotButton({ busy, dark, c, isKhmer, t, onConnected, notify }) {
     <>
       <button onClick={handleClick} disabled={busy || polling}
         style={{ width: '100%', padding: '9px 0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#229ED9', border: 'none', color: '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: (busy || polling) ? 'default' : 'pointer', opacity: (busy || polling) ? 0.5 : 1, marginTop: 8 }}>
-        🚀 {isKhmer ? t('telegram.connectBot') : 'Connect via Telegram'}
+        <img src={telegramIcon} alt="Telegram" style={{ width: 16, height: 16 }} />
+        {isKhmer ? t('telegram.connectBot') : 'Connect via Telegram'}
       </button>
       <p style={{ fontSize: 10, color: c.muted, textAlign: 'center', margin: '4px 0 0' }}>
         {isKhmer ? t('telegram.switchHint') : 'Opens Telegram — tap Confirm to link your account'}
@@ -240,7 +244,9 @@ function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10, background: dark ? 'rgba(34,197,94,0.07)' : 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', marginBottom: 14 }}>
-        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>✈️</div>
+        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src={telegramIcon} alt="Telegram" style={{ width: '60%', height: '60%' }} />
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: c.text, fontFamily: 'Rajdhani,sans-serif' }}>
             {status.telegram_username ? `@${status.telegram_username}` : 'Telegram Account'}

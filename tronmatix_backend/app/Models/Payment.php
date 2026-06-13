@@ -174,10 +174,14 @@ class Payment extends Model
         ]);
 
         // Keep parent order in sync
-        $this->order?->update([
-            'payment_status' => 'paid',
-            'payment_ref' => $bakongHash ?? $this->bakong_hash,
-        ]);
+        if ($this->order) {
+            $newStatus = $this->order->status === 'pending' ? 'confirmed' : $this->order->status;
+            $this->order->update([
+                'payment_status' => 'paid',
+                'status' => $newStatus,
+                'payment_ref' => $bakongHash ?? $this->bakong_hash,
+            ]);
+        }
 
         return $updated;
     }

@@ -207,10 +207,12 @@ class UserProfileController extends Controller
         $totalSpent   = $user->totalSpent();
         $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
+        /*
         if ($totalSpent >= $vipThreshold && ($user->role ?? 'customer') === 'customer') {
             $user->update(['role' => 'vip']);
             $user->refresh();
         }
+        */
 
         return response()->json([
             'success' => true,

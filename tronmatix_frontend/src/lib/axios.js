@@ -2,10 +2,6 @@ import axios from 'axios'
 
 const isProd = import.meta.env.PROD
 
-// Never throw at module level — a module-level throw crashes the entire app
-// before React mounts, causing a blank white page.
-// Fall back to relative URLs when VITE_API_URL is not set (same-origin deploys).
-// Priority: VITE_API_URL → VITE_API_URL → window.location.origin (auto-detects ngrok/localhost/prod)
 const VITE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 console.log('DEBUG: VITE_API_URL:', import.meta.env.VITE_API_URL);
@@ -20,8 +16,6 @@ if (isProd && !baseURL) {
 }
 
 // ── Auth storage keys ─────────────────────────────────────────────────────────
-// Only THESE keys are wiped on session expiry. Never bluntly `localStorage.clear()`
-// which would destroy unrelated data belonging to other features or third-party libs.
 export const AUTH_STORAGE_KEYS = ['token', 'tronmatix_user']
 
 export function clearAuthStorage() {
@@ -77,8 +71,6 @@ instance.interceptors.response.use(
       setTimeout(() => { isHandling401 = false }, 2000)
     }
 
-    // Tag network (no-response) errors so callers can distinguish them from
-    // server errors and avoid logging users out on a bad connection.
     if (!error.response) {
       error.isNetworkError = true
     }

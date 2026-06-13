@@ -211,6 +211,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           </div>
         </div>
 
+        {/* 
         {!showVip && role === 'customer' && (
           <div style={{ marginTop: 10, padding: '14px 18px', borderRadius: 12, background: 'rgba(249,115,22,0.04)', border: '1px dashed rgba(249,115,22,0.25)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -232,6 +233,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
             ⭐ VIP MEMBER — Thank you for your loyalty!
           </div>
         )}
+        */}
       </div>
 
       {/* Account info strip */}

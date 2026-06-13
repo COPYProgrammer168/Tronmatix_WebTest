@@ -80,8 +80,20 @@ export function PaymentStatusBadge({ paymentMethod, paymentStatus, fulfillmentTy
         {isPickup ? "💵 PAY AT STORE" : "💵 COD"}
       </span>
     );
-  if (paymentStatus === "paid")
-    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-green-50 text-green-600 border-green-200" style={{ fontSize: 12 }}>✅ PAID</span>;
+  if (paymentStatus === "paid" || paymentStatus === "success")
+    return (
+      <>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-green-50 text-green-600 border-green-200" style={{ fontSize: 12, animation: 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)' }}>
+          ✅ PAID
+        </span>
+        <style>{`
+          @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+        `}</style>
+      </>
+    );
   if (paymentStatus === "failed")
     return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-red-50 text-red-500 border-red-200" style={{ fontSize: 12 }}>❌ FAILED</span>;
   return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-yellow-50 text-yellow-600 border-yellow-200 animate-pulse" style={{ fontSize: 12 }}>⏳ PENDING</span>;

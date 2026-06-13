@@ -275,7 +275,10 @@ class OrderController extends Controller
 
         // ISSUE 1 FIX: Bot 2 (user) — send receipt to customer's Telegram (if connected)
         try {
-            app(TelegramUserService::class)->onOrderPlaced($order);
+            // Only notify if not bakong, as bakong payment confirmation comes later
+            if ($order->payment_method !== 'bakong') {
+                app(TelegramUserService::class)->onOrderPlaced($order);
+            }
         } catch (\Throwable $e) {
             Log::warning('[Bot2] User receipt failed: ' . $e->getMessage());
         }

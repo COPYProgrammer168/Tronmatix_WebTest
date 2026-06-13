@@ -34,7 +34,7 @@ class GoogleAuthController extends Controller
 
         // ── Verify token with Google userinfo endpoint ─────────────────────────
         try {
-            $response = Http::timeout(10)->withoutVerifying()
+            $response = Http::timeout(10)
                 ->withToken($request->access_token)
                 ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 

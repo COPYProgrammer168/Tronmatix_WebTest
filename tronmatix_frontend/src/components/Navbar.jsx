@@ -255,7 +255,8 @@ export default function Navbar({ onAuthOpen }) {
   const [openDrop, setOpenDrop]     = useState(null)
   const [openSub, setOpenSub]       = useState(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [mobileSub, setMobileSub]   = useState(null)
+  const [mobileSub,   setMobileSub]   = useState(null)
+  const [mobileSubItem, setMobileSubItem] = useState(null)
   const [search, setSearch]         = useState('')
   const [userMenu, setUserMenu]     = useState(false)
   const [scrolled, setScrolled]     = useState(false)
@@ -848,34 +849,33 @@ export default function Navbar({ onAuthOpen }) {
               <div key={item.label} style={{
                 borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
               }}>
-                <div className="flex items-center justify-between px-4 py-3.5 select-none">
+                <div className="flex items-center justify-between px-4 py-3.5 select-none"
+                     onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
                   <span
                     className="font-bold tracking-wide cursor-pointer flex-1"
                     style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
                     onMouseEnter={e => e.currentTarget.style.color='#F97316'}
                     onMouseLeave={e => e.currentTarget.style.color=textColor}
-                    onClick={() => {
+                  >
+                    {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                  </span>
+                  {item.sub && (
+                    <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${mobileSub === item.label ? 'rotate-180' : ''}`}
+                         fill="none" stroke={textColor} viewBox="0 0 24 24"
+                         onClick={(e) => { e.stopPropagation(); setMobileSub(mobileSub === item.label ? null : item.label); }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
+                </div>
+                <div onClick={() => {
+                   if (!item.sub) {
                       const dest = item.categories
                         ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
                         : item.path
                       navigate(dest)
                       setMobileOpen(false)
-                    }}>
-                    {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                  </span>
-                  {item.sub
-                    ? <button className="p-1.5 rounded" style={{ background: 'transparent' }}
-                        onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
-                        <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${mobileSub === item.label ? 'rotate-180' : ''}`}
-                          fill="none" stroke={textColor} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                  }
-                </div>
+                   }
+                }}>
                 {item.sub && mobileSub === item.label && (
                   <div className="pb-2" style={{ background: drawerSubBg }}>
                     <Link
@@ -885,21 +885,64 @@ export default function Navbar({ onAuthOpen }) {
                       onClick={() => setMobileOpen(false)}>
                       ALL {item.label}
                     </Link>
+                    {/* State for all sub-category expansions */}
                     {item.sub.map(sub => {
                       const isObj  = typeof sub === 'object'
                       const label  = isObj ? sub.label : sub
+                      const brands = isObj ? sub.brands : []
                       const path   = `/category/${slugify(item.label)}/${slugify(label)}`
+                      const expanded = mobileSub === item.label && mobileSubItem === label;
+
                       return (
-                        <Link key={label} to={path}
-                          className="block px-8 py-1.5 font-semibold"
-                          style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.color='#F97316'}
-                          onMouseLeave={e => e.currentTarget.style.color=subTextColor}
-                          onClick={() => setMobileOpen(false)}>{label}</Link>
+                        <div key={label}>
+                          <div className="flex items-center justify-between">
+                            <Link to={path}
+                              className="block px-8 py-2 font-bold flex-1"
+                              style={{ fontSize: 14, color: '#F97316', transition: 'color 0.15s' }}
+                              onClick={() => setMobileOpen(false)}>{label}</Link>
+                            {isObj && brands.length > 0 && (
+                              <button 
+                                className="px-4 py-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMobileSubItem(expanded ? null : label);
+                                }}>
+                                <span style={{ 
+                                  color: subTextColor, 
+                                  display: 'inline-block', 
+                                  transition: 'transform 0.3s', 
+                                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' 
+                                }}>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </span>
+                              </button>
+                            )}
+                          </div>
+                          
+                          {isObj && brands.length > 0 && (
+                            <div className="pl-12 pb-1 overflow-hidden transition-all duration-300 ease-in-out"
+                                 style={{ 
+                                   maxHeight: expanded ? brands.length * 35 : 0,
+                                   opacity: expanded ? 1 : 0
+                                 }}>
+                              {brands.map(brand => (
+                                <Link key={brand} to={`${path}?brand=${encodeURIComponent(brand)}`}
+                                  className="block py-1 font-semibold"
+                                  style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
+                                  onMouseEnter={e => e.currentTarget.style.color='#F97316'}
+                                  onMouseLeave={e => e.currentTarget.style.color=subTextColor}
+                                  onClick={() => setMobileOpen(false)}>- {brand}</Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
                 )}
+                </div>
               </div>
             ))}
           </div>

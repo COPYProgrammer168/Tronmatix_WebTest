@@ -19,15 +19,13 @@ class CheckPaymentController extends Controller
     public function __construct()
     {
         $this->merchantId = config('services.payway.merchant_id', '');
-        $this->apiBase    = rtrim(config('services.payway.api_url', ''), '/');
+        $this->apiBase = rtrim(config('services.payway.api_url', ''), '/');
     }
 
     // ── Hash helper ───────────────────────────────────────────────────────────
 
     /**
      * Build HMAC-SHA512 hash required by PayWay.
-     * Key = PAYWAY_API_KEY raw string — MUST match GenerateKhqrController exactly.
-     * Do NOT use hex2bin() here — GenerateKhqrController does not, so both must be identical.
      */
     private function makeHash(string $data): string
     {
@@ -67,7 +65,7 @@ class CheckPaymentController extends Controller
         if ($order->payment_status === 'paid') {
             return response()->json([
                 'success' => true,
-                'status'  => 'paid',
+                'status' => 'paid',
                 'paid_at' => $order->updated_at?->toIso8601String(),
             ]);
         }
@@ -106,8 +104,8 @@ class CheckPaymentController extends Controller
 
             Log::info('Payment confirmed via PayWay polling ✅', [
                 'order_id' => $order->id,
-                'tran_id'  => $tranId,
-                'apv'      => $apv,
+                'tran_id' => $tranId,
+                'apv' => $apv,
             ]);
 
             // ── Step 2: reload fresh order with all relations ─────────────────
@@ -126,8 +124,8 @@ class CheckPaymentController extends Controller
             try {
                 app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $apv);
                 Log::info('Customer Telegram receipt sent ✅', [
-                    'order_id'   => $order->id,
-                    'chat_id'    => $freshOrder->user?->telegram_chat_id ?? 'not connected',
+                    'order_id' => $order->id,
+                    'chat_id' => $freshOrder->user?->telegram_chat_id ?? 'not connected',
                 ]);
             } catch (\Throwable $e) {
                 Log::warning('Telegram customer receipt failed: ' . $e->getMessage());
@@ -136,7 +134,7 @@ class CheckPaymentController extends Controller
             // ── Step 5: return paid status to frontend ────────────────────────
             return response()->json([
                 'success' => true,
-                'status'  => 'paid',
+                'status' => 'paid',
                 'paid_at' => $payment->paid_at?->toIso8601String(),
             ]);
         }
@@ -221,8 +219,8 @@ class CheckPaymentController extends Controller
 
             Log::info('Order paid via PayWay webhook ✅', [
                 'order_id' => $order->id,
-                'tran_id'  => $tranId,
-                'apv'      => $apv,
+                'tran_id' => $tranId,
+                'apv' => $apv,
             ]);
 
             $freshOrder = Order::with('items', 'user')->find($order->id);
@@ -240,7 +238,7 @@ class CheckPaymentController extends Controller
                 app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $apv);
                 Log::info('Customer Telegram webhook receipt sent ✅', [
                     'order_id' => $order->id,
-                    'chat_id'  => $freshOrder->user?->telegram_chat_id ?? 'not connected',
+                    'chat_id' => $freshOrder->user?->telegram_chat_id ?? 'not connected',
                 ]);
             } catch (\Throwable $e) {
                 Log::warning('Telegram customer webhook receipt failed: ' . $e->getMessage());
@@ -258,8 +256,8 @@ class CheckPaymentController extends Controller
 
     private function checkTransaction(string $tranId): ?array
     {
-        $reqTime     = $this->reqTime();
-        $merchantId  = $this->merchantId;
+        $reqTime = $this->reqTime();
+        $merchantId = $this->merchantId;
 
         // ── Build merchant_auth (RSA-encrypted JSON, then base64) ─────────────
         // Per ABA PayWay docs: encrypt JSON {mc_id, tran_id} with RSA public key
@@ -286,13 +284,13 @@ class CheckPaymentController extends Controller
         }
 
         $dataObject = json_encode([
-            'mc_id'   => $merchantId,
+            'mc_id' => $merchantId,
             'tran_id' => $tranId,
         ]);
 
-        $maxLength       = 117;
+        $maxLength = 117;
         $encryptedOutput = '';
-        $chunk           = $dataObject;
+        $chunk = $dataObject;
 
         while ($chunk !== '') {
             $input = substr($chunk, 0, $maxLength);
@@ -317,21 +315,22 @@ class CheckPaymentController extends Controller
         }
 
         $payload = [
-            'merchant_id'   => $merchantId,
+            'merchant_id' => $merchantId,
             'merchant_auth' => $merchantAuth,
-            'request_time'  => $reqTime,
-            'hash'          => $hash,
+            'request_time' => $reqTime,
+            'hash' => $hash,
         ];
 
         try {
             $response = Http::timeout(10)
+                ->withoutVerifying()
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->post("{$this->apiBase}/check-transaction-2", $payload);
 
             if ($response->failed()) {
                 Log::warning('PayWay check-transaction HTTP error', [
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
                 return null;
             }
@@ -339,23 +338,23 @@ class CheckPaymentController extends Controller
             $body = $response->json();
 
             Log::info('PayWay check-transaction response', [
-                'tran_id'      => $tranId,
-                'status_code'  => $body['status']['code']              ?? 'n/a',
+                'tran_id' => $tranId,
+                'status_code' => $body['status']['code'] ?? 'n/a',
                 'payment_code' => $body['data']['payment_status_code'] ?? 'n/a',
-                'status'       => $body['data']['payment_status']      ?? 'n/a',
-                'full_body'    => $body,
+                'status' => $body['data']['payment_status'] ?? 'n/a',
+                'full_body' => $body,
             ]);
 
             // Paid when: status.code == "00" AND payment_status_code == 0
-            $paid = isset($body['status']['code'])
-                && $body['status']['code'] === '00'
+            $statusCode = $body['status']['code'] ?? '';
+            $paid = in_array($statusCode, ['0', '00'], true)
                 && isset($body['data']['payment_status_code'])
                 && (int) $body['data']['payment_status_code'] === 0;
 
             return [
                 'paid' => $paid,
-                'apv'  => $body['data']['apv'] ?? '',
-                'data' => $body['data']        ?? [],
+                'apv' => $body['data']['apv'] ?? '',
+                'data' => $body['data'] ?? [],
             ];
 
         } catch (\Throwable $e) {

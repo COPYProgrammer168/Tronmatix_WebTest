@@ -26,13 +26,14 @@ const STORE_ADDRESS = "Near Sovannphumi School, Stop Tep Phan, 14 St 160, Phnom 
 const STORE_MAPS_URL = "https://goo.gl/maps/8q7eeNwZH5uz1YwZ8"
 
 export default function CheckoutPage() {
-  const { items, total, subtotal, clearCart } = useCart()
+  const { items, total, subtotal: rawSubtotal, clearCart } = useCart();
   const { user }                              = useAuth()
   const { savedLocation, saveLocation }       = useLocation2()
   const { discount, calcDiscount, removeDiscount } = useDiscount()
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
   const navigate = useNavigate()
+  const subtotal = isNaN(rawSubtotal) ? 0 : rawSubtotal;
 
   const [step, setStep] = useState(() => {
     const s = parseInt(localStorage.getItem("checkout_step"))
@@ -205,14 +206,17 @@ export default function CheckoutPage() {
         clearCheckoutStorage(); 
         clearCart(); removeDiscount(); setOrder(orderData); setDeliveryStatus(0)
         setStep(3)
-        Swal.fire({
-          title: isPickup ? "Order Placed! 🏪" : "Order Placed! 🎉",
-          text: isPickup
-            ? `Order #${res.data.order_id} received. Please come to our store to pick up your order.`
-            : `Order #${res.data.order_id} received. We'll contact you before delivery.`,
-          icon: "success",
-          confirmButtonColor: "#F97316",
-        })
+        // Only show alert if NOT bakong, as Bakong has its own success screen
+        if (payMethod !== "bakong") {
+          Swal.fire({
+            title: isPickup ? "Order Placed! 🏪" : "Order Placed! 🎉",
+            text: isPickup
+              ? `Order #${res.data.order_id} received. Please come to our store to pick up your order.`
+              : `Order #${res.data.order_id} received. We'll contact you before delivery.`,
+            icon: "success",
+            confirmButtonColor: "#F97316",
+          })
+        }
       }
     } catch (e) {
       let msg = "Order failed. Please try again."
@@ -346,11 +350,7 @@ export default function CheckoutPage() {
       </div>
       )}
 
-      {/* ── Step 2: compact fulfillment summary (no map, no iframe) ─────────
-           Shows a read-only badge + "← Change" button to go back to step 1.
-           The full map/banner is intentionally hidden here so the iframe
-           cannot block pointer events on the Payment step UI.
-      ── */}
+      {/* ── Step 2: compact fulfillment summary (no map, no iframe) ─────────── */}
       {step === 2 && (
         <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl"
           style={{
@@ -455,10 +455,12 @@ export default function CheckoutPage() {
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
                 title="Close">✕</button>
             </div>
-            <BakongQRPanel orderId={order.id ?? order.data?.id} total={order.total}
-              onPaid={() => { 
+            <BakongQRPanel orderId={order.id ?? order.order_id ?? order.data?.id} total={order.total}
+              onPaid={() => {
                 clearCheckoutStorage();
-                setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800) 
+                clearCart(); 
+                removeDiscount(); 
+                setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800)
               }} />
           </div>
           <style>{`@keyframes fadeInScale { from { opacity:0; transform:scale(.93) translateY(20px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>

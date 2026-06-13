@@ -13,15 +13,6 @@ class GenerateKhqrController extends Controller
 {
     // QR code expires after this many minutes
     private const QR_EXPIRY_MINUTES = 10;
-
-    // =========================================================================
-    // PRIVATE HELPERS
-    // =========================================================================
-
-    /**
-     * Build HMAC-SHA512 hash required by PayWay.
-     * Key = PAYWAY_API_KEY (the "Public Key" from credential_info.txt item #2)
-     */
     private function makeHash(string $data): string
     {
         $apiKey = config('services.payway.api_key', '');
@@ -45,7 +36,6 @@ class GenerateKhqrController extends Controller
 
     /**
      * Unique transaction ID = order ID + current Unix timestamp.
-     * Example: order 11 at timestamp 1778750131 → "111778750131"
      */
     private function tranId(Order $order): string
     {
@@ -158,10 +148,6 @@ class GenerateKhqrController extends Controller
         $expiresAt = now()->addMinutes(self::QR_EXPIRY_MINUTES);
 
         // ── Build hash string (19 fields in exact order from PayWay docs) ─────
-        //
-        // IMPORTANT: null/unused fields must be empty string '' not 'null'.
-        // The order below matches the official PayWay API Model exactly.
-        //
         $hashData =
             $reqTime         // 1.  req_time
             . $merchantId    // 2.  merchant_id
@@ -227,6 +213,7 @@ class GenerateKhqrController extends Controller
         // ── Call PayWay API ───────────────────────────────────────────────────
         try {
             $response = Http::timeout(15)
+                ->withoutVerifying()
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->post("{$apiBase}/generate-qr", $payload);
 

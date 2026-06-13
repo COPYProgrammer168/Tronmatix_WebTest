@@ -11,7 +11,6 @@ import ProfileHeader from '../components/profile/ProfileHeader'
 import ProfileTab    from '../components/profile/ProfileTab'
 import LocationsTab  from '../components/profile/LocationsTab'
 
-const VIP_GOAL = 1000
 
 export default function UserProfilePage() {
   const { user: authUser, refreshUser } = useAuth()
@@ -154,7 +153,7 @@ export default function UserProfilePage() {
 
         {/* Page content sits above texture */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-        <ProfileHeader user={displayUser} totalSpent={totalSpent} VIP_GOAL={VIP_GOAL} />
+        <ProfileHeader user={displayUser} totalSpent={totalSpent} />
 
         <div style={{ maxWidth: 720, margin: '15px auto 0', padding: '0 16px' }}>
           <div style={{
@@ -187,7 +186,6 @@ export default function UserProfilePage() {
               <ProfileTab
                 user={displayUser}
                 totalSpent={totalSpent}
-                VIP_GOAL={VIP_GOAL}
                 onSaved={handleProfileSaved}
                 notify={notify}
                 dark={dark}

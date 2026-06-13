@@ -115,7 +115,7 @@ export function CategoryPage() {
       <div className="flex items-center mb-6">
         <div className="flex-1 h-12 rounded-l" style={{ background: dark ? '#374151' : '#000' }} />
         <div className="bg-primary text-white font-bold px-10 py-3 uppercase"
-          style={{ fontFamily: isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif', fontSize: 20, letterSpacing: isKhmer ? 0 : 2 }}>
+          style={{ fontFamily: isKhmer ? 'Kh-Koulen, sans-serif' : 'HurstBagod, Rajdhani, sans-serif', fontSize: 20, letterSpacing: isKhmer ? 0 : 2 }}>
           {isSearch
             ? (qParam ? `🔍 ${qParam.toUpperCase()}` : `🔍 ${t('common.search')}`)
             : (label || t('common.allProducts'))}
@@ -128,7 +128,7 @@ export function CategoryPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4" style={{ fontFamily: 'Kh-Koulen, Rajdhani, sans-serif', fontSize: 15, color: textSub }}>
+          <p className="mb-4" style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif', fontSize: 15, color: textSub }}>
             {isSearch && products.length === 0
               ? `${t('common.searchNo')} "${qParam}"`
               : products.length === 1
@@ -139,7 +139,7 @@ export function CategoryPage() {
           {isSearch && products.length === 0 && (
             <div className="flex flex-col items-center py-20 gap-4" style={{ color: textSub }}>
               <div style={{ fontSize: 48 }}>🔍</div>
-              <p style={{ fontFamily: 'Kh-Koulen, Rajdhani, sans-serif', fontSize: 18 }}>
+              <p style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif', fontSize: 18 }}>
                 {t('common.searchNo')} <strong style={{ color: text }}>"{qParam}"</strong>
               </p>
               <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>

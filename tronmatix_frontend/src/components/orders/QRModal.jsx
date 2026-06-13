@@ -2,9 +2,11 @@
 import { useEffect } from "react";
 import { useLang } from "../../context/LanguageContext";
 import BakongQRPanel from "./BakongQRPanel";
+import { useCart } from "../../context/CartContext";
 
 export default function QRModal({ order, onClose, onPaid }) {
   const { t, isKhmer } = useLang();
+  const { clearCart } = useCart();
 
   // Lock body scroll while modal is open
   useEffect(() => {
@@ -15,8 +17,8 @@ export default function QRModal({ order, onClose, onPaid }) {
   }, []);
 
   const handlePaid = () => {
+    clearCart();
     onPaid?.();
-    // Keep success screen visible for 2s before closing
     setTimeout(onClose, 2000);
   };
 
@@ -52,13 +54,13 @@ export default function QRModal({ order, onClose, onPaid }) {
             >
               ABA
             </div>
-            <button
+            {/* <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
               title="Close"
             >
               ✕
-            </button>
+            </button> */}
           </div>
         </div>
 
