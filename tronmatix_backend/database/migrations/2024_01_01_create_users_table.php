@@ -50,40 +50,38 @@ return new class extends Migration
                 $table->index('email');
             });
         } else {
-            // Patch existing table safely
             Schema::table('users', function (Blueprint $table) {
-                $cols = Schema::getColumnListing('users');
-                if (! in_array('phone', $cols)) {
+                if (! Schema::hasColumn('users', 'phone')) {
                     $table->string('phone', 30)->nullable();
                 }
-                if (! in_array('avatar', $cols)) {
+                if (! Schema::hasColumn('users', 'avatar')) {
                     $table->string('avatar')->nullable();
                 }
-                if (! in_array('role', $cols)) {
+                if (! Schema::hasColumn('users', 'role')) {
                     $table->string('role', 30)->default('customer');
                 }
-                if (! in_array('is_banned', $cols)) {
+                if (! Schema::hasColumn('users', 'is_banned')) {
                     $table->boolean('is_banned')->default(false);
                 }
-                if (! in_array('two_factor_secret', $cols)) {
+                if (! Schema::hasColumn('users', 'two_factor_secret')) {
                     $table->string('two_factor_secret')->nullable();
                 }
-                if (! in_array('two_factor_enabled', $cols)) {
+                if (! Schema::hasColumn('users', 'two_factor_enabled')) {
                     $table->boolean('two_factor_enabled')->default(false);
                 }
-                if (! in_array('two_factor_confirmed_at', $cols)) {
+                if (! Schema::hasColumn('users', 'two_factor_confirmed_at')) {
                     $table->timestamp('two_factor_confirmed_at')->nullable();
                 }
-                if (! in_array('telegram_chat_id', $cols)) {
+                if (! Schema::hasColumn('users', 'telegram_chat_id')) {
                     $table->string('telegram_chat_id')->nullable();
                 }
-                if (! in_array('telegram_username', $cols)) {
+                if (! Schema::hasColumn('users', 'telegram_username')) {
                     $table->string('telegram_username')->nullable();
                 }
-                if (! in_array('telegram_connected_at', $cols)) {
+                if (! Schema::hasColumn('users', 'telegram_connected_at')) {
                     $table->timestamp('telegram_connected_at')->nullable();
                 }
-                if (! in_array('google_id', $cols)) {
+                if (! Schema::hasColumn('users', 'google_id')) {
                     $table->string('google_id')->nullable();
                 }
             });
