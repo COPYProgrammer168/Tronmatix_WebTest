@@ -151,18 +151,21 @@ function banner_img_url(?string $path): string {
             </div>
             <div style="display:flex; gap:8px; flex-shrink:0;">
                 <button onclick="openModal(
-                    {{ $b->id }},
-                    @js($b->title),
-                    @js($b->subtitle ?? ''),
-                    @js($b->badge ?? ''),
-                    @js($b->bg_color ?? '#111111'),
-                    @js($b->text_color ?? '#F97316'),
-                    @js($b->image ? banner_img_url($b->image) : ''),
-                    {{ $b->order }},
-                    {{ $b->active ? 'true' : 'false' }},
-                    @js($b->video ? banner_img_url($b->video) : ''),
-                    @js($b->video_type ?? '')
+                {{ $b->id }},
+                @js($b->title),
+                @js($b->subtitle ?? ''),
+                @js($b->badge ?? ''),
+                @js($b->bg_color ?? '#111111'),
+                @js($b->text_color ?? '#F97316'),
+                @js($b->image ? banner_img_url($b->image) : ''),
+                {{ $b->order }},
+                {{ $b->active ? 'true' : 'false' }},
+                @js($b->video ? banner_img_url($b->video) : ''),
+                @js($b->video_type ?? ''),
+                {{ $b->product_id ?? 'null' }},
+                @js($b->product->name ?? '')
                 )" class="btn btn-outline btn-sm">EDIT</button>
+
                 <form method="POST" action="{{ route('dashboard.banners.destroy', $b) }}"
                       onsubmit="return confirm('Delete this banner?')" style="display:inline;">
                     @csrf @method('DELETE')
@@ -185,7 +188,7 @@ function banner_img_url(?string $path): string {
 <div id="bannerModal" style="display:none; position:fixed; inset:0; z-index:1000;
      background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:12px;">
     <div class="banner-modal-box" style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px;
-                padding:24px; width:100%; max-width:540px; max-height:94vh; overflow-y:auto;">
+                padding:28px; width:100%; max-width:720px; max-height:94vh; overflow-y:auto; overflow-x:hidden;">
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2 id="modalTitle" style="font-size: var(--title-size); font-weight:900; color:#fff; letter-spacing:2px;">ADD BANNER</h2>
@@ -221,7 +224,7 @@ function banner_img_url(?string $path): string {
             </div>
             @endif
 
-            <div class="banner-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            <div class="banner-form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
 
                 {{-- Title --}}
                 <div style="grid-column:1/-1;">
@@ -235,16 +238,41 @@ function banner_img_url(?string $path): string {
                     <input type="text" name="subtitle" id="fSubtitle" class="form-control" placeholder="e.g. RTX 5090 NEW Stock">
                 </div>
 
-                {{-- Badge --}}
+                {{-- Badge + Order --}}
                 <div>
                     <label class="form-label">BADGE LABEL</label>
                     <input type="text" name="badge" id="fBadge" class="form-control" placeholder="e.g. New Arrival">
                 </div>
-
-                {{-- Order --}}
                 <div>
                     <label class="form-label">DISPLAY ORDER</label>
                     <input type="number" name="order" id="fOrder" class="form-control" min="0" value="0">
+                </div>
+
+                {{-- Product ID --}}
+                <div style="grid-column:1/-1;">
+                    <label class="form-label">APPLY TO PRODUCT (Optional)</label>
+                    <div style="position:relative;">
+                        <input type="text" id="productSearch" placeholder="🔍 Search product…"
+                            autocomplete="off" oninput="filterProducts(this.value)"
+                            onfocus="showProductDropdown()"
+                            style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; padding:10px 14px; box-sizing:border-box; outline:none;"
+                            onfocusin="this.style.borderColor='#F97316'"
+                            onblur="setTimeout(hideProductDropdown,200); this.style.borderColor='rgba(255,255,255,0.15)'">
+                        {{-- hidden real select for form submit --}}
+                        <select name="product_id" id="fProductId" style="display:none;">
+                            <option value="">-- All products (sitewide) --</option>
+                            @foreach ($products as $product)
+                                <option value="{{ $product->id }}">{{ $product->name }}</option>
+                            @endforeach
+                        </select>
+                        {{-- custom dropdown list --}}
+                        <div id="productDropdown"
+                            style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:99999;
+                            background:#1e1e1e; border:1px solid rgba(249,115,22,0.4); border-radius:10px;
+                            max-height:220px; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.85);">
+                            <div id="productList"></div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Colors --}}
@@ -270,7 +298,7 @@ function banner_img_url(?string $path): string {
                 </div>
 
                 {{-- ─── IMAGE / GIF ──────────────────────────────────────── --}}
-                <div style="grid-column:1/-1;">
+                <div style="grid-column:1/-1; border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:18px;">
                     <label class="form-label">
                         BANNER IMAGE / GIF
                         <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(GIFs animate automatically)</span>
@@ -324,7 +352,6 @@ function banner_img_url(?string $path): string {
                         <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(optional — plays as background)</span>
                     </label>
 
-                    {{-- Upload panel --}}
                     <div id="videoPanel_upload" style="background:#111; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:16px;">
                         {{-- Current video preview --}}
                         <div id="currentVideoWrap" style="display:none; margin-bottom:10px;">
@@ -359,19 +386,6 @@ function banner_img_url(?string $path): string {
 </div>
 
 <script>
-// ── Facebook JavaScript SDK ───────────────────────────────────────────────────
-// Loaded once; enables <div class="fb-video"> previews without iframe blocks.
-window.fbAsyncInit = function() {
-    FB.init({ xfbml: true, version: 'v21.0' });
-};
-(function(d, s, id) {
-    if (d.getElementById(id)) return;
-    var js = d.createElement(s); js.id = id; js.async = true; js.defer = true;
-    js.crossOrigin = 'anonymous';
-    js.src = 'https://connect.facebook.net/en_US/sdk.js';
-    d.head.appendChild(js);
-}(document, 'script', 'facebook-jssdk'));
-
 // ── Auto-reopen modal if validation errors exist ──────────────────────────────
 @if($errors->any())
 window.addEventListener('DOMContentLoaded', () => openModal())
@@ -410,86 +424,6 @@ function previewSelectedImage(input) {
     }
 }
 
-// ── Platform detection ────────────────────────────────────────────────────────
-function detectPlatform(url) {
-    if (!url) return null
-    if (url.includes('youtube.com') || url.includes('youtu.be'))  return 'youtube'
-    if (url.includes('vimeo.com'))                                 return 'vimeo'
-    if (url.includes('facebook.com') || url.includes('fb.watch')) return 'facebook'
-    return null
-}
-
-// ── Video tab switching ───────────────────────────────────────────────────────
-function switchVideoTab(tab) {
-    document.querySelectorAll('.video-tab').forEach(el => {
-        const active = el.dataset.tab === tab
-        el.style.background  = active ? 'rgba(249,115,22,0.2)' : 'rgba(255,255,255,0.06)'
-        el.style.color       = active ? '#F97316'               : 'rgba(255,255,255,0.5)'
-        el.style.borderColor = active ? '#F97316'               : 'transparent'
-    })
-    const isEmbed = (tab === 'youtube' || tab === 'vimeo' || tab === 'facebook')
-    document.getElementById('videoPanel_upload').style.display = tab === 'upload' ? 'block' : 'none'
-    document.getElementById('videoPanel_embed').style.display  = isEmbed            ? 'block' : 'none'
-
-    ;['youtube','vimeo','facebook'].forEach(p => {
-        const el = document.getElementById('hint' + p.charAt(0).toUpperCase() + p.slice(1))
-        if (el) el.style.display = (tab === p) ? 'block' : 'none'
-    })
-
-    if (tab !== 'upload') document.getElementById('fVideoFile').value = ''
-    if (tab === 'upload' || tab === 'none') {
-        document.getElementById('fVideoUrl').value = ''
-        hideAllPreviews()
-    }
-}
-
-function hideAllPreviews() {
-    document.getElementById('embedPreviewWrap').style.display = 'none'
-    document.getElementById('embedPreview').src = ''
-    document.getElementById('fbPreviewWrap').style.display = 'none'
-    document.getElementById('fbVideoEmbed').dataset.href = ''
-}
-
-// ── Live embed preview ─────────────────────────────────────────────────────────
-document.getElementById('fVideoUrl')?.addEventListener('input', function() {
-    const url      = this.value.trim()
-    const platform = detectPlatform(url)
-
-    // Auto-select the right tab when user pastes a URL
-    if (platform) {
-        switchVideoTab(platform)
-        const radio = document.querySelector(`input[name="video_source_tab"][value="${platform}"]`)
-        if (radio) radio.checked = true
-    }
-
-    if (!url) { hideAllPreviews(); return }
-
-    if (platform === 'facebook') {
-        // ── Use FB SDK instead of iframe ──────────────────────────────────────
-        document.getElementById('embedPreviewWrap').style.display = 'none'
-        document.getElementById('embedPreview').src = ''
-
-        const embed = document.getElementById('fbVideoEmbed')
-        embed.dataset.href = url           // store the original Facebook URL
-        document.getElementById('fbPreviewWrap').style.display = 'block'
-
-        // Re-parse the FB SDK so it renders the new video
-        if (window.FB) {
-            FB.XFBML.parse(document.getElementById('fbPreviewWrap'))
-        }
-        // If SDK hasn't loaded yet, fbAsyncInit will auto-parse on load
-
-    } else if (platform === 'youtube' || platform === 'vimeo') {
-        document.getElementById('fbPreviewWrap').style.display = 'none'
-        document.getElementById('fbVideoEmbed').dataset.href = ''
-
-        document.getElementById('embedPreview').src = url
-        document.getElementById('embedPreviewWrap').style.display = 'block'
-    } else {
-        hideAllPreviews()
-    }
-})
-
 // Sync color pickers ↔ text inputs
 document.getElementById('fBgColor')?.addEventListener('input', function() {
     document.getElementById('fBgColorText').value = this.value
@@ -498,8 +432,65 @@ document.getElementById('fTextColor')?.addEventListener('input', function() {
     document.getElementById('fTextColorText').value = this.value
 })
 
+// ── Product map (id → name) ───────────────────────────────────────────────────
+const _allProducts = [{
+        id: '',
+        name: '-- All products (sitewide) --'
+    },
+    @foreach ($products as $product)
+        {
+            id: '{{ $product->id }}',
+            name: '{{ addslashes($product->name) }}'
+        },
+    @endforeach
+]
+
+function buildProductList(query) {
+    const list = document.getElementById('productList')
+    if (!list) return
+    const q = (query || '').toLowerCase().trim()
+    const filtered = q ?
+        _allProducts.filter(p => p.name.toLowerCase().includes(q)) :
+        _allProducts
+    if (filtered.length === 0) {
+        list.innerHTML =
+            '<div style="padding:12px 14px;color:rgba(255,255,255,0.3);font-size: var(--title-size);">No products found</div>'
+        return
+    }
+    list.innerHTML = filtered.map(p => `
+        <div onclick="selectProduct('${p.id}', '${p.name.replace(/'/g,"&#39;")}')"
+             style="padding:9px 14px; cursor:pointer; font-size: var(--title-size); color:${p.id === document.getElementById('fProductId').value ? '#F97316' : 'rgba(255,255,255,0.85)'}; font-weight:${p.id === document.getElementById('fProductId').value ? '700' : '400'};
+                    background:${p.id === document.getElementById('fProductId').value ? 'rgba(249,115,22,0.08)' : 'transparent'}; transition:background .15s;"
+             onmouseover="this.style.background='rgba(249,115,22,0.12)'"
+             onmouseout="this.style.background='${p.id === document.getElementById('fProductId').value ? 'rgba(249,115,22,0.08)' : 'transparent'}'">
+            ${p.name}
+        </div>
+    `).join('')
+}
+
+function selectProduct(id, name) {
+    document.getElementById('fProductId').value = id
+    document.getElementById('productSearch').value = id ? name : ''
+    hideProductDropdown()
+}
+
+function showProductDropdown() {
+    buildProductList(document.getElementById('productSearch').value)
+    document.getElementById('productDropdown').style.display = 'block'
+}
+
+function hideProductDropdown() {
+    const dd = document.getElementById('productDropdown')
+    if (dd) dd.style.display = 'none'
+}
+
+function filterProducts(q) {
+    buildProductList(q)
+    showProductDropdown()
+}
+
 // ── Modal open / close ────────────────────────────────────────────────────────
-function openModal(id, title, subtitle, badge, bgColor, textColor, image, order, active, video, videoType) {
+function openModal(id, title, subtitle, badge, bgColor, textColor, image, order, active, video, videoType, productId, productName) {
     document.getElementById('bannerModal').style.display = 'flex'
 
     if (id) {
@@ -509,6 +500,8 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('fTitle').value            = title    || ''
         document.getElementById('fSubtitle').value         = subtitle || ''
         document.getElementById('fBadge').value            = badge    || ''
+        document.getElementById('fProductId').value        = productId || ''
+        document.getElementById('productSearch').value      = productName || ''
         document.getElementById('fOrder').value            = order    ?? 0
         document.getElementById('fActive').checked         = active   ?? true
 
@@ -531,29 +524,20 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('newImagePreviewWrap').style.display = 'none'
         document.getElementById('newImagePreview').src = ''
 
-        // Video
+        // Video (upload only)
         if (video && videoType === 'upload') {
             document.getElementById('currentVideoPreview').src = video
             document.getElementById('currentVideoWrap').style.display = 'block'
-            switchVideoTab('upload')
-            const r = document.querySelector('input[name="video_source_tab"][value="upload"]')
-            if (r) r.checked = true
-        } else if (video && (videoType === 'youtube' || videoType === 'vimeo' || videoType === 'facebook')) {
-            document.getElementById('fVideoUrl').value = video
-            switchVideoTab(videoType)
-            const r = document.querySelector(`input[name="video_source_tab"][value="${videoType}"]`)
-            if (r) r.checked = true
-            document.getElementById('fVideoUrl').dispatchEvent(new Event('input'))
         } else {
-            switchVideoTab('none')
-            const r = document.querySelector('input[name="video_source_tab"][value="none"]')
-            if (r) r.checked = true
+            document.getElementById('currentVideoWrap').style.display = 'none'
         }
     } else {
         document.getElementById('modalTitle').textContent  = 'ADD BANNER'
         document.getElementById('bannerForm').action       = '{{ route("dashboard.banners.store") }}'
         document.getElementById('formMethod').value        = 'POST'
         document.getElementById('bannerForm').reset()
+        document.getElementById('fProductId').value        = ''
+        document.getElementById('productSearch').value      = ''
         document.getElementById('fActive').checked         = true
         document.getElementById('fBgColor').value          = '#111111'
         document.getElementById('fBgColorText').value      = '#111111'
@@ -563,10 +547,6 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('newImagePreviewWrap').style.display = 'none'
         document.getElementById('newImagePreview').src               = ''
         document.getElementById('currentVideoWrap').style.display    = 'none'
-        hideAllPreviews()
-        switchVideoTab('none')
-        const r = document.querySelector('input[name="video_source_tab"][value="none"]')
-        if (r) r.checked = true
     }
 }
 
@@ -581,6 +561,7 @@ document.getElementById('bannerModal').addEventListener('click', function(e) {
 
 <style>
 /* ── Banner modal responsive ───────────────────────────────────────────── */
+#bannerModal * { box-sizing: border-box; }
 @media (max-width: 540px) {
     .banner-modal-box {
         padding: 16px !important;
@@ -594,10 +575,10 @@ document.getElementById('bannerModal').addEventListener('click', function(e) {
     .banner-form-grid > div {
         grid-column: 1 / -1 !important;
     }
-    /* Keep video tab pills wrapping nicely */
-    .video-tab {
-        padding: 5px 10px !important;
-        font-size: var(--title-size) !important;
+}
+@media (min-width: 541px) and (max-width: 760px) {
+    .banner-modal-box {
+        max-width: 600px !important;
     }
 }
 /* Restore 2-col for badge+order and bg+text color on ≥ 541px */

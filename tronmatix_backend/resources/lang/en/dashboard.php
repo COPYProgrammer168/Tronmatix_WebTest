@@ -18,6 +18,7 @@ return [
         'settings' => 'Settings',
         'reports' => 'Reports',
         'banners' => 'Banners',
+        'videos' => 'Video',
         'profile' => 'Profile',
         'feedback' => 'Feedback',
         'logout' => 'Logout',

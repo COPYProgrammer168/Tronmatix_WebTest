@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\TelegramAuthController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\TelegramBotController;
 use App\Http\Controllers\Api\TelegramController;
+use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Auth\DevAuthController;
@@ -40,6 +41,7 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
+Route::get('/videos', [VideoController::class, 'index']);
 
 Route::get('/delivery-schedules', [DeliveryScheduleController::class, 'index']);
 Route::get('/discounts/public', [DiscountController::class, 'storefront']);
@@ -61,7 +63,7 @@ Route::middleware('throttle:10,1')->group(function () {
 
 // ── Protected (requires Sanctum login) ───────────────────────────────────────
 
-Route::middleware(['auth:sanctum', 'throttle:10,1'])->group(function () {
+Route::middleware(['auth:sanctum', 'not_banned', 'throttle:10,1'])->group(function () {
 
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);

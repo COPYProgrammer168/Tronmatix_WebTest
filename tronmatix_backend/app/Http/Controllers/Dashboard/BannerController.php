@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Models\Product;
 use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,8 +18,9 @@ class BannerController extends Controller
     public function index()
     {
         $banners = Banner::orderBy('order')->get();
+        $products = Product::all();
 
-        return view('dashboard.banners', compact('banners'));
+        return view('dashboard.banners', compact('banners', 'products'));
     }
 
     public function store(Request $request)
@@ -167,6 +169,7 @@ class BannerController extends Controller
             'badge'        => 'nullable|string|max:100',
             'bg_color'     => 'nullable|string|max:50',
             'text_color'   => 'nullable|string|max:50',
+            'product_id'   => 'nullable|exists:products,id',
             'order'        => 'nullable|integer|min:0',
             'active'       => 'nullable',
             'image_file'   => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',

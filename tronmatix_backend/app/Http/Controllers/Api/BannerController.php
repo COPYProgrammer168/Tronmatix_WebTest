@@ -21,6 +21,7 @@ class BannerController extends Controller
             'bg_color', 'text_color',
             'image',
             'video', 'video_type',   // ← video support
+            'product_id',            // ← link banner to a product
             'order',
         ])->map(function (Banner $b) {
             return [
@@ -35,6 +36,7 @@ class BannerController extends Controller
                 'video' => $b->video_url,   // uses accessor — resolves path
                 'video_type' => $b->video_type,
                 'has_video' => $b->has_video,
+                'product_id' => $b->product_id,
                 'order' => $b->order,
             ];
         });

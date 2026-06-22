@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\BannerController;
+use App\Http\Controllers\Dashboard\VideoController;
 use App\Http\Controllers\Dashboard\TelegramAdminController;
 use App\Http\Controllers\Dashboard\DiscountController as DashboardDiscountController;
 use App\Http\Controllers\Dashboard\ProductController;
@@ -93,6 +94,13 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
         Route::patch('/banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
         Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+        // ── Videos ────────────────────────────────────────────────────────────
+        Route::get('/videos', [VideoController::class, 'index'])->name('videos');
+        Route::post('/videos', [VideoController::class, 'store'])->name('videos.store');
+        Route::put('/videos/{video}', [VideoController::class, 'update'])->name('videos.update');
+        Route::patch('/videos/{video}/toggle', [VideoController::class, 'toggle'])->name('videos.toggle');
+        Route::delete('/videos/{video}', [VideoController::class, 'destroy'])->name('videos.destroy');
 
         // ── Admin Profile ─────────────────────────────────────────────────────
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile');

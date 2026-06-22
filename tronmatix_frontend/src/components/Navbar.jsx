@@ -443,7 +443,7 @@ export default function Navbar({ onAuthOpen }) {
           </div>
 
           {/* Inline nav tablet+ */}
-          <nav className="hidden lg:flex items-center flex-1 min-w-0 justify-center">
+          <nav className="hidden xl:flex items-center flex-1 min-w-0 justify-center">
             <ul className="flex items-center flex-wrap">
               {navItems.map(item => (
                 <li key={item.label} className="relative flex-shrink-0">
@@ -554,7 +554,7 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </div>
 
-            <IconBtn onClick={() => setCartOpen(true)} className="md:hidden" style={{ color: textColor }}>
+            <IconBtn onClick={() => setCartOpen(true)} className="xl:hidden" style={{ color: textColor }}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -565,7 +565,7 @@ export default function Navbar({ onAuthOpen }) {
               )}
             </IconBtn>
 
-            <button className="lg:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
+            <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
               onMouseLeave={e => e.currentTarget.style.color = textColor}
               onClick={() => setMobileOpen(true)}>
@@ -654,7 +654,7 @@ export default function Navbar({ onAuthOpen }) {
 
               <UserDropdown menuRef={userMenuRef} />
 
-              <button className="lg:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
+              <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                 onMouseLeave={e => e.currentTarget.style.color = textColor}
                 onClick={() => setMobileOpen(true)}>
@@ -667,7 +667,7 @@ export default function Navbar({ onAuthOpen }) {
         </div>
 
         {/* ── DESKTOP NAV BAR ── */}
-        <nav className="hidden lg:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
+        <nav className="hidden xl:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
           <div className="max-w-[1280px] mx-auto px-2 flex items-center">
             <ul className="flex items-center justify-center flex-1 flex-wrap">
               {navItems.map(item => (

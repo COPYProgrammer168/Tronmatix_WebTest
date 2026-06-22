@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from '../lib/axios';
+import { useCart } from '../context/CartContext';
 
 const SUGGESTIONS = [
   { label: '🖥 Build me a PC',           text: 'Can you help me build a gaming PC? What budget should I set?' },
@@ -96,12 +97,12 @@ function Bubble({ msg, isNew }) {
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black mr-2 flex-shrink-0 mt-1"
           style={{
-            fontSize: 13,
-            background: 'linear-gradient(135deg, #f97316, #ea580c)',
-            boxShadow: '0 2px 8px rgba(249,115,22,0.4)',
+            background: '#fff', // Changed from gradient to white as it's an image
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            overflow: 'hidden',
           }}
         >
-          ⚡
+          <img src="/src/assets/leaflet/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
         </div>
       )}
       <div style={{ maxWidth: '80%' }}>
@@ -144,12 +145,12 @@ function TypingIndicator() {
       <div
         className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black mr-2 flex-shrink-0"
         style={{
-          fontSize: 13,
-          background: 'linear-gradient(135deg, #f97316, #ea580c)',
-          boxShadow: '0 2px 8px rgba(249,115,22,0.4)',
+          background: '#fff',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          overflow: 'hidden',
         }}
       >
-        ⚡
+        <img src="/src/assets/leaflet/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
       </div>
       <div
         style={{
@@ -183,6 +184,7 @@ function TypingIndicator() {
 
 export default function SupportChat() {
   const [open,      setOpen]      = useState(false)
+  const [showMenu,  setShowMenu]  = useState(false)
   const [messages,  setMessages]  = useState(() => {
     try {
       const saved = sessionStorage.getItem('tronmatix_chat')
@@ -202,6 +204,11 @@ export default function SupportChat() {
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
   const textareaRef = useRef(null)
+  const { cartOpen } = useCart();
+
+  useEffect(() => {
+    if (cartOpen) setOpen(false);
+  }, [cartOpen]);
 
   useEffect(() => {
     try { sessionStorage.setItem('tronmatix_chat', JSON.stringify(messages)) } catch {}
@@ -299,12 +306,13 @@ export default function SupportChat() {
     <>
       {/* ── Chat window ─────────────────────────────────────────────────────── */}
       <div
+        className="chat-window"
         style={{
           position: 'fixed',
           bottom: 90,
           right: 16,
           zIndex: 200,
-          width: 370,
+          width: 300,
           maxHeight: '75vh',
           background: '#fff',
           borderRadius: 20,
@@ -331,10 +339,13 @@ export default function SupportChat() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 40, height: 40, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #f97316, #ea580c)',
+              background: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18, boxShadow: '0 3px 12px rgba(249,115,22,0.5)',
-            }}>⚡</div>
+              boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
+              overflow: 'hidden',
+            }}>
+              <img src="/src/assets/leaflet/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
+            </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, fontFamily: 'Rajdhani, sans-serif', letterSpacing: 0.3 }}>
                 TRXBot — AI Assistant
@@ -486,54 +497,108 @@ export default function SupportChat() {
         </div>
       </div>
 
-      {/* ── Floating toggle button ───────────────────────────────────────────── */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          position: 'fixed', bottom: 20, right: 16, zIndex: 200,
-          width: 56, height: 56,
-          background: open ? '#374151' : 'linear-gradient(135deg, #f97316, #ea580c)',
-          border: 'none', borderRadius: '50%',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(249,115,22,0.5)',
-          transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
-          transform: open ? 'scale(0.95)' : 'scale(1)',
-        }}
-        onMouseEnter={e => { if (!open) e.currentTarget.style.transform = 'scale(1.12)' }}
-        onMouseLeave={e => { e.currentTarget.style.transform = open ? 'scale(0.95)' : 'scale(1)' }}
-      >
-        {open ? (
-          <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        ) : (
-          <>
-            <svg width="24" height="24" fill="none" stroke="#fff" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-            </svg>
-            {unreadCount > 0 && (
-              <div style={{
-                position: 'absolute', top: -2, right: -2,
-                width: 18, height: 18,
-                background: '#ef4444', borderRadius: '50%',
-                fontSize: 10, fontWeight: 700, color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '2px solid #fff',
-                animation: 'fadeIn 0.3s',
-              }}>
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </div>
-            )}
-          </>
-        )}
-      </button>
+      {/* ── Floating toggle button and menu ───────────────────────────────────── */}
+      {!cartOpen && (
+        <div style={{ position: 'fixed', bottom: 20, right: 16, zIndex: 200, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          {showMenu && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 4 }}>
+              {/* Chatbot Button */}
+              <button
+                onClick={() => { setShowMenu(false); setOpen(true); }}
+                title="Open Chat"
+                style={{
+                  width: 50, height: 50, borderRadius: '50%',
+                  background: '#fff', border: '2px solid #f97316',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#f97316', cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(249,115,22,0.3)',
+                  transition: 'transform 0.2s',
+                  padding: 0, overflow: 'hidden'
+                }}>
+                <img src="/src/assets/leaflet/chatbot.png" alt="Chat" width="26" height="26" />
+              </button>
+              {/* Messenger Button */}
+              <a href="https://m.me/TronmatixComputer" target="_blank" rel="noopener noreferrer" title="Chat on Messenger"
+                style={{
+                  width: 50, height: 50, borderRadius: '50%',
+                  background: '#fff', border: '2px solid #f97316',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#f97316', textDecoration: 'none',
+                  boxShadow: '0 4px 12px rgba(249,115,22,0.3)',
+                  transition: 'transform 0.2s'
+                }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.03 2 11.03c0 2.94 1.51 5.56 3.86 7.23v3.74l3.58-1.99c.77.21 1.58.32 2.42.32 5.52 0 10-4.03 10-9.03S17.52 2 12 2zm.84 12.02l-2.67-2.88-5.17 2.88 5.69-6.04 2.71 2.88 5.13-2.88-5.69 6.04z"/></svg>
+              </a>
+              {/* Telegram Button */}
+              <a href="https://t.me/KJ_Jen" target="_blank" rel="noopener noreferrer" title="Chat on Telegram"
+                style={{
+                  width: 50, height: 50, borderRadius: '50%',
+                  background: '#fff', border: '2px solid #f97316',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#f97316', textDecoration: 'none',
+                  boxShadow: '0 4px 12px rgba(249,115,22,0.3)',
+                  transition: 'transform 0.2s'
+                }}>
+                <img src="/src/assets/telegram.svg" alt="Telegram" width="26" height="26" />
+              </a>
+            </div>
+          )}
 
+          <button
+            onClick={() => {
+              if (open) {
+                setOpen(false)
+                setShowMenu(false)
+              } else {
+                setShowMenu(s => !s)
+              }
+            }}
+            style={{
+              width: 56, height: 56,
+              background: open ? '#374151' : 'linear-gradient(135deg, #f97316, #ea580c)',
+              border: 'none', borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 20px rgba(249,115,22,0.5)',
+              transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+              transform: open || showMenu ? 'scale(0.95)' : 'scale(1)',
+            }}
+          >
+            {open ? (
+              <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            ) : (
+              <>
+                <svg width="24" height="24" fill="none" stroke="#fff" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                {unreadCount > 0 && (
+                  <div style={{
+                    position: 'absolute', top: -2, right: -2,
+                    width: 18, height: 18,
+                    background: '#ef4444', borderRadius: '50%',
+                    fontSize: 10, fontWeight: 700, color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '2px solid #fff',
+                    animation: 'fadeIn 0.3s',
+                  }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </div>
+                )}
+              </>
+            )}
+          </button>
+        </div>
+      )}
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         @keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @media (max-width: 480px) {
+          .chat-window { width: calc(100vw - 32px) !important; }
+        }
       `}</style>
     </>
   )

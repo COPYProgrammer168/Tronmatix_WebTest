@@ -21,8 +21,8 @@
         body { background-color: #111827; color: #f1f5f9; font-family: sans-serif; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-md w-full bg-gray-800 p-8 rounded-2xl border border-gray-700 shadow-xl">
+<body class="min-h-screen flex items-start justify-center p-4 sm:p-6">
+    <div class="w-full max-w-md bg-gray-800 p-6 sm:p-8 rounded-2xl border border-gray-700 shadow-xl">
         <h1 class="text-2xl font-black text-white mb-6 text-center">Customer Feedback</h1>
         
         @if(session('success'))

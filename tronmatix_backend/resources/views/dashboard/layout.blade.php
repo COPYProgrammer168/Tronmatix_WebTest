@@ -1160,6 +1160,14 @@
                 </svg>
                 {{ strtoupper(__('dashboard.nav.banners')) }}
             </a>
+            <a href="{{ route('dashboard.videos') }}"
+               class="nav-item {{ request()->routeIs('dashboard.videos*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/>
+                </svg>
+                {{ strtoupper(__('dashboard.nav.videos')) }}
+            </a>
 
             <div class="nav-section-label">{{ __('dashboard.common.sales') }}</div>
             <a href="{{ route('dashboard.orders') }}"
@@ -1220,9 +1228,9 @@
                 {{ strtoupper(__('dashboard.nav.settings')) }}
             </a>
 
-            @php 
+            @php
                 $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
-                $adminRole = $user?->role ?? 'editor'; 
+                $adminRole = $user?->role ?? 'editor';
             @endphp
             @if(in_array($adminRole, ['admin','superadmin']))
             <a href="{{ route('dashboard.staff') }}"

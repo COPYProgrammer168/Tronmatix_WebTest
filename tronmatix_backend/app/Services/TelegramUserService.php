@@ -272,6 +272,20 @@ class TelegramUserService
         ]));
     }
 
+    /** Notify user when their phone number is missing from the order. */
+    public function sendPhoneMissingUserAlert(Order $order): void
+    {
+        if (! $tgId = $order->user?->telegram_chat_id) return;
+
+        $this->sendToUser($tgId, implode("\n", [
+            '⚠️ <b>Missing Contact Information</b>', '',
+            "Hi, we noticed that you didn't provide a phone number for your order <code>#{$order->order_id}</code>.",
+            '',
+            'Please contact our support or update your order details so we can reach you for delivery/pickup.',
+            '🕐 '.$this->ts(),
+        ]));
+    }
+
     // =========================================================================
     //  PRIVATE HELPERS
     // =========================================================================

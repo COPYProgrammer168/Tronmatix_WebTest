@@ -14,13 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-
-        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
-
+        
         $middleware->use([
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
-
+        
         // Exclude all /api/* routes from CSRF verification (protected by Bearer token instead)
         $middleware->validateCsrfTokens(except: [
             'api/*',
@@ -37,7 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
             'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'not_banned' => \App\Http\Middleware\EnsureNotBanned::class,
         ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
@@ -69,8 +69,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], Response::HTTP_NOT_FOUND);
             }
         });
+
     })
     ->withMiddleware(function ($m) {
         $m->web(append: [\App\Http\Middleware\SetLocale::class]);
     })
     ->create();
+    

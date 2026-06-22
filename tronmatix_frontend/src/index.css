@@ -74,9 +74,10 @@ body.lang-km h4{
   font-size: clamp(1em, 1vw + 1em, 1.4em) !important;
 }
 body.lang-km h2{
-  font-family: var(--font-kh-heading) !important;
+  font-family: var(--font-kh-body) !important;
   line-height: var(--lh-kh-heading) !important;
-  font-size: clamp(1.3em, 1.5vw + 1em, 1.2em) !important;
+  letter-spacing: 2px;
+  font-size: 40px !important;
 }
 
 body.lang-km h3 span {

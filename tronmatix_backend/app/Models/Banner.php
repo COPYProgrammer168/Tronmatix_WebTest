@@ -13,6 +13,7 @@ class Banner extends Model
         'title', 'subtitle', 'badge',
         'bg_color', 'text_color',
         'image', 'order', 'active',
+        'product_id',
         // ── Video support ─────────────────────────────────────────────────────
         'video',        // path or URL to video file (mp4/webm)
         'video_type',   // 'upload'

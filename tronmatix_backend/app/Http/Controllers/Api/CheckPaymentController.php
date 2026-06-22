@@ -131,6 +131,21 @@ class CheckPaymentController extends Controller
                 Log::warning('Telegram customer receipt failed: ' . $e->getMessage());
             }
 
+            // ── Step 4.1: Check for missing phone number ──────────────────────
+            $shipping = $freshOrder->shipping;
+            if (is_string($shipping)) {
+                $shipping = json_decode($shipping, true) ?? [];
+            }
+            if (empty($shipping['phone'])) {
+                Log::info('Missing phone number alert ⚠️', ['order_id' => $order->id]);
+                try {
+                    app(TelegramService::class)->sendPhoneMissingAdminAlert($freshOrder);
+                    app(TelegramUserService::class)->sendPhoneMissingUserAlert($freshOrder);
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to send phone missing alert: ' . $e->getMessage());
+                }
+            }
+
             // ── Step 5: return paid status to frontend ────────────────────────
             return response()->json([
                 'success' => true,

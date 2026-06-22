@@ -142,10 +142,10 @@ export default function ProfileHeader({ user, totalSpent, VIP_GOAL }) {
               ) : (
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
-                  fontSize: 14, fontWeight: 600, padding: '4px 14px', borderRadius: 20, letterSpacing: 2,
-                  border: '1px solid rgba(255,255,255,0.12)', fontFamily: bodyFont,
-                }}>{isKhmer ? 'សមាជិក' : 'MEMBER'}</div>
+                  background: 'linear-gradient(135deg, #F97316 0%, #FBBF24 50%, #F97316 100%)',
+                  fontSize: 14, fontWeight: 600, padding: '4px 14px', borderRadius: 20, letterSpacing: .5,
+                  border: '1px solid rgba(251,191,36,0.6)', fontFamily: bodyFont,
+                }}>{isKhmer ? 'អតិថិជន' : 'Customer'}</div>
               )}
             </div>
             </div>

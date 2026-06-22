@@ -189,6 +189,19 @@ class TelegramService
         $this->send($text);
     }
 
+    /** Notify admin when customer phone is missing from an order. */
+    public function sendPhoneMissingAdminAlert(Order $order): void
+    {
+        if (!$this->token) return;
+
+        $message = "⚠️ *Missing Customer Phone Number*\n\n" .
+                   "📦 Order: `{$order->order_id}`\n" .
+                   "👤 Customer: " . ($order->user?->username ?? 'Guest') . "\n\n" .
+                   "Please contact the customer to get their phone number.";
+
+        $this->send($message);
+    }
+
     /**
      * sendMessage() alias — several controllers called ->sendMessage() which
      * didn't exist, causing PHP0418 "Call to unknown method" fatal errors.
