@@ -135,7 +135,7 @@ class DashboardController extends Controller
 
         $top_products = Product::withCount('orderItems')->orderByDesc('order_items_count')->take(5)->get();
         $low_stock    = Product::lowStock()->orderBy('stock')->take(5)->get();
-        $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(8)->get();
+        $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(14)->get();
 
         $top_discount_codes = Discount::select(
             'discounts.*',
@@ -379,7 +379,7 @@ class DashboardController extends Controller
     public function verifyOrderPayment(Order $order)
     {
         Log::info('Verify payment requested for order: ' . $order->order_id);
-        
+
         // Update both payment status and order status
         $order->update([
             'payment_status' => 'paid',

@@ -381,11 +381,11 @@ export default function ProductDetailPage() {
           >
             {product.name}
           </h1>
-          {product.rating > 0 && (
+          {/* {product.rating > 0 && (
             <div className="mb-3">
               <Stars rating={product.rating} />
             </div>
-          )}
+          )} */}
 
           {/* Price */}
           <div className="mb-4">

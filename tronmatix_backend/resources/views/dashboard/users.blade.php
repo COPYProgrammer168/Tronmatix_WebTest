@@ -215,7 +215,7 @@ tbody tr:hover td { background: var(--dark-700); }
                         <th>TELEGRAM</th>
                         <th>ROLE</th>
                         <th>JOINED</th>
-                        <th style="min-width:200px;">CHANGE ROLE</th>
+                        {{-- <th style="min-width:200px;">CHANGE ROLE</th> --}}
                     </tr>
                 </thead>
                 <tbody>
@@ -289,7 +289,7 @@ tbody tr:hover td { background: var(--dark-700); }
                             <div style="font-weight:700; font-size: var(--title-size); color:{{ /* $spent >= $vipGoal ? '#F97316' : */ '#fff' }};">
                                 ${{ number_format($spent, 0) }}
                             </div>
-                            {{-- 
+                            {{--
                             @if(! $isVip)
                             <div style="margin-top:5px; position:relative;">
                                 <div style="height:4px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden;">
@@ -346,7 +346,7 @@ tbody tr:hover td { background: var(--dark-700); }
                         </td>
 
                         {{-- ── CHANGE ROLE (AJAX, no page reload) ──────────────── --}}
-                        <td>
+                        {{-- <td>
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <select class="role-select" id="role-select-{{ $user->id }}"
                                         data-user="{{ $user->id }}"
@@ -370,7 +370,7 @@ tbody tr:hover td { background: var(--dark-700); }
                                     APPLY
                                 </button>
                             </div>
-                        </td>
+                        </td> --}}
                     </tr>
                     @empty
                     <tr>
@@ -461,7 +461,7 @@ tbody tr:hover td { background: var(--dark-700); }
                 </div>
             </div>
 
-            {{-- 
+            {{--
             <div id="ui-vip-wrap" style="padding:0 24px 20px;">
                 <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
