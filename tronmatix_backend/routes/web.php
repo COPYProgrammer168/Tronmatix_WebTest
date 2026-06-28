@@ -1,24 +1,49 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\BannerController;
+use App\Http\Controllers\Dashboard\VideoController;
+use App\Http\Controllers\Dashboard\TelegramAdminController;
+use App\Http\Controllers\Dashboard\DiscountController as DashboardDiscountController;
 use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Dashboard\StaffController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StaffRequestController;
+use App\Models\Feedback;
 use Illuminate\Support\Facades\Route;
-// use App\Exports\DashboardExport;
-// use Maatwebsite\Excel\Facades\Excel;
-
 
 // ── Redirect root ─────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('dashboard.index'));
 
+// ── Language switcher ─────────────────────────────────────────────────────────
+Route::get('/lang/{locale}', function (string $locale) {
+    $supported = ['en', 'km'];
+    if (in_array($locale, $supported)) {
+        session(['app_lang' => $locale]);
+        cookie()->queue(cookie('app_lang', $locale, 60 * 24 * 365, '/', null, false, false));
+    }
+    return redirect()->back()->withHeaders(['Cache-Control' => 'no-store']);
+})->name('lang.switch');
+
+// ── Feedback ──────────────────────────────────────────────────────────────────
+Route::get('/feedback', fn() => view('dashboard.feedback.index'))->name('feedback');
+Route::post('/feedback', function (\Illuminate\Http\Request $request) {
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'feedback' => 'required|string',
+    ]);
+    Feedback::create($request->all());
+    return back()->with('success', 'Thank you for your feedback!');
+})->name('feedback.submit');
+
 // ── Admin Auth Routes (unauthenticated only) ──────────────────────────────────
 Route::prefix('dashboard')->name('dashboard.')
-    ->middleware(\App\Http\Middleware\AdminGuest::class)  // redirect to dashboard if already logged in
+    ->middleware(\App\Http\Middleware\AdminGuest::class)
     ->group(function () {
         Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [AdminAuthController::class, 'login'])->name('login.post');
@@ -31,16 +56,13 @@ Route::prefix('dashboard')->name('dashboard.')
     ->middleware(\App\Http\Middleware\AdminAuthenticate::class)
     ->group(function () {
 
-        // ── Overview ──────────────────────────────────────────────────────────
         Route::get('/', [DashboardController::class, 'index'])->name('index');
-
         Route::get('/export', [DashboardController::class, 'dashboardExport'])->name('export');
-
-        // ── Logout (must be inside auth middleware) ───────────────────────────
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+        Route::get('/request-access', [StaffRequestController::class, 'showForm'])->name('request-access');
+        Route::post('/request-access', [StaffRequestController::class, 'submit'])->name('request-access.submit');
 
         // ── Products ──────────────────────────────────────────────────────────
-        // NOTE: /create must be declared before /{product} to avoid route collision
         Route::get('/products', [ProductController::class, 'index'])->name('products');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
@@ -53,6 +75,7 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/orders/{order}', [DashboardController::class, 'showOrder'])->name('orders.show');
         Route::put('/orders/{order}/status', [DashboardController::class, 'updateOrderStatus'])->name('orders.status');
         Route::post('/orders/{order}/confirm-delivery', [DashboardController::class, 'confirmDelivery'])->name('orders.confirm-delivery');
+        Route::post('/orders/{order}/verify-payment', [DashboardController::class, 'verifyOrderPayment'])->name('orders.verify-payment');
 
         // ── Users ─────────────────────────────────────────────────────────────
         Route::get('/users', [UserController::class, 'index'])->name('users');
@@ -60,10 +83,10 @@ Route::prefix('dashboard')->name('dashboard.')
 
         // ── Discounts ─────────────────────────────────────────────────────────
         Route::get('/discounts', [DashboardController::class, 'discounts'])->name('discounts');
-        Route::post('/discounts', [DashboardController::class, 'discountsStore'])->name('discounts.store');
-        Route::put('/discounts/{discount}', [DashboardController::class, 'discountsUpdate'])->name('discounts.update');
-        Route::delete('/discounts/{discount}', [DashboardController::class, 'discountsDestroy'])->name('discounts.destroy');
-        Route::patch('/discounts/{discount}/badge', [DashboardController::class, 'discountsSaveBadge'])->name('discounts.badge');
+        Route::post('/discounts', [DashboardDiscountController::class, 'store'])->name('discounts.store');
+        Route::put('/discounts/{discount}', [DashboardDiscountController::class, 'update'])->name('discounts.update');
+        Route::delete('/discounts/{discount}', [DashboardDiscountController::class, 'destroy'])->name('discounts.destroy');
+        Route::patch('/discounts/{discount}/badge', [DashboardDiscountController::class, 'saveBadge'])->name('discounts.badge');
 
         // ── Banners ───────────────────────────────────────────────────────────
         Route::get('/banners', [BannerController::class, 'index'])->name('banners');
@@ -72,25 +95,56 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::patch('/banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
         Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
-        // ── Settings ──────────────────────────────────────────────────────────
-        Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
-        Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
-        Route::get('/settings/reset', [SettingsController::class, 'reset'])->name('settings.reset');
-        Route::put('/settings/permissions', [SettingsController::class, 'updatePermissions'])->name('settings.permissions'); // ← ADD THIS
-
-        // ── Notifications API (for bell polling) ──────────────────────────────
-        Route::get('/notifications', [SettingsController::class, 'notifications'])->name('notifications');
+        // ── Videos ────────────────────────────────────────────────────────────
+        Route::get('/videos', [VideoController::class, 'index'])->name('videos');
+        Route::post('/videos', [VideoController::class, 'store'])->name('videos.store');
+        Route::put('/videos/{video}', [VideoController::class, 'update'])->name('videos.update');
+        Route::patch('/videos/{video}/toggle', [VideoController::class, 'toggle'])->name('videos.toggle');
+        Route::delete('/videos/{video}', [VideoController::class, 'destroy'])->name('videos.destroy');
 
         // ── Admin Profile ─────────────────────────────────────────────────────
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::match(['post', 'put'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
         Route::put('/profile/role', [ProfileController::class, 'updateRole'])->name('profile.role');
+        Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
 
-        // ── Staff List ─────────────────────────────────────────────────────
+        // ── Notifications ─────────────────────────────────────────────────────
+        Route::get('/notifications', [SettingsController::class, 'notifications'])->name('notifications');
+
+        // Settings — SettingsController::show() checks canEditPerms internally
+        Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
+        Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::get('/settings/reset', [SettingsController::class, 'reset'])->name('settings.reset');
+        Route::put('/settings/permissions', [SettingsController::class, 'updatePermissions'])->name('settings.permissions');
+
+        // Staff management — StaffController::assertAdmin() enforces role
         Route::get('/staff', [StaffController::class, 'index'])->name('staff');
         Route::post('/staff/invite', [StaffController::class, 'invite'])->name('staff.invite');
         Route::patch('/staff/{id}/role', [StaffController::class, 'updateRole'])->name('staff.role');
         Route::patch('/staff/{id}/toggle', [StaffController::class, 'toggle'])->name('staff.toggle');
+        Route::post('/staff/heartbeat', [StaffController::class, 'heartbeat'])->name('staff.heartbeat');
+        Route::post('/staff/offline', [StaffController::class, 'setOffline'])->name('staff.offline');
         Route::delete('/staff/{id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+
+        // Admin management — AdminController enforces superadmin role internally
+        Route::post('/admin/invite', [AdminController::class, 'invite'])->name('admin.invite');
+        Route::patch('/admin/{id}/role', [AdminController::class, 'updateRole'])->name('admin.role');
+        Route::patch('/admin/{id}/toggle', [AdminController::class, 'toggle'])->name('admin.toggle');
+        Route::delete('/admin/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
+
+        // Staff requests — StaffRequestController enforces superadmin internally
+        Route::post('/staff-requests/{id}/accept', [StaffRequestController::class, 'accept'])->name('staff-requests.accept');
+        Route::post('/staff-requests/{id}/reject', [StaffRequestController::class, 'reject'])->name('staff-requests.reject');
+
+        // Telegram — admin only, enforced in controller
+        Route::post('/telegram/setup-webhook', [TelegramAdminController::class, 'setupWebhook'])->name('telegram.setup-webhook');
+        Route::post('/telegram/delete-webhook', [TelegramAdminController::class, 'deleteWebhook'])->name('telegram.delete-webhook');
+        Route::get('/telegram/webhook-info', [TelegramAdminController::class, 'webhookInfo'])->name('telegram.webhook-info');
+
+        // Feedback
+        Route::get('/feedback', [\App\Http\Controllers\Dashboard\FeedbackController::class, 'index'])->name('feedback');
+
+        Route::get('/report', [DashboardController::class, 'report'])->name('report');
+        Route::get('/stats', [DashboardController::class, 'stats'])->name('stats');
     });

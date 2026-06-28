@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+     'dev_portal_key' => env('DEV_PORTAL_KEY', null),
+
 ];

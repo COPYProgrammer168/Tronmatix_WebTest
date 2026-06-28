@@ -6,21 +6,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\AdminSetting;
 
 class Product extends Model
 {
     // ── Mass assignable ───────────────────────────────────────────────────────
     protected $fillable = [
         'name',
+        'caption',
         'description',
         'price',
         'category',
         'brand',
+        'warranty',
         'image',
         'image_disk',
         'images',
         'specs',
         'stock',
+        'stock_status',
+        'stock_details',
+        'brand_pc_part',
         'rating',
         'is_featured',
         'is_hot',
@@ -28,7 +34,7 @@ class Product extends Model
 
     // ── Casts ─────────────────────────────────────────────────────────────────
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'string',
         'rating' => 'decimal:1',
         'stock' => 'integer',
         'is_featured' => 'boolean',
@@ -40,11 +46,32 @@ class Product extends Model
     // ── Appended virtual attributes ───────────────────────────────────────────
     protected $appends = ['all_images', 'in_stock', 'display_price'];
 
+    // ── Boot ──────────────────────────────────────────────────────────────────
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Product $product) {
+            // Auto-update stock_status based on stock count
+            if ($product->stock !== null && $product->stock <= 0) {
+                $product->stock_status = 'Sold Out';
+            } elseif ($product->isDirty('stock') && $product->stock > 0 && ($product->stock_status === 'Sold Out' || empty($product->stock_status))) {
+                $product->stock_status = 'Available InStock Now';
+            }
+        });
+    }
+
     // ── Relationships ─────────────────────────────────────────────────────────
 
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class);
     }
 
     // ── Accessors ─────────────────────────────────────────────────────────────

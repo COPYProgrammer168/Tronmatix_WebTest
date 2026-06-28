@@ -13,19 +13,21 @@ class Discount extends Model
     protected $fillable = [
         'code', 'type', 'value',
         'min_order', 'max_uses', 'used_count',
-        'expires_at', 'is_active', 'categories',
+        'expires_at', 'is_active', 'categories', 'product_id',
         'badge_config',  // { text, icon, bg, border, color } — shown on product cards
+        'kind',          // 'code' (customer types it) | 'badge' (auto-shown, no code entry)
     ];
 
     protected $casts = [
-        'value' => 'float',
-        'min_order' => 'float',
-        'max_uses' => 'integer',
-        'used_count' => 'integer',
-        'is_active' => 'boolean',
-        'categories' => 'array',
-        'expires_at' => 'datetime',
-        'badge_config' => 'array',  // stored as JSON, cast to/from PHP array
+        'value'        => 'float',
+        'min_order'    => 'float',
+        'max_uses'     => 'integer',
+        'used_count'   => 'integer',
+        'is_active'    => 'boolean',
+        'categories'   => 'array',
+        'expires_at'   => 'datetime',
+        'badge_config' => 'array',
+        'kind'         => 'string',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────
@@ -33,6 +35,11 @@ class Discount extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     // ── Scopes ────────────────────────────────────────────────────────────────
@@ -94,6 +101,18 @@ class Discount extends Model
         if ($this->expires_at && $this->expires_at->isPast()) return false;
         if ($this->max_uses && $this->used_count >= $this->max_uses) return false;
         return true;
+    }
+
+    /** Whether this discount is badge-kind (auto-shown, no code entry needed) */
+    public function isBadgeKind(): bool
+    {
+        return ($this->kind ?? 'code') === 'badge';
+    }
+
+    /** Whether this discount is code-kind (customer types it at checkout) */
+    public function isCodeKind(): bool
+    {
+        return ($this->kind ?? 'code') === 'code';
     }
 
     /** Increment usage count after successful order */

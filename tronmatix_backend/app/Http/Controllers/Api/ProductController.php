@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/ProductController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -17,14 +15,26 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::query();
-
-        // 'all' is a special slug meaning no category filter — show everything
-        if ($request->filled('category') && strtolower($request->category) !== 'all') {
+        if ($request->has('category') && is_array($request->input('category'))) {
+            $cats = array_values(array_filter(array_map('strtolower', $request->input('category'))));
+            if (count($cats) > 0) {
+                $query->whereIn(DB::raw('LOWER(category)'), $cats);
+            }
+        } elseif ($request->filled('category') && strtolower($request->category) !== 'all') {
             $query->whereRaw('LOWER(category) = ?', [strtolower($request->category)]);
         }
-        if ($request->filled('brand')) {
-            $query->where('brand', $request->brand);
-        }
+if ($request->filled('brand')) {
+    $brand = strtolower($request->brand);
+
+    // Flexible matching: check if search term is part of DB brand or vice-versa
+    $query->where(function($q) use ($brand) {
+        $q->whereRaw('LOWER(brand) LIKE CONCAT(\'%\', ?, \'%\')', [$brand])
+          ->orWhereRaw('? LIKE CONCAT(\'%\', LOWER(brand), \'%\')', [$brand])
+          ->orWhereRaw('LOWER(brand_pc_part) LIKE CONCAT(\'%\', ?, \'%\')', [$brand])
+          ->orWhereRaw('? LIKE CONCAT(\'%\', LOWER(brand_pc_part), \'%\')', [$brand]);
+    });
+}
+
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -32,12 +42,12 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
         if ($request->filled('search')) {
-            $term = '%'.$request->search.'%';
+            $term = '%'.strtolower($request->search).'%';
             $query->where(fn ($q) => $q
-                ->where('name', 'LIKE', $term)
-                ->orWhere('category', 'LIKE', $term)
-                ->orWhere('brand', 'LIKE', $term)
-                ->orWhere('description', 'LIKE', $term)
+                ->whereRaw('LOWER(name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(category) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(brand) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(description) LIKE ?', [$term])
             );
         }
 
@@ -58,7 +68,7 @@ class ProductController extends Controller
             default      => $query->latest(),
         };
 
-        $perPage = min((int) $request->input('per_page', 12), 100);
+        $perPage = min((int) $request->input('per_page', 12), 999);
         $products = $query->paginate($perPage);
 
         // use model's getAllImagesAttribute() (appended) instead of re-parsing JSON manually

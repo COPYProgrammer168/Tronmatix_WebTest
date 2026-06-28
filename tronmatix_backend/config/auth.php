@@ -8,29 +8,16 @@ return [
     ],
 
     'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
-
-        // ── Admin guard ───────────────────────────────────────────────────────
-        'admin' => [
-            'driver' => 'session',
-            'provider' => 'admins',
-        ],
+        'web'   => ['driver' => 'session', 'provider' => 'users'],
+        'admin' => ['driver' => 'session', 'provider' => 'admins'],
+        'staff' => ['driver' => 'session', 'provider' => 'staff'],
+        'sanctum' => ['driver' => 'sanctum'],
     ],
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
-        ],
-
-        // ── Admin provider ────────────────────────────────────────────────────
-        'admins' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
-        ],
+        'users'  => ['driver' => 'eloquent', 'model' => App\Models\User::class],
+        'admins' => ['driver' => 'eloquent', 'model' => App\Models\Admin::class],
+        'staff'  => ['driver' => 'eloquent', 'model' => App\Models\Staff::class],
     ],
 
     'passwords' => [
@@ -45,6 +32,13 @@ return [
             'provider' => 'admins',
             'table' => 'password_reset_tokens',
             'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'staff' => [
+            'provider' => 'staff',
+            'table'    => 'password_reset_tokens',
+            'expire'   => 60,
             'throttle' => 60,
         ],
     ],

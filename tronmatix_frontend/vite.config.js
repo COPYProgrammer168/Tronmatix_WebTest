@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Use env variable for backend URL — set VITE_DEV_API_URL in your .env file
-const backendUrl = process.env.VITE_DEV_API_URL || 'http://127.0.0.1:8000'
+const backendUrl = process.env.VITE_API_URL
 
 export default defineConfig({
   plugins: [react()],
@@ -19,14 +18,17 @@ export default defineConfig({
 
   server: {
     port: 5173,
+    allowedHosts: [
+      'tronmatix-frontend.onrender.com',
+    ],
 
     proxy: {
       '/api': {
         target: backendUrl,
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path,
       },
-
       '/storage': {
         target: backendUrl,
         changeOrigin: true,
@@ -37,42 +39,23 @@ export default defineConfig({
 
   build: {
     chunkSizeWarningLimit: 600,
-
     rollupOptions: {
       output: {
         manualChunks(id) {
-
-          // React core
           if (
             id.includes('node_modules/react/') ||
             id.includes('node_modules/react-dom/') ||
             id.includes('node_modules/scheduler/')
-          ) {
-            return 'vendor-react'
-          }
+          ) return 'vendor-react'
 
-          // Router
           if (
             id.includes('node_modules/react-router') ||
             id.includes('node_modules/@remix-run/')
-          ) {
-            return 'vendor-router'
-          }
+          ) return 'vendor-router'
 
-          // SweetAlert2
-          if (id.includes('node_modules/sweetalert2')) {
-            return 'vendor-swal'
-          }
-
-          // Axios
-          if (id.includes('node_modules/axios')) {
-            return 'vendor-axios'
-          }
-
-          // All other node_modules
-          if (id.includes('node_modules/')) {
-            return 'vendor-misc'
-          }
+          if (id.includes('node_modules/sweetalert2')) return 'vendor-swal'
+          if (id.includes('node_modules/axios')) return 'vendor-axios'
+          if (id.includes('node_modules/')) return 'vendor-misc'
         },
       },
     },

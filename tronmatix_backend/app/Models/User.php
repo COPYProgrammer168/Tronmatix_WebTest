@@ -4,32 +4,39 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @method \Laravel\Sanctum\PersonalAccessToken|null currentAccessToken()
+ */
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    // ── Role constants ────────────────────────────────────────────────────────
     const ROLES = ['customer', 'vip', 'reseller', 'banned'];
 
     const ROLE_LABELS = [
         'customer' => 'Customer',
-        'vip' => 'VIP',
+        'vip'      => 'VIP',
         'reseller' => 'Reseller',
-        'banned' => 'Banned',
+        'banned'   => 'Banned',
     ];
 
-    // ── Mass assignable ───────────────────────────────────────────────────────
     protected $fillable = [
         'username', 'name', 'email', 'password',
         'phone', 'avatar',
         'role', 'is_banned',
         'two_factor_secret', 'two_factor_enabled', 'two_factor_confirmed_at',
+        // FIX: Telegram fields must be fillable for connectUser() / disconnectUser()
+        'telegram_chat_id',
+        'telegram_username',
+        'telegram_connected_at',
+        'google_id',
     ];
 
     protected $hidden = [
@@ -37,10 +44,11 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',    // FIX [1]: was missing
-        'two_factor_enabled' => 'boolean',
+        'email_verified_at'       => 'datetime',
+        'two_factor_enabled'      => 'boolean',
         'two_factor_confirmed_at' => 'datetime',
-        'is_banned' => 'boolean',
+        'is_banned'               => 'boolean',
+        'telegram_connected_at'   => 'datetime',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────
@@ -65,7 +73,6 @@ class User extends Authenticatable
         return $this->hasOne(Order::class)->latestOfMany();
     }
 
-    // FIX [2]: chatSessions() relationship — was missing
     public function chatSessions(): HasMany
     {
         return $this->hasMany(ChatSession::class);
@@ -85,27 +92,11 @@ class User extends Authenticatable
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    public function isVip(): bool
-    {
-        return $this->role === 'vip';
-    }
+    public function isVip(): bool      { return $this->role === 'vip'; }
+    public function isReseller(): bool { return $this->role === 'reseller'; }
+    public function isBanned(): bool   { return $this->role === 'banned' || (bool) $this->is_banned; }
+    public function isAdmin(): bool    { return $this->role === 'admin'; }
 
-    public function isReseller(): bool
-    {
-        return $this->role === 'reseller';
-    }
-
-    public function isBanned(): bool
-    {
-        return $this->role === 'banned' || (bool) $this->is_banned;
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    /** Total amount spent (non-cancelled orders) — used for VIP progress */
     public function totalSpent(): float
     {
         return (float) $this->orders()

@@ -1,279 +1,805 @@
-// src/components/orders/BakongQRPanel.jsx
-import { useState, useEffect, useRef } from "react"
-import { generatekhqr_api, checkpayment_api, confirmManual_api, pollPaymentStatus } from "../../lib/qrApi"
-import { QRCodeSVG } from "qrcode.react"
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useLang } from "../../context/LanguageContext";
+import {
+  generatekhqr_api,
+  checkpayment_api,
+  confirmManual_api,
+} from "../../lib/qrApi";
+import { QRCodeSVG } from "qrcode.react";
 
-export default function BakongQRPanel({ orderId, total, onPaid }) {
-  const [qrData,         setQrData]         = useState(null)
-  const [loading,        setLoading]        = useState(false)
-  const [paymentStatus,  setPaymentStatus]  = useState("idle")   // idle | pending | paid | expired | manual
-  const [error,          setError]          = useState(null)
-  const [countdown,      setCountdown]      = useState(null)
-  const [manualSent,     setManualSent]     = useState(false)
-
-  const pollerRef    = useRef(null)   // pollPaymentStatus handle
-  const countdownRef = useRef(null)   // setInterval for countdown timer
-
-  // ── Auto-generate on mount ─────────────────────────────────────────────────
-  useEffect(() => {
-    if (orderId) generateQRCode()
-    return () => stopAll()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const stopAll = () => {
-    pollerRef.current?.stop()
-    clearInterval(countdownRef.current)
+// ── QR display ────────────────────────────────────────────────────────────────
+function QRDisplay({ qrData }) {
+  if (qrData?.qr_image) {
+    const src = qrData.qr_image.startsWith("data:")
+      ? qrData.qr_image
+      : `data:image/png;base64,${qrData.qr_image}`;
+    return (
+      <div style={{ lineHeight: 0 }}>
+        <img
+          src={src}
+          alt="KHQR Payment Code"
+          style={{ display: "block", width: "100%", height: "auto" }}
+        />
+      </div>
+    );
   }
+  // Fallback: raw qr_code string → vector SVG (no image from PayWay)
+  if (qrData?.qr_code) {
+    return (
+      <div style={{ padding: 12 }}>
+        <QRCodeSVG
+          value={qrData.qr_code}
+          size={260}
+          level="H"
+          bgColor="#ffffff"
+          fgColor="#1a1a1a"
+          style={{ display: "block", width: "auto", height: "auto" }}
+        />
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{
+        height: 180,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <p style={{ fontSize: 12, color: "#9ca3af" }}>Loading QR...</p>
+    </div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
+export default function BakongQRPanel({ orderId, total, onPaid }) {
+  const { t, isKhmer } = useLang();
+
+  const [qrData, setQrData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("idle");
+  const [error, setError] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+
+  const pollerRef = useRef(null);
+  const countdownRef = useRef(null);
+  const paidRef = useRef(false); // prevent double onPaid calls
+
+  // Auto-generate on mount
+  useEffect(() => {
+    if (orderId) generateQRCode();
+    return () => stopAll();
+  }, [orderId]); // eslint-disable-line
+
+  // ── Interval helpers ───────────────────────────────────────────────────────
+  const stopPoller = () => {
+    if (pollerRef.current) {
+      clearInterval(pollerRef.current);
+      pollerRef.current = null;
+    }
+  };
+  const stopCountdown = () => {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+  };
+  const stopAll = () => {
+    stopPoller();
+    stopCountdown();
+  };
 
   // ── Generate QR ────────────────────────────────────────────────────────────
   const generateQRCode = async () => {
-    if (!orderId) { setError("Order ID not found"); return }
-    stopAll()
-    setLoading(true); setError(null); setPaymentStatus("idle")
-    setQrData(null); setCountdown(null); setManualSent(false)
+    if (!orderId) {
+      setError("Order ID not found");
+      return;
+    }
+    stopAll();
+    paidRef.current = false;
+    setLoading(true);
+    setError(null);
+    setPaymentStatus("idle");
+    setQrData(null);
+    setCountdown(null);
 
     try {
-      const response = await generatekhqr_api({ id: orderId })  // FIX: correct arg shape
-      if (!response.success) throw new Error(response.message || "Failed to generate QR")
+      const response = await generatekhqr_api({ id: orderId });
+      if (!response.success)
+        throw new Error(response.message || "Failed to generate QR");
 
-      const data = response.data
-      setQrData(data)
-      setPaymentStatus("pending")
-      startCountdown(data.qr_expiration)
-
-      // Only start polling if we have an md5 (dynamic QR); static fallback has no md5
-      if (data.qr_md5) {
-        startPoller()
-      }
+      const data = response.data;
+      setQrData(data);
+      setPaymentStatus("pending");
+      startCountdown(data.qr_expiration);
+      startPoller();
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to generate QR")
-      setPaymentStatus("idle")
+      setError(
+        err.response?.data?.message || err.message || "Failed to generate QR",
+      );
+      setPaymentStatus("idle");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  // ── Poll payment status ────────────────────────────────────────────────────
-  const startPoller = () => {
-    pollerRef.current = pollPaymentStatus(orderId, {
-      intervalMs:  4000,
-      maxAttempts: 45,   // ~3 min
-      onSuccess: (data) => {
-        stopAll()
-        setPaymentStatus("paid")
-        onPaid?.()
-      },
-      onExpired: () => {
-        stopAll()
-        setPaymentStatus("expired")
-        setError("QR code has expired.")
-      },
-      onTimeout: () => {
-        stopAll()
-        setPaymentStatus("expired")
-        setError("Payment window closed. Please generate a new QR code.")
-      },
-      onError: (err) => {
-        stopAll()
-        setError("Payment check failed: " + (err.message || "unknown error"))
-        setPaymentStatus("idle")
-      },
-    })
-  }
+  // ── Payment poller ─────────────────────────────────────────────────────────
+  const startPoller = useCallback(() => {
+    stopPoller();
+    let attempts = 0;
+    const MAX = 60; // 4 min at 4s intervals
 
-  // ── Countdown timer ────────────────────────────────────────────────────────
+    const tick = async () => {
+      if (paidRef.current) return;
+      attempts++;
+
+      try {
+        const data = await checkpayment_api(orderId);
+
+        if (data?.success && data?.status === "paid") {
+          stopAll();
+          if (!paidRef.current) {
+            paidRef.current = true;
+            setPaymentStatus("paid");
+            onPaid?.();
+          }
+          return;
+        }
+
+        if (data?.status === "expired") {
+          stopAll();
+          setPaymentStatus("expired");
+          setError("QR code has expired. Please generate a new one.");
+          return;
+        }
+
+        if (attempts >= MAX) {
+          stopAll();
+          setPaymentStatus("expired");
+          setError("Payment window closed. Please generate a new QR code.");
+        }
+      } catch (err) {
+        const status = err?.response?.status;
+        const errBody = err?.response?.data;
+
+        if (status === 400) {
+          const isExpired =
+            errBody?.status === "expired" ||
+            errBody?.message?.toLowerCase().includes("expired") ||
+            errBody?.error?.toLowerCase().includes("expired");
+          if (isExpired) {
+            stopAll();
+            setPaymentStatus("expired");
+            setError("QR expired.");
+            return;
+          }
+          if (attempts >= MAX) {
+            stopAll();
+            setPaymentStatus("expired");
+          }
+          return;
+        }
+        // 404 = still pending — keep polling
+        if (attempts >= MAX) {
+          stopAll();
+          setPaymentStatus("expired");
+        }
+      }
+    };
+
+    // First tick after 3s — give backend time to register QR with PayWay
+    setTimeout(tick, 3000);
+    pollerRef.current = setInterval(tick, 4000);
+  }, [orderId, onPaid]);
+
+  // ── Countdown ──────────────────────────────────────────────────────────────
+  const parseExpirationMs = (exp) => {
+    if (!exp) return null;
+    const hasTimezone = /Z|[+-]\d{2}:?\d{2}$/.test(exp);
+    const normalized = hasTimezone ? exp : exp.replace(" ", "T") + "Z";
+    return new Date(normalized).getTime();
+  };
+
   const startCountdown = (qrExpiration) => {
-    clearInterval(countdownRef.current)
-    if (!qrExpiration) return
+    clearInterval(countdownRef.current);
+    if (!qrExpiration) return;
+    const expiryMs = parseExpirationMs(qrExpiration);
+    if (!expiryMs || isNaN(expiryMs)) return;
 
     const tick = () => {
-      // qr_expiration is ISO string from backend (e.g. "2026-03-16T10:00:00+07:00")
-      const remaining = new Date(qrExpiration).getTime() - Date.now()
+      const remaining = expiryMs - Date.now();
       if (remaining <= 0) {
-        clearInterval(countdownRef.current)
-        setCountdown("00:00")
-        // Poller's onExpired will handle state — only set here if poller not running
-        setPaymentStatus(prev => prev === "pending" ? "expired" : prev)
-        return
+        stopAll();
+        setCountdown("0:00");
+        setPaymentStatus((prev) => (prev === "pending" ? "expired" : prev));
+        setError("QR code has expired. Please generate a new one.");
+        return;
       }
-      const m = Math.floor(remaining / 60000)
-      const s = Math.floor((remaining % 60000) / 1000)
-      setCountdown(`${m}:${s.toString().padStart(2, "0")}`)
-    }
+      const m = Math.floor(remaining / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      setCountdown(`${m}:${s.toString().padStart(2, "0")}`);
+    };
+    tick();
+    countdownRef.current = setInterval(tick, 1000);
+  };
 
-    tick()
-    countdownRef.current = setInterval(tick, 1000)
-  }
-
-  // ── "I paid" manual fallback ───────────────────────────────────────────────
+  // ── Manual confirm ─────────────────────────────────────────────────────────
   const handleManualConfirm = async () => {
     try {
-      await confirmManual_api(orderId)
-      setManualSent(true)
-      setPaymentStatus("manual")
-      stopAll()
-    } catch (err) {
-      setError("Could not submit manual confirmation. Please contact support.")
+      await confirmManual_api(orderId);
+      setPaymentStatus("manual");
+      stopAll();
+    } catch {
+      setError("Could not submit manual confirmation. Please contact support.");
     }
-  }
+  };
 
-  // ── Reset ──────────────────────────────────────────────────────────────────
   const reset = () => {
-    stopAll()
-    setQrData(null)
-    setPaymentStatus("idle")
-    setError(null)
-    setCountdown(null)
-    setManualSent(false)
-  }
+    stopAll();
+    setQrData(null);
+    setPaymentStatus("idle");
+    setError(null);
+    setCountdown(null);
+    paidRef.current = false;
+  };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="flex items-center justify-center p-4">
-      <div className="relative w-full max-w-sm">
-
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+    >
+      <div style={{ width: "auto", maxWidth: 360, position: "relative" }}>
+        {/* ── Error banner ─────────────────────────────────────────────────── */}
         {error && (
-          <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-3 text-center text-sm">
+          <div
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              color: "#b91c1c",
+              borderRadius: 12,
+              padding: "10px 16px",
+              marginBottom: 12,
+              fontSize: 13,
+              textAlign: "center",
+              fontWeight: 500,
+            }}
+          >
             ⚠️ {error}
           </div>
         )}
 
-        {/* ── IDLE / LOADING ── */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* IDLE / EXPIRED STATE                                              */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
         {(paymentStatus === "idle" || paymentStatus === "expired") && (
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="bg-red-600 py-8 text-center">
-              <span className="text-white text-4xl font-black tracking-widest">KHQR</span>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 20,
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            }}
+          >
+            {/* Red ABA/KHQR header */}
+            <div
+              style={{
+                background: "#C8102E",
+                padding: "24px 20px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 6,
+                    padding: "2px 8px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#003082",
+                      fontSize: 14,
+                      fontWeight: 900,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    ABA
+                  </span>
+                </div>
+                <span
+                  style={{
+                    color: "#fff",
+                    fontSize: 22,
+                    fontWeight: 900,
+                    letterSpacing: 4,
+                  }}
+                >
+                  KHQR
+                </span>
+              </div>
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.7)",
+                  fontSize: 11,
+                  marginTop: 4,
+                  letterSpacing: 0.5,
+                }}
+              >
+                National QR Payment Standard
+              </p>
             </div>
-            <div className="p-10 text-center">
+
+            {/* Body */}
+            <div style={{ padding: "32px 24px", textAlign: "center" }}>
               {loading ? (
                 <>
-                  <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-gray-500 text-sm">Generating QR Code...</p>
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: "50%",
+                      border: "4px solid #C8102E",
+                      borderTopColor: "transparent",
+                      animation: "spin 0.8s linear infinite",
+                      margin: "0 auto 16px",
+                    }}
+                  />
+                  <p style={{ color: "#6b7280", fontSize: 14 }}>
+                    {isKhmer ? t("qr.generating") : "Generating QR Code..."}
+                  </p>
+                  <p style={{ color: "#9ca3af", fontSize: 12, marginTop: 4 }}>
+                    Connecting to ABA PayWay...
+                  </p>
                 </>
               ) : (
-                <button onClick={generateQRCode}
-                  className="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-lg rounded-xl transition-colors">
-                  {paymentStatus === "expired" ? "🔄 Generate New QR" : "🔄 Generate QR"}
-                </button>
+                <>
+                  <div
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: "50%",
+                      background: "#fff0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 16px",
+                      fontSize: 28,
+                    }}
+                  >
+                    📱
+                  </div>
+                  <p
+                    style={{
+                      color: "#374151",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      marginBottom: 6,
+                    }}
+                  >
+                    {paymentStatus === "expired"
+                      ? "QR Code Expired"
+                      : "Pay with KHQR"}
+                  </p>
+                  <p
+                    style={{
+                      color: "#9ca3af",
+                      fontSize: 12,
+                      marginBottom: 24,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Scan with ABA Mobile or any KHQR‑supported banking app
+                  </p>
+                  <button
+                    onClick={generateQRCode}
+                    style={{
+                      width: "100%",
+                      padding: "14px 0",
+                      background: "#C8102E",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      border: "none",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.background = "#a50e26")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.background = "#C8102E")
+                    }
+                  >
+                    {paymentStatus === "expired"
+                      ? `🔄 ${isKhmer ? t("qr.generateNew") : "Generate New QR"}`
+                      : `🔄 ${isKhmer ? t("qr.generate") : "Generate QR Code"}`}
+                  </button>
+                </>
               )}
             </div>
           </div>
         )}
 
-        {/* ── PENDING ── */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* PENDING STATE — Professional KHQR template                        */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
         {paymentStatus === "pending" && qrData && (
-          <>
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden mb-3">
-              <div className="relative bg-red-600 pt-5 pb-12 px-6 text-center">
-                <button onClick={reset}
-                  className="absolute top-3 right-3 w-8 h-8 bg-red-700 hover:bg-red-800 rounded-full flex items-center justify-center text-white font-bold transition-colors z-10">
-                  ✕
-                </button>
-                <span className="text-white text-3xl font-black tracking-widest">KHQR</span>
-                <div className="absolute bottom-0 left-0 right-0 h-8 bg-white rounded-t-3xl" />
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 24,
+              overflow: "hidden",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "20px 24px 12px",
+              }}
+            >
+              <div style={{ fontWeight: 800, color: "#111827", fontSize: 16 }}>
+                Scan to Pay
               </div>
-              <div className="px-6 pb-6">
-                <div className="mb-1">
-                  {/* FIX: backend returns merchant_name not marchant_name */}
-                  <p className="text-gray-800 font-bold text-lg">{qrData.merchant_name || "Tronmatix"}</p>
-                  <p className="text-gray-900 font-black text-3xl mt-0.5">${qrData.amount || total || "0.00"}</p>
-                </div>
-                <div className="border-t-2 border-dashed border-gray-200 my-4" />
-                <div className="flex justify-center mb-3">
-                  {qrData.qr_code ? (
-                    <QRCodeSVG value={qrData.qr_code} size={240} level="H" bgColor="#ffffff" fgColor="#000000" />
-                  ) : (
-                    <div className="w-[240px] h-[240px] flex items-center justify-center bg-gray-50 rounded">
-                      <p className="text-gray-400 text-sm">Loading QR...</p>
-                    </div>
-                  )}
-                </div>
-                {qrData.qr_md5 && (
-                  <p className="text-center text-gray-400 text-xs">MD5: {qrData.qr_md5.slice(0, 16)}...</p>
-                )}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 14 }}>⏱</span>
+                <span style={{ fontWeight: 900, fontSize: 16, fontFamily: "monospace", color: "#C8102E" }}>
+                  {countdown || "--:--"}
+                </span>
               </div>
             </div>
 
-            {/* Countdown + controls */}
-            <div className="bg-white rounded-2xl shadow-xl px-5 py-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-red-500 text-base">⏱</span>
-                  <span className="text-red-500 font-bold text-sm">Time remaining:</span>
+            {/* QR Image - The Core Asset */}
+            <div style={{ padding: "0 20px 20px" }}>
+              <QRDisplay qrData={qrData} />
+            </div>
+
+            {/* Footer */}
+            <div
+              style={{
+                background: "#f9fafb",
+                padding: "20px 24px",
+                textAlign: "center",
+                borderTop: "1px solid #f3f4f6",
+              }}
+            >
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, color: "#4b5563", marginBottom: 4 }}>
+                  Scan with ABA Mobile or any KHQR app
                 </div>
-                <span className="text-red-500 font-black text-2xl tabular-nums">{countdown || "--:--"}</span>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite" }} />
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>
+                    Auto-checking payment...
+                  </span>
+                </div>
               </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-4 flex gap-2 items-start">
-                <span className="text-yellow-500 text-sm mt-0.5">⚠️</span>
-                <p className="text-gray-700 text-sm leading-snug">
-                  Keep this page open until payment is confirmed. It detects automatically.
-                </p>
-              </div>
-              {/* "I paid" manual fallback */}
-              <button onClick={handleManualConfirm}
-                className="w-full py-3 mb-2 border-2 border-blue-400 text-blue-600 font-bold text-sm rounded-xl hover:bg-blue-50 transition-colors">
-                ✅ I already paid — notify admin
-              </button>
-              <button onClick={generateQRCode}
-                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold text-base rounded-xl transition-colors">
-                🔄 Regenerate QR
+
+              {qrData.abapay_deeplink && (
+                <a
+                  href={qrData.abapay_deeplink}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "12px",
+                    background: "#003082",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    borderRadius: 12,
+                    textDecoration: "none",
+                    marginBottom: 10,
+                  }}
+                >
+                  📱 Open in ABA Mobile
+                </a>
+              )}
+
+              <button
+                onClick={handleManualConfirm}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  background: "#f9fafb",
+                  color: "#374151",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  border: "1.5px solid #e5e7eb",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                }}
+              >
+                I already paid – notify admin
               </button>
             </div>
-          </>
+          </div>
         )}
 
-        {/* ── MANUAL PENDING ── */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* MANUAL PENDING STATE                                              */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
         {paymentStatus === "manual" && (
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="bg-yellow-500 py-6 text-center">
-              <span className="text-white text-3xl font-black tracking-widest">KHQR</span>
-            </div>
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-yellow-500 text-3xl">⏳</span>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 20,
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            }}
+          >
+            <div
+              style={{
+                background: "#f59e0b",
+                padding: "24px 20px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 5,
+                    padding: "2px 7px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#003082",
+                      fontSize: 13,
+                      fontWeight: 900,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    ABA
+                  </span>
+                </div>
+                <span
+                  style={{
+                    color: "#fff",
+                    fontSize: 18,
+                    fontWeight: 900,
+                    letterSpacing: 3,
+                  }}
+                >
+                  KHQR
+                </span>
               </div>
-              <h2 className="text-xl font-black text-yellow-600 mb-1">Pending Verification</h2>
-              <p className="text-gray-500 text-sm mb-5">
-                Your payment claim has been sent to our admin for manual verification.
-                We'll confirm your order shortly.
+            </div>
+            <div style={{ padding: "32px 24px", textAlign: "center" }}>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  background: "#fffbeb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  fontSize: 28,
+                }}
+              >
+                ⏳
+              </div>
+              <h2
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: "#d97706",
+                  margin: "0 0 8px",
+                }}
+              >
+                {isKhmer ? t("qr.pendingVerification") : "Pending Verification"}
+              </h2>
+              <p
+                style={{
+                  color: "#6b7280",
+                  fontSize: 13,
+                  marginBottom: 20,
+                  lineHeight: 1.5,
+                }}
+              >
+                {isKhmer
+                  ? t("qr.paymentClaim")
+                  : "Payment claim sent to admin for manual verification."}
               </p>
-              <div className="bg-yellow-50 rounded-xl p-4 mb-5 text-left">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 font-medium">Order ID:</span>
-                  <span className="font-bold text-gray-800">#{orderId}</span>
+              <div
+                style={{
+                  background: "#fffbeb",
+                  border: "1px solid #fde68a",
+                  borderRadius: 12,
+                  padding: "12px 16px",
+                  textAlign: "left",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                  }}
+                >
+                  <span style={{ color: "#6b7280" }}>Order ID</span>
+                  <span style={{ fontWeight: 700, color: "#111827" }}>
+                    #{orderId}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── PAID ── */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* PAID STATE                                                        */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
         {paymentStatus === "paid" && (
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="bg-red-600 py-6 text-center">
-              <span className="text-white text-3xl font-black tracking-widest">KHQR</span>
-            </div>
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-green-500 text-3xl font-bold">✓</span>
-              </div>
-              <h2 className="text-xl font-black text-green-500 mb-1">Payment Successful!</h2>
-              <p className="text-gray-500 text-sm mb-5">Your transaction has been completed successfully!</p>
-              <div className="bg-green-50 rounded-xl p-4 text-left">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500 font-medium">Order ID:</span>
-                  <span className="font-bold text-gray-800">#{orderId}</span>
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 20,
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            }}
+          >
+            <div
+              style={{
+                background: "#16a34a",
+                padding: "24px 20px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 5,
+                    padding: "2px 7px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#003082",
+                      fontSize: 13,
+                      fontWeight: 900,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    ABA
+                  </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 font-medium">Amount Paid:</span>
-                  <span className="font-bold text-gray-800">${qrData?.amount ?? total} {qrData?.currency || "USD"}</span>
+                <span
+                  style={{
+                    color: "#fff",
+                    fontSize: 18,
+                    fontWeight: 900,
+                    letterSpacing: 3,
+                  }}
+                >
+                  KHQR
+                </span>
+              </div>
+            </div>
+            <div style={{ padding: "32px 24px", textAlign: "center" }}>
+              <div
+                style={{
+                  width: 68,
+                  height: 68,
+                  borderRadius: "50%",
+                  background: "#f0fdf4",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                  fontSize: 32,
+                  animation: "popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)",
+                }}
+              >
+                ✓
+              </div>
+              <h2
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: "#16a34a",
+                  margin: "0 0 8px",
+                }}
+              >
+                {isKhmer ? t("qr.paymentSuccess") : "Payment Successful!"}
+              </h2>
+              <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 20 }}>
+                {isKhmer
+                  ? t("qr.transactionComplete")
+                  : "Transaction completed successfully!"}
+              </p>
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  borderRadius: 12,
+                  padding: "14px 16px",
+                  textAlign: "left",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#6b7280" }}>Order ID</span>
+                  <span style={{ fontWeight: 700, color: "#111827" }}>
+                    #{orderId}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 13,
+                  }}
+                >
+                  <span style={{ color: "#6b7280" }}>Amount Paid</span>
+                  <span style={{ fontWeight: 700, color: "#16a34a" }}>
+                    ${Number(qrData?.amount ?? total ?? 0).toFixed(2)}{" "}
+                    {qrData?.currency || "USD"}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* ── Keyframe animations ───────────────────────────────────────────── */}
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.35; }
+          }
+          @keyframes popIn {
+            from { opacity: 0; transform: scale(0.75); }
+            to   { opacity: 1; transform: scale(1); }
+          }
+        `}</style>
       </div>
     </div>
-  )
+  );
 }

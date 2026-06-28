@@ -1,6 +1,8 @@
 // src/pages/ContactPage.jsx
 import { useTheme } from '../context/ThemeContext'
 import logo from '../assets/logo.png'
+import { useLang } from '../context/LanguageContext'
+import FeedbackForm from '../components/FeedbackForm'
 
 const GOOGLE_MAPS_URL = 'https://goo.gl/maps/8q7eeNwZH5uz1YwZ8'
 const FACEBOOK_URL    = 'https://www.facebook.com/TronmatixComputer'
@@ -52,7 +54,7 @@ function InfoCard({ icon, label, children, dark }) {
           style={{ background: 'rgba(249,115,22,0.12)' }}>
           {icon}
         </div>
-        <span className="font-black tracking-widest" style={{ fontSize: 10, color: '#F97316', letterSpacing: 2 }}>
+        <span className="font-black tracking-widest" style={{ fontSize: 14, color: '#F97316', letterSpacing: 2 }}>
           {label}
         </span>
       </div>
@@ -75,6 +77,9 @@ function SocialBtn({ href, icon, label, color }) {
 /* ── Page ───────────────────────────────────────────────────────────────────── */
 export default function ContactPage() {
   const { dark } = useTheme()
+  const { t, isKhmer } = useLang()
+  const headingFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
+  const bodyFont    = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
 
   const bg       = dark ? '#111827' : '#f1f5f9'
   const cardBg   = dark ? '#1e293b' : '#ffffff'
@@ -83,7 +88,7 @@ export default function ContactPage() {
   const textSub  = dark ? '#94a3b8' : '#64748b'
 
   return (
-    <div style={{ minHeight: '100vh', background: bg, fontFamily: 'Rajdhani, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: bg, fontFamily: bodyFont }}>
 
       {/* ══════════════════════════════════════════
           HERO BANNER — Light theme, 3 columns
@@ -133,10 +138,10 @@ export default function ContactPage() {
               </div>
               {/* Brand */}
               <div className="text-center leading-snug">
-                <div className="font-black" style={{ fontSize: 15, letterSpacing: 5, color: dark ? '#fff' : '#111827' }}>
+                <div className="font-black" style={{ fontSize: isKhmer ? 20 : 30, letterSpacing: 5, color: dark ? '#fff' : '#111827' }}>
                   TRONMATIX
                 </div>
-                <div className="font-bold" style={{ fontSize: 10, color: '#F97316', letterSpacing: 7 }}>
+                <div className="font-bold" style={{ fontSize: isKhmer ? 15 : 20, color: '#F97316', letterSpacing: 4 }}>
                   COMPUTER
                 </div>
               </div>
@@ -146,51 +151,52 @@ export default function ContactPage() {
             <div className="flex flex-col items-center text-center px-2">
               {/* Label */}
               <div className="flex items-center gap-2 mb-3">
-                <div className="h-px w-6" style={{ background: '#F97316' }} />
-                <span className="font-black" style={{ fontSize: 12, color: '#F97316', letterSpacing: 3 }}>
-                  Welcome to Tronmatix Computer
+                <div className="h-px w-7" style={{ background: '#F97316' }} />
+                <span className="font-black" style={{ fontSize: isKhmer ? 13 : 18, color: '#F97316', letterSpacing: 1 }}>
+                  {t('contact.Welcome')}
                 </span>
                 <div className="h-px w-6" style={{ background: '#F97316' }} />
               </div>
 
               <h1 className="font-black mb-3"
                 style={{
-                  fontSize: 'clamp(26px, 4vw, 48px)',
-                  letterSpacing: 4,
-                  lineHeight: 1.05,
+                  fontSize: 'clamp(26px, 4vw, 38px)',
+                  fontFamily: headingFont,
+                  letterSpacing: isKhmer ? 0 : 3,
+                  lineHeight: isKhmer ? 1.5 : 1.05,
                   color: dark ? '#ffffff' : '#111827',
                   textShadow: dark ? '0 0 40px rgba(249,115,22,0.15)' : '0 2px 20px rgba(249,115,22,0.10)',
                 }}>
-                CONTACT US
+                {t('contact.title')}
               </h1>
 
               <p style={{ fontSize: 14, color: dark ? '#94a3b8' : '#64748b', maxWidth: 340, lineHeight: 1.8 }}>
-                សម្រាប់បងៗដែលកំពុងស្វែងរក Laptop &amp; Desktop សម្រាប់ Design, Rendering, Gaming —
+                សម្រាប់បងៗដែលកំពុងស្វែងរក Laptoq & Desktoq សម្រាប់ Design, Rendering, Gaming —
                 មានការធានា <span className="font-bold" style={{ color: '#F97316' }}>1–3 ឆ្នាំ</span> នៅរាល់ផលិតផល។
               </p>
 
               {/* Phone pills */}
               <div className="flex flex-wrap gap-2 mt-5 justify-center">
-                <a href="tel:+85596733 3725"
+                <a href="tel:+855967333725"
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full font-black text-white transition-all hover:scale-105 hover:shadow-lg"
                   style={{ background: '#F97316', fontSize: 13, boxShadow: '0 4px 15px rgba(249,115,22,0.35)' }}>
-                  <PhoneIcon size={13} /> 096 733 3725
+                  <PhoneIcon size={13} />{isKhmer ? '096 733 3725': "096 733 3725"}
                 </a>
                 <a href="tel:+85577711126"
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full font-black transition-all hover:scale-105"
                   style={{
                     background: dark ? 'rgba(249,115,22,0.10)' : 'rgba(249,115,22,0.08)',
                     border: '1.5px solid rgba(249,115,22,0.45)',
-                    color: '#F97316', fontSize: 13
+                    color: '#F97316', fontSize: 13,
                   }}>
-                  <PhoneIcon size={13} /> 077 711 126
+                  <PhoneIcon size={13} /> {isKhmer ? '077 711 126': "077 711 126"}
                 </a>
               </div>
             </div>
 
             {/* ── COL 3: CONTACT INFO (right) ── */}
             <div className="flex flex-col gap-4 pl-0 md:pl-6"
-              style={{ borderLeft: '1px solid rgba(249,115,22,0.18)' }}>
+              style={{ borderLeft: '1px solid rgba(249,115,22,0.18)',}}>
 
               {[
                 {
@@ -211,15 +217,15 @@ export default function ContactPage() {
                   label: 'PHONE',
                   content: (
                     <div className="flex flex-col gap-0.5">
-                      <a href="tel:+85596733 3725"
+                      <a href="tel:+855967333725"
                         className="font-black hover:text-primary transition-colors"
                         style={{ fontSize: 16, color: dark ? '#f1f5f9' : '#111827' }}>
-                        096 733 3725
+                        {isKhmer ? '096 733 3725': "096 733 3725"}
                       </a>
                       <a href="tel:+85577711126"
                         className="font-black hover:text-primary transition-colors"
                         style={{ fontSize: 16, color: dark ? '#f1f5f9' : '#111827' }}>
-                        077 711 126
+                        {isKhmer ? '077 711 126': "077 711 126"}
                       </a>
                     </div>
                   )
@@ -241,7 +247,7 @@ export default function ContactPage() {
                     {icon}
                   </div>
                   <div>
-                    <div className="font-black mb-1" style={{ fontSize: 10, color: '#F97316', letterSpacing: 2 }}>
+                    <div className="font-black mb-1" style={{ fontSize: 14, color: '#F97316', letterSpacing: 2 }}>
                       {label}
                     </div>
                     {content}
@@ -313,7 +319,7 @@ export default function ContactPage() {
 
             {/* Social media */}
             <div className='items-center text-center'>
-              <div className="font-black mb-3" style={{ fontSize: 15, color: '#F97316', letterSpacing: 3 }}>
+              <div className="font-black mb-3" style={{ fontSize: 16, color: '#F97316', letterSpacing: 3 }}>
                 SOCIAL MEDIA
               </div>
               <div className="flex flex-wrap gap-2.5 justify-center">
@@ -352,7 +358,7 @@ export default function ContactPage() {
                   <div key={label} className="flex items-start gap-2">
                     <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
                     <div>
-                      <div className="font-black" style={{ fontSize: 16, color: '#F97316', letterSpacing: 1.5 }}>{label.toUpperCase()}</div>
+                      <div className="font-black" style={{ fontSize: 13, color: '#F97316', letterSpacing: 1.5 }}>{label.toUpperCase()}</div>
                       <div className="font-semibold" style={{ fontSize: 16, color: textSub, lineHeight: 1.4 }}>{value}</div>
                     </div>
                   </div>
@@ -383,30 +389,10 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* ── Bottom call strip ── */}
-        {/* <div className="mt-8 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
-          style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>
-          <div>
-            <div className="font-black text-white" style={{ fontSize: 18, letterSpacing: 1 }}>
-              Need Help? Call Us Now
-            </div>
-            <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 3 }}>
-              Available Mon–Sun, 9:00AM – 8:00PM
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2.5">
-            <a href="tel:+85596733 3725"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-white transition-all hover:scale-105 hover:shadow-lg"
-              style={{ background: '#F97316', fontSize: 15 }}>
-              <PhoneIcon size={16} /> 096 733 3725
-            </a>
-            <a href="tel:+85577711126"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black transition-all hover:scale-105"
-              style={{ background: 'rgba(249,115,22,0.15)', border: '1px solid rgba(249,115,22,0.4)', color: '#F97316', fontSize: 15 }}>
-              <PhoneIcon size={16} /> 077 711 126
-            </a>
-          </div>
-        </div> */}
+        {/* ── Bottom: Feedback Form ── */}
+        <div className="mt-16">
+          <FeedbackForm />
+        </div>
       </div>
     </div>
   )

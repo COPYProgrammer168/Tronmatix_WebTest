@@ -15,7 +15,7 @@ return new class extends Migration
             // ── Core info ─────────────────────────────────────────────────────
             $table->string('name');
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2);
+            $table->string('price', 10)->default('0.00');
             $table->string('category', 100);
             $table->string('brand', 100)->nullable();
 
@@ -23,11 +23,11 @@ return new class extends Migration
             $table->string('image')->nullable()
                 ->comment('Primary image — path under storage/ or full URL');
             $table->string('image_disk', 20)->nullable()
-                ->comment('"local" = stored in /storage, "url" = external URL');
+            ->comment('"local" = stored in /storage, "url" = external URL');
             $table->json('images')->nullable()
                 ->comment('Array of additional image paths/URLs for gallery');
 
-            // ── Specs & inventory ─────────────────────────────────────────────
+                // ── Specs & inventory ─────────────────────────────────────────────
             $table->json('specs')->nullable()
                 ->comment('Key-value pairs: {"RAM":"16GB","CPU":"i7"}');
             $table->integer('stock')->default(0);
@@ -35,12 +35,13 @@ return new class extends Migration
             // ── Merchandising flags ───────────────────────────────────────────
             $table->decimal('rating', 3, 1)->default(0.0)
                 ->comment('Average star rating 0.0–5.0');
-            $table->boolean('is_featured')->default(false)
+                $table->boolean('is_featured')->default(false)
                 ->comment('Show in featured section on homepage');
             $table->boolean('is_hot')->default(false)
-                ->comment('Show "HOT" badge on product card');
+            ->comment('Show "HOT" badge on product card');
 
             $table->timestamps();
+            $table->string('warranty', 100)->nullable()->after('brand');
 
             // ── Indexes ───────────────────────────────────────────────────────
             $table->index('category');

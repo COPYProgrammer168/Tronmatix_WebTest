@@ -1,24 +1,36 @@
-import { useState, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, lazy, Suspense, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import { LocationProvider } from "./context/LocationContext";
 import { DiscountProvider } from "./context/DiscountContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import { useTheme } from "./context/ThemeContext";
-// Eager — present on every page, must load immediately
+import { useLang } from "./context/LanguageContext";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartSlider from "./components/CartSlider";
 import SupportChat from "./components/SupportChat";
-// AuthModal is lazy — only needed when the user clicks login
-const AuthModal = lazy(() => import("./components/AuthModal"));
-// Pages — each becomes its own chunk, downloaded only when navigated to
+import Notification from "./components/Notification";
+import { useCart } from "./context/CartContext";
+
+import { StaffGuard, DevGuard } from "./components/guards/PortalGuards";
+
+const AuthModal      = lazy(() => import("./components/AuthModal"));
+const StaffLoginPage = lazy(() => import("./pages/auth/StaffLoginPage"));
+const DevLoginPage   = lazy(() => import("./pages/auth/DevLoginPage"));
+
+//These were used but never imported — caused the crash
+const StaffDashboard = lazy(() => import("./pages/StaffDashboard"));
+const DevDashboard   = lazy(() => import("./pages/DevDashboard"));
+
 const HomePage          = lazy(() => import("./pages/HomePage"));
 const CartPage          = lazy(() => import("./pages/CartPage"));
 const CheckoutPage      = lazy(() => import("./pages/CheckoutPage"));
-const CategoryPage      = lazy(() => import("./pages/CategoryPage").then(m => ({ default: m.CategoryPage })));
+const CategoryPage      = lazy(() =>import("./pages/CategoryPage").then((m) => ({ default: m.CategoryPage })));
 const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
 const OrdersPage        = lazy(() => import("./pages/OrdersPage"));
 const FavoritesPage     = lazy(() => import("./pages/FavoritesPage"));
@@ -27,34 +39,54 @@ const ContactPage       = lazy(() => import("./pages/ContactPage"));
 
 function PageSpinner() {
   return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"60vh" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
       <div style={{
-        width:44, height:44,
-        border:"4px solid rgba(249,115,22,0.2)",
-        borderTopColor:"#F97316",
-        borderRadius:"50%",
-        animation:"spin 0.7s linear infinite",
-      }}/>
+        width: 44, height: 44,
+        border: "4px solid rgba(249,115,22,0.2)",
+        borderTopColor: "#F97316",
+        borderRadius: "50%",
+        animation: "spin 0.7s linear infinite",
+      }} />
       <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
     </div>
-  )
+  );
 }
 
 function AppContent() {
   const [authMode, setAuthMode] = useState(null);
-  const { dark } = useTheme();
+  const { dark }    = useTheme();
+  const { isKhmer } = useLang();
+  const location    = useLocation();
+  const { notification, setNotification } = useCart();
+
+  const isPortal =
+    location.pathname.startsWith("/staff") ||
+    location.pathname.startsWith("/dev")   ||
+    location.pathname.startsWith("/admin");
+
+  useEffect(() => {
+    document.body.classList.toggle("lang-km", isKhmer);
+    document.documentElement.lang = isKhmer ? "km" : "en";
+  }, [isKhmer]);
 
   return (
     <div
       className="min-h-screen flex flex-col transition-colors duration-300"
       style={{
         background: dark ? "#111827" : "#ffffff",
-        color: dark ? "#f9fafb" : "#111827",
+        color:      dark ? "#f9fafb" : "#111827",
       }}
     >
-      <Navbar onAuthOpen={(mode) => setAuthMode(mode)} />
-      <CartSlider />
-      <SupportChat />
+      {!isPortal && <Navbar onAuthOpen={(mode) => setAuthMode(mode)} />}
+      {!isPortal && <CartSlider />}
+      {!isPortal && <SupportChat />}
+      {!isPortal && notification && (
+        <Notification
+          message={notification}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       {authMode && (
         <Suspense fallback={null}>
           <AuthModal
@@ -64,24 +96,44 @@ function AppContent() {
           />
         </Suspense>
       )}
+
       <main className="flex-1">
         <Suspense fallback={<PageSpinner />}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/favorites" element={<FavoritesPage />} />
-            <Route path="/category/:category" element={<CategoryPage />} />
+            <Route path="/"                        element={<HomePage />} />
+            <Route path="/cart"                    element={<CartPage />} />
+            <Route path="/checkout"                element={<CheckoutPage />} />
+            <Route path="/orders"                  element={<OrdersPage />} />
+            <Route path="/favorites"               element={<FavoritesPage />} />
+            <Route path="/category/:category"      element={<CategoryPage />} />
             <Route path="/category/:category/:sub" element={<CategoryPage />} />
-            <Route path="/product/:id" element={<ProductDetailPage />} />
-            <Route path="/search" element={<CategoryPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/profile" element={<UserProfilePage />} />
+            <Route path="/product/:id"             element={<ProductDetailPage />} />
+            <Route path="/search"                  element={<CategoryPage />} />
+            <Route path="/contact"                 element={<ContactPage />} />
+            <Route path="/profile"                 element={<UserProfilePage />} />
+            <Route path="/staff/login"             element={<StaffLoginPage />} />
+            <Route path="/dev/login"               element={<DevLoginPage />} />
+            <Route
+              path="/staff/dashboard"
+              element={
+                <StaffGuard>
+                  <StaffDashboard />
+                </StaffGuard>
+              }
+            />
+            <Route
+              path="/dev/dashboard"
+              element={
+                <DevGuard>
+                  <DevDashboard />
+                </DevGuard>
+              }
+            />
           </Routes>
         </Suspense>
       </main>
-      <Footer />
+
+      {!isPortal && <Footer />}
     </div>
   );
 }
@@ -90,17 +142,19 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <LocationProvider>
-                <DiscountProvider>
-                  <AppContent />
-                </DiscountProvider>
-              </LocationProvider>
-            </FavoritesProvider>
-          </CartProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <LocationProvider>
+                  <DiscountProvider>
+                    <AppContent />
+                  </DiscountProvider>
+                </LocationProvider>
+              </FavoritesProvider>
+            </CartProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </BrowserRouter>
   );
