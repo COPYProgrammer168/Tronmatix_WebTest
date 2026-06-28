@@ -3,15 +3,16 @@
 
 @section('content')
 
-    @include('dashboard._permission_check', ['feature' => 'products'])
-@php if(!isset($_permDenied)) $_permDenied = false; @endphp
+        @include('dashboard._permission_check', ['feature' => 'products'])
+    @php if (!isset($_permDenied))
+    $_permDenied = false; @endphp
 
-@if(!$_permDenied)
-        <div style="max-width:990px;">
+    @if(!$_permDenied)
+        <div>
             <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
                 ← {{ __('dashboard.form.btp') }}
             </a>
-            <div class="card">
+            <div class="card" id="productFormCard">
                 <div class="card-header">
                     <span class="card-title" style="font-size: var(--title-size);">
                         {{ $product ? __('dashboard.form.editproduct') . ' ' . Str::limit($product->name, 40) : __('dashboard.form.addproduct') }}
@@ -38,13 +39,121 @@
                             @method('PUT')
                         @endif
 
-                        {{-- ── Two column layout ──────────────────────────────────── --}}
-                        <div style="display:grid; grid-template-columns:1fr 300px; gap:24px;">
+                        {{-- ── Image Upload Section ────────────────────── --}}
+                        <div class="form-group" style="margin-bottom:32px;">
+                            <label class="form-label">{{ __('dashboard.form.productImages') }}</label>
+                            <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-bottom:12px;">
+                                {{ __('dashboard.form.firstimage') }}
+                            </div>
 
-                            {{-- ── LEFT COLUMN ──────────────────────────────────────── --}}
-                            <div>
+                            {{-- Multi-image gallery grid --}}
+                            <div id="imageGallery"
+                                style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; margin-bottom:10px;">
+                                @if ($product?->images && count($product->images))
+                                    @foreach ($product->images as $idx => $img)
+                                        @php
+            $imgSrc = Str::startsWith($img, ['http://', 'https://'])
+                ? $img
+                : asset(ltrim($img, '/'));
+                                        @endphp
+                                        <div class="gallery-thumb {{ $idx === 0 ? 'gallery-main' : '' }}"
+                                            data-index="{{ $idx }}" data-raw-path="{{ $img }}"
+                                            data-type="existing" draggable="true">
+                                            <img src="{{ $imgSrc }}" alt="Image {{ $idx + 1 }}" />
+                                            @if ($idx === 0)
+                                                <div class="gallery-main-badge">Cover</div>
+                                            @endif
+                                            <button type="button" class="gallery-remove"
+                                                onclick="removeExistingImage({{ $idx }}, this)">✕</button>
+                                            <input type="hidden" name="existing_images[]"
+                                                value="{{ $img }}" id="existing_{{ $idx }}" />
+                                        </div>
+                                    @endforeach
+                                @elseif ($product?->image)
+                                    @php
+        $imgSrc = Str::startsWith($product->image, ['http://', 'https://'])
+            ? $product->image
+            : asset(ltrim($product->image, '/'));
+                                    @endphp
+                                    <div class="gallery-thumb gallery-main" data-index="0"
+                                        data-raw-path="{{ $product->image }}" data-type="existing" draggable="true">
+                                        <img src="{{ $imgSrc }}" alt="Main image" />
+                                        <div class="gallery-main-badge">Cover</div>
+                                        <button type="button" class="gallery-remove"
+                                            onclick="removeExistingImage(0, this)">✕</button>
+                                        <input type="hidden" name="existing_images[]" value="{{ $product->image }}"
+                                            id="existing_0" />
+                                    </div>
+                                @endif
 
-                                {{-- Name --}}
+                                {{-- Add photo tile --}}
+                                <div id="addImageSlot" class="gallery-add-slot"
+                                    onclick="document.getElementById('multiImageInput').click()">
+                                    <svg width="24" height="24" fill="none" stroke="rgba(255,255,255,0.2)"
+                                        stroke-width="1.5" viewBox="0 0 24 24">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    <span>{{ __('dashboard.form.addImages') }}</span>
+                                </div>
+                            </div>
+
+                            {{-- Hidden multi file input --}}
+                            <input type="file" name="image_files[]" id="multiImageInput"
+                                accept="image/jpeg,image/png,image/webp" multiple style="display:none;"
+                                onchange="handleMultiImages(this)" />
+
+                            {{-- Upload button --}}
+                            <button type="button" class="btn btn-outline"
+                                style="width:100%; margin-bottom:10px; justify-content:center;"
+                                onclick="document.getElementById('multiImageInput').click()">
+                                <svg width="14" height="14" fill="none" stroke="currentColor"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="16 16 12 12 8 16" />
+                                    <line x1="12" y1="12" x2="12" y2="21" />
+                                    <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+                                </svg>
+                                {{ __('dashboard.form.uploadimages') }} (Multi-select)
+                            </button>
+
+                            {{-- Divider --}}
+                            <div style="display:flex; align-items:center; gap:10px; margin:14px 0;">
+                                <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                                <span
+                                    style="font-size: var(--title-size); color:rgba(255,255,255,0.2); letter-spacing:1px;">OR</span>
+                                <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                            </div>
+
+                            {{-- URL Input for extra images --}}
+                            <label class="form-label">{{ __('dashboard.form.addImageUrl') }}</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="imageUrlInput" class="form-control"
+                                    placeholder="https://example.com/image.jpg" style="flex:1;" />
+                                <button type="button" class="btn btn-outline" onclick="addImageByUrl()"
+                                    style="white-space:nowrap; padding:0 14px;">+ ADD</button>
+                            </div>
+                            <div id="urlPreviewMsg"
+                                style="margin-top:6px; font-size: var(--title-size); color:rgba(255,255,255,0.2);">
+                            </div>
+
+                            {{-- Hidden field to track new URL images --}}
+                            <div id="urlImagesContainer"></div>
+
+                            {{-- Remove image button (edit mode only) --}}
+                            @if ($product?->image || ($product?->images && count($product->images)))
+                                <div style="margin-top:12px;">
+                                    <label class="toggle-wrap" style="cursor:pointer;">
+                                        <input type="checkbox" name="remove_image" value="1"
+                                            id="removeImageCheck" onchange="toggleRemoveImage(this)" />
+                                        <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">
+                                            {{ __('dashboard.form.removeallimages') }}
+                                        </span>
+                                    </label>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Name --}}
                                 <div class="form-group">
                                     <label class="form-label">{{ __('dashboard.form.productName') }}</label>
                                     <input type="text" name="name"
@@ -204,7 +313,7 @@
                             </div>
 
                             {{-- Price + Stock + Rating --}}
-                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                            <div class="form-grid-3">
                                 <div class="form-group">
                                     <label class="form-label">{{ __('dashboard.form.price') }}</label>
                                     <input type="text" name="price"
@@ -220,20 +329,21 @@
                                         value="{{ old('stock', $product?->stock ?? 0) }}" min="0" required />
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.rating') }}</label>
-                                    <input type="number" name="rating" class="form-control"
-                                        value="{{ old('rating', $product?->rating ?? 0) }}" step="0.1"
-                                        min="0" max="5" />
-                                </div>
-                                <div class="form-group">
                                     <label class="form-label">{{ __('dashboard.form.warranty') }}</label>
                                     <input type="text" name="warranty" class="form-control"
                                         value="{{ old('warranty', $product?->warranty) }}" placeholder="e.g. 3 years" />
                                 </div>
                             </div>
+                            {{-- Description --}}
+                            <div class="form-group">
+                                <label class="form-label">{{ __('dashboard.form.description') }}</label>
+                                <textarea name="description" id="descriptionField" class="form-control" rows="6"
+                                    placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
+                                <div id="aiGenError" class="form-description" style="display:none;"></div>
+                            </div>
 
                             {{-- Stock Status + Details --}}
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="form-grid-2">
                                 <div class="form-group">
                                     <label class="form-label">Stock Status</label>
                                     <select name="stock_status" class="form-control">
@@ -254,12 +364,6 @@
                                         value="{{ old('stock_details', $product?->stock_details) }}"
                                         placeholder="e.g. Arriving next week" />
                                 </div>
-                            </div>
-
-                            {{-- Description --}}
-                            <div class="form-group">
-                                <label class="form-label">{{ __('dashboard.form.description') }}</label>
-                                <textarea name="description" class="form-control" rows="4" placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
                             </div>
 
                             {{-- Featured + Hot toggles --}}
@@ -293,134 +397,9 @@
                                 </div>
                             </div>
 
-                        </div>
-
-                        {{-- ── RIGHT COLUMN: Image Upload ────────────────────── --}}
-                        <div>
-                            <div class="form-group">
-                                <label class="form-label">{{ __('dashboard.form.productImages') }}</label>
-                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-bottom:8px;">
-                                    {{ __('dashboard.form.firstimage') }}
-                                </div>
-
-                                {{-- Multi-image gallery grid --}}
-                                <div id="imageGallery"
-                                    style="
-                                    display:grid;
-                                    grid-template-columns: repeat(3, 1fr);
-                                    gap:8px;
-                                    margin-bottom:10px;
-                                ">
-                                    @if ($product?->images && count($product->images))
-                                        @foreach ($product->images as $idx => $img)
-                                            @php
-                                                $imgSrc = Str::startsWith($img, ['http://', 'https://'])
-                                                    ? $img
-                                                    : asset(ltrim($img, '/'));
-                                            @endphp
-                                            <div class="gallery-thumb {{ $idx === 0 ? 'gallery-main' : '' }}"
-                                                data-index="{{ $idx }}" data-raw-path="{{ $img }}"
-                                                data-type="existing" draggable="true">
-                                                <img src="{{ $imgSrc }}" alt="Image {{ $idx + 1 }}" />
-                                                @if ($idx === 0)
-                                                    <div class="gallery-main-badge">MAIN</div>
-                                                @endif
-                                                <button type="button" class="gallery-remove"
-                                                    onclick="removeExistingImage({{ $idx }}, this)">✕</button>
-                                                <input type="hidden" name="existing_images[]"
-                                                    value="{{ $img }}" id="existing_{{ $idx }}" />
-                                            </div>
-                                        @endforeach
-                                    @elseif ($product?->image)
-                                        @php
-                                            $imgSrc = Str::startsWith($product->image, ['http://', 'https://'])
-                                                ? $product->image
-                                                : asset(ltrim($product->image, '/'));
-                                        @endphp
-                                        <div class="gallery-thumb gallery-main" data-index="0"
-                                            data-raw-path="{{ $product->image }}" data-type="existing" draggable="true">
-                                            <img src="{{ $imgSrc }}" alt="Main image" />
-                                            <div class="gallery-main-badge">MAIN</div>
-                                            <button type="button" class="gallery-remove"
-                                                onclick="removeExistingImage(0, this)">✕</button>
-                                            <input type="hidden" name="existing_images[]" value="{{ $product->image }}"
-                                                id="existing_0" />
-                                        </div>
-                                    @endif
-
-                                    {{-- Add more slot --}}
-                                    <div id="addImageSlot" class="gallery-add-slot"
-                                        onclick="document.getElementById('multiImageInput').click()">
-                                        <svg width="24" height="24" fill="none" stroke="rgba(255,255,255,0.2)"
-                                            stroke-width="1.5" viewBox="0 0 24 24">
-                                            <line x1="12" y1="5" x2="12" y2="19" />
-                                            <line x1="5" y1="12" x2="19" y2="12" />
-                                        </svg>
-                                        <span>{{ __('dashboard.form.addImages') }}</span>
-                                    </div>
-                                </div>
-
-                                {{-- Hidden multi file input --}}
-                                <input type="file" name="image_files[]" id="multiImageInput"
-                                    accept="image/jpeg,image/png,image/webp" multiple style="display:none;"
-                                    onchange="handleMultiImages(this)" />
-
-                                {{-- Upload button --}}
-                                <button type="button" class="btn btn-outline"
-                                    style="width:100%; margin-bottom:10px; justify-content:center;"
-                                    onclick="document.getElementById('multiImageInput').click()">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor"
-                                        stroke-width="2" viewBox="0 0 24 24">
-                                        <polyline points="16 16 12 12 8 16" />
-                                        <line x1="12" y1="12" x2="12" y2="21" />
-                                        <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
-                                    </svg>
-                                    {{ __('dashboard.form.uploadimages') }} (Multi-select)
-                                </button>
-
-                                {{-- Divider --}}
-                                <div style="display:flex; align-items:center; gap:10px; margin:14px 0;">
-                                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-                                    <span
-                                        style="font-size: var(--title-size); color:rgba(255,255,255,0.2); letter-spacing:1px;">OR</span>
-                                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-                                </div>
-
-                                {{-- URL Input for extra images --}}
-                                <label class="form-label">{{ __('dashboard.form.addImageUrl') }}</label>
-                                <div style="display:flex; gap:8px;">
-                                    <input type="text" id="imageUrlInput" class="form-control"
-                                        placeholder="https://example.com/image.jpg" style="flex:1;" />
-                                    <button type="button" class="btn btn-outline" onclick="addImageByUrl()"
-                                        style="white-space:nowrap; padding:0 14px;">+ ADD</button>
-                                </div>
-                                <div id="urlPreviewMsg"
-                                    style="margin-top:6px; font-size: var(--title-size); color:rgba(255,255,255,0.2);">
-                                </div>
-
-                                {{-- Hidden field to track new URL images --}}
-                                <div id="urlImagesContainer"></div>
-
-                                {{-- Remove image button (edit mode only) --}}
-                                @if ($product?->image || ($product?->images && count($product->images)))
-                                    <div style="margin-top:12px;">
-                                        <label class="toggle-wrap" style="cursor:pointer;">
-                                            <input type="checkbox" name="remove_image" value="1"
-                                                id="removeImageCheck" onchange="toggleRemoveImage(this)" />
-                                            <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">
-                                                {{ __('dashboard.form.removeallimages') }}
-                                            </span>
-                                        </label>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
-                </div>
-
                 {{-- ── Submit Buttons ────────────────────────────────────── --}}
                 <div
-                    style="display:flex; gap:12px; margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.07);">
+                    style="position:sticky; bottom:0; background:#1A1A1A; display:flex; justify-content:center; gap:12px; margin-top:24px; padding:20px 0; border-top:1px solid rgba(255,255,255,0.07);">
                     <button type="submit" class="btn btn-orange" id="submitBtn">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
                             viewBox="0 0 24 24">
@@ -461,6 +440,59 @@
     <style>
         :lang(km) label {
             font-weight: 500;
+        }
+
+        #productFormCard {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+        }
+
+        /* ── Form Grid Utilities ───────────────────────────────────────────────── */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ── Horizontal Form Group (label | input + description) ─────────── */
+        .form-group-horizontal {
+            display: grid;
+            grid-template-columns: minmax(140px, 180px) 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .form-group-horizontal .form-label {
+            margin-bottom: 0;
+            padding-top: 2px;
+            white-space: nowrap;
+        }
+
+        .form-group-horizontal .form-control-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group-horizontal .form-description {
+            font-size: var(--title-size);
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        @media (max-width: 768px) {
+            .form-group-horizontal {
+                grid-template-columns: 1fr;
+            }
+            .form-group-horizontal .form-label {
+                margin-bottom: 7px;
+            }
         }
 
         /* ── Multi-Image Gallery ──────────────────────────────────────────────── */
@@ -574,12 +606,18 @@
 
         /* ── Responsive ────────────────────────────────────────────────────────── */
         @media (max-width: 768px) {
-            div[style*="grid-template-columns:1fr 300px"] {
-                grid-template-columns: 1fr !important;
+            .form-grid-3 {
+                grid-template-columns: 1fr 1fr;
             }
 
-            div[style*="grid-template-columns:1fr 1fr 1fr"] {
-                grid-template-columns: 1fr 1fr !important;
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-grid-3 {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -632,11 +670,67 @@
         [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"] {
             border-color: rgba(15, 23, 42, 0.10) !important;
         }
+
+        [data-theme="light"] [style*="background:#1A1A1A"] {
+            background: #F8FAFC !important;
+            border-top-color: rgba(15, 23, 42, 0.08) !important;
+        }
+
+        [data-theme="light"] .form-description {
+            color: rgba(15, 23, 42, 0.45) !important;
+        }
     </style>
 @endpush
 
 @push('scripts')
     <script>
+        // ── AI Description Generation ─────────────────────────────────────────────
+        async function generateDescription() {
+            const btn = document.getElementById('generateDescBtn');
+            const textarea = document.getElementById('descriptionField');
+            const errorDiv = document.getElementById('aiGenError');
+
+            const caption = document.querySelector('input[name="caption"]')?.value || '';
+            const category = document.querySelector('select[name="category"]')?.value || '';
+            const brand = document.querySelector('input[name="brand"]')?.value || '';
+            const firstImage = document.querySelector('input[name="existing_images[]"]')?.value || '';
+
+            // Show loading state
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<svg style="animation:spin 0.8s linear infinite" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" opacity="0.25"/>
+                <path d="M12 2 A10 10 0 0 1 22 12" opacity="0.75"/>
+            </svg> Generating...`;
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('{{ route("dashboard.products.generate-description") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ caption, category, brand, firstImage })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.description) {
+                    textarea.value = data.description;
+                    textarea.focus();
+                } else {
+                    throw new Error(data.error || 'Failed to generate description');
+                }
+            } catch (error) {
+                errorDiv.textContent = '✗ ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
         // ── Multi-image gallery state ─────────────────────────────────────────────
         let newFileObjects = [] // File objects from <input type=file>
         let urlImageCount = 0

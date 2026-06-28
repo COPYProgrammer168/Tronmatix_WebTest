@@ -177,4 +177,73 @@ class ProductController extends Controller
 
         return $validated;
     }
+
+    public function generateDescription(Request $request)
+    {
+        $validated = $request->validate([
+            'caption'    => 'nullable|string|max:500',
+            'category'   => 'nullable|string|max:100',
+            'brand'      => 'nullable|string|max:100',
+            'firstImage' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $apiKey = config('services.anthropic.api_key') ?? env('ANTHROPIC_API_KEY');
+
+            if (!$apiKey) {
+                return response()->json(['error' => 'API key not configured'], 500);
+            }
+
+            $prompt = $this->buildDescriptionPrompt(
+                $validated['caption'] ?? '',
+                $validated['category'] ?? '',
+                $validated['brand'] ?? ''
+            );
+
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'x-api-key'         => $apiKey,
+                'anthropic-version' => '2023-06-01',
+                'content-type'      => 'application/json',
+            ])->timeout(30)->post('https://api.anthropic.com/v1/messages', [
+                'model'      => 'claude-3-5-sonnet-20241022',
+                'max_tokens' => 300,
+                'messages'   => [
+                    [
+                        'role'    => 'user',
+                        'content' => $prompt,
+                    ],
+                ],
+            ]);
+
+            if (!$response->successful()) {
+                return response()->json(['error' => 'API request failed: ' . $response->body()], 500);
+            }
+
+            $data = $response->json();
+            $description = $data['content'][0]['text'] ?? '';
+
+            return response()->json(['description' => trim($description)]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to generate description: ' . $e->getMessage()], 500);
+        }
+    }
+
+    private function buildDescriptionPrompt(string $caption, string $category, string $brand): string
+    {
+        $parts = array_filter([
+            $caption ? "Caption: $caption" : null,
+            $category ? "Category: $category" : null,
+            $brand ? "Brand: $brand" : null,
+        ]);
+
+        $context = implode("\n", $parts);
+
+        return <<<PROMPT
+Write a concise, professional 2-3 sentence product description for a computer hardware/gaming product with the following details:
+
+{$context}
+
+Write in a tone that matches tech e-commerce (informative, highlighting key features and value). Return only the description text, no additional commentary.
+PROMPT;
+    }
 }
