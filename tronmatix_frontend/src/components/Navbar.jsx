@@ -850,7 +850,17 @@ export default function Navbar({ onAuthOpen }) {
                 borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
               }}>
                 <div className="flex items-center justify-between px-4 py-3.5 select-none"
-                     onClick={() => setMobileSub(mobileSub === item.label ? null : item.label)}>
+                     onClick={() => {
+                       if (item.sub) {
+                         setMobileSub(mobileSub === item.label ? null : item.label);
+                       } else {
+                         const dest = item.categories
+                           ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
+                           : item.path;
+                         navigate(dest);
+                         setMobileOpen(false);
+                       }
+                     }}>
                   <span
                     className="font-bold tracking-wide cursor-pointer flex-1"
                     style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
@@ -867,15 +877,7 @@ export default function Navbar({ onAuthOpen }) {
                     </svg>
                   )}
                 </div>
-                <div onClick={() => {
-                   if (!item.sub) {
-                      const dest = item.categories
-                        ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
-                        : item.path
-                      navigate(dest)
-                      setMobileOpen(false)
-                   }
-                }}>
+                <div>
                 {item.sub && mobileSub === item.label && (
                   <div className="pb-2" style={{ background: drawerSubBg }}>
                     <Link
