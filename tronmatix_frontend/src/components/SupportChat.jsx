@@ -102,7 +102,7 @@ function Bubble({ msg, isNew }) {
             overflow: 'hidden',
           }}
         >
-          <img src="/src/assets/leaflet/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
+          <img src="/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
         </div>
       )}
       <div style={{ maxWidth: '80%' }}>
@@ -150,7 +150,7 @@ function TypingIndicator() {
           overflow: 'hidden',
         }}
       >
-        <img src="/src/assets/leaflet/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
+        <img src="/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
       </div>
       <div
         style={{
@@ -344,7 +344,7 @@ export default function SupportChat() {
               boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
               overflow: 'hidden',
             }}>
-              <img src="/src/assets/leaflet/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
+              <img src="/chatbot.png" alt="Bot" className="w-full h-full object-cover" />
             </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, fontFamily: 'Rajdhani, sans-serif', letterSpacing: 0.3 }}>
@@ -515,7 +515,7 @@ export default function SupportChat() {
                   transition: 'transform 0.2s',
                   padding: 0, overflow: 'hidden'
                 }}>
-                <img src="/src/assets/leaflet/chatbot.png" alt="Chat" width="26" height="26" />
+                <img src="/chatbot.png" alt="Chat" width="26" height="26" />
               </button>
               {/* Messenger Button */}
               <a href="https://m.me/TronmatixComputer" target="_blank" rel="noopener noreferrer" title="Chat on Messenger"
@@ -539,7 +539,7 @@ export default function SupportChat() {
                   boxShadow: '0 4px 12px rgba(249,115,22,0.3)',
                   transition: 'transform 0.2s'
                 }}>
-                <img src="/src/assets/telegram.svg" alt="Telegram" width="26" height="26" />
+                <img src="/telegram.svg" alt="Telegram" width="26" height="26" />
               </a>
             </div>
           )}
