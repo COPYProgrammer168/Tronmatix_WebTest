@@ -361,7 +361,7 @@ class CheckPaymentController extends Controller
             ]);
 
             // Paid when: status.code == "00" AND payment_status_code == 0
-            $statusCode = $body['status']['code'] ?? '';
+            $statusCode = (string) ($body['status']['code'] ?? '');
             $paid = in_array($statusCode, ['0', '00'], true)
                 && isset($body['data']['payment_status_code'])
                 && (int) $body['data']['payment_status_code'] === 0;

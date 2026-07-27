@@ -283,11 +283,19 @@
                                             title="Ref: {{ $order->payment_ref ?? '—' }}">✅ PAID</span>
                                     @elseif($payStatus === 'cash')
                                         <span class="badge badge-gray" style="font-size:var(--text-xs);">💵 COD</span>
-                                    @elseif($payStatus === 'manual_pending')
-                                        <span class="badge"
-                                            style="background:rgba(249,115,22,.12); color:#F97316;
-                                              border:1px solid rgba(249,115,22,.3); font-size:var(--text-xs);">⚠️
-                                            VERIFY</span>
+                                    @elseif($payStatus === 'manual_pending' || ($order->payment_method === 'bakong' && $order->status === 'pending'))
+                                        <form method="POST"
+                                              action="{{ route('dashboard.orders.verify-payment', $order) }}"
+                                              style="display:inline;"
+                                              onsubmit="return confirm('Mark Order #{{ $order->order_id }} as paid?');">
+                                            @csrf
+                                            <button type="submit"
+                                                style="background:#F97316; color:#fff; border:none; border-radius:6px;
+                                                       padding:4px 10px; font-size:10px; font-weight:800; cursor:pointer;
+                                                       font-family:Rajdhani,sans-serif; letter-spacing:1px; white-space:nowrap;">
+                                                ⚠️ VERIFY
+                                            </button>
+                                        </form>
                                     @elseif($payStatus === 'failed')
                                         <span class="badge badge-cancelled" style="font-size:var(--text-xs);">❌
                                             FAILED</span>
