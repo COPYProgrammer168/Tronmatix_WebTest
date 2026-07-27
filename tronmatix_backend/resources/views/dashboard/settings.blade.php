@@ -359,6 +359,45 @@ setTimeout(closeSavePopup, 3500);
         </div>
     </div>
 
+    {{-- ── VIP MANAGEMENT ──────────────────────────────────────────────────────── --}}
+    <div class="card">
+        <div class="card-header">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div class="s-icon-box" style="background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.25);">⭐</div>
+                <div>
+                    <div class="s-card-title">VIP MANAGEMENT</div>
+                    <div class="s-card-sub">Demote VIP users who no longer meet the spending goal</div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+                <div>
+                    <div style="font-size: var(--title-size); font-weight:700; color:var(--text-main, #fff); margin-bottom:4px;">
+                        Reset VIP Roles
+                    </div>
+                    <div style="font-size: var(--title-size); color:var(--text-muted, rgba(60,60,60,0.7)); max-width:480px;">
+                        Demote all VIP users whose total spent is below the current VIP goal of 
+                        <strong style="color:#F97316;">${{ number_format((float) ($s['vip_threshold'] ?? 5000), 0) }}</strong> back to Customer.
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('dashboard.settings.reset-vip') }}" onsubmit="return confirm('Demote all VIP users below ${{ number_format((float) ($s['vip_threshold'] ?? 5000), 0) }} to Customer? This cannot be undone.');">
+                    @csrf @method('POST')
+                    <button type="submit" id="reset-vip-btn" style="
+                        padding:12px 24px; border-radius:10px; border:none; cursor:pointer;
+                        background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
+                        font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:800;
+                        letter-spacing:2px; box-shadow:0 4px 16px rgba(249,115,22,0.3);
+                        transition:all .2s; display:flex; align-items:center; gap:8px;
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(249,115,22,0.45)'"
+                       onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 16px rgba(249,115,22,0.3)'">
+                        ⚠️ RESET VIP ROLES
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     {{-- ── SAVE / RESET buttons ─────────────────────────────────────────────── --}}
     <div style="display:flex; gap:12px;">
         <button type="submit" id="save-btn" style="

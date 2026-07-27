@@ -7,6 +7,7 @@ use App\Models\AdminSetting;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StaffRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -310,5 +311,35 @@ class SettingsController extends Controller
 
         return redirect()->route('dashboard.settings')
             ->with('success', 'Permissions saved successfully.');
+    }
+
+    public function resetVipRoles(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        abort_unless(
+            in_array($admin->role, ['admin', 'superadmin']),
+            403,
+            'Access denied.'
+        );
+
+        $vipGoal = (float) AdminSetting::get('vip_threshold', 5000);
+
+        $updated = User::where('role', 'vip')
+            ->where(function ($query) use ($vipGoal) {
+                $query->whereDoesntHave('orders', function ($q) {
+                    $q->whereNotIn('status', [Order::STATUS_CANCELLED]);
+                })
+                ->orWhereHas('orders', function ($q) use ($vipGoal) {
+                    $q->whereNotIn('status', [Order::STATUS_CANCELLED])
+                      ->selectRaw('SUM(total) as total_spent')
+                      ->groupBy('user_id')
+                      ->havingRaw('total_spent < ?', [$vipGoal]);
+                });
+            })
+            ->update(['role' => 'customer']);
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', "VIP roles reset: {$updated} users demoted to customer.");
     }
 }

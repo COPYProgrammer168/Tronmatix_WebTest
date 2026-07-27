@@ -115,6 +115,7 @@ Route::prefix('dashboard')->name('dashboard.')
         // Settings — SettingsController::show() checks canEditPerms internally
         Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/settings/reset-vip', [SettingsController::class, 'resetVipRoles'])->name('settings.reset-vip');
         Route::get('/settings/reset', [SettingsController::class, 'reset'])->name('settings.reset');
         Route::put('/settings/permissions', [SettingsController::class, 'updatePermissions'])->name('settings.permissions');
 

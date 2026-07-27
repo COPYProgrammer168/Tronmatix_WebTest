@@ -135,6 +135,16 @@ tbody tr:hover td { background: var(--dark-700); }
             </div>
         </div>
         @endforeach
+        @php $vipCount = $roleCounts['vip'] ?? 0; @endphp
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.25);background:rgba(249,115,22,0.06);">
+            <div class="stat-icon" style="background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.3);">
+                <span style="font-size: var(--title-size);">⭐</span>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#F97316;">{{ $vipCount }}</div>
+                <div class="stat-label" style="color:#F97316;">VIP</div>
+            </div>
+        </div>
         <div class="stat-card">
             <div class="stat-icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
