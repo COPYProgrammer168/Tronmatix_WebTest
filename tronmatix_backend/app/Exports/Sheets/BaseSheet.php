@@ -8,7 +8,6 @@ namespace App\Exports\Sheets;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -26,35 +25,29 @@ trait BaseSheet
     private const BORDER_COLOR = 'FFE2E0DD';
     private const HEADER_BG    = 'FF374151'; // Slightly lighter dark for headers without subtitle
 
-    // ── Professional font stack ─────────────────────────────────────────────────
-    public function styles(Worksheet $sheet): array
-    {
-        return [
-            1 => [
-                'font' => [
-                    'bold'  => true,
-                    'size'  => 11,
-                    'color' => ['argb' => self::BRAND_WHITE],
-                    'name'  => 'Calibri',
-                ],
-                'fill' => [
-                    'fillType'   => Fill::FILL_SOLID,
-                    'startColor' => ['argb' => self::BRAND_DARK],
-                ],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical'   => Alignment::VERTICAL_CENTER,
-                ],
-            ],
-        ];
-    }
-
     // ── Apply consistent borders, row shading, freeze, auto-filter ─────────────
     protected function applyBaseFormatting(AfterSheet $event, int $headerRow = 2): void
     {
         $sheet   = $event->sheet->getDelegate();
         $lastRow = $sheet->getHighestRow();
         $lastCol = $sheet->getHighestColumn();
+
+        // Header row styling — applied via AfterSheet event for reliable persistence
+        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
+            'font' => [
+                'bold'  => true,
+                'size'  => 11,
+                'color' => ['argb' => 'FFFFFFFF'],
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF1A1A1A'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
 
         // Freeze header row
         $sheet->freezePane('A' . ($headerRow + 1));
