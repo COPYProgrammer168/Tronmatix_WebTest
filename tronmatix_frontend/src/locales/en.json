@@ -94,7 +94,7 @@
   "favorites": {
     "title": "MY FAVORITES",
     "empty": "No favorites yet",
-    "emptyHint": "Click the ❤️ icon on any product to save it here",
+    "emptyHint": "Click the Bookmark icon on any product to save it here",
     "browse": "Browse Products",
     "addToCart": "ADD TO CART",
     "continueShopping": "← Continue Shopping"
