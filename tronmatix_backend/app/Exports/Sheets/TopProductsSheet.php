@@ -24,22 +24,13 @@ class TopProductsSheet implements FromCollection, WithTitle, WithHeadings, Shoul
     public function headings(): array
     {
         return [
-            'Rank',
-            'Product Name',
-            'Category',
-            'Brand',
-            'Price ($)',
-            'Stock',
-            'Units Sold',
-            'Total Revenue ($)',
-            'Hot',
-            'Featured',
+            'Rank', 'Product Name', 'Category', 'Brand',
+            'Price', 'Stock', 'Units Sold', 'Total Revenue', 'Hot', 'Featured',
         ];
     }
 
     public function collection()
     {
-        // Full product list sorted by units sold — not limited to top 5
         $products = Product::select(
                 'products.*',
                 DB::raw('COALESCE(SUM(order_items.qty), 0) as units_sold'),
@@ -59,12 +50,12 @@ class TopProductsSheet implements FromCollection, WithTitle, WithHeadings, Shoul
             $p->name,
             $p->category ?? '—',
             $p->brand    ?? '—',
-            number_format((float) $p->price, 2),
+            round((float) $p->price, 2),
             $p->stock ?? 0,
             (int) $p->units_sold,
-            number_format((float) $p->item_revenue, 2),
-            $p->is_hot      ? '✓' : '',
-            $p->is_featured ? '✓' : '',
+            round((float) $p->item_revenue, 2),
+            $p->is_hot      ? '✓ Yes' : '',
+            $p->is_featured ? '✓ Yes' : '',
         ]);
     }
 
@@ -75,12 +66,21 @@ class TopProductsSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                 $sheet   = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event);
-                $this->accentColumn($sheet, 'G', $lastRow);            // Units Sold
-                $this->accentColumn($sheet, 'H', $lastRow);            // Revenue
+                $this->addSheetTitle($event, '🏆 Top Products by Units Sold');
+                $lastRow = $sheet->getHighestRow();
 
-                // Low stock highlight (col F)
-                for ($row = 2; $row <= $lastRow; $row++) {
+                $this->applyBaseFormatting($event, 2);
+                $this->accentColumn($sheet, 'G', $lastRow);  // Units Sold
+                $this->accentColumn($sheet, 'H', $lastRow);  // Revenue
+
+                // Number formats
+                $this->setCurrencyFormat($sheet, 'E', $lastRow);
+                $this->setIntFormat($sheet, 'F', $lastRow);
+                $this->setIntFormat($sheet, 'G', $lastRow);
+                $this->setCurrencyFormat($sheet, 'H', $lastRow);
+
+                // Low stock highlights
+                for ($row = 3; $row <= $lastRow; $row++) {
                     $stock = (int) $sheet->getCell("F{$row}")->getValue();
                     if ($stock <= 0) {
                         $sheet->getStyle("F{$row}")->applyFromArray([
@@ -93,11 +93,12 @@ class TopProductsSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                     }
                 }
 
-                $this->addSummaryRow($sheet, $lastRow, [
-                    '', 'TOTAL', '', '', '',
-                    "=SUM(F2:F{$lastRow})",
-                    "=SUM(G2:G{$lastRow})",
-                    "=SUM(H2:H{$lastRow})",
+                $this->addSummaryRow($event, $lastRow, [
+                    '', 'TOTAL', '', '',
+                    "=AVERAGE(E3:E{$lastRow})",
+                    "=SUM(F3:F{$lastRow})",
+                    "=SUM(G3:G{$lastRow})",
+                    "=SUM(H3:H{$lastRow})",
                     '', '',
                 ]);
             },

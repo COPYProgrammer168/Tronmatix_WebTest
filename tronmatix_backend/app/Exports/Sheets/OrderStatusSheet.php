@@ -23,28 +23,28 @@ class OrderStatusSheet implements FromCollection, WithTitle, WithHeadings, Shoul
 
     public function headings(): array
     {
-        return ['Status', 'Count', '% of Total', 'Revenue ($)', 'Avg Order Value ($)'];
+        return ['Status', 'Count', '% of Total', 'Revenue', 'Avg Order Value'];
     }
 
     public function collection()
     {
         $statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-        $total    = Order::count() ?: 1; // avoid division by zero
+        $total    = Order::count() ?: 1;
 
         $rows = collect();
         foreach ($statuses as $status) {
             $count   = Order::where('status', $status)->count();
             $revenue = $status !== 'cancelled'
-                ? (float) Order::where('status', $status)->sum('total')
+                ? round((float) Order::where('status', $status)->sum('total'), 2)
                 : 0.0;
             $avg     = $count > 0 && $status !== 'cancelled' ? round($revenue / $count, 2) : 0;
 
             $rows->push([
                 strtoupper($status),
                 $count,
-                round($count / $total * 100, 1) . '%',
-                number_format($revenue, 2),
-                number_format($avg, 2),
+                $count / $total,
+                $revenue,
+                $avg,
             ]);
         }
 
@@ -58,8 +58,17 @@ class OrderStatusSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                 $sheet   = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event);
+                $this->addSheetTitle($event, '🥧 Order Status Breakdown');
+                $lastRow = $sheet->getHighestRow();
+
+                $this->applyBaseFormatting($event, 2);
                 $this->accentColumn($sheet, 'D', $lastRow);
+
+                // Number formats
+                $this->setIntFormat($sheet, 'B', $lastRow);
+                $this->setPercentFormat($sheet, 'C', $lastRow);
+                $this->setCurrencyFormat($sheet, 'D', $lastRow);
+                $this->setCurrencyFormat($sheet, 'E', $lastRow);
 
                 // Colour-code status column
                 $colorMap = [
@@ -71,7 +80,7 @@ class OrderStatusSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                     'PENDING'    => ['bg' => 'FFFEF3C7', 'fg' => 'FFD97706'],
                 ];
 
-                for ($row = 2; $row <= $lastRow; $row++) {
+                for ($row = 3; $row <= $lastRow; $row++) {
                     $status = strtoupper($sheet->getCell("A{$row}")->getValue());
                     $c      = $colorMap[$status] ?? ['bg' => 'FFF9F9F9', 'fg' => 'FF374151'];
                     $sheet->getStyle("A{$row}")->applyFromArray([
@@ -80,12 +89,11 @@ class OrderStatusSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                     ]);
                 }
 
-                // Grand total row
-                $this->addSummaryRow($sheet, $lastRow, [
+                $this->addSummaryRow($event, $lastRow, [
                     'TOTAL',
-                    "=SUM(B2:B{$lastRow})",
-                    '100%',
-                    "=SUM(D2:D{$lastRow})",
+                    "=SUM(B4:B{$lastRow})",
+                    1.0,
+                    "=SUM(D4:D{$lastRow})",
                     '',
                 ]);
             },

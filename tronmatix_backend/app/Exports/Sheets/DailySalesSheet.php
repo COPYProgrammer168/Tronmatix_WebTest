@@ -24,12 +24,12 @@ class DailySalesSheet implements FromCollection, WithTitle, WithHeadings, Should
 
     public function headings(): array
     {
-        return ['Date', 'Revenue ($)', 'Orders', 'Avg Order Value ($)', 'Discount Saved ($)'];
+        return ['Date', 'Revenue', 'Orders', 'Avg Order Value', 'Discount Saved'];
     }
 
     public function collection()
     {
-        $sqlFmt  = $this->dateExpr('created_at', 'Y-m-d');
+        $sqlFmt    = $this->dateExpr('created_at', 'Y-m-d');
         $dailyRows = Order::select(
                 DB::raw("{$sqlFmt} as date_key"),
                 DB::raw('SUM(total) as revenue'),
@@ -69,16 +69,25 @@ class DailySalesSheet implements FromCollection, WithTitle, WithHeadings, Should
                 $sheet   = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event);
+                $this->addSheetTitle($event, '📅 Daily Sales (Last 14 Days)');
+                $lastRow = $sheet->getHighestRow();
+
+                $this->applyBaseFormatting($event, 2);
                 $this->accentColumn($sheet, 'B', $lastRow);
                 $this->accentColumn($sheet, 'E', $lastRow, 'FFA855F7');
 
-                $this->addSummaryRow($sheet, $lastRow, [
+                $this->setCurrencyFormat($sheet, 'B', $lastRow);
+                $this->setCurrencyFormat($sheet, 'D', $lastRow);
+                $this->setCurrencyFormat($sheet, 'E', $lastRow);
+
+                $this->setIntFormat($sheet, 'C', $lastRow);
+
+                $this->addSummaryRow($event, $lastRow, [
                     'TOTAL',
-                    "=SUM(B2:B{$lastRow})",
-                    "=SUM(C2:C{$lastRow})",
-                    "=IFERROR(AVERAGE(D2:D{$lastRow}),0)",
-                    "=SUM(E2:E{$lastRow})",
+                    "=SUM(B3:B{$lastRow})",
+                    "=SUM(C3:C{$lastRow})",
+                    "=IFERROR(AVERAGE(D3:D{$lastRow}),0)",
+                    "=SUM(E3:E{$lastRow})",
                 ]);
             },
         ];

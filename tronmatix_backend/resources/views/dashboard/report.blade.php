@@ -140,7 +140,8 @@
                 <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FORMAT</label>
                 <select name="format" class="export-input export-select">
                     <option value="xlsx">📊 Excel (.xlsx) — All 8 sheets</option>
-                    <option value="csv">📄 CSV (.csv) — Summary only</option>
+                    <!-- <option value="csv">📄 CSV (.csv) — Summary only</option> -->
+                    <option value="pdf">📕 PDF (.pdf) — Styled report</option>
                 </select>
             </div>
 
@@ -225,7 +226,7 @@
     <div class="card">
         <div class="card-header">
             <span class="card-title">📈 MONTHLY REVENUE</span>
-            <span class="chart-badge">Last 12 Months</span>
+            <span class="chart-badge">{{ $month->format('F Y') }}</span>
         </div>
         <div class="card-body">
             <canvas id="revenueChart" height="110"></canvas>
@@ -234,7 +235,7 @@
     <div class="card">
         <div class="card-header">
             <span class="card-title">📦 MONTHLY ORDERS</span>
-            <span class="chart-badge">Last 12 Months</span>
+            <span class="chart-badge">{{ $month->format('F Y') }}</span>
         </div>
         <div class="card-body">
             <canvas id="ordersChart" height="110"></canvas>
@@ -246,8 +247,8 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📅 DAILY SALES</span>
-            <span class="chart-badge">Last 14 Days</span>
+            <span class="card-title">📅 REVENUE TREND</span>
+            <span class="chart-badge">Last 12 Months</span>
         </div>
         <div class="card-body">
             <canvas id="dailyChart" height="110"></canvas>
@@ -426,16 +427,18 @@ function applyChartDefaults() {
 applyChartDefaults();
 
 // ── Data from Laravel ─────────────────────────────────────────────────────────
-const monthlyLabels   = @json($monthlyLabels);
-const monthlyRevenue  = @json($monthlyRevenue);
-const monthlyOrders   = @json($monthlyOrders);
-const monthlyUsers    = @json($monthlyUserCounts);
-const dailyLabels     = @json($dailyLabels);
-const dailyRevenue    = @json($dailyRevenue);
-const statusLabels    = @json($statusLabels);
-const statusCounts    = @json($statusCounts);
-const categoryLabels  = @json($categoryLabels);
-const categoryRevData = @json($categoryRevData);
+const monthDailyLabels   = @json($monthDailyLabels);
+const monthRevenueDaily  = @json($monthRevenueDaily);
+const monthOrdersDaily   = @json($monthOrdersDaily);
+const monthlySalesLabels = @json($monthlySalesLabels);
+const monthlySalesRevenue= @json($monthlySalesRevenue);
+const monthlyUsers       = @json($monthlyUserCounts);
+const dailyLabels        = @json($dailyLabels);
+const dailyRevenue       = @json($dailyRevenue);
+const statusLabels       = @json($statusLabels);
+const statusCounts       = @json($statusCounts);
+const categoryLabels     = @json($categoryLabels);
+const categoryRevData    = @json($categoryRevData);
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const orange    = '#F97316';
@@ -454,11 +457,11 @@ function makeGradient(ctx, top, bottom) {
     return g;
 }
 
-// 1. Monthly Revenue — Line
+// 1. Daily Revenue for selected month — Line
 const rCtx = document.getElementById('revenueChart').getContext('2d');
 const revenueChart = new Chart(rCtx, {
     type: 'line',
-    data: { labels: monthlyLabels, datasets: [{ label:'Revenue ($)', data:monthlyRevenue,
+    data: { labels: monthDailyLabels, datasets: [{ label:'Revenue ($)', data:monthRevenueDaily,
         borderColor:orange, borderWidth:2.5, pointBackgroundColor:orange,
         pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         fill:true, backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), tension:0.4 }] },
@@ -468,11 +471,11 @@ const revenueChart = new Chart(rCtx, {
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
 });
 
-// 2. Monthly Orders — Bar
+// 2. Daily Orders for selected month — Bar
 const oCtx = document.getElementById('ordersChart').getContext('2d');
 const ordersChart = new Chart(oCtx, {
     type: 'bar',
-    data: { labels: monthlyLabels, datasets: [{ label:'Orders', data:monthlyOrders,
+    data: { labels: monthDailyLabels, datasets: [{ label:'Orders', data:monthOrdersDaily,
         backgroundColor:makeGradient(oCtx, orangeMid,'rgba(249,115,22,0.15)'),
         borderColor:orange, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
@@ -480,11 +483,11 @@ const ordersChart = new Chart(oCtx, {
             ticks:{stepSize:1}}}}
 });
 
-// 3. Daily Sales — Line
+// 3. Monthly Revenue (12 months) — Line
 const dCtx = document.getElementById('dailyChart').getContext('2d');
 const dailyChart = new Chart(dCtx, {
     type: 'line',
-    data: { labels: dailyLabels, datasets: [{ label:'Revenue ($)', data:dailyRevenue,
+    data: { labels: monthlySalesLabels, datasets: [{ label:'Revenue ($)', data:monthlySalesRevenue,
         borderColor:blue, borderWidth:2.5, pointBackgroundColor:blue,
         pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
@@ -494,11 +497,11 @@ const dailyChart = new Chart(dCtx, {
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
 });
 
-// 4. User Registrations — Bar
+// 4. User Registrations (12 months) — Bar
 const uCtx = document.getElementById('usersChart').getContext('2d');
 const usersChart = new Chart(uCtx, {
     type: 'bar',
-    data: { labels: monthlyLabels, datasets: [{ label:'New Users', data:monthlyUsers,
+    data: { labels: monthlySalesLabels, datasets: [{ label:'New Users', data:monthlyUsers,
         backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},

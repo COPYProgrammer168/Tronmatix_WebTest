@@ -150,12 +150,24 @@ class DashboardController extends Controller
             ->groupBy('month_key')->orderBy('month_key')
             ->get()->keyBy('month_key');
 
+        $monthlyOrders = [];
+        $orderRows12 = Order::select(
+            DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
+            ->whereNotIn('status', ['cancelled'])
+            ->groupBy('month_key')->orderBy('month_key')
+            ->get()->keyBy('month_key');
+
         for ($i = 11; $i >= 0; $i--) {
             $date  = Carbon::now()->subMonths($i);
             $key   = $date->format('Y-m');
             $found = $salesRows12->get($key);
             $monthlySalesLabels[] = $date->format('M Y');
             $monthlySalesRevenue[] = $found ? round((float) $found->revenue, 2) : 0;
+            $foundOrder = $orderRows12->get($key);
+            $monthlyOrders[] = $foundOrder ? (int) $foundOrder->total : 0;
         }
 
         // Order status pie
@@ -219,7 +231,7 @@ class DashboardController extends Controller
             'statusLabels', 'statusCounts', 'categoryLabels', 'categoryRevData',
             'dailyLabels', 'dailyRevenue', 'top_discount_codes',
             'monthDailyLabels', 'monthRevenueDaily', 'monthOrdersDaily', 'month',
-            'monthlySalesLabels', 'monthlySalesRevenue'
+            'monthlySalesLabels', 'monthlySalesRevenue', 'monthlyOrders'
         );
     }
 
@@ -683,15 +695,22 @@ class DashboardController extends Controller
         }
 
         // ── 2. Determine export format ────────────────────────────────────────────
-        $format = in_array($request->input('format'), ['xlsx', 'csv']) ? $request->input('format') : 'xlsx';
+        $format = in_array($request->input('format'), ['xlsx', 'csv', 'pdf']) ? $request->input('format') : 'xlsx';
         $filename = 'dashboard-' . $from . '-to-' . $to . '.' . $format;
 
         // ── 3. Stream the download ────────────────────────────────────────────────
+        if ($format === 'pdf') {
+            return (new \App\Exports\PdfExport(
+                \Carbon\Carbon::parse($from)->startOfDay(),
+                \Carbon\Carbon::parse($to)->endOfDay()
+            ))->download();
+        }
+
         if ($format === 'csv') {
-            // CSV does not support multiple sheets — export Summary sheet only.
-            // SummarySheet must implement FromCollection/FromQuery + WithHeadings.
+            // CSV does not support multiple sheets or styling.
+            // Use dedicated CsvExport class for clean tabular data only.
             return Excel::download(
-                new \App\Exports\Sheets\SummarySheet(
+                new \App\Exports\CsvExport(
                     \Carbon\Carbon::parse($from)->startOfDay(),
                     \Carbon\Carbon::parse($to)->endOfDay()
                 ),

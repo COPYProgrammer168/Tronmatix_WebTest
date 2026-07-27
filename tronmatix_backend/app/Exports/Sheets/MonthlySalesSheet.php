@@ -25,14 +25,13 @@ class MonthlySalesSheet implements FromCollection, WithTitle, WithHeadings, Shou
 
     public function headings(): array
     {
-        return ['Month', 'Revenue ($)', 'Orders', 'New Users', 'Avg Order Value ($)', 'Discount Saved ($)'];
+        return ['Month', 'Revenue', 'Orders', 'New Users', 'Avg Order Value', 'Discount Saved'];
     }
 
     public function collection()
     {
         $driver = DB::getDriverName();
 
-        // Revenue + orders per month
         $salesRows = Order::select(
                 DB::raw($this->dateExpr('created_at', 'Y-m') . ' as month_key'),
                 DB::raw('SUM(total) as revenue'),
@@ -45,7 +44,6 @@ class MonthlySalesSheet implements FromCollection, WithTitle, WithHeadings, Shou
             ->orderBy('month_key')
             ->get()->keyBy('month_key');
 
-        // New users per month
         $userRows = User::select(
                 DB::raw($this->dateExpr('created_at', 'Y-m') . ' as month_key'),
                 DB::raw('COUNT(*) as total')
@@ -85,18 +83,31 @@ class MonthlySalesSheet implements FromCollection, WithTitle, WithHeadings, Shou
                 $sheet   = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event);
-                $this->accentColumn($sheet, 'B', $lastRow);           // Revenue — orange
-                $this->accentColumn($sheet, 'F', $lastRow, 'FFA855F7'); // Discount — purple
+                $this->addSheetTitle($event, '📈 Monthly Sales Trend (12 Months)');
+                // Re-get lastRow after title insert (addSheetTitle inserts 2 rows)
+                $lastRow = $sheet->getHighestRow();
 
-                // Totals row
-                $this->addSummaryRow($sheet, $lastRow, [
+                $this->applyBaseFormatting($event, 2);
+                $this->accentColumn($sheet, 'B', $lastRow);             // Revenue
+                $this->accentColumn($sheet, 'F', $lastRow, 'FFA855F7'); // Discount
+
+                // Currency formatting
+                $this->setCurrencyFormat($sheet, 'B', $lastRow);
+                $this->setCurrencyFormat($sheet, 'E', $lastRow);
+                $this->setCurrencyFormat($sheet, 'F', $lastRow);
+
+                // Integer formatting
+                $this->setIntFormat($sheet, 'C', $lastRow);
+                $this->setIntFormat($sheet, 'D', $lastRow);
+
+                // Totals
+                $this->addSummaryRow($event, $lastRow, [
                     'TOTAL',
-                    "=SUM(B2:B{$lastRow})",
-                    "=SUM(C2:C{$lastRow})",
-                    "=SUM(D2:D{$lastRow})",
-                    "=IFERROR(AVERAGE(E2:E{$lastRow}),0)",
-                    "=SUM(F2:F{$lastRow})",
+                    "=SUM(B3:B{$lastRow})",
+                    "=SUM(C3:C{$lastRow})",
+                    "=SUM(D3:D{$lastRow})",
+                    "=IFERROR(AVERAGE(E3:E{$lastRow}),0)",
+                    "=SUM(F3:F{$lastRow})",
                 ]);
             },
         ];
