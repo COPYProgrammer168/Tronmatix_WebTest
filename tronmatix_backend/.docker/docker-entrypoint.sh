@@ -15,11 +15,9 @@ if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
     php artisan key:generate --force || echo "⚠️ key:generate failed"
 fi
 
-# ── Clear caches FIRST before re-caching ──────────────────────────────────────
+# ── Clear ALL caches FIRST before re-caching ─────────────────────────────────
 echo ">>> Clearing old caches..."
-php artisan config:clear 2>/dev/null || true
-php artisan route:clear  2>/dev/null || true
-php artisan view:clear   2>/dev/null || true
+php artisan optimize:clear 2>/dev/null || true
 
 echo ">>> Caching config..."
 php artisan config:cache || echo "⚠️ config:cache failed"
