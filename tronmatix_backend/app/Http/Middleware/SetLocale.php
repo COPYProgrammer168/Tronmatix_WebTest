@@ -38,10 +38,10 @@ class SetLocale
         $locale = $request->session()->get('app_lang')
                ?? $request->cookie('app_lang')
                ?? $this->fromBrowser($request)
-               ?? config('app.locale', 'en');
+               ?? config('app.locale', 'km');
 
         // Sanitise — never trust raw input for locale switching
-        $locale = in_array($locale, self::SUPPORTED, true) ? $locale : 'en';
+        $locale = in_array($locale, self::SUPPORTED, true) ? $locale : 'km';
 
         App::setLocale($locale);
 

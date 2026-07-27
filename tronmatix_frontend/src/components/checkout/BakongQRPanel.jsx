@@ -672,7 +672,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {/* PAID STATE                                                        */}
+        {/* PAID STATE — Celebratory Animation                              */}
         {/* ══════════════════════════════════════════════════════════════════ */}
         {paymentStatus === "paid" && (
           <div
@@ -681,21 +681,32 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               borderRadius: 20,
               overflow: "hidden",
               boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+              animation: "fadeInUp 0.5s ease-out",
             }}
           >
+            {/* Green header with check animation */}
             <div
               style={{
-                background: "#16a34a",
-                padding: "24px 20px",
+                background: "linear-gradient(135deg, #16a34a, #22c55e)",
+                padding: "32px 20px",
                 textAlign: "center",
+                position: "relative",
+                overflow: "hidden",
               }}
             >
+              {/* Animated circles in background */}
+              <div className="confetti-circle c1" />
+              <div className="confetti-circle c2" />
+              <div className="confetti-circle c3" />
+              <div className="confetti-circle c4" />
+
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
+                  marginBottom: 16,
                 }}
               >
                 <div
@@ -727,54 +738,76 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                   KHQR
                 </span>
               </div>
-            </div>
-            <div style={{ padding: "32px 24px", textAlign: "center" }}>
+
+              {/* Animated checkmark */}
               <div
+                className="checkmark-circle"
                 style={{
-                  width: 68,
-                  height: 68,
+                  width: 80,
+                  height: 80,
                   borderRadius: "50%",
-                  background: "#f0fdf4",
+                  background: "rgba(255,255,255,0.2)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  margin: "0 auto 16px",
-                  fontSize: 32,
-                  animation: "popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)",
+                  margin: "0 auto",
+                  animation: "checkBounce 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.2s both",
                 }}
               >
-                ✓
+                <span
+                  className="checkmark-icon"
+                  style={{
+                    color: "#fff",
+                    fontSize: 42,
+                    fontWeight: 900,
+                    animation: "checkDraw 0.4s ease-out 0.6s both",
+                  }}
+                >
+                  ✓
+                </span>
               </div>
+            </div>
+
+            <div style={{ padding: "32px 24px", textAlign: "center" }}>
               <h2
                 style={{
-                  fontSize: 18,
-                  fontWeight: 800,
+                  fontSize: 22,
+                  fontWeight: 900,
                   color: "#16a34a",
-                  margin: "0 0 8px",
+                  margin: "0 0 6px",
+                  animation: "fadeInUp 0.5s ease-out 0.3s both",
                 }}
               >
-                {isKhmer ? t("qr.paymentSuccess") : "Payment Successful!"}
+                {isKhmer ? t("qr.paymentSuccess") : "Payment Successful! 🎉"}
               </h2>
-              <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 20 }}>
+              <p
+                style={{
+                  color: "#6b7280",
+                  fontSize: 14,
+                  marginBottom: 24,
+                  animation: "fadeInUp 0.5s ease-out 0.4s both",
+                }}
+              >
                 {isKhmer
                   ? t("qr.transactionComplete")
-                  : "Transaction completed successfully!"}
+                  : "Your payment was confirmed automatically!"}
               </p>
               <div
                 style={{
                   background: "#f0fdf4",
                   border: "1px solid #bbf7d0",
-                  borderRadius: 12,
-                  padding: "14px 16px",
+                  borderRadius: 14,
+                  padding: "16px 20px",
                   textAlign: "left",
+                  animation: "fadeInUp 0.5s ease-out 0.5s both",
                 }}
               >
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    fontSize: 13,
-                    marginBottom: 8,
+                    fontSize: 14,
+                    marginBottom: 10,
                   }}
                 >
                   <span style={{ color: "#6b7280" }}>Order ID</span>
@@ -786,11 +819,13 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    fontSize: 13,
+                    fontSize: 14,
+                    paddingTop: 10,
+                    borderTop: "1px solid #bbf7d0",
                   }}
                 >
                   <span style={{ color: "#6b7280" }}>Amount Paid</span>
-                  <span style={{ fontWeight: 700, color: "#16a34a" }}>
+                  <span style={{ fontWeight: 800, color: "#16a34a", fontSize: 16 }}>
                     ${Number(qrData?.amount ?? total ?? 0).toFixed(2)}{" "}
                     {qrData?.currency || "USD"}
                   </span>
@@ -813,6 +848,35 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
             from { opacity: 0; transform: scale(0.75); }
             to   { opacity: 1; transform: scale(1); }
           }
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes checkBounce {
+            0%   { transform: scale(0); opacity: 0; }
+            60%  { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes checkDraw {
+            from { opacity: 0; transform: scale(0.5); }
+            to   { opacity: 1; transform: scale(1); }
+          }
+          @keyframes confettiFloat {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(-60px) rotate(90deg); opacity: 0; }
+          }
+          .confetti-circle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: confettiFloat 1.2s ease-out 0.3s forwards;
+          }
+          .c1 { background: #fbbf24; top: 10%; left: 15%; animation-delay: 0.3s; }
+          .c2 { background: #60a5fa; top: 20%; right: 20%; animation-delay: 0.5s; width: 8px; height: 8px; }
+          .c3 { background: #f472b6; top: 15%; left: 50%; animation-delay: 0.7s; width: 10px; height: 10px; }
+          .c4 { background: #34d399; top: 8%; right: 35%; animation-delay: 0.9s; }
         `}</style>
       </div>
     </div>

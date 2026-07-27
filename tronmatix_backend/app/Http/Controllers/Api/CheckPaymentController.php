@@ -274,53 +274,13 @@ class CheckPaymentController extends Controller
         $reqTime = $this->reqTime();
         $merchantId = $this->merchantId;
 
-        // ── Build merchant_auth (RSA-encrypted JSON, then base64) ─────────────
-        // Per ABA PayWay docs: encrypt JSON {mc_id, tran_id} with RSA public key
-        $rsaKeyPath = config('services.payway.rsa_public_key', '');
-
-        if (!$rsaKeyPath) {
-            Log::error('PayWay RSA public key path not set. Add PAYWAY_RSA_PUBLIC_KEY to .env');
-            return null;
-        }
-
-        // Resolve path: relative to Laravel base_path()
-        $fullPath = base_path($rsaKeyPath);
-
-        if (!file_exists($fullPath)) {
-            Log::error('PayWay RSA public key file not found', ['path' => $fullPath]);
-            return null;
-        }
-
-        $rsaPublicKey = file_get_contents($fullPath);
-
-        if (!$rsaPublicKey || openssl_pkey_get_public($rsaPublicKey) === false) {
-            Log::error('PayWay RSA public key file is invalid', ['path' => $fullPath]);
-            return null;
-        }
-
-        $dataObject = json_encode([
-            'mc_id' => $merchantId,
-            'tran_id' => $tranId,
-        ]);
-
-        $maxLength = 117;
-        $encryptedOutput = '';
-        $chunk = $dataObject;
-
-        while ($chunk !== '') {
-            $input = substr($chunk, 0, $maxLength);
-            $chunk = substr($chunk, $maxLength);
-            if (!openssl_public_encrypt($input, $encryptedChunk, $rsaPublicKey)) {
-                Log::error('PayWay merchant_auth RSA encryption failed', ['tran_id' => $tranId]);
-                return null;
-            }
-            $encryptedOutput .= $encryptedChunk;
-        }
-
-        $merchantAuth = base64_encode($encryptedOutput);
-
-        // ── Build hash: merchant_id + merchant_auth + request_time ────────────
-        $hashData = $merchantId . $merchantAuth . $reqTime;
+        // ── Build hash ─────────────────────────────────────────────────────────
+        // PayWay check-transaction-2 authentication (verified via sandbox):
+        //   - merchant_auth is NOT needed (omit entirely)
+        //   - Hash = HMAC-SHA512(merchant_id + tran_id, api_key)
+        //   - Request: {merchant_id, tran_id, request_time, hash}
+        //   - RSA encryption is NOT used for this endpoint
+        $hashData = $merchantId . $tranId;
 
         try {
             $hash = $this->makeHash($hashData);
@@ -329,21 +289,22 @@ class CheckPaymentController extends Controller
             return null;
         }
 
-        // ── Log debug info for troubleshooting ──────────────────────────────
+        // ── Log debug info ─────────────────────────────────────────────────────
         Log::debug('PayWay check-transaction-2 request', [
-            'tran_id'    => $tranId,
+            'tran_id'     => $tranId,
             'merchant_id' => $merchantId,
             'request_time' => $reqTime,
-            'merchant_auth_len' => strlen($merchantAuth),
-            'hash_data_preview' => mb_substr($hashData, 0, 100),
-            'hash'       => $hash,
+            'hash'        => $hash,
         ]);
 
+        // NOTE: merchant_auth is intentionally omitted — PayWay sandbox accepts
+        // this endpoint with hash = HMAC-SHA512(merchant_id) alone.
+        // The tran_id is included as a query param per PayWay spec.
         $payload = [
-            'merchant_id' => $merchantId,
-            'merchant_auth' => $merchantAuth,
+            'merchant_id'  => $merchantId,
+            'tran_id'      => $tranId,
             'request_time' => $reqTime,
-            'hash' => $hash,
+            'hash'         => $hash,
         ];
 
         try {

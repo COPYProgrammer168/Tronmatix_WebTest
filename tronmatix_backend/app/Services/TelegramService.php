@@ -151,12 +151,19 @@ class TelegramService
             return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
         })->join("\n");
 
+        $shipping = $order->shipping;
+        if (is_string($shipping)) {
+            $shipping = json_decode($shipping, true) ?? [];
+        }
+        $shippingPhone = $shipping['phone'] ?? '';
+        $shippingName  = $shipping['name'] ?? '';
+
         $lines = array_filter([
             '✅ *ABA BAKONG Payment Confirmed!*',
             '',
             "📦 Order: `#{$order->order_id}`",
-            '👤 Customer: ' . ($order->user?->username ?? 'Guest'),
-            '📞 Phone: ' . ($order->user?->phone ?? '—'),
+            '👤 Customer: ' . ($shippingName ?: $order->user?->username ?? 'Guest'),
+            '📞 Phone: ' . ($shippingPhone ?: $order->user?->phone ?? '—'),
             $fulfillment,
             $order->delivery_date
             ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': ' . $order->delivery_date

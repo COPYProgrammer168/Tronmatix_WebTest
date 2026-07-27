@@ -23,14 +23,14 @@
             --lh-kh: 1.5;   /* Khmer needs more line height for diacritics */
 
             /* ── English type scale (default) ─────────────────────────────────── */
-            --text-nav:  20px;   /* nav items  */
-            --text-xs:   12px;   /* badges, faint labels          */
-            --text-sm:   14px;   /* table cells, secondary text   */
-            --text-base: 16px;   /* body, buttons      */
-            --text-md:   18px;   /* card titles, topbar items     */
-            --text-lg:   20px;   /* topbar page title             */
-            --text-xl:   22px;   /* section headings              */
-            --text-2xl:  26px;   /* prominent titles              */
+            --text-nav:  22px;   /* nav items  */
+            --text-xs:   14px;   /* badges, faint labels          */
+            --text-sm:   16px;   /* table cells, secondary text   */
+            --text-base: 17px;   /* body, buttons      */
+            --text-md:   20px;   /* card titles, topbar items     */
+            --text-lg:   22px;   /* topbar page title             */
+            --text-xl:   24px;   /* section headings              */
+            --text-2xl:  28px;   /* prominent titles              */
 
             --title-size: var(--text-md);
             --heading-size: var(--text-xl);
