@@ -6,9 +6,6 @@
 <style>
 /* ── Role badges ─────────────────────────────────────────────────────────── */
 .role-badge-customer { background:rgba(156,163,175,0.15); color:#9CA3AF; border:1px solid rgba(156,163,175,0.3); }
-.role-badge-vip      { background:rgba(249,115,22,0.15);  color:#F97316; border:1px solid rgba(249,115,22,0.4); }
-.role-badge-reseller { background:rgba(59,130,246,0.15);  color:#3B82F6; border:1px solid rgba(59,130,246,0.4); }
-.role-badge-banned   { background:rgba(239,68,68,0.15);   color:#EF4444; border:1px solid rgba(239,68,68,0.4); }
 
 /* ── Inline role select ──────────────────────────────────────────────────── */
 .role-select {
@@ -28,14 +25,8 @@
 .role-select:focus { border-color: var(--orange); }
 /* Role color per selected value */
 .role-select[data-role="customer"] { color: #9CA3AF; border-color: rgba(156,163,175,0.3); }
-.role-select[data-role="vip"]      { color: #F97316; border-color: rgba(249,115,22,0.5); }
-.role-select[data-role="reseller"] { color: #3B82F6; border-color: rgba(59,130,246,0.5); }
-.role-select[data-role="banned"]   { color: #EF4444; border-color: rgba(239,68,68,0.5); }
 /* Option colors in dropdown list */
 .role-select option[value="customer"] { color: #9CA3AF; background: var(--dark-900); }
-.role-select option[value="vip"]      { color: #F97316; background: var(--dark-900); }
-.role-select option[value="reseller"] { color: #3B82F6; background: var(--dark-900); }
-.role-select option[value="banned"]   { color: #EF4444; background: var(--dark-900); }
 
 /* ── Filter tabs ─────────────────────────────────────────────────────────── */
 .filter-tab {
@@ -113,8 +104,8 @@ tbody tr:hover td { background: var(--dark-700); }
 @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
 @if(!$_permDenied)
     @php
-        $roleMap     = ['all' => 'All', 'customer' => 'Customer', 'reseller' => 'Reseller', 'banned' => 'Banned'];
-        $roleIcons   = ['customer' => '👤', 'reseller' => '🏪', 'banned' => '🚫'];
+        $roleMap     = ['all' => 'All', 'customer' => 'Customer'];
+        $roleIcons   = ['customer' => '👤'];
         $currentRole = request('role', 'all');
         $totalUsers  = array_sum($roleCounts ?? []);
     @endphp
@@ -132,7 +123,7 @@ tbody tr:hover td { background: var(--dark-700); }
 
     {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
     <div class="stats-grid users-stats-grid" style="margin-bottom:20px;">
-        @foreach(['customer','reseller','banned'] as $role)
+        @foreach(['customer'] as $role)
         <div class="stat-card">
             <div class="stat-icon"><span style="font-size: var(--title-size);">{{ $roleIcons[$role] }}</span></div>
             <div>
@@ -254,7 +245,7 @@ tbody tr:hover td { background: var(--dark-700); }
                                 </div>
                                 <div>
                                     <div class="user-username" style="font-weight:700; font-size: var(--title-size); cursor:pointer;"
-                                         onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ (float)($user->orders_sum_total ?? $user->total_spent ?? 0) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
+                                         onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), 'customer', @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ (float)($user->orders_sum_total ?? $user->total_spent ?? 0) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
                                          onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
                                         {{ $user->username }}
                                     </div>
@@ -335,10 +326,10 @@ tbody tr:hover td { background: var(--dark-700); }
 
                         {{-- Current role badge --}}
                         <td>
-                            <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
+                            <span class="badge role-badge-customer"
                                   id="role-badge-{{ $user->id }}"
                                   style="font-size: var(--title-size); letter-spacing:1px;">
-                                {{ strtoupper(\App\Models\User::ROLE_LABELS[$user->role ?? 'customer'] ?? 'CUSTOMER') }}
+                                CUSTOMER
                             </span>
                         </td>
 
@@ -354,14 +345,9 @@ tbody tr:hover td { background: var(--dark-700); }
                                         data-current="{{ $user->role ?? 'customer' }}"
                                         data-role="{{ $user->role ?? 'customer' }}"
                                         onchange="this.dataset.role=this.value">
-                                    @foreach(\App\Models\User::ROLES as $role)
-                                        @if($role === 'vip') @continue @endif
-                                        <option value="{{ $role }}"
-                                            {{ ($user->role ?? 'customer') === $role ? 'selected' : '' }}>
-                                            {{ $roleIcons[$role] ?? '' }}
-                                            {{ \App\Models\User::ROLE_LABELS[$role] }}
-                                        </option>
-                                    @endforeach
+                                    <option value="customer" {{ ($user->role ?? 'customer') === 'customer' ? 'selected' : '' }}>
+                                        👤 Customer
+                                    </option>
                                 </select>
                                 <button
                                     type="button"
@@ -498,8 +484,6 @@ tbody tr:hover td { background: var(--dark-700); }
     <script>
     const ROLE_COLORS = {
         customer: { bg:'rgba(156,163,175,0.15)', color:'#9CA3AF', border:'rgba(156,163,175,0.3)', label:'CUSTOMER' },
-        reseller: { bg:'rgba(59,130,246,0.15)',  color:'#3B82F6', border:'rgba(59,130,246,0.4)',  label:'🏪 RESELLER' },
-        banned:   { bg:'rgba(239,68,68,0.15)',   color:'#EF4444', border:'rgba(239,68,68,0.4)',   label:'🚫 BANNED' },
     };
 
     function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa, telegram) {
@@ -545,15 +529,6 @@ tbody tr:hover td { background: var(--dark-700); }
             padding:4px 12px;border-radius:20px;font-size: var(--title-size);font-weight:800;letter-spacing:1px;
             background:${rm.bg};color:${rm.color};border:1px solid ${rm.border};">${rm.label}</span>`;
 
-        // VIP progress — VIP role is disabled, show progress for all non-customers
-        const vipGoal = 1000;
-        const spentNum = parseFloat(spent) || 0;
-        const pct = Math.min(100, Math.round((spentNum / vipGoal) * 100));
-        const vipWrap = document.getElementById('ui-vip-wrap');
-        vipWrap.style.display = 'block';
-        document.getElementById('ui-vip-bar').style.width = pct + '%';
-        document.getElementById('ui-vip-pct').textContent = pct + '% · $' + vipGoal + ' goal';
-
         // View orders link
         document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${id}`;
     }
@@ -573,13 +548,9 @@ tbody tr:hover td { background: var(--dark-700); }
 <script>
 const ROLE_BADGE_CLASS = {
     customer : 'role-badge-customer',
-    reseller : 'role-badge-reseller',
-    banned   : 'role-badge-banned',
 };
 const ROLE_LABEL = {
     customer : 'CUSTOMER',
-    reseller : 'RESELLER',
-    banned   : 'BANNED',
 };
 
 // ── CSRF — read from meta tag added to layout <head> ─────────────────────
