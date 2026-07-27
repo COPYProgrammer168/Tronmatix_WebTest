@@ -333,16 +333,15 @@ export default function ProductCard({ product }) {
         })}
       </div>
 
-      {/* Image — natural height driven by image aspect ratio */}
+      {/* Image — fixed aspect ratio ensures equal card height in rows */}
       <Link to={`/product/${product.id}`} className="block">
-        <div className="relative overflow-hidden" style={{ background: imgBg }}>
+        <div className="relative overflow-hidden" style={{ background: imgBg, aspectRatio: "1 / 1" }}>
           {imageUrl ? (
             <>
-              {/* Primary image drives container height via its natural aspect ratio */}
               <img
                 src={imageUrl}
                 alt={product.name}
-                className="w-full block transition-all duration-300"
+                className="w-full h-full object-cover block transition-all duration-300"
                 style={{
                   opacity: hovered && hasHoverImg ? 0 : 1,
                   transform:
@@ -373,7 +372,7 @@ export default function ProductCard({ product }) {
             </>
           ) : (
             <div
-              className="flex items-center justify-center"
+              className="flex items-center justify-center w-full h-full"
               style={{ minHeight: 160 }}
             >
               <PlaceholderImg name={product.name} dark={dark} />

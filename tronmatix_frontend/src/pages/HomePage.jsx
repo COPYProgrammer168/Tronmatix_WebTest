@@ -657,7 +657,7 @@ export default function HomePage() {
                   ? Array(6).fill(null).map((_, i) => (
                       <SwiperSlide key={i} style={{ width: 210 }}>
                         <div className="rounded-xl skeleton-shimmer" style={{
-                          width: 210, height: 300,
+                          width: 210, aspectRatio: "1 / 1",
                           "--sk-base": dark ? "#1f2937" : "#f3f4f6",
                           "--sk-shine": dark ? "#374151" : "#e9eaec",
                         }} />
