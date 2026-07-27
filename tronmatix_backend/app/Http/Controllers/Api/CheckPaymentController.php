@@ -266,7 +266,7 @@ class CheckPaymentController extends Controller
     // ─────────────────────────────────────────────────────────────────────────
     // PRIVATE: Poll PayWay check-transaction-2
     // Hash formula (from ABA PayWay API spec):
-    //   merchant_auth + request_time + merchant_id
+    //   merchant_id + merchant_auth + request_time
     // ─────────────────────────────────────────────────────────────────────────
 
     private function checkTransaction(string $tranId): ?array
@@ -319,8 +319,8 @@ class CheckPaymentController extends Controller
 
         $merchantAuth = base64_encode($encryptedOutput);
 
-        // ── Build hash: merchant_auth + request_time + merchant_id ────────────
-        $hashData = $merchantAuth . $reqTime . $merchantId;
+        // ── Build hash: merchant_id + merchant_auth + request_time ────────────
+        $hashData = $merchantId . $merchantAuth . $reqTime;
 
         try {
             $hash = $this->makeHash($hashData);
@@ -328,6 +328,16 @@ class CheckPaymentController extends Controller
             Log::error('PayWay check-transaction hash failed: ' . $e->getMessage());
             return null;
         }
+
+        // ── Log debug info for troubleshooting ──────────────────────────────
+        Log::debug('PayWay check-transaction-2 request', [
+            'tran_id'    => $tranId,
+            'merchant_id' => $merchantId,
+            'request_time' => $reqTime,
+            'merchant_auth_len' => strlen($merchantAuth),
+            'hash_data_preview' => mb_substr($hashData, 0, 100),
+            'hash'       => $hash,
+        ]);
 
         $payload = [
             'merchant_id' => $merchantId,
