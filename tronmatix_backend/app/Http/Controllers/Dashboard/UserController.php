@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\AdminSetting;
 // use App\Models\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -52,7 +53,9 @@ public function index(Request $request): View
         ->pluck('total', 'role')
         ->toArray();
 
-    return view('dashboard.users', compact('users', 'roleCounts'));
+    $vipGoal = (float) AdminSetting::get('vip_threshold', 5000);
+
+    return view('dashboard.users', compact('users', 'roleCounts', 'vipGoal'));
 }
 
     // ── PUT /dashboard/users/{user}/role ──────────────────────────────────────

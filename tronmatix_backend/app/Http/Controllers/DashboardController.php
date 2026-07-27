@@ -566,13 +566,14 @@ class DashboardController extends Controller
         $perPage = AdminSetting::int('dashboard_rows_per_page', 15);
         $users = $query->paginate($perPage)->withQueryString();
 
-        // Role counts for the filter tabs
         $roleCounts = User::selectRaw('role, COUNT(*) as total')
             ->groupBy('role')
             ->pluck('total', 'role')
             ->toArray();
 
-        return view('dashboard.users', compact('users', 'roleCounts'));
+        $vipGoal = (float) AdminSetting::get('vip_threshold', 5000);
+
+        return view('dashboard.users', compact('users', 'roleCounts', 'vipGoal'));
     }
 
     // ── Banners ───────────────────────────────────────────────────────────────

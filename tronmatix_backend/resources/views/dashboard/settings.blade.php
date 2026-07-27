@@ -344,6 +344,18 @@ setTimeout(closeSavePopup, 3500);
                            min="4" max="100" class="s-input" style="margin-top:8px; text-align:center;">
                 </div>
             </div>
+
+            <div class="s-divider" style="margin:16px 0;"></div>
+
+            <div>
+                <div class="s-sub-label">⭐ VIP SPENDING GOAL ($)</div>
+                <div style="font-size: var(--title-size); color:var(--text-muted, rgba(60,60,60,0.7)); margin-top:4px; margin-bottom:10px;">
+                    Minimum total spent required for a customer to earn <strong style="color:#F97316;">VIP</strong> status
+                </div>
+                <input type="number" name="vip_threshold"
+                       value="{{ sval($s,'vip_threshold','5000') }}"
+                       min="0" step="1" class="s-input" style="max-width:220px; text-align:center;">
+            </div>
         </div>
     </div>
 

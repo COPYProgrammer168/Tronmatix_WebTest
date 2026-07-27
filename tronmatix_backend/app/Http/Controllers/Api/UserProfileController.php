@@ -211,7 +211,7 @@ class UserProfileController extends Controller
             return response()->json(['success' => false, 'message' => 'User stats not available for this account type.'], 403);
         }
         $totalSpent   = $user->totalSpent();
-        $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
+        $vipThreshold = (float) AdminSetting::get('vip_threshold', 5000);
 
         /*
         if ($totalSpent >= $vipThreshold && ($user->role ?? 'customer') === 'customer') {

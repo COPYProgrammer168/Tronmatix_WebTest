@@ -150,7 +150,7 @@ class AdminSetting extends Model
             'store_open' => '1',
             'dashboard_rows_per_page' => '20',
             'products_per_page' => '12',
-            'vip_threshold' => '1000',
+            'vip_threshold' => '5000',
         ];
 
         // Also reset all role permissions to factory defaults

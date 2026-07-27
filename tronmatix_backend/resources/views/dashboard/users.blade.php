@@ -6,6 +6,9 @@
 <style>
 /* ── Role badges ─────────────────────────────────────────────────────────── */
 .role-badge-customer { background:rgba(156,163,175,0.15); color:#9CA3AF; border:1px solid rgba(156,163,175,0.3); }
+.role-badge-vip      { background:rgba(249,115,22,0.15);  color:#F97316; border:1px solid rgba(249,115,22,0.4); }
+.role-badge-reseller { background:rgba(59,130,246,0.15);  color:#3B82F6; border:1px solid rgba(59,130,246,0.4); }
+.role-badge-banned   { background:rgba(239,68,68,0.15);   color:#EF4444; border:1px solid rgba(239,68,68,0.4); }
 
 /* ── Inline role select ──────────────────────────────────────────────────── */
 .role-select {
@@ -245,7 +248,7 @@ tbody tr:hover td { background: var(--dark-700); }
                                 </div>
                                 <div>
                                     <div class="user-username" style="font-weight:700; font-size: var(--title-size); cursor:pointer;"
-                                         onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), 'customer', @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ (float)($user->orders_sum_total ?? $user->total_spent ?? 0) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
+                                         onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ (float)($user->orders_sum_total ?? $user->total_spent ?? 0) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
                                          onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
                                         {{ $user->username }}
                                     </div>
@@ -270,17 +273,14 @@ tbody tr:hover td { background: var(--dark-700); }
                         {{-- Total spent + VIP progress ─────────────────────── --}}
                         @php
                             $spent = (float) ($user->orders_sum_total ?? $user->total_spent ?? 0);
-                            /*
-                            $vipGoal  = 1000;
+                            $vipGoal  = $vipGoal ?? 5000;
                             $pct      = min(100, round(($spent / $vipGoal) * 100));
                             $isVip    = ($user->role ?? 'customer') === 'vip';
-                            */
                         @endphp
                         <td style="min-width:120px;">
-                            <div style="font-weight:700; font-size: var(--title-size); color:{{ /* $spent >= $vipGoal ? '#F97316' : */ '#fff' }};">
+                            <div style="font-weight:700; font-size: var(--title-size); color:{{ $spent >= $vipGoal ? '#F97316' : '#fff' }};">
                                 ${{ number_format($spent, 0) }}
                             </div>
-                            {{--
                             @if(! $isVip)
                             <div style="margin-top:5px; position:relative;">
                                 <div style="height:4px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden;">
@@ -292,7 +292,7 @@ tbody tr:hover td { background: var(--dark-700); }
                                     "></div>
                                 </div>
                                 <div style="font-size: var(--text-md); color:rgba(255,255,255,0.3); margin-top:3px; letter-spacing:0.5px;">
-                                     ${{ number_format($spent, 0) }} / $1,000 VIP
+                                     ${{ number_format($spent, 0) }} / ${{ number_format($vipGoal, 0) }} VIP
                                 </div>
                             </div>
                             @else
@@ -300,7 +300,6 @@ tbody tr:hover td { background: var(--dark-700); }
                                 ⭐ VIP MEMBER
                             </div>
                             @endif
-                            --}}
                         </td>
 
                         {{-- 2FA --}}
@@ -326,10 +325,10 @@ tbody tr:hover td { background: var(--dark-700); }
 
                         {{-- Current role badge --}}
                         <td>
-                            <span class="badge role-badge-customer"
+                            <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
                                   id="role-badge-{{ $user->id }}"
                                   style="font-size: var(--title-size); letter-spacing:1px;">
-                                CUSTOMER
+                                {{ strtoupper(\App\Models\User::ROLE_LABELS[$user->role ?? 'customer'] ?? 'CUSTOMER') }}
                             </span>
                         </td>
 
@@ -449,7 +448,6 @@ tbody tr:hover td { background: var(--dark-700); }
                 </div>
             </div>
 
-            {{--
             <div id="ui-vip-wrap" style="padding:0 24px 20px;">
                 <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
@@ -461,7 +459,6 @@ tbody tr:hover td { background: var(--dark-700); }
                     </div>
                 </div>
             </div>
-            --}}
 
             {{-- Footer button --}}
             <div style="padding:0 24px 24px;">
@@ -484,6 +481,7 @@ tbody tr:hover td { background: var(--dark-700); }
     <script>
     const ROLE_COLORS = {
         customer: { bg:'rgba(156,163,175,0.15)', color:'#9CA3AF', border:'rgba(156,163,175,0.3)', label:'CUSTOMER' },
+        vip:      { bg:'rgba(249,115,22,0.15)',  color:'#F97316', border:'rgba(249,115,22,0.4)',  label:'⭐ VIP' },
     };
 
     function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa, telegram) {
@@ -529,6 +527,15 @@ tbody tr:hover td { background: var(--dark-700); }
             padding:4px 12px;border-radius:20px;font-size: var(--title-size);font-weight:800;letter-spacing:1px;
             background:${rm.bg};color:${rm.color};border:1px solid ${rm.border};">${rm.label}</span>`;
 
+        // VIP progress — VIP role is disabled, show progress for all non-customers
+        const vipGoal = {{ $vipGoal ?? 5000 }};
+        const spentNum = parseFloat(spent) || 0;
+        const pct = Math.min(100, Math.round((spentNum / vipGoal) * 100));
+        const vipWrap = document.getElementById('ui-vip-wrap');
+        vipWrap.style.display = 'block';
+        document.getElementById('ui-vip-bar').style.width = pct + '%';
+        document.getElementById('ui-vip-pct').textContent = pct + '% · $' + vipGoal + ' goal';
+
         // View orders link
         document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${id}`;
     }
@@ -548,9 +555,11 @@ tbody tr:hover td { background: var(--dark-700); }
 <script>
 const ROLE_BADGE_CLASS = {
     customer : 'role-badge-customer',
+    vip      : 'role-badge-vip',
 };
 const ROLE_LABEL = {
     customer : 'CUSTOMER',
+    vip      : 'VIP',
 };
 
 // ── CSRF — read from meta tag added to layout <head> ─────────────────────
