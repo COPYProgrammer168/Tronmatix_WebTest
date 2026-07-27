@@ -11,14 +11,11 @@
       <stop offset="0%"   stop-color="#DC2626" />
       <stop offset="50%"  stop-color="#EF4444" />
       <stop offset="100%" stop-color="#DC2626" />
-      <animate attributeName="x1" values="0%;100%;0%" dur="6s" repeatCount="indefinite" />
-      <animate attributeName="x2" values="100%;0%;100%" dur="6s" repeatCount="indefinite" />
     </linearGradient>
     <linearGradient id="secGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%"   stop-color="#DC2626" stop-opacity="0" />
       <stop offset="50%"  stop-color="#EF4444" stop-opacity="0.5" />
       <stop offset="100%" stop-color="#DC2626" stop-opacity="0" />
-      <animate attributeName="x1" values="-50%;150%;-50%" dur="4s" repeatCount="indefinite" />
     </linearGradient>
     <filter id="shieldGlow">
       <feGaussianBlur stdDeviation="4" result="blur"/>
@@ -28,7 +25,6 @@
 
   <!-- Background glow -->
   <circle cx="130" cy="80" r="60" fill="url(#secGrad2)" opacity="0.4">
-    <animate attributeName="r" values="45;65;45" dur="4s" repeatCount="indefinite" />
   </circle>
 
   <!-- Shield icon -->
@@ -40,7 +36,6 @@
   <text x="280" y="75" font-size="44" font-family="'Segoe UI','Rajdhani',sans-serif"
         font-weight="900" fill="#DC2626" filter="url(#shieldGlow)">
     SECURITY
-    <animate attributeName="opacity" values="0.9;1;0.9" dur="3s" repeatCount="indefinite" />
   </text>
 
   <!-- Subtitle -->
@@ -58,8 +53,6 @@
   <!-- Animated underline -->
   <line x1="30" y1="150" x2="770" y2="150" stroke="url(#secGrad2)" stroke-width="2" stroke-linecap="round" />
   <circle cx="400" cy="150" r="4" fill="#EF4444">
-    <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
   </circle>
 </svg>
 
@@ -112,21 +105,18 @@ Tronmatix Computer implements **defense-in-depth** security across multiple laye
 
   <!-- Layer 1: Network -->
   <rect x="40" y="10" width="720" height="28" rx="6" fill="url(#layerGrad)" opacity="0.9">
-    <animate attributeName="opacity" values="0.9;0.7;0.9" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="400" y="29" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">🌐 Network Layer</text>
   <text x="520" y="29" font-size="12" fill="#fff">HTTPS · Trusted Proxies · CORS · HSTS</text>
 
   <!-- Layer 2: Application -->
   <rect x="40" y="46" width="720" height="28" rx="6" fill="url(#layerGrad2)" opacity="0.9">
-    <animate attributeName="opacity" values="0.7;0.9;0.7" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="400" y="65" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">🔐 Application Layer</text>
   <text x="530" y="65" font-size="12" fill="#fff">Multi-Guard Auth · RBAC · CSRF · Rate Limiting · Session Fingerprinting</text>
 
   <!-- Layer 3: Data -->
   <rect x="40" y="82" width="720" height="28" rx="6" fill="url(#layerGrad3)" opacity="0.9">
-    <animate attributeName="opacity" values="0.9;0.7;0.9" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="400" y="101" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">🗄️ Data Layer</text>
   <text x="510" y="101" font-size="12" fill="#fff">Bcrypt Hashing · Input Validation · SQL Injection Prevention · Audit Logs</text>
@@ -662,8 +652,6 @@ We take security seriously. If you discover a security vulnerability within Tron
   </defs>
   <line x1="0" y1="15" x2="800" y2="15" stroke="url(#footerGrad)" stroke-width="2"/>
   <circle cx="400" cy="15" r="4" fill="#EF4444">
-    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
   </circle>
 </svg>
 

@@ -5,20 +5,17 @@
 <div align="center">
 
 <!-- ─── ANIMATED HERO SVG ───────────────────────────────────── -->
-<svg viewBox="0 0 900 260" width="100%" height="auto" style="max-width:900px" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 900 300" width="100%" height="auto" style="max-width:900px" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%"   stop-color="#F97316" />
       <stop offset="50%"  stop-color="#FB923C" />
       <stop offset="100%" stop-color="#F97316" />
-      <animate attributeName="x1" values="0%;100%;0%" dur="6s" repeatCount="indefinite" />
-      <animate attributeName="x2" values="100%;0%;100%" dur="6s" repeatCount="indefinite" />
     </linearGradient>
     <linearGradient id="heroGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%"   stop-color="#F97316" stop-opacity="0" />
       <stop offset="50%"  stop-color="#F97316" stop-opacity="0.6" />
       <stop offset="100%" stop-color="#F97316" stop-opacity="0" />
-      <animate attributeName="x1" values="-50%;150%;-50%" dur="4s" repeatCount="indefinite" />
     </linearGradient>
     <filter id="glow">
       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -31,7 +28,6 @@
 
   <!-- Background glow circle -->
   <circle cx="450" cy="110" r="80" fill="url(#heroGrad2)" opacity="0.3">
-    <animate attributeName="r" values="60;90;60" dur="5s" repeatCount="indefinite" />
   </circle>
 
   <!-- Logo icon -->
@@ -44,7 +40,6 @@
   <text x="360" y="130" font-size="52" font-family="'Segoe UI','Rajdhani',sans-serif"
         font-weight="900" fill="#F97316" filter="url(#glow)">
     TRONMATIX
-    <animate attributeName="opacity" values="0.92;1;0.92" dur="3s" repeatCount="indefinite" />
   </text>
 
   <!-- Subtitle -->
@@ -65,8 +60,6 @@
 
   <!-- Pulsing dot on divider -->
   <circle cx="450" cy="230" r="5" fill="#F97316">
-    <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
   </circle>
 
   <!-- Stack labels -->
@@ -119,7 +112,6 @@
   </defs>
   <line x1="0" y1="10" x2="800" y2="10" stroke="url(#divGrad1)" stroke-width="2" stroke-dasharray="8 6"/>
   <circle cx="400" cy="10" r="4" fill="#F97316">
-    <animate attributeName="cx" values="-20;820;-20" dur="8s" repeatCount="indefinite" />
   </circle>
 </svg>
 
@@ -195,16 +187,12 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
 
   <!-- Connection lines -->
   <line x1="230" y1="90" x2="340" y2="150" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" values="0;-18" dur="1.5s" repeatCount="indefinite"/>
   </line>
   <line x1="490" y1="150" x2="490" y2="220" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" values="0;-18" dur="1.5s" repeatCount="indefinite"/>
   </line>
   <line x1="410" y1="290" x2="230" y2="320" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" values="0;-18" dur="1.5s" repeatCount="indefinite"/>
   </line>
   <line x1="570" y1="290" x2="700" y2="150" stroke="#9CA3AF" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#arrow)">
-    <animate attributeName="stroke-dashoffset" values="0;-18" dur="1.5s" repeatCount="indefinite"/>
   </line>
 
   <!-- Layer labels -->
@@ -306,7 +294,6 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
     </linearGradient>
   </defs>
   <rect rx="6" width="180" height="32" fill="url(#badgeGrad)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">🚀 Frontend</text>
 </svg>
@@ -334,7 +321,6 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
     </linearGradient>
   </defs>
   <rect rx="6" width="170" height="32" fill="url(#badgeGrad2)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">⚙️ Backend</text>
 </svg>
@@ -359,7 +345,6 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
     </linearGradient>
   </defs>
   <rect rx="6" width="190" height="32" fill="url(#badgeGrad3)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">🔌 Integrations</text>
 </svg>
@@ -388,7 +373,6 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
     </linearGradient>
   </defs>
   <rect rx="6" width="200" height="32" fill="url(#badgeGrad4)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">🛒 Customer Storefront</text>
 </svg>
@@ -417,7 +401,6 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
     </linearGradient>
   </defs>
   <rect rx="6" width="210" height="32" fill="url(#badgeGrad5)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">📊 Admin Dashboard</text>
 </svg>
@@ -442,7 +425,6 @@ The platform supports **dual-language** (English & Khmer), **multi-role RBAC**, 
     </linearGradient>
   </defs>
   <rect rx="6" width="170" height="32" fill="url(#badgeGrad6)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">🔒 Security Features</text>
 </svg>
@@ -637,7 +619,6 @@ erDiagram
     </linearGradient>
   </defs>
   <rect rx="6" width="170" height="32" fill="url(#badgeGrad7)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">🌐 Public Endpoints</text>
 </svg>
@@ -670,7 +651,6 @@ erDiagram
     </linearGradient>
   </defs>
   <rect rx="6" width="190" height="32" fill="url(#badgeGrad8)">
-    <animate attributeName="opacity" values="1;0.75;1" dur="3s" repeatCount="indefinite"/>
   </rect>
   <text x="16" y="22" font-size="14" fill="#fff" font-weight="bold">🔐 Protected (Auth Required)</text>
 </svg>
@@ -985,8 +965,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
   </defs>
   <line x1="0" y1="15" x2="800" y2="15" stroke="url(#footerGrad)" stroke-width="2"/>
   <circle cx="400" cy="15" r="4" fill="#F97316">
-    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
   </circle>
 </svg>
 
