@@ -99,4 +99,81 @@ if ($request->filled('brand')) {
             'related' => $related,
         ]);
     }
+
+    /**
+     * POST /api/products — create a product (staff only via middleware)
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'            => 'required|string|max:255',
+            'caption'         => 'nullable|string|max:255',
+            'category'        => 'required|string|max:100',
+            'brand'           => 'nullable|string|max:100',
+            'brand_pc_part'   => 'nullable|string|max:100',
+            'warranty'        => 'nullable|string|max:100',
+            'price'           => 'required|numeric|min:0',
+            'stock'           => 'nullable|integer|min:0',
+            'stock_status'    => 'nullable|string|max:100',
+            'stock_details'   => 'nullable|string|max:255',
+            'description'     => 'nullable|string',
+            'is_featured'     => 'nullable|boolean',
+            'is_hot'          => 'nullable|boolean',
+            'image'           => 'nullable|string|max:500',
+            'images'          => 'nullable|array',
+            'images.*'        => 'nullable|string|max:500',
+        ]);
+
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['is_hot']      = $request->boolean('is_hot');
+
+        $product = Product::create($validated);
+
+        return response()->json(['success' => true, 'data' => $product], 201);
+    }
+
+    /**
+     * PUT /api/products/{id} — update a product (staff only via middleware)
+     */
+    public function update(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $validated = $request->validate([
+            'name'            => 'sometimes|string|max:255',
+            'caption'         => 'nullable|string|max:255',
+            'category'        => 'sometimes|string|max:100',
+            'brand'           => 'nullable|string|max:100',
+            'brand_pc_part'   => 'nullable|string|max:100',
+            'warranty'        => 'nullable|string|max:100',
+            'price'           => 'sometimes|numeric|min:0',
+            'stock'           => 'nullable|integer|min:0',
+            'stock_status'    => 'nullable|string|max:100',
+            'stock_details'   => 'nullable|string|max:255',
+            'description'     => 'nullable|string',
+            'is_featured'     => 'nullable|boolean',
+            'is_hot'          => 'nullable|boolean',
+            'image'           => 'nullable|string|max:500',
+            'images'          => 'nullable|array',
+            'images.*'        => 'nullable|string|max:500',
+        ]);
+
+        if ($request->has('is_featured')) $validated['is_featured'] = $request->boolean('is_featured');
+        if ($request->has('is_hot'))      $validated['is_hot']      = $request->boolean('is_hot');
+
+        $product->update($validated);
+
+        return response()->json(['success' => true, 'data' => $product]);
+    }
+
+    /**
+     * DELETE /api/products/{id} — delete a product (staff only via middleware)
+     */
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+        $product->delete();
+
+        return response()->json(['success' => true, 'message' => 'Product deleted.']);
+    }
 }

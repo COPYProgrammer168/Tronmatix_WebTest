@@ -44,6 +44,9 @@ class Order extends Model
         'delivery_date',
         'delivery_time_slot',
         'delivery_confirmed_at',
+        'delivery_lat',
+        'delivery_lng',
+        'delivery_map_address',
     ];
 
     // ── Casts ─────────────────────────────────────────────────────────────────
@@ -56,6 +59,8 @@ class Order extends Model
         'total'                => 'float',
         'delivery_date'        => 'date',
         'delivery_confirmed_at'=> 'datetime',
+        'delivery_lat'         => 'float',
+        'delivery_lng'         => 'float',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────

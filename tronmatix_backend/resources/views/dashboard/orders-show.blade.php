@@ -664,20 +664,6 @@
                     </button>
                     @endforeach
                 </div>
-                {{-- Payment Verification Button --}}
-                <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07);">
-                    <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
-                        @csrf
-                        <button type="submit" style="
-                            width: 100%; padding: 10px; border-radius: 10px; border: none;
-                            background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
-                            font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
-                            align-items: center; justify-content: center; gap: 8px;
-                        ">
-                            💳 VERIFY PAYMENT
-                        </button>
-                    </form>
-                </div>
             </div>
         </div>
         @endif {{-- orders_edit permission --}}

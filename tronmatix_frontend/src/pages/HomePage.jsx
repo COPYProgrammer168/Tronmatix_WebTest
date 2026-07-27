@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Scrollbar } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/scrollbar";
 import ProductCard from "../components/ProductCard";
 import { useTheme } from "../context/ThemeContext";
 import axios from "../lib/axios";
@@ -527,28 +532,6 @@ export default function HomePage() {
               </span>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="hidden sm:flex gap-2">
-                {["‹", "›"].map((a, i) => (
-                  <button
-                    key={i}
-                    onClick={() =>
-                      newProdRef.current?.scrollBy({
-                        left: i === 0 ? -300 : 300,
-                        behavior: "smooth",
-                      })
-                    }
-                    className="w-8 h-8 flex items-center justify-center font-bold hover:border-primary hover:text-primary transition-colors rounded"
-                    style={{
-                      border: `1px solid ${navBrd}`,
-                      color: text,
-                      background: navBtn,
-                      fontSize: 16,
-                    }}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
               <Link
                 to="/search?sort=newest"
                 className="text-primary font-bold hover:underline whitespace-nowrap"
@@ -563,18 +546,31 @@ export default function HomePage() {
           </div>
           <div
             ref={newProdRef}
-            className="new-prod-scroll flex gap-4 overflow-x-auto pb-2"
+            className="new-prod-scroll flex gap-4 overflow-x-auto pb-2 lg:!overflow-visible"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <style>{`.new-prod-scroll::-webkit-scrollbar{display:none}`}</style>
-            {newProducts.map((p, i) => (
-              <div
-                key={p.id || i}
-                style={{ minWidth: 200, maxWidth: 200, flexShrink: 0 }}
-              >
-                <ProductCard product={p} />
-              </div>
-            ))}
+            <Swiper
+              modules={[Navigation, Scrollbar]}
+              spaceBetween={16}
+              slidesPerView="auto"
+              navigation
+              scrollbar={{ draggable: true, hide: false }}
+              style={{
+                paddingBottom: 8,
+                "--swiper-navigation-size": "20px",
+                "--swiper-navigation-color": "#fff",
+                "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
+                "--swiper-scrollbar-drag-bg-color": "#F97316",
+              }}
+              className="!pb-7 w-full"
+            >
+              {newProducts.map((p, i) => (
+                <SwiperSlide key={p.id || i} style={{ width: 200 }}>
+                  <ProductCard product={p} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         </div>
       )}
@@ -596,23 +592,6 @@ export default function HomePage() {
                 className="flex-1 h-12 rounded-l"
                 style={{ background: headerL }}
               />
-              <div className="hidden lg:flex gap-2 ml-4 mr-2">
-                {["‹", "›"].map((a, i) => (
-                  <button
-                    key={i}
-                    onClick={() =>
-                      catRefs.current[cat]?.scrollBy({
-                        left: i === 0 ? -500 : 500,
-                        behavior: "smooth",
-                      })
-                    }
-                    className="w-8 h-8 flex items-center justify-center font-bold rounded transition-colors bg-primary text-white hover:bg-orange-600"
-                    style={{ fontSize: 16 }}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
               <Link
                 to={`/category/${catSlug}`}
                 className="bg-primary text-white font-bold px-10 py-3 hover:bg-orange-600 transition-colors"
@@ -627,12 +606,6 @@ export default function HomePage() {
                 {cat}
               </Link>
             </div>
-
-            <style>{`
-              .${scrollId}::-webkit-scrollbar { height: 4px; }
-              .${scrollId}::-webkit-scrollbar-track { background: rgba(249,115,22,0.10); border-radius: 2px; }
-              .${scrollId}::-webkit-scrollbar-thumb { background: #F97316; border-radius: 2px; }
-            `}</style>
 
             {/* Error state */}
             {hasError && (
@@ -665,89 +638,37 @@ export default function HomePage() {
 
             {/* Product rows */}
             {(isLoading || catItems.length > 0) && (
-              <>
-                {/* Desktop: single-row horizontal scroll */}
-                <div
-                  ref={(el) => {
-                    catRefs.current[cat] = el;
-                  }}
-                  className={`hidden lg:flex gap-4 overflow-x-auto pb-3 ${scrollId}`}
-                  style={{
-                    scrollbarWidth: "thin",
-                    scrollbarColor: "#F97316 rgba(249,115,22,0.10)",
-                  }}
-                >
-                  {isLoading
-                    ? Array(6)
-                        .fill(null)
-                        .map((_, i) => (
-                          <div
-                            key={i}
-                            className="rounded-xl skeleton-shimmer flex-shrink-0"
-                            style={{
-                              width: 210,
-                              height: 300,
-                              "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                              "--sk-shine": dark ? "#374151" : "#e9eaec",
-                            }}
-                          />
-                        ))
-                    : catItems.map((p, i) => (
-                        <div
-                          key={p.id || i}
-                          style={{
-                            minWidth: 210,
-                            maxWidth: 210,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <ProductCard product={p} />
-                        </div>
-                      ))}
-                </div>
-
-                {/* Mobile: 2-row grid horizontal scroll */}
-                <div
-                  className={`lg:hidden overflow-x-auto pb-2 ${scrollId}`}
-                  style={{
-                    scrollbarWidth: "thin",
-                    scrollbarColor: "#F97316 rgba(249,115,22,0.10)",
-                    WebkitOverflowScrolling: "touch",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateRows: "repeat(2, auto)",
-                      gridAutoFlow: "column",
-                      gridAutoColumns: "200px",
-                      gap: "8px",
-                      width: "max-content",
-                    }}
-                  >
-                    {isLoading
-                      ? Array(8)
-                          .fill(null)
-                          .map((_, i) => (
-                            <div
-                              key={i}
-                              className="rounded-xl skeleton-shimmer"
-                              style={{
-                                width: 200,
-                                height: 220,
-                                "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                                "--sk-shine": dark ? "#374151" : "#e9eaec",
-                              }}
-                            />
-                          ))
-                      : catItems.map((p, i) => (
-                          <div key={p.id || i} style={{ width: 200 }}>
-                            <ProductCard product={p} />
-                          </div>
-                        ))}
-                  </div>
-                </div>
-              </>
+              <Swiper
+                modules={[Navigation, Scrollbar]}
+                spaceBetween={16}
+                slidesPerView="auto"
+                navigation
+                scrollbar={{ draggable: true, hide: false }}
+                style={{
+                  paddingBottom: 8,
+                  "--swiper-navigation-size": "20px",
+                  "--swiper-navigation-color": "#fff",
+                  "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
+                  "--swiper-scrollbar-drag-bg-color": "#F97316",
+                }}
+                className="!pb-7"
+              >
+                {isLoading
+                  ? Array(6).fill(null).map((_, i) => (
+                      <SwiperSlide key={i} style={{ width: 210 }}>
+                        <div className="rounded-xl skeleton-shimmer" style={{
+                          width: 210, height: 300,
+                          "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                          "--sk-shine": dark ? "#374151" : "#e9eaec",
+                        }} />
+                      </SwiperSlide>
+                    ))
+                  : catItems.map((p, i) => (
+                      <SwiperSlide key={p.id || i} style={{ width: 210 }}>
+                        <ProductCard product={p} />
+                      </SwiperSlide>
+                    ))}
+              </Swiper>
             )}
 
             <div className="flex justify-end mt-3">

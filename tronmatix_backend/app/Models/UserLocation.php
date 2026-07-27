@@ -15,10 +15,13 @@ class UserLocation extends Model
         'user_id', 'name', 'phone',
         'address', 'city', 'country', 'note',
         'is_default',
+        'lat', 'lng', 'map_address',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'lat'        => 'float',
+        'lng'        => 'float',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────

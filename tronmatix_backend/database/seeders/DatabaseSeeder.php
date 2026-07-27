@@ -35,9 +35,10 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             StaffSeeder::class,
             UserSeeder::class,
+            CustomerSeeder::class,          // 50 customers with lat/lng locations
             UserLocationSeeder::class,      // after UserSeeder
             DiscountSeeder::class,          // Populate discounts first
-            OrderSeeder::class,             // then create orders
+            OrderSeeder::class,             // 120+ orders with map coordinates
             DeliveryScheduleSeeder::class,
         ]);
     }

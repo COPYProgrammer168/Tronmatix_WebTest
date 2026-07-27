@@ -1,0 +1,12 @@
+{
+  "name": "tronmatix",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c \"#93c5fd,#34d399\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd tronmatix_backend && php artisan serve",
+    "dev:frontend": "cd tronmatix_frontend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

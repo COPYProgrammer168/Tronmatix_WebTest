@@ -23,7 +23,11 @@ class UserProfileController extends Controller
 
     public function show(): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => $this->userPayload(Auth::user())]);
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return response()->json(['success' => false, 'message' => 'User profile not available for this account type.'], 403);
+        }
+        return response()->json(['success' => true, 'data' => $this->userPayload($user)]);
     }
 
     public function update(Request $request): JsonResponse
@@ -202,8 +206,10 @@ class UserProfileController extends Controller
     // ── GET /api/user/stats ───────────────────────────────────────────────────
     public function stats(): JsonResponse
     {
-        /** @var User $user */
-        $user         = Auth::user();
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return response()->json(['success' => false, 'message' => 'User stats not available for this account type.'], 403);
+        }
         $totalSpent   = $user->totalSpent();
         $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 

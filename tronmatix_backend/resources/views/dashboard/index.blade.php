@@ -7,8 +7,31 @@
 @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
 @if(!$_permDenied)
 
+{{-- ── Month Selector ────────────────────────────────────────────────────────── --}}
+@if(isset($month))
+    <x-month-selector :month="$month" />
+@endif
+
 {{-- ── Stat Cards ────────────────────────────────────────────────────────────── --}}
 <div class="stats-grid">
+
+    @if(isset($month) && isset($customers))
+        <x-kpi-card label="{{ __('dashboard.stats.kpiOrders') }}" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+        <x-kpi-card label="{{ __('dashboard.stats.kpiRevenue') }}" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+        <x-kpi-card label="{{ __('dashboard.stats.kpiCustomers') }}" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+    @endif
 
     <div class="stat-card">
         <div class="stat-icon">
@@ -39,34 +62,6 @@
     <div class="stat-card">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-                <rect x="9" y="3" width="6" height="4" rx="1"/>
-            </svg>
-        </div>
-        <div>
-            <div class="stat-value" id="stat-total-orders" style="overflow:hidden; text-overflow:ellipsis;">{{ number_format($stats['total_orders']) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.totalOrders') }}
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <line x1="12" y1="1" x2="12" y2="23"/>
-                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-            </svg>
-        </div>
-        <div>
-            <div class="stat-value" id="stat-total-revenue">${{ number_format($stats['total_revenue'], 0) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.totalRevenue') }}
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
         </div>
@@ -88,7 +83,7 @@
         </div>
     </div>
 
-    <div class="stat-card" style="border-color: rgba(168,85,247,0.3);">
+    {{-- <div class="stat-card" style="border-color: rgba(168,85,247,0.3);">
         <div class="stat-icon" style="background:rgba(168,85,247,0.1); border-color:rgba(168,85,247,0.25);">
             <svg fill="none" stroke="#A855F7" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M7 7h.01M17 17h.01"/>
@@ -100,15 +95,15 @@
             <div class="stat-value" style="color:#A855F7;">${{ number_format($stats['total_discount_used']) }}</div>
             <div class="stat-label">{{ __('dashboard.stats.discountsSaved') }}</div>
         </div>
-    </div>
+    </div> --}}
 </div>
 
-{{-- ── Row 1: Monthly Revenue + Monthly Orders ──────────────────────────────── --}}
+{{-- ── Row 1: Daily Revenue + Orders for selected month ─────────────────────── --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📈{{ __('dashboard.charts.monthlyRevenue') }}</span>
-            <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
+            <span class="card-title">📈 {{ __('dashboard.charts.monthlyRevenue') }}</span>
+            <span class="chart-badge">{{ $month->format('F Y') }}</span>
         </div>
         <div class="card-body">
             <canvas id="revenueChart" height="110"></canvas>
@@ -116,8 +111,8 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📦{{ __('dashboard.charts.monthlyOrders') }}</span>
-            <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
+            <span class="card-title">📦 {{ __('dashboard.charts.monthlyOrders') }}</span>
+            <span class="chart-badge">{{ $month->format('F Y') }}</span>
         </div>
         <div class="card-body">
             <canvas id="ordersChart" height="110"></canvas>
@@ -125,12 +120,12 @@
     </div>
 </div>
 
-{{-- ── Row 2: Daily Sales + User Registrations ──────────────────────────────── --}}
+{{-- ── Row 2: Monthly Sales + User Registrations ─────────────────────────────── --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
             <span class="card-title">📅{{ __('dashboard.charts.dailySales') }}</span>
-            <span class="chart-badge">{{ __('dashboard.stats.last14Days') }}</span>
+            <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
         </div>
         <div class="card-body">
             <canvas id="dailyChart" height="110"></canvas>
@@ -316,6 +311,8 @@
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+
 // ── Theme-aware colour helpers ────────────────────────────────────────────────
 function isLight() {
     return document.documentElement.getAttribute('data-theme') === 'light';
@@ -350,12 +347,15 @@ function applyChartDefaults() {
 applyChartDefaults();
 
 // ── Data from Laravel ──────────────────────────────────────────────────────────
-const monthlyLabels   = @json($monthlyLabels);
-const monthlyRevenue  = @json($monthlyRevenue);
-const monthlyOrders   = @json($monthlyOrders);
-const monthlyUsers    = @json($monthlyUserCounts);
-const dailyLabels     = @json($dailyLabels);
-const dailyRevenue    = @json($dailyRevenue);
+const monthDailyLabels    = @json($monthDailyLabels);
+const monthRevenueDaily   = @json($monthRevenueDaily);
+const monthOrdersDaily    = @json($monthOrdersDaily);
+const monthlyUserLabels   = @json($monthlyUserLabels);
+const monthlyUsers        = @json($monthlyUserCounts);
+const dailyLabels         = @json($dailyLabels);
+const dailyRevenue        = @json($dailyRevenue);
+const monthlySalesLabels  = @json($monthlySalesLabels);
+const monthlySalesRevenue = @json($monthlySalesRevenue);
 const statusLabels    = @json($statusLabels);
 const statusCounts    = @json($statusCounts);
 const categoryLabels  = @json($categoryLabels);
@@ -378,40 +378,43 @@ function makeGradient(ctx, top, bottom) {
     return g;
 }
 
-// 1. Monthly Revenue — Line
+// Guard: skip chart init if canvases don't exist (e.g. permission denied)
+if (!document.getElementById('revenueChart')) { return; }
+
+try {
+// 1. Daily Revenue for selected month — Bar (big, smooth)
 const rCtx = document.getElementById('revenueChart').getContext('2d');
 const revenueChart = new Chart(rCtx, {
     type: 'line',
-    data: { labels: monthlyLabels, datasets: [{ label:'Revenue ($)', data:monthlyRevenue,
-        borderColor:orange, borderWidth:2.5, pointBackgroundColor:orange,
-        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
-        fill:true, backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), tension:0.4 }] },
+    data: { labels: monthDailyLabels, datasets: [{ label:'Revenue ($)', data:monthRevenueDaily,
+        backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.7)','rgba(249,115,22,0.25)'),
+        borderColor:orange, borderWidth:2, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
-        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
-            ticks:{ callback: v => '$'+v.toLocaleString() }}}}
+        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:8, maxRotation:45, font:{size: window.innerWidth < 768 ? 10 : 12} }}, y:{grid:{color: themeColors().grid},
+            ticks:{ callback: v => '$'+v.toLocaleString(), font:{size:11}}}}}
 });
 
-// 2. Monthly Orders — Bar
+// 2. Daily Orders for selected month — Bar (big, smooth)
 const oCtx = document.getElementById('ordersChart').getContext('2d');
 const ordersChart = new Chart(oCtx, {
     type: 'bar',
-    data: { labels: monthlyLabels, datasets: [{ label:'Orders', data:monthlyOrders,
-        backgroundColor:makeGradient(oCtx, orangeMid,'rgba(249,115,22,0.15)'),
-        borderColor:orange, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
+    data: { labels: monthDailyLabels, datasets: [{ label:'Orders', data:monthOrdersDaily,
+        backgroundColor:makeGradient(oCtx,'rgba(249,115,22,0.7)','rgba(249,115,22,0.25)'),
+        borderColor:orange, borderWidth:2, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
-        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
-            ticks:{stepSize:1}}}}
+        scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:8, maxRotation:45, font:{size: window.innerWidth < 768 ? 10 : 12} }}, y:{grid:{color: themeColors().grid},
+            ticks:{stepSize:1, font:{size:11}}}}}
 });
 
-// 3. Daily Sales — Line
+// 3. Monthly Sales (12 months) — Line with gradient down + shadow
 const dCtx = document.getElementById('dailyChart').getContext('2d');
 const dailyChart = new Chart(dCtx, {
     type: 'line',
-    data: { labels: dailyLabels, datasets: [{ label:'Revenue ($)', data:dailyRevenue,
-        borderColor:blue, borderWidth:2.5, pointBackgroundColor:blue,
-        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
-        fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
+    data: { labels: monthlySalesLabels, datasets: [{ label:'Revenue ($)', data:monthlySalesRevenue,
+        borderColor:blue, borderWidth:3, pointBackgroundColor:'#fff',
+        pointBorderColor:blue, pointBorderWidth:3, pointRadius:5, pointHoverRadius:9,
+        fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.3)','rgba(59,130,246,0.01)'), tension:0.35 }] },
     options: { responsive:true, plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -422,7 +425,7 @@ const dailyChart = new Chart(dCtx, {
 const uCtx = document.getElementById('usersChart').getContext('2d');
 const usersChart = new Chart(uCtx, {
     type: 'bar',
-    data: { labels: monthlyLabels, datasets: [{ label:'New Users', data:monthlyUsers,
+    data: { labels: monthlyUserLabels, datasets: [{ label:'New Users', data:monthlyUsers,
         backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, plugins:{legend:{display:false}},
@@ -510,6 +513,10 @@ setInterval(async () => {
 
     } catch (e) { console.error('Failed to update stats:', e); }
 }, 30000); // 30 seconds
+
+} catch (e) { console.error('Chart init failed:', e); }
+
+}); // DOMContentLoaded
 </script>
 @endpush
 

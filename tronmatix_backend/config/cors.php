@@ -5,9 +5,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://tronmatix-frontend.onrender.com',
-    ],
+    'allowed_origins' => array_values(array_unique(array_filter(array_merge(
+        ['https://tronmatix-frontend.onrender.com'],
+        array_map('trim', explode(',', env('FRONTEND_URL', 'http://localhost:5173'))),
+    )))),
 
     'allowed_origins_patterns' => [],
 

@@ -33,6 +33,9 @@ return [
         'last30Days' => 'Last 30 days',
         'last14Days' => 'Last 14 days',
         'last12Months' => 'Last 12 months',
+        'kpiOrders' => 'Orders',
+        'kpiRevenue' => 'Revenue',
+        'kpiCustomers' => 'New Customers',
         'allTime' => 'All Time',
         'activeItems' => 'Active items',
         'registered' => 'Registered',
@@ -339,9 +342,9 @@ return [
     ],
 
     'charts' => [
-        'monthlyRevenue' => 'Monthly Revenue',
-        'monthlyOrders' => 'Monthly Orders',
-        'dailySales' => 'Daily Sales',
+        'monthlyRevenue' => 'Daily Revenue',
+        'monthlyOrders' => 'Daily Orders',
+        'dailySales' => 'Monthly Sales',
         'orderStatus' => 'Order Status',
         'revenueByCategory' => 'Revenue by Category',
         'topProducts' => 'Top Products',

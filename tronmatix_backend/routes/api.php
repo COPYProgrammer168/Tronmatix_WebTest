@@ -43,6 +43,8 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/videos', [VideoController::class, 'index']);
 
+// Staff product management — gated by staff role middleware inside the protected block later
+
 Route::get('/delivery-schedules', [DeliveryScheduleController::class, 'index']);
 Route::get('/discounts/public', [DiscountController::class, 'storefront']);
 Route::post('/apply-discount', [DiscountController::class, 'apply']);
@@ -63,13 +65,13 @@ Route::middleware('throttle:10,1')->group(function () {
 
 // ── Protected (requires Sanctum login) ───────────────────────────────────────
 
-Route::middleware(['auth:sanctum', 'not_banned', 'throttle:10,1'])->group(function () {
+Route::middleware(['auth:sanctum', 'not_banned'])->group(function () {
 
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
-    // Admin stats — staff + superadmin only
-    Route::middleware('role:admin,superadmin')->group(function () {
+    // Admin stats — all staff roles + superadmin
+    Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
         Route::get('/admin/stats', [AdminStatsController::class, 'stats']);
         Route::get('/admin/users', [AdminStatsController::class, 'users']);
     });
@@ -81,6 +83,13 @@ Route::middleware(['auth:sanctum', 'not_banned', 'throttle:10,1'])->group(functi
         Route::get('/dev/env',    [DevToolsController::class, 'env']);
     });
 
+    // Staff product management — create, update, delete
+    Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::put('/products/{id}', [ProductController::class, 'update']);
+        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    });
+
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
@@ -88,6 +97,13 @@ Route::middleware(['auth:sanctum', 'not_banned', 'throttle:10,1'])->group(functi
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
     Route::delete('/orders/{order}', [OrderController::class, 'destroy']);
     Route::post('/orders/{order}/confirm-delivery', [OrderController::class, 'confirmDelivery']);
+
+    // Staff order management — update status, verify payment, force delivery
+    Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
+        Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+        Route::post('/orders/{order}/verify-payment', [OrderController::class, 'verifyPayment']);
+        Route::post('/orders/{order}/staff-confirm-delivery', [OrderController::class, 'staffConfirmDelivery']);
+    });
 
     // Payment
     Route::post('/payment/generate-qr', [GenerateKhqrController::class, 'generate']);

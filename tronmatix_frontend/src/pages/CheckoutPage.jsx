@@ -451,15 +451,34 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full overflow-hidden"
             style={{ maxWidth: 380, animation: "fadeInScale .2s ease", maxHeight: "92vh", overflowY: "auto" }}>
             <div className="flex justify-end px-4 pt-3 pb-0">
-              <button onClick={() => { setShowQrModal(false); setStep(3) }}
+              <button onClick={async () => {
+                const result = await Swal.fire({
+                  title: "Leave payment?",
+                  text: "Your order is placed but payment is still pending. You can pay later from your Orders page.",
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#F97316",
+                  cancelButtonColor: "#6b7280",
+                  confirmButtonText: "Yes, pay later",
+                  cancelButtonText: "Stay and pay now",
+                })
+                if (result.isConfirmed) {
+                  clearCheckoutStorage();
+                  clearCart();
+                  removeDiscount();
+                  setShowQrModal(false);
+                  setDeliveryStatus(0);
+                  setStep(3);
+                }
+              }}
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
                 title="Close">✕</button>
             </div>
             <BakongQRPanel orderId={order.id ?? order.order_id ?? order.data?.id} total={order.total}
               onPaid={() => {
                 clearCheckoutStorage();
-                clearCart(); 
-                removeDiscount(); 
+                clearCart();
+                removeDiscount();
                 setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800)
               }} />
           </div>

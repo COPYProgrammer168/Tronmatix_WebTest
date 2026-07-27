@@ -54,13 +54,13 @@ export default function QRModal({ order, onClose, onPaid }) {
             >
               ABA
             </div>
-            {/* <button
+            <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
               title="Close"
             >
               ✕
-            </button> */}
+            </button>
           </div>
         </div>
 

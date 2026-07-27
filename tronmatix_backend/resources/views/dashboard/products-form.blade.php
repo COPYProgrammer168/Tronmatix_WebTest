@@ -339,7 +339,6 @@
                                 <label class="form-label">{{ __('dashboard.form.description') }}</label>
                                 <textarea name="description" id="descriptionField" class="form-control" rows="6"
                                     placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
-                                <div id="aiGenError" class="form-description" style="display:none;"></div>
                             </div>
 
                             {{-- Stock Status + Details --}}
@@ -684,53 +683,6 @@
 
 @push('scripts')
     <script>
-        // ── AI Description Generation ─────────────────────────────────────────────
-        async function generateDescription() {
-            const btn = document.getElementById('generateDescBtn');
-            const textarea = document.getElementById('descriptionField');
-            const errorDiv = document.getElementById('aiGenError');
-
-            const caption = document.querySelector('input[name="caption"]')?.value || '';
-            const category = document.querySelector('select[name="category"]')?.value || '';
-            const brand = document.querySelector('input[name="brand"]')?.value || '';
-            const firstImage = document.querySelector('input[name="existing_images[]"]')?.value || '';
-
-            // Show loading state
-            const originalHTML = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<svg style="animation:spin 0.8s linear infinite" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" opacity="0.25"/>
-                <path d="M12 2 A10 10 0 0 1 22 12" opacity="0.75"/>
-            </svg> Generating...`;
-            errorDiv.style.display = 'none';
-
-            try {
-                const response = await fetch('{{ route("dashboard.products.generate-description") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ caption, category, brand, firstImage })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.description) {
-                    textarea.value = data.description;
-                    textarea.focus();
-                } else {
-                    throw new Error(data.error || 'Failed to generate description');
-                }
-            } catch (error) {
-                errorDiv.textContent = '✗ ' + error.message;
-                errorDiv.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-            }
-        }
-
         // ── Multi-image gallery state ─────────────────────────────────────────────
         let newFileObjects = [] // File objects from <input type=file>
         let urlImageCount = 0

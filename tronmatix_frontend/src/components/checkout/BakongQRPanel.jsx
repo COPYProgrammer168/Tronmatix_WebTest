@@ -458,8 +458,23 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                 padding: "20px 24px 12px",
               }}
             >
-              <div style={{ fontWeight: 800, color: "#111827", fontSize: 16 }}>
-                Scan to Pay
+              <div>
+                <div style={{ fontWeight: 800, color: "#111827", fontSize: 16 }}>
+                  Scan to Pay
+                </div>
+                <div style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#F97316",
+                  marginTop: 4,
+                  textShadow: "0 0 8px rgba(249,115,22,0.5), 0 0 20px rgba(249,115,22,0.3)",
+                  letterSpacing: "0.5px",
+                }}>
+                  ⚡ {qrData?.merchant_name || "TronmatixComputer"}
+                </div>
+                <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 1 }}>
+                  tronmatix.com
+                </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 14 }}>⏱</span>

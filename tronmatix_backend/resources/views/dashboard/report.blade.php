@@ -10,7 +10,7 @@
 
 {{-- ── Page Header ──────────────────────────────────────────────────────────────── --}}
 <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
-            gap:16px; margin-bottom:28px;">
+            gap:16px; margin-bottom:20px;">
     <div style="display:flex; align-items:center; gap:14px;">
         <div style="width:48px; height:48px; border-radius:14px; background:rgba(249,115,22,0.12);
                     border:1px solid rgba(249,115,22,0.3); display:flex; align-items:center;
@@ -33,6 +33,35 @@
         ← BACK TO DASHBOARD
     </a>
 </div>
+
+{{-- ── Month Selector ────────────────────────────────────────────────────────── --}}
+@if(isset($month))
+    <x-month-selector :month="$month" />
+
+    {{-- ── Trend KPI Cards ─────────────────────────────────────────────────────── --}}
+    <div class="stats-grid" style="margin-bottom:24px;">
+        <x-kpi-card label="Orders" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+        <x-kpi-card label="Revenue" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+        <x-kpi-card label="New Customers" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+        <x-kpi-card label="Total Products" value="{{ number_format($stats['total_products']) }}" color="purple">
+            <x-slot:icon>
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            </x-slot:icon>
+        </x-kpi-card>
+    </div>
+@endif
 
 {{-- ══════════════════════════════════════════════════════════════════════════════
      SECTION 1 — EXPORT

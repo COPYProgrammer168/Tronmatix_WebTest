@@ -28,9 +28,9 @@ class AdminStatsController extends Controller
         $lastOrders    = Order::whereBetween('created_at', [$lastMonth, $lastEnd])->count();
         $thisOrders    = Order::where('created_at', '>=', $thisMonth)->count();
 
-        $revenue       = Order::whereNotIn('status', ['cancelled'])->sum('total_price');
-        $lastRevenue   = Order::whereNotIn('status', ['cancelled'])->whereBetween('created_at', [$lastMonth, $lastEnd])->sum('total_price');
-        $thisRevenue   = Order::whereNotIn('status', ['cancelled'])->where('created_at', '>=', $thisMonth)->sum('total_price');
+        $revenue       = Order::whereNotIn('status', ['cancelled'])->sum('total');
+        $lastRevenue   = Order::whereNotIn('status', ['cancelled'])->whereBetween('created_at', [$lastMonth, $lastEnd])->sum('total');
+        $thisRevenue   = Order::whereNotIn('status', ['cancelled'])->where('created_at', '>=', $thisMonth)->sum('total');
 
         $activeUsers   = User::where('role', 'customer')->count();
         $pendingOrders = Order::where('status', 'pending')->count();
@@ -44,6 +44,23 @@ class AdminStatsController extends Controller
             ];
         });
 
+        // Monthly user registrations — last 12 months
+        $userRows = User::select(
+            DB::raw("TO_CHAR(created_at, 'YYYY-MM') as month"),
+            DB::raw('COUNT(*) as total')
+        )
+            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+            ->groupBy('month')->orderBy('month')
+            ->get()->keyBy('month');
+
+        $monthlyLabels = $monthlyUsers = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $key = now()->subMonths($i)->format('Y-m');
+            $monthlyLabels[] = now()->subMonths($i)->format('M');
+            $found = $userRows->get($key);
+            $monthlyUsers[] = $found ? (int) $found->total : 0;
+        }
+
         return response()->json([
             'total_orders'   => number_format($totalOrders),
             'revenue'        => '$' . number_format($revenue, 0),
@@ -55,15 +72,23 @@ class AdminStatsController extends Controller
             'users_delta'   => null,
             'pending_delta' => null,
 
-            'weekly_orders' => $weeklyOrders,
+            'weekly_orders'  => $weeklyOrders,
+            'monthly_labels' => $monthlyLabels,
+            'monthly_users'  => $monthlyUsers,
         ]);
     }
 
     /** GET /api/admin/users */
-    public function users()
+    public function users(Request $request)
     {
-        $users = User::withCount('orders')
-            ->orderByDesc('created_at')
+        $query = User::withCount('orders');
+
+        // Optional role filter: ?role=customer
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        $users = $query->orderByDesc('created_at')
             ->get(['id', 'name', 'username', 'email', 'role', 'email_verified_at', 'created_at']);
 
         return response()->json($users);

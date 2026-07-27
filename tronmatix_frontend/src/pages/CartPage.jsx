@@ -136,8 +136,8 @@ export default function CartPage() {
               <div className="space-y-2 mb-4 text-sm">
                 {[
                   { labelKey: 'cart.subtotal', val: `$${subtotal.toFixed(2)}` },
-                  { labelKey: 'cart.delivery', val: '$0.00' },
-                  { labelKey: 'cart.tax',      val: '$0.00' },
+                  // { labelKey: 'cart.delivery', val: '$0.00' },
+                  // { labelKey: 'cart.tax',      val: '$0.00' },
                 ].map(({ labelKey, val }) => (
                   <div key={labelKey} className="flex justify-between">
                     <span style={{ fontSize: 20, color: textSub }}>{t(labelKey)}</span>

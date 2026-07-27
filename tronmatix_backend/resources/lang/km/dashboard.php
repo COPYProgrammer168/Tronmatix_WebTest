@@ -35,6 +35,9 @@ return [
         'last30Days' => '៣០ ថ្ងៃចុងក្រោយ',
         'last14Days' => '១៤ ថ្ងៃចុងក្រោយ',
         'last12Months' => '១២ ខែចុងក្រោយ',
+        'kpiOrders' => 'ការបញ្ជាទិញ',
+        'kpiRevenue' => 'ចំណូល',
+        'kpiCustomers' => 'អតិថិជនថ្មី',
         'allTime' => 'គ្រប់ពេល',
         'activeItems' => 'ទំនិញសកម្ម',
         'registered' => 'បានចុះឈ្មោះ',
@@ -357,9 +360,9 @@ return [
 
     // ── Charts ──────────────────────────────────────────────────────────────
     'charts' => [
-        'monthlyRevenue' => 'ចំណូលប្រចាំខែ',
-        'monthlyOrders' => 'បញ្ជាទិញប្រចាំខែ',
-        'dailySales' => 'ការលក់ប្រចាំថ្ងៃ',
+        'monthlyRevenue' => 'ចំណូលប្រចាំថ្ងៃ',
+        'monthlyOrders' => 'បញ្ជាទិញប្រចាំថ្ងៃ',
+        'dailySales' => 'ការលក់ប្រចាំខែ',
         'orderStatus' => 'ស្ថានភាពបញ្ជាទិញ',
         'revenueByCategory' => 'ចំណូលតាមប្រភេទ',
         'topProducts' => 'ផលិតផលលក់ដាច់',

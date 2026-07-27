@@ -183,7 +183,20 @@
     "storeLabel": "Tronmatix Store",
     "userLabel": "Your Location (drag me)",
     "failedLoad": "Failed to load Google Maps. Please check your API key and billing.",
-    "address" : "Address"
+    "address": "Address"
+  },
+  "contact": {
+    "title": "CONTACT US",
+    "name": "Your Name",
+    "email": "Email Address",
+    "message": "Message",
+    "send": "Send Message",
+    "phone": "Phone",
+    "address": "Street 162 | House 232 | Corner 237 | Phsar Depo 1 | Toul Kork",
+    "viewOnMaps": "View on Maps",
+    "hours": "Business Hours",
+    "Welcome": "Welcome to Tronmatix Computer",
+    "description": "Looking for Laptops & Desktops for Design, Rendering, or Gaming? We provide a 1–3 year warranty on all products."
   },
   "discount": {
     "label": "DISCOUNT CODE",
@@ -262,17 +275,6 @@
     "searchResults": "SEARCH RESULTS",
     "searchNo": "We couldn't find anything matching",
     "backToHome": "← Back to home"
-  },
-  "contact": {
-    "title": "CONTACT US",
-    "name": "Your Name",
-    "email": "Email Address",
-    "message": "Message",
-    "send": "Send Message",
-    "phone": "Phone",
-    "address": "Address",
-    "hours": "Business Hours",
-    "Welcome": "Welcome to Tronmatix Computer"
   },
   "home": {
     "viewProduct": "VIEW PRODUCT",

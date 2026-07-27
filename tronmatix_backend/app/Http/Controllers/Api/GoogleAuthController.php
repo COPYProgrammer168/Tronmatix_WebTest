@@ -35,6 +35,7 @@ class GoogleAuthController extends Controller
         // ── Verify token with Google userinfo endpoint ─────────────────────────
         try {
             $response = Http::timeout(10)
+                ->withOptions(['verify' => false])
                 ->withToken($request->access_token)
                 ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 
@@ -48,8 +49,9 @@ class GoogleAuthController extends Controller
         } catch (\Throwable $e) {
             Log::warning('[GoogleAuth] userinfo request failed', ['error' => $e->getMessage()]);
             return response()->json([
+                'success' => false,
                 'message' => 'Could not verify Google account. Please try again.',
-            ], 503);
+            ]);
         }
 
         $googleId = $googleUser['sub']    ?? null;

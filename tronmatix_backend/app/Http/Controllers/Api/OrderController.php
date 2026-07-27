@@ -18,13 +18,29 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    // ── List current user's orders ────────────────────────────────────────────
+    // ── Check if user is staff ─────────────────────────────────────────────────
+    private function isStaff($user): bool
+    {
+        return $user instanceof \App\Models\Staff
+            || in_array($user->role ?? '', ['admin', 'superadmin', 'editor', 'seller', 'delivery', 'developer']);
+    }
+
+    // ── List orders ───────────────────────────────────────────────────────────
+    // Customers see only their own orders.
+    // Staff roles see ALL orders.
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::with(['items', 'location'])
-            ->where('user_id', $request->user()->id)
-            ->latest()
-            ->paginate(20);
+        $user = $request->user();
+        $isStaff = $this->isStaff($user);
+
+        $orders = Order::with(['items', 'user', 'location']);
+
+        if (! $isStaff) {
+            $orders->where('user_id', $user->id);
+        }
+
+        $perPage = min((int) $request->input('per_page', 20), 200);
+        $orders = $orders->latest()->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -40,11 +56,17 @@ class OrderController extends Controller
     // ── Show single order ─────────────────────────────────────────────────────
     public function show(Request $request, Order $order): JsonResponse
     {
-        if ($order->user_id !== $request->user()->id) {
+        $user = $request->user();
+
+        // Staff can view any order; customers can only view their own
+        if (! $this->isStaff($user) && $order->user_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
         }
 
-        return response()->json(['success' => true, 'data' => $order->load(['items', 'location'])]);
+        return response()->json([
+            'success' => true,
+            'data' => $order->load(['items', 'user', 'location', 'payments']),
+        ]);
     }
 
     // ── Create order ──────────────────────────────────────────────────────────
@@ -201,7 +223,10 @@ class OrderController extends Controller
                     'total'              => $total,
                     'location_id'        => $resolvedLocationId, // ✅ verified FK
                     'shipping'           => $shippingSnapshot,   // ✅ snapshot includes lat/lng
-                    'status'             => 'confirmed',
+                    // Bakong/KHQR orders start as pending — promoted to confirmed
+                    // when payment is verified (CheckPaymentController or webhook).
+                    // Cash/Card orders start as confirmed immediately.
+                    'status'             => $validated['payment_method'] === 'bakong' ? 'pending' : 'confirmed',
                     'delivery_date'      => $validated['delivery_date']      ?? null,
                     'delivery_time_slot' => $validated['delivery_time_slot'] ?? null,
                     'fulfillment_type'   => $fulfillmentType, // ✅ 'delivery' | 'pickup'
@@ -266,21 +291,27 @@ class OrderController extends Controller
 
         $order->load(['items', 'user', 'location']);
 
-        // ISSUE 1 FIX: Bot 1 (admin) — send full receipt to shop owner channel
-        try {
-            app(TelegramService::class)->sendReceipt($order);
-        } catch (\Throwable $e) {
-            Log::warning('[Bot1] Admin receipt failed: ' . $e->getMessage());
-        }
-
-        // ISSUE 1 FIX: Bot 2 (user) — send receipt to customer's Telegram (if connected)
-        try {
-            // Only notify if not bakong, as bakong payment confirmation comes later
-            if ($order->payment_method !== 'bakong') {
-                app(TelegramUserService::class)->onOrderPlaced($order);
+        // Telegram alerts — only for non-bakong payments.
+        // For Bakong/KHQR, alerts are sent AFTER payment confirmation
+        // via CheckPaymentController (webhook or polling).
+        if ($order->payment_method !== 'bakong') {
+            // Bot 1 (admin) — send full receipt to shop owner channel
+            try {
+                app(TelegramService::class)->sendReceipt($order);
+            } catch (\Throwable $e) {
+                Log::warning('[Bot1] Admin receipt failed: ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            Log::warning('[Bot2] User receipt failed: ' . $e->getMessage());
+
+            // Bot 2 (user) — send receipt to customer's Telegram (if connected)
+            try {
+                app(TelegramUserService::class)->onOrderPlaced($order);
+            } catch (\Throwable $e) {
+                Log::warning('[Bot2] User receipt failed: ' . $e->getMessage());
+            }
+        } else {
+            Log::info('Bakong order placed — Telegram alerts deferred until payment confirmation', [
+                'order_id' => $order->id,
+            ]);
         }
 
         return response()->json([
@@ -399,6 +430,91 @@ class OrderController extends Controller
             app(TelegramUserService::class)->onOrderDelivered($order);
         } catch (\Throwable $e) {
             Log::warning('[Bot2] User delivery notification failed: ' . $e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'data' => $order]);
+    }
+
+    // ── Staff: update order status ────────────────────────────────────────────
+    public function updateStatus(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+        if (! $this->isStaff($user)) {
+            return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
+        ]);
+
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        $order->update(['status' => $newStatus]);
+        $order->load(['items', 'user']);
+
+        // Bot alerts (same as backend Blade dashboard)
+        try {
+            app(TelegramService::class)->sendAlert(
+                "📋 *Order Status Updated*\n\n" .
+                "📦 Order: `#{$order->order_id}`\n" .
+                "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+                "🔄 {$oldStatus} → *{$newStatus}*\n" .
+                "🕐 " . now()->format('d M Y, H:i')
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'data' => $order]);
+    }
+
+    // ── Staff: verify payment ─────────────────────────────────────────────────
+    public function verifyPayment(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+        if (! $this->isStaff($user)) {
+            return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'status'         => $order->status === 'pending' ? 'confirmed' : $order->status,
+        ]);
+
+        $order->load(['items', 'user']);
+
+        try {
+            app(TelegramService::class)->sendPaymentConfirmed($order, 'Manual Verification');
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Payment verify alert failed: ' . $e->getMessage());
+        }
+
+        return response()->json(['success' => true, 'data' => $order]);
+    }
+
+    // ── Staff: confirm delivery ───────────────────────────────────────────────
+    public function staffConfirmDelivery(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+        if (! $this->isStaff($user)) {
+            return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
+        }
+
+        if (! in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order cannot be marked as delivered from its current status.',
+            ], 422);
+        }
+
+        $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
+        $order->load(['user', 'items']);
+
+        try {
+            app(TelegramService::class)->sendDeliveryConfirmed($order);
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Staff delivery confirm failed: ' . $e->getMessage());
         }
 
         return response()->json(['success' => true, 'data' => $order]);

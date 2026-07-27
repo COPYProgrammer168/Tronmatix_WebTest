@@ -67,14 +67,13 @@ return [
     ],
     'payway' => [
         // Merchant credentials
-        'merchant_id' => env('PAYWAY_MERCHANT_ID', ),
+        'merchant_id' => env('PAYWAY_MERCHANT_ID', ''),
         'api_key' => env('PAYWAY_API_KEY', ''),
         'merchant_name' => env('KHQR_BAKONG_MERCHANT_NAME', 'Tronmatix'),
 
-        // RSA key — path to PEM file (recommended, keep out of env)
-        // File location: storage/payway_private.key (see PAYWAY_RSA_KEY_PATH in .env)
-        'rsa_key_path' => env('PAYWAY_RSA_KEY_PATH', 'storage/payway_private.key'),
-        'rsa_public_key' => env('PAYWAY_RSA_PUBLIC_KEY'),
+        // RSA key — path to PEM file
+        'rsa_key_path' => env('PAYWAY_RSA_KEY_PATH', 'storage/payway_private.pem'),
+        'rsa_public_key' => env('PAYWAY_RSA_PUBLIC_KEY', 'storage/payway_public.pem'),
         // Fallback: raw PEM string in env (less secure, for Render deploy)
         'rsa_private_key' => env('PAYWAY_RSA_KEY_PATH'),
 

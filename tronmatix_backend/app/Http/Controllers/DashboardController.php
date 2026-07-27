@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\MetricComparisonService;
 use App\Traits\StorageHelper;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -26,18 +27,60 @@ class DashboardController extends Controller
 {
     use StorageHelper;
     // ── Dashboard index ───────────────────────────────────────────────────────
-    public function index()
+    public function index(Request $request, MetricComparisonService $comparison)
     {
-        return view('dashboard.index', $this->buildDashboardData());
+        $month = now();
+        if ($request->filled('month')) {
+            try {
+                $month = Carbon::createFromFormat('Y-m', $request->input('month'));
+            } catch (\Throwable $e) {
+                // Invalid month format — silently use current month
+                $month = now();
+            }
+        }
+
+        $orders    = $comparison->compare(Order::query(), 'created_at', $month, 'count');
+        $revenue   = $comparison->compare(
+            Order::whereNotIn('status', ['cancelled']), 'created_at', $month, 'sum', 'total'
+        );
+        $customers = $comparison->compare(User::query(), 'created_at', $month, 'count');
+
+        $data = $this->buildDashboardData($month);
+        $data['month']     = $month;
+        $data['orders']    = $orders;
+        $data['revenue']   = $revenue;
+        $data['customers'] = $customers;
+
+        return view('dashboard.index', $data);
     }
 
+    public function report(Request $request, MetricComparisonService $comparison)
+    {
+        $month = $request->filled('month')
+            ? Carbon::createFromFormat('Y-m', $request->input('month'))
+            : now();
 
+        $orders    = $comparison->compare(Order::query(), 'created_at', $month, 'count');
+        $revenue   = $comparison->compare(
+            Order::whereNotIn('status', ['cancelled']), 'created_at', $month, 'sum', 'total'
+        );
+        $customers = $comparison->compare(User::query(), 'created_at', $month, 'count');
+
+        $data = $this->buildDashboardData($month);
+        $data['month']     = $month;
+        $data['orders']    = $orders;
+        $data['revenue']   = $revenue;
+        $data['customers'] = $customers;
+
+        return view('dashboard.report', $data);
+    }
 
     // ── Shared analytics data builder ─────────────────────────────────────────
-    private function buildDashboardData(): array
+    private function buildDashboardData(?Carbon $month = null): array
     {
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth   = Carbon::now()->endOfMonth();
+        $month = $month ?? now();
+        $startOfMonth = $month->copy()->startOfMonth();
+        $endOfMonth   = $month->copy()->endOfMonth();
 
         $stats = [
             'total_users'            => User::count(),
@@ -58,28 +101,27 @@ class DashboardController extends Controller
                                             ->count(),
         ];
 
-        // Monthly sales — last 12 months
-        $salesRows = Order::select(
-            DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
+        // ── Daily revenue & orders for selected month ─────────────────────────
+        $monthDailyRows = Order::select(
+            DB::raw($this->dateFormatExpr('created_at', 'Y-m-d') . ' as day_key'),
             DB::raw('SUM(total) as revenue'),
             DB::raw('COUNT(*) as orders')
         )
-            ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->whereNotIn('status', ['cancelled'])
-            ->groupBy('month_key')->orderBy('month_key')
-            ->get()->keyBy('month_key');
+            ->groupBy('day_key')->orderBy('day_key')
+            ->get()->keyBy('day_key');
 
-        $monthlyLabels = $monthlyRevenue = $monthlyOrders = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $date  = Carbon::now()->subMonths($i);
-            $key   = $date->format('Y-m');
-            $found = $salesRows->get($key);
-            $monthlyLabels[]  = $date->format('M Y');
-            $monthlyRevenue[] = $found ? round((float) $found->revenue, 2) : 0;
-            $monthlyOrders[]  = $found ? (int) $found->orders : 0;
+        $monthRevenueDaily = $monthOrdersDaily = [];
+        $monthDailyLabels = [];
+        foreach ($monthDailyRows as $key => $row) {
+            $date = Carbon::parse($key);
+            $monthDailyLabels[] = $date->format('j M');
+            $monthRevenueDaily[] = round((float) $row->revenue, 2);
+            $monthOrdersDaily[]  = (int) $row->orders;
         }
 
-        // Monthly user registrations
+        // Monthly user registrations (still last 12 months for the user chart)
         $userRows = User::select(
             DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
             DB::raw('COUNT(*) as total')
@@ -88,11 +130,32 @@ class DashboardController extends Controller
             ->groupBy('month_key')->orderBy('month_key')
             ->get()->keyBy('month_key');
 
-        $monthlyUserCounts = [];
+        $monthlyUserLabels = $monthlyUserCounts = [];
         for ($i = 11; $i >= 0; $i--) {
-            $key   = Carbon::now()->subMonths($i)->format('Y-m');
+            $date  = Carbon::now()->subMonths($i);
+            $key   = $date->format('Y-m');
             $found = $userRows->get($key);
+            $monthlyUserLabels[] = $date->format('M Y');
             $monthlyUserCounts[] = $found ? (int) $found->total : 0;
+        }
+
+        // ── Monthly revenue for last 12 months ──────────────────────────────
+        $monthlySalesLabels = $monthlySalesRevenue = [];
+        $salesRows12 = Order::select(
+            DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
+            DB::raw('SUM(total) as revenue')
+        )
+            ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
+            ->whereNotIn('status', ['cancelled'])
+            ->groupBy('month_key')->orderBy('month_key')
+            ->get()->keyBy('month_key');
+
+        for ($i = 11; $i >= 0; $i--) {
+            $date  = Carbon::now()->subMonths($i);
+            $key   = $date->format('Y-m');
+            $found = $salesRows12->get($key);
+            $monthlySalesLabels[] = $date->format('M Y');
+            $monthlySalesRevenue[] = $found ? round((float) $found->revenue, 2) : 0;
         }
 
         // Order status pie
@@ -135,7 +198,7 @@ class DashboardController extends Controller
 
         $top_products = Product::withCount('orderItems')->orderByDesc('order_items_count')->take(5)->get();
         $low_stock    = Product::lowStock()->orderBy('stock')->take(5)->get();
-        $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(14)->get();
+        $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(15)->get();
 
         $top_discount_codes = Discount::select(
             'discounts.*',
@@ -152,9 +215,11 @@ class DashboardController extends Controller
 
         return compact(
             'stats', 'recent_orders', 'top_products', 'low_stock',
-            'monthlyLabels', 'monthlyRevenue', 'monthlyOrders', 'monthlyUserCounts',
+            'monthlyUserCounts', 'monthlyUserLabels',
             'statusLabels', 'statusCounts', 'categoryLabels', 'categoryRevData',
-            'dailyLabels', 'dailyRevenue', 'top_discount_codes'
+            'dailyLabels', 'dailyRevenue', 'top_discount_codes',
+            'monthDailyLabels', 'monthRevenueDaily', 'monthOrdersDaily', 'month',
+            'monthlySalesLabels', 'monthlySalesRevenue'
         );
     }
 
@@ -719,11 +784,6 @@ class DashboardController extends Controller
             'sqlite' => "strftime('{$sqlFormat}', {$column})",
             default => "DATE_FORMAT({$column}, '{$sqlFormat}')",
         };
-    }
-
-    public function report()
-    {
-        return view('dashboard.report', $this->buildDashboardData());
     }
 
     public function stats()
