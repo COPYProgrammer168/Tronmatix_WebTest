@@ -14,7 +14,7 @@ class DeliveryProviderController extends Controller
 
     public function index()
     {
-        $providers = DeliveryProvider::orderBy('sort_order')->get();
+        $providers = DeliveryProvider::with('deliveryZone')->orderBy('sort_order')->get();
         $zones = DeliveryZone::all();
         return view('dashboard.delivery-providers.index', compact('providers', 'zones'));
     }
@@ -42,6 +42,7 @@ class DeliveryProviderController extends Controller
     public function edit(DeliveryProvider $deliveryProvider)
     {
         $zones = DeliveryZone::all();
+        $deliveryProvider->load('deliveryZone');
         return view('dashboard.delivery-providers.edit', compact('deliveryProvider', 'zones'));
     }
 
