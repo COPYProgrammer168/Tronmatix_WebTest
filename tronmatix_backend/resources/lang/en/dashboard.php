@@ -22,6 +22,7 @@ return [
         'profile' => 'Profile',
         'feedback' => 'Feedback',
         'logout' => 'Logout',
+        'deliveryProviders' => 'Delivery Providers',
     ],
 
     'stats' => [
@@ -111,6 +112,16 @@ return [
     ],
 
     'form' => [
+        'deliveryProvider' => 'Delivery Provider',
+        'deliveryZone' => 'Delivery Zone',
+        'providerName' => 'Provider Name',
+        'fee' => 'Fee ($)',
+        'estimatedTime' => 'Estimated Time',
+        'logo' => 'Logo',
+        'uploadLogo' => 'Upload Logo',
+        'logoUrl' => 'Logo URL',
+        'removeLogo' => 'Remove Logo',
+        'currentLogo' => 'Current Logo',
         'btp' => 'BACK TO PRODUCTS',
         'editproduct' => 'EDIT PRODUCT',
         'addproduct' => 'ADD PRODUCT',
@@ -163,6 +174,9 @@ return [
     ],
 
     'btn' => [
+        'saveProvider' => 'Save Provider',
+        'updateProvider' => 'Update Provider',
+        'createProvider' => 'Create Provider',
         'save' => 'Save',
         'cancel' => 'Cancel',
         'edit' => 'Edit',

@@ -10,7 +10,7 @@
 <div style="max-width:1200px; margin:0 auto; padding:24px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:28px; font-weight:800; letter-spacing:2px; color:#fff; margin:0;">DELIVERY PROVIDERS</h1>
+            <h1 style="font-size:28px; font-weight:800; letter-spacing:2px; color:#fff; margin:0;">{{ __('dashboard.nav.deliveryProviders') }}</h1>
             <p style="font-size:14px; color:rgba(255,255,255,0.4); margin-top:4px;">Manage delivery zones, providers, fees and estimated times</p>
         </div>
         <a href="{{ route('dashboard.delivery-providers.create') }}" style="

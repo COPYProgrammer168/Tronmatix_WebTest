@@ -51,15 +51,35 @@
 
                 <div>
                     <label class="block font-bold mb-2" style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:rgba(255,255,255,0.6);">LOGO</label>
-                    <input type="file" name="logo_file" accept="image/*" class="s-input" style="margin-top:6px; padding:8px;">
+                    <input type="file" name="logo_file" accept="image/*" class="s-input" style="margin-top:6px; padding:8px;" id="logoFileInput"
+                        onchange="previewLogo(this)">
                     <div style="font-size:12px; color:rgba(255,255,255,0.3); margin-top:4px;">JPG, PNG, WebP or GIF (max 50MB)</div>
                     @error('logo_file') <div style="color:#ef4444; font-size:13px; margin-top:4px;">{{ $message }}</div> @enderror
                 </div>
 
+                {{-- Live logo preview --}}
+                <div id="logoPreviewContainer" style="display:none;">
+                    <label class="block font-bold mb-2" style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:rgba(255,255,255,0.6);">LOGO PREVIEW</label>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img id="logoPreviewImg" src="" alt="Logo preview" style="width:64px; height:64px; border-radius:10px; object-fit:contain; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);">
+                        <span style="font-size:12px; color:rgba(255,255,255,0.3);" id="logoPreviewName"></span>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block font-bold mb-2" style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:rgba(255,255,255,0.6);">OR LOGO URL</label>
-                    <input type="url" name="logo_url" value="{{ old('logo_url') }}" class="s-input" style="margin-top:6px;" placeholder="https://example.com/logo.png">
+                    <input type="url" name="logo_url" value="{{ old('logo_url') }}" class="s-input" style="margin-top:6px;" placeholder="https://example.com/logo.png"
+                        oninput="previewLogoUrl(this)">
                     @error('logo_url') <div style="color:#ef4444; font-size:13px; margin-top:4px;">{{ $message }}</div> @enderror
+                </div>
+
+                {{-- URL preview --}}
+                <div id="logoUrlPreviewContainer" style="display:none;">
+                    <label class="block font-bold mb-2" style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:rgba(255,255,255,0.6);">URL PREVIEW</label>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img id="logoUrlPreviewImg" src="" alt="Logo URL preview" style="width:64px; height:64px; border-radius:10px; object-fit:contain; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);">
+                        <span style="font-size:12px; color:rgba(255,255,255,0.3);" id="logoUrlPreviewName"></span>
+                    </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -84,7 +104,7 @@
                         font-family:Rajdhani,sans-serif; font-size:16px; font-weight:800; letter-spacing:2px;
                         box-shadow:0 4px 20px rgba(249,115,22,0.35); transition:all .2s;
                     " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-                        💾 CREATE PROVIDER
+                        💾 {{ __('dashboard.btn.createProvider') }}
                     </button>
                     <a href="{{ route('dashboard.delivery-providers.index') }}" style="
                         flex:1; padding:14px; border-radius:10px; text-align:center; text-decoration:none;
@@ -93,11 +113,43 @@
                         font-size:16px; font-weight:700; letter-spacing:1px; transition:all .2s;
                     " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.color='rgba(255,255,255,0.6)'"
                        onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.4)'">
-                        CANCEL
+                        {{ __('dashboard.btn.cancel') }}
                     </a>
                 </div>
             </div>
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+    function previewLogo(input) {
+        const container = document.getElementById('logoPreviewContainer');
+        const img = document.getElementById('logoPreviewImg');
+        const nameEl = document.getElementById('logoPreviewName');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                container.style.display = 'flex';
+                nameEl.textContent = input.files[0].name;
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            container.style.display = 'none';
+        }
+    }
+    function previewLogoUrl(input) {
+        const container = document.getElementById('logoUrlPreviewContainer');
+        const img = document.getElementById('logoUrlPreviewImg');
+        const nameEl = document.getElementById('logoUrlPreviewName');
+        if (input.value.trim()) {
+            img.src = input.value;
+            container.style.display = 'flex';
+            nameEl.textContent = input.value;
+        } else {
+            container.style.display = 'none';
+        }
+    }
+</script>
+@endpush
 @endsection
