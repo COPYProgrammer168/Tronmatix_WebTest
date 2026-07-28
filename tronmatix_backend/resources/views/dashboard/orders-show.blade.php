@@ -128,7 +128,11 @@
                             {{ strtoupper($label) }}
                         </div>
                         <div style="font-weight:700; color:{{ $label === 'Payment Status' && $value === 'PAID' ? '#22c55e' : '#fff' }};">
-                            {{ $value }}
+                            @if($label === 'Customer' && ($order->user?->role ?? '') === 'vip')
+                                {{ $value }} <span style="font-size:10px; font-weight:800; color:#fff; background:#F97316; padding:1px 6px; border-radius:3px; white-space:nowrap; line-height:1.2;">⭐ VIP</span>
+                            @else
+                                {{ $value }}
+                            @endif
                         </div>
                     </div>
                     @endforeach
@@ -642,9 +646,10 @@
                     <button onclick="openStatusPopup('{{ $key }}')"
                         @if($isCurrentStatus) disabled @endif
                         style="
+                        --meta-color: {{ $meta['color'] }};
                         display:flex; align-items:center; gap:7px;
                         padding:9px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
-                        font-size: var(--title-size); font-weight:700; letter-spacing:1px;
+                        font-size: var(--label-status); font-weight:700; letter-spacing:1px;
                         cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
                         border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.1)' }};
                         background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.03)' }};
@@ -653,9 +658,9 @@
                         transition:all .15s;
                         box-shadow: {{ $isCurrentStatus ? '0 0 10px '.$meta['color'].'44' : 'none' }};
                     "
-                    onmouseover="if(!this.disabled){ this.style.borderColor='{{ $meta['color'] }}'; this.style.color='{{ $meta['color'] }}'; this.style.background='rgba(255,255,255,0.06)'; }"
+                    onmouseover="if(!this.disabled){ this.style.borderColor='var(--meta-color)'; this.style.color='var(--meta-color)'; this.style.background='rgba(255,255,255,0.06)'; }"
                     onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.45)'; this.style.background='rgba(255,255,255,0.03)'; }">
-                        <span style="font-size: var(--title-size);">{{ $meta['icon'] }}</span>
+                        <span style="font-size: var(--label-status);">{{ $meta['icon'] }}</span>
                         {{ $meta['label'] }}
                         @if($isCurrentStatus)
                             <span style="margin-left:auto; width:7px; height:7px; border-radius:50%;

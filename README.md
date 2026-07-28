@@ -759,6 +759,31 @@ cd tronmatix_backend && php artisan serve
 cd tronmatix_frontend && npm run dev
 ```
 
+### 4a. Telegram Bot in Local Development
+
+The "Connect with Telegram" feature works locally without ngrok or a tunnel.
+A built-in polling daemon handles inbound bot messages:
+
+```bash
+# Telegram polling starts automatically when using:
+npm run dev
+# — you'll see [poller] output alongside the backend and frontend.
+
+# Or run the poller manually in a separate terminal:
+cd tronmatix_backend && php artisan telegram:poll --timeout=25 --limit=10
+```
+
+The poller uses the same `TelegramBotService::handleUpdate()` code path as the
+production webhook. No configuration changes are needed when switching between
+local dev and production.
+
+> **Note**: `TELEGRAM_USER_BOT_TOKEN` must be set in `tronmatix_backend/.env` for
+> the poller to start. If omitted, the poller exits silently and the
+> "Connect with Telegram" flow won't be available.
+
+If you don't need Telegram features during development, use `npm run dev:lite`
+to skip the poller.
+
 ### 5. Production Build
 
 ```bash

@@ -24,6 +24,30 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: 'KantumruyPro';
+  src: url('/src/assets/KantumruyPro.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+.font-heading {
+  font-family: var(--font-en-body) !important;
+}
+
+body.lang-km .font-heading {
+  font-family: var(--font-kh-heading) !important;
+}
+
+.font-body {
+  font-family: var(--font-en-body) !important;
+}
+
+body.lang-km .font-body {
+  font-family: var(--font-kh-body) !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,19 +57,26 @@
 ───────────────────────────────────────────────────────────────────────── */
 :root {
   --font-en-heading: 'HurstBagod', 'Rajdhani', sans-serif;
-  --font-en-body:    'Rajdhani', sans-serif;
-  --font-kh-heading: 'Kh_Jrung_Thom', 'Khmer OS', 'Khmer OS System', sans-serif;
-  --font-kh-body:    'Kdam Thmor Pro', 'Khmer OS', 'Khmer OS System', sans-serif;
-  --lh-kh-body:    1.5;
+  --font-en-body: 'Rajdhani', sans-serif;
+  --font-kh-style: 'Kh_Jrung_Thom', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --font-kh-heading: 'KantumruyPro', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --font-kh-body: 'Kdam Thmor Pro', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --lh-kh-body: 1.5;
   --lh-kh-heading: 1.5;
-  --lh-kh-btn:     1.5;
+  --lh-kh-btn: 1.5;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
    Base reset
 ───────────────────────────────────────────────────────────────────────── */
-* { box-sizing: border-box; }
-html { font-size: 18px; }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -69,15 +100,26 @@ body.lang-km {
   overflow-wrap: break-word;
   font-synthesis: none;
 }
-body.lang-km h4{
+
+body.lang-km h4 {
   font-family: var(--font-kh-body) !important;
   font-size: clamp(1em, 1vw + 1em, 1.4em) !important;
 }
-body.lang-km h2{
+
+body.lang-km h2 {
   font-family: var(--font-kh-body) !important;
   line-height: var(--lh-kh-heading) !important;
   letter-spacing: 2px;
   font-size: 25px !important;
+}
+
+/* Banner title — use heading font, NOT body font, and let inline styles take precedence */
+body.lang-km .banner-title,
+body.lang-km h2.banner-title {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+  font-size: clamp(36px, 4vw, 60px) !important;
+  line-height: 1 !important;
 }
 
 body.lang-km h3 span {
@@ -94,9 +136,10 @@ body.lang-km h6 {
   font-size: clamp(1.1em, 1.5vw + 1em, 1.3em) !important;
 }
 
-/* Elements with inline Rajdhani/HurstBagod → switch to Kh_Jrung_Thom */
+/* Elements with inline Rajdhani/HurstBagod/Kh_Jrung_Thom → switch to Khmer heading font */
 body.lang-km [style*="Rajdhani"],
-body.lang-km [style*="HurstBagod"] {
+body.lang-km [style*="HurstBagod"],
+body.lang-km [style*="Kh_Jrung_Thom"] {
   font-family: var(--font-kh-heading) !important;
   line-height: var(--lh-kh-heading) !important;
   letter-spacing: 0 !important;
@@ -197,7 +240,10 @@ body.lang-km .product-card button {
   letter-spacing: 0 !important;
 }
 
-body.lang-km a { font-family: inherit; letter-spacing: 0; }
+body.lang-km a {
+  font-family: inherit;
+  letter-spacing: 0;
+}
 
 body.lang-km .line-clamp-2 {
   display: -webkit-box;
@@ -207,25 +253,22 @@ body.lang-km .line-clamp-2 {
 }
 
 /* Banner classes */
-body.lang-km .banner-title {
-  font-family: var(--font-kh-heading) !important;
-  line-height: 1.65 !important;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
-}
 body.lang-km .banner-subtitle {
   font-family: var(--font-kh-body) !important;
   line-height: 1.8 !important;
   letter-spacing: 0 !important;
 }
+
 body.lang-km .banner-btn {
   font-family: var(--font-kh-heading) !important;
   letter-spacing: 0 !important;
 }
+
 body.lang-km .cat-label {
   font-family: var(--font-kh-heading) !important;
   letter-spacing: 0 !important;
 }
+
 body.lang-km .section-heading {
   font-family: var(--font-kh-heading) !important;
   line-height: var(--lh-kh-heading) !important;
@@ -235,9 +278,10 @@ body.lang-km .section-heading {
 
 /* Bolding for specific elements in Khmer mode */
 body.lang-km button,
-body.lang-km [role="button"]{
+body.lang-km [role="button"] {
   font-weight: 700 !important;
 }
+
 /* Footer */
 body.lang-km footer,
 body.lang-km footer * {
@@ -247,25 +291,89 @@ body.lang-km footer * {
 /* ─────────────────────────────────────────────────────────────────────────
    Scrollbar
 ───────────────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #F97316; border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F97316;
+  border-radius: 3px;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────
    Animations
 ───────────────────────────────────────────────────────────────────────── */
-.modal-overlay { animation: fadeIn 0.2s ease; }
-.modal-box     { animation: slideUp 0.3s ease; }
+.modal-overlay {
+  animation: fadeIn 0.2s ease;
+}
 
-@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes spin    { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes pulse   { from { opacity: 0.4; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+.modal-box {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
 
 /* Product card hover */
-.product-card:hover .cart-hover-btn { opacity: 1; transform: translateY(0); }
-.cart-hover-btn { opacity: 0; transform: translateY(8px); transition: all 0.2s ease; }
+.product-card:hover .cart-hover-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cart-hover-btn {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.2s ease;
+}
 
 @media (max-width: 768px) {
-  .product-card .cart-hover-btn { opacity: 1; transform: none; }
+  .product-card .cart-hover-btn {
+    opacity: 1;
+    transform: none;
+  }
 }

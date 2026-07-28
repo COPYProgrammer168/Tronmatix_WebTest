@@ -47,17 +47,21 @@ class TelegramSetupBot extends Command
             return self::SUCCESS;
         }
 
-        // ── Webhook registration ──────────────────────────────────────────────
+        // ── Webhook registration (skipped with --commands-only) ───────────────
         if (! $this->option('commands-only')) {
 
             $baseUrl = rtrim($this->option('url') ?: config('app.url'), '/');
 
-            // Telegram REQUIRES https:// — catch http:// early with a clear message
             if (! str_starts_with($baseUrl, 'https://')) {
                 $this->newLine();
-                $this->error('❌ Telegram requires HTTPS. Got: ' . $baseUrl);
+                $this->warn('⚠️ HTTPS webhook URL required for webhook mode.');
                 $this->newLine();
-                $this->line('<options=bold>For local development — use ngrok:</>');
+                $this->line('<options=bold>Option 1 — Polling mode (recommended for local dev):</>');
+                $this->line('  Run the built-in poller instead of registering a webhook:');
+                $this->line('  <comment>php artisan telegram:poll --timeout=25 --limit=10</>');
+                $this->line('  Or from project root:  <comment>npm run dev</comment>  (starts poller automatically)');
+                $this->newLine();
+                $this->line('<options=bold>Option 2 — ngrok tunnel (if you need webhook mode):</>');
                 $this->line('  Step 1: <comment>winget install ngrok</comment>');
                 $this->line('  Step 2: <comment>ngrok http 8000</comment>');
                 $this->line('  Step 3: Copy the https://xxxx.ngrok-free.app URL, then:');
@@ -66,24 +70,32 @@ class TelegramSetupBot extends Command
                 $this->line('<options=bold>For production — set in .env:</>');
                 $this->line('  <comment>APP_URL=https://yourdomain.com</comment>');
                 $this->newLine();
-                return self::FAILURE;
-            }
-
-            $webhookUrl = $baseUrl . '/api/telegram/bot-webhook';
-            $this->info("Registering webhook: {$webhookUrl}");
-
-            $result = $bot->registerWebhook($webhookUrl);
-
-            if ($result['ok'] ?? false) {
-                $this->info('✅ Webhook registered!');
+                $this->line('Skipping webhook registration (use polling mode instead).');
+                $this->newLine();
             } else {
-                $this->error('❌ Registration failed:');
-                $this->line(json_encode($result, JSON_PRETTY_PRINT));
-                return self::FAILURE;
+                $webhookUrl = $baseUrl . '/api/telegram/bot-webhook';
+                $this->info("Registering webhook: {$webhookUrl}");
+
+                $result = $bot->registerWebhook($webhookUrl);
+
+                if ($result['ok'] ?? false) {
+                    $this->info('✅ Webhook registered!');
+                } else {
+                    $this->error('❌ Registration failed:');
+                    $this->line(json_encode($result, JSON_PRETTY_PRINT));
+                    return self::FAILURE;
+                }
             }
         }
 
-        // ── Bot commands ──────────────────────────────────────────────────────
+        // ── Bot commands (always runs) ────────────────────────────────────────
+        $this->registerCommands($bot);
+
+        return self::SUCCESS;
+    }
+
+    private function registerCommands(TelegramBotService $bot): void
+    {
         $this->info('Setting bot commands...');
         $cmdResult = $bot->setBotCommands();
 
@@ -102,7 +114,5 @@ class TelegramSetupBot extends Command
         } else {
             $this->warn('⚠️  Commands failed: ' . json_encode($cmdResult));
         }
-
-        return self::SUCCESS;
     }
 }

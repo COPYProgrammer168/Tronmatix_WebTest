@@ -39,10 +39,11 @@ return [
     // ── Bot 2: USER-FACING NOTIFICATION BOT ────────────────────────────────────
     // Purpose: Order updates, receipts, shipping alerts TO CUSTOMERS
     'telegram_user' => [
-        'bot_token' => env('TELEGRAM_USER_BOT_TOKEN'),
-        'chat_id' => env('TELEGRAM_CHAT_ID'),
-        'webhook_secret' => env('TELEGRAM_USER_WEBHOOK_SECRET', ''),
-        'mini_app_url' => env('TELEGRAM_MINI_APP_URL', env('APP_URL', '')),
+        'bot_token'       => env('TELEGRAM_USER_BOT_TOKEN'),
+        'chat_id'         => env('TELEGRAM_CHAT_ID'),
+        'webhook_secret'  => env('TELEGRAM_USER_WEBHOOK_SECRET', ''),
+        'mini_app_url'    => env('TELEGRAM_MINI_APP_URL', env('APP_URL', '')),
+        'poller_enabled'  => env('TELEGRAM_POLLER_ENABLED', true),
     ],
 
     'gemini' => ['key' => env('GEMINI_API_KEY')],

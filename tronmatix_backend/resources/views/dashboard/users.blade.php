@@ -257,10 +257,13 @@ tbody tr:hover td { background: var(--dark-700); }
                                     @endif
                                 </div>
                                 <div>
-                                    <div class="user-username" style="font-weight:700; font-size: var(--title-size); cursor:pointer;"
+                                    <div class="user-username" style="font-weight:700; font-size: var(--title-size); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"
                                          onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ (float)($user->orders_sum_total ?? $user->total_spent ?? 0) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
                                          onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
                                         {{ $user->username }}
+                                        @if(($user->role ?? 'customer') === 'vip')
+                                            <span style="font-size:10px; font-weight:800; color:#fff; background:#F97316; padding:1px 6px; border-radius:3px; white-space:nowrap; line-height:1.2;">⭐ VIP</span>
+                                        @endif
                                     </div>
                                     @if($user->name && $user->name !== $user->username)
                                         <div class="user-name" style="font-size: var(--title-size); color:rgba(255,255,255,0.3);">{{ $user->name }}</div>

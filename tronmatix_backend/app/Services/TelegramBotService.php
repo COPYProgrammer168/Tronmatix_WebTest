@@ -1,8 +1,7 @@
 <?php
 
 // app/Services/TelegramBotService.php
-//
-// FIX: Switched from MarkdownV2 to HTML parse_mode.
+// Switched from MarkdownV2 to HTML parse_mode.
 // MarkdownV2 requires escaping of ALL special characters: _ * [ ] ( ) ~ ` > # + - = | { } . ! \
 // Even ONE unescaped character causes Telegram to silently reject the message.
 // HTML mode is much more forgiving — only <, >, & need escaping.
@@ -105,6 +104,23 @@ class TelegramBotService
                 ->first();
 
             if (! $token) {
+                // Token not found — could be genuinely expired, OR the production
+                // webhook already processed this /start (race with local poller).
+                // If the chat is already linked, the other server handled it —
+                // don't show an error, just welcome them.
+                $alreadyConnected = \App\Models\User::where('telegram_chat_id', $chatId)->exists();
+                if ($alreadyConnected) {
+                    $uname = $this->e($from['first_name'] ?? 'there');
+                    $this->send($chatId,
+                        "👋 <b>Welcome back, {$uname}!</b>\n\n"
+                        . "Your account is connected ✅\n"
+                        . "You'll receive order notifications right here.\n\n"
+                        . "Tap a button below or type /help",
+                        $this->mainKeyboard(true)
+                    );
+                    return;
+                }
+
                 $this->send($chatId,
                     "❌ <b>Invalid or expired link.</b>\n\nPlease go back to the app and generate a new connection link.",
                     $this->mainKeyboard(false)
@@ -688,7 +704,7 @@ class TelegramBotService
             : null,
             "✅ <b>Total: \${$total}</b>",
             '',
-            "We'll notify you when your order ships. 💙",
+            "We'll notify you when your order ships.",
             '🕐 ' . $this->ts(),
         ], fn($l) => $l !== null);
 

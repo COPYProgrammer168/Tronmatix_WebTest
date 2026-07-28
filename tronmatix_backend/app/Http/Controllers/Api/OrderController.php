@@ -94,6 +94,8 @@ class OrderController extends Controller
             'delivery_lng'           => ['nullable', 'numeric'],
             'delivery_map_address'   => ['nullable', 'string', 'max:1000'],
             'fulfillment_type'       => ['nullable', 'in:delivery,pickup'],
+            'province_id'            => ['nullable', 'integer', 'exists:provinces,id'],
+            'delivery_provider_id'   => ['nullable', 'integer', 'exists:delivery_providers,id'],
         ]);
 
         $user = $request->user();
@@ -167,6 +169,16 @@ class OrderController extends Controller
 
                 $total = max(0, $subtotal - $discountAmount);
 
+                // ── Delivery fee logic ────────────────────────────────────────────────
+                $deliveryFee = 0;
+                if (!empty($validated['delivery_provider_id']) && ($fulfillmentType ?? 'delivery') !== 'pickup') {
+                    $provider = \App\Models\DeliveryProvider::find($validated['delivery_provider_id']);
+                    if ($provider && $provider->fee !== null) {
+                        $deliveryFee = $provider->fee;
+                    }
+                }
+                $total += $deliveryFee;
+
                 // ── Resolve fulfillment type ──────────────────────────────────────────
                 $fulfillmentType = $validated['fulfillment_type'] ?? 'delivery';
                 $isPickup        = $fulfillmentType === 'pickup';
@@ -219,9 +231,11 @@ class OrderController extends Controller
                     'discount_id'        => $discountId,
                     'discount_amount'    => $discountAmount,
                     'tax'                => 0,
-                    'delivery'           => 0,
+                    'delivery'           => $deliveryFee,
                     'total'              => $total,
                     'location_id'        => $resolvedLocationId, // ✅ verified FK
+                    'province_id'        => $validated['province_id'] ?? null,
+                    'delivery_provider_id' => $validated['delivery_provider_id'] ?? null,
                     'shipping'           => $shippingSnapshot,   // ✅ snapshot includes lat/lng
                     // Bakong/KHQR orders start as pending — promoted to confirmed
                     // when payment is verified (CheckPaymentController or webhook).

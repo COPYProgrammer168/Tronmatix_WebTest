@@ -13,20 +13,20 @@ export function CategoryPage() {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
 
-  const qParam    = (searchParams.get('q') || '').toLowerCase()
+  const qParam = (searchParams.get('q') || '').toLowerCase()
   const sortParam = searchParams.get('sort') || ''
-  const isSearch  = Boolean(qParam)
+  const isSearch = Boolean(qParam)
 
   // Sort labels stay English for display (product names are English from DB)
   const SORT_LABELS = {
-    newest:      isKhmer ? 'ផលិតផលថ្មី'    : 'NEW PRODUCTS',
+    newest: isKhmer ? 'ផលិតផលថ្មី' : 'NEW PRODUCTS',
     'price-asc': isKhmer ? 'តម្លៃទាបបំផុត' : 'LOWEST PRICE',
-    'price-desc':isKhmer ? 'តម្លៃខ្ពស់បំផុត': 'HIGHEST PRICE',
-    name:        isKhmer ? 'A – Z'          : 'A – Z',
-    rating:      isKhmer ? 'ពិន្ទុខ្ពស់'   : 'TOP RATED',
+    'price-desc': isKhmer ? 'តម្លៃខ្ពស់បំផុត' : 'HIGHEST PRICE',
+    name: isKhmer ? 'A – Z' : 'A – Z',
+    rating: isKhmer ? 'ពិន្ទុខ្ពស់' : 'TOP RATED',
   }
 
-  const rawSlug   = sub || category || ''
+  const rawSlug = sub || category || ''
   const slugLabel = rawSlug.replace(/-/g, ' ').toUpperCase()
   const brandParam = searchParams.get('brand')
 
@@ -37,10 +37,10 @@ export function CategoryPage() {
       : (brandParam ? `${slugLabel} - ${brandParam.toUpperCase()}` : slugLabel)
 
   const parentLabel = (category || '').replace(/-/g, ' ').toUpperCase()
-  const parentPath  = `/category/${category}`
+  const parentPath = `/category/${category}`
 
-  const bg      = dark ? '#111827' : '#fff'
-  const text    = dark ? '#f9fafb' : '#1f2937'
+  const bg = dark ? '#111827' : '#fff'
+  const text = dark ? '#f9fafb' : '#1f2937'
   const textSub = dark ? '#9ca3af' : '#6b7280'
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export function CategoryPage() {
     setLoading(true)
     setProducts([])
 
-    const sortVal   = searchParams.get('sort') || 'default'
+    const sortVal = searchParams.get('sort') || 'default'
     const catsParam = searchParams.get('cats')
 
     const buildParams = () => {
@@ -149,7 +149,7 @@ export function CategoryPage() {
           )}
 
           {products.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {products.map((p, i) => <ProductCard key={p.id || i} product={p} />)}
             </div>
           )}

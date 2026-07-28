@@ -73,11 +73,10 @@ function ScrollToTopBtn() {
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Scroll to top"
-      className={`fixed bottom-6 right-[80px] z-[300] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-90 ${
-        show
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-4 pointer-events-none"
-      }`}
+      className={`fixed bottom-6 right-[80px] z-[300] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-90 ${show
+        ? "opacity-100 translate-y-0"
+        : "opacity-0 translate-y-4 pointer-events-none"
+        }`}
       style={{ background: "#F97316" }}
     >
       <svg
@@ -115,7 +114,7 @@ export default function Footer() {
     : "HurstBagod, sans-serif";
 
   /* font size helper — headings */
-  const fs = isKhmer ? 20 : 22;
+  const fs = isKhmer ? 20 : 20;
   /* body text */
   const fb = isKhmer ? 18 : 20;
   /* menu/contact list items */
@@ -162,8 +161,8 @@ export default function Footer() {
           {/* ─── Col 2: ADDRESS ─── */}
           <div>
             <div
-              className="font-bold mb-2"
-              style={{ fontSize: fs, color: heading, fontFamily: bodyFont }}
+              className="font-bold"
+              style={{ fontSize: fs, color: heading, fontFamily: headFont, letterSpacing: 2, }}
             >
               {isKhmer ? "អាសយដ្ឋាន" : "ADDRESS"}
             </div>
@@ -175,8 +174,8 @@ export default function Footer() {
               style={{
                 fontSize: fb,
                 color: text,
-                lineHeight: 1.6,
-                fontWeight: 600,
+                lineHeight: 1.5,
+                fontWeight: 700,
                 fontFamily: bodyFont,
               }}
             >
@@ -206,8 +205,8 @@ export default function Footer() {
           {/* ─── Col 3: MENU ─── */}
           <div>
             <div
-              className="ml-10 font-bold mb-3"
-              style={{ fontSize: fs, color: heading, fontFamily: headFont }}
+              className="ml-10 font-bold"
+              style={{ fontSize: fs, color: heading, fontFamily: headFont, letterSpacing: 2, }}
             >
               {isKhmer ? "ម៉ឺនុយ" : "MENU"}
             </div>
@@ -241,8 +240,8 @@ export default function Footer() {
           {/* ─── Col 4: CONTACT ─── */}
           <div>
             <div
-              className="font-bold mb-2"
-              style={{ fontSize: fs, color: heading, fontFamily: headFont }}
+              className="font-bold"
+              style={{ fontSize: fs, color: heading, fontFamily: headFont, letterSpacing: 1, }}
             >
               {isKhmer ? "ទំនាក់ទំនង" : "CONTACT"}
             </div>
@@ -280,7 +279,7 @@ export default function Footer() {
           <div>
             <div
               className="font-bold mb-3"
-              style={{ fontSize: fs, color: heading, fontFamily: headFont }}
+              style={{ fontSize: fs, color: heading, fontFamily: headFont, letterSpacing: 1, }}
             >
               {isKhmer ? "បណ្ដាញសង្គម" : "SOCIAL"}
             </div>
@@ -320,7 +319,7 @@ export default function Footer() {
       <div style={{ borderTop: `1px solid ${border}`, background: bottomBg }}>
         <div
           className="max-w-[1280px] mx-auto px-4 py-3 text-center"
-          style={{ fontSize: isKhmer ? 20 : 23, fontWeight: 700, color: text }}
+          style={{ fontSize: isKhmer ? 20 : 23, fontWeight: 400, color: text }}
         >
           © TRONMATIX. 2026. ALL RIGHTS RESERVED
         </div>

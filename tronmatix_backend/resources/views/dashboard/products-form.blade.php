@@ -64,7 +64,7 @@
                                                 <div class="gallery-main-badge">Cover</div>
                                             @endif
                                             <button type="button" class="gallery-remove"
-                                                onclick="removeExistingImage({{ $idx }}, this)">✕</button>
+                                                onclick="removeExistingImage('{{ $idx }}', this)">✕</button>
                                             <input type="hidden" name="existing_images[]"
                                                 value="{{ $img }}" id="existing_{{ $idx }}" />
                                         </div>
@@ -257,7 +257,7 @@
                                     </div>
                                     <div class="form-group" id="pcPartBrandGroup" style="display: none;">
                                         <label class="form-label">PC Part Brand</label>
-                                        <select name="brand_pc_part" id="pcPartBrandSelect" class="form-control">
+                                        <select name="brand_pc_part" id="pcPartBrandSelect" class="form-control" data-selected="{{ old('brand_pc_part', $product?->brand_pc_part) }}">
                                             <option value="">— Select PC Part Brand —</option>
                                         </select>
                                     </div>
@@ -290,6 +290,7 @@
                                         function updatePcPartBrands() {
                                             const category = categorySelect.value;
                                             const brands = pcPartBrands[category];
+                                            const selectedBrand = pcPartBrandSelect.dataset.selected || '';
 
                                             if (brands) {
                                                 pcPartBrandGroup.style.display = 'block';
@@ -298,7 +299,7 @@
                                                     const opt = document.createElement('option');
                                                     opt.value = b;
                                                     opt.textContent = b;
-                                                    if (b === '{{ old('brand_pc_part', $product?->brand_pc_part) }}') opt.selected = true;
+                                                    if (b === selectedBrand) opt.selected = true;
                                                     pcPartBrandSelect.appendChild(opt);
                                                 });
                                             } else {

@@ -46,7 +46,7 @@
             <div style="display:inline-flex; align-items:center; gap:3px; margin-top:4px;
                         padding:1px 7px; border-radius:4px; font-size:10px; font-weight:700;
                         {{ $trendUp ? 'background:rgba(34,197,94,0.12); color:#22C55E;' : 'background:rgba(239,68,68,0.12); color:#EF4444;' }}">
-                {{ $trendUp ? '▲' : '▼' }} {{ $pct }}% {{ $trendUp ? 'more' : 'less' }} vs last month
+                {{ $trendUp ? '▲' : '▼' }} {{ $pct }}% {{ $trendUp ? 'more' : 'less' }}
             </div>
         @endif
     </div>

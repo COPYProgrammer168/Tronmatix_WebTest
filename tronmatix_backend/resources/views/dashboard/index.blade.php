@@ -146,7 +146,7 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🥧{{ __('dashboard.charts.orderStatus') }}</span>
+            <span class="card-title">{{ __('dashboard.charts.orderStatus') }}</span>
             <span class="chart-badge">{{ __('dashboard.stats.allTime') }}</span>
         </div>
         <div class="card-body" style="display:flex; justify-content:center;">
@@ -157,7 +157,7 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🍩{{ __('dashboard.charts.revenueByCategory') }}</span>
+            <span class="card-title">{{ __('dashboard.charts.revenueByCategory') }}</span>
             <span class="chart-badge">{{ __('dashboard.stats.allTime') }}</span>
         </div>
         <div class="card-body" style="display:flex; justify-content:center;">
@@ -197,7 +197,12 @@
                                 {{ $order->order_id }}
                             </a>
                         </td>
-                        <td style="font-weight:600;">{{ $order->user?->username ?? 'Guest' }}</td>
+                        <td style="font-weight:600;">
+                            {{ $order->user?->username ?? 'Guest' }}
+                            @if(($order->user?->role ?? '') === 'vip')
+                                <span style="font-size:10px; font-weight:800; color:#fff; background:#F97316; padding:1px 6px; border-radius:3px; white-space:nowrap; line-height:1.2; margin-left:4px;">⭐ VIP</span>
+                            @endif
+                        </td>
                         <td style="color:#F97316; font-weight:700;">${{ number_format($order->total, 2) }}</td>
                         <td><span class="badge badge-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
                         <td style="color:var(--date-cell-color, rgba(255,255,255,0.4)); font-size: var(--title-size);">{{ $order->created_at->format('d M Y') }}</td>
@@ -310,6 +315,7 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -346,6 +352,20 @@ function applyChartDefaults() {
 }
 applyChartDefaults();
 
+// ── Register datalabels plugin globally ───────────────────────────────────
+Chart.register(ChartDataLabels);
+const dlBase = {
+    color: isLight() ? '#0F172A' : 'rgba(255,255,255,0.9)',
+    font: { weight: '600', size: window.innerWidth < 768 ? 12 : 12 },
+    anchor: 'end',
+    align: 'end',
+    offset: 1,
+    clamp: true,
+    clip: false,
+};
+const dlDollar = { ...dlBase, formatter: v => v === 0 ? '' : '$' + v.toLocaleString() };
+const dlNumber = { ...dlBase, formatter: v => v === 0 ? '' : v.toLocaleString() };
+
 // ── Data from Laravel ──────────────────────────────────────────────────────────
 const monthDailyLabels    = @json($monthDailyLabels);
 const monthRevenueDaily   = @json($monthRevenueDaily);
@@ -372,7 +392,8 @@ const purple    = '#A855F7';
 const pieColors = [yellow, green, blue, purple, red, orange];
 
 function makeGradient(ctx, top, bottom) {
-    const g = ctx.createLinearGradient(0, 0, 0, 300);
+    const h = ctx.canvas.clientHeight || ctx.canvas.height || 300;
+    const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, top);
     g.addColorStop(1, bottom);
     return g;
@@ -384,12 +405,13 @@ if (!document.getElementById('revenueChart')) { return; }
 try {
 // 1. Daily Revenue for selected month — Bar (big, smooth)
 const rCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueGradient = makeGradient(rCtx, 'rgba(249,115,22,0.5)', 'rgba(249,115,22,0.1)');
 const revenueChart = new Chart(rCtx, {
     type: 'line',
     data: { labels: monthDailyLabels, datasets: [{ label:'Revenue ($)', data:monthRevenueDaily,
-        backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.7)','rgba(249,115,22,0.25)'),
+        backgroundColor:revenueGradient, fill:true,
         borderColor:orange, borderWidth:2, borderRadius:6, borderSkipped:false }] },
-    options: { responsive:true, plugins:{ legend:{display:false},
+    options: { responsive:true, layout:{ padding:{ top: 5 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:8, maxRotation:45, font:{size: window.innerWidth < 768 ? 10 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString(), font:{size:11}}}}}
@@ -400,9 +422,9 @@ const oCtx = document.getElementById('ordersChart').getContext('2d');
 const ordersChart = new Chart(oCtx, {
     type: 'bar',
     data: { labels: monthDailyLabels, datasets: [{ label:'Orders', data:monthOrdersDaily,
-        backgroundColor:makeGradient(oCtx,'rgba(249,115,22,0.7)','rgba(249,115,22,0.25)'),
+        backgroundColor:makeGradient(oCtx,'rgba(249,115,22,0.6)','rgba(249,115,22,0.1)'), fill:true,
         borderColor:orange, borderWidth:2, borderRadius:6, borderSkipped:false }] },
-    options: { responsive:true, plugins:{legend:{display:false}},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:8, maxRotation:45, font:{size: window.innerWidth < 768 ? 10 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1, font:{size:11}}}}}
 });
@@ -415,7 +437,7 @@ const dailyChart = new Chart(dCtx, {
         borderColor:blue, borderWidth:3, pointBackgroundColor:'#fff',
         pointBorderColor:blue, pointBorderWidth:3, pointRadius:5, pointHoverRadius:9,
         fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.3)','rgba(59,130,246,0.01)'), tension:0.35 }] },
-    options: { responsive:true, plugins:{ legend:{display:false},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
@@ -428,7 +450,7 @@ const usersChart = new Chart(uCtx, {
     data: { labels: monthlyUserLabels, datasets: [{ label:'New Users', data:monthlyUsers,
         backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
-    options: { responsive:true, plugins:{legend:{display:false}},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });
@@ -503,7 +525,7 @@ window.__updateChartTheme = function(t) {
 // ── Polling for Trend Updates ──────────────────────────────────────────────
 setInterval(async () => {
     try {
-        const response = await fetch('{{ route('dashboard.stats') }}');
+        const response = await fetch("{{ route('dashboard.stats') }}");
         const data = await response.json();
         // Update values
         document.getElementById('stat-total-users').innerText = data.total_users.toLocaleString();

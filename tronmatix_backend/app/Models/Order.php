@@ -40,6 +40,8 @@ class Order extends Model
         'tax',
         'total',
         'location_id',
+        'province_id',
+        'delivery_provider_id',
         'shipping',              // JSON snapshot {name, phone, address, city, country, note}
         'delivery_date',
         'delivery_time_slot',
@@ -90,6 +92,16 @@ class Order extends Model
         return $this->belongsTo(UserLocation::class, 'location_id');
     }
 
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function deliveryProvider(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryProvider::class);
+    }
+
     public function activePayment(): HasOne
     {
         return $this->hasOne(Payment::class)->whereNotIn('status', [
@@ -132,11 +144,11 @@ class Order extends Model
             $user = User::find($order->user_id);
             if (! $user || ! in_array($user->role, ['customer', 'vip'])) return;
 
-            /*
             $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
             $totalSpent = static::where('user_id', $order->user_id)
                 ->whereNotIn('status', [self::STATUS_CANCELLED])
+                ->where('payment_status', 'paid')
                 ->sum('total');
 
             if ($user->role === 'customer' && $totalSpent >= $vipThreshold) {
@@ -144,7 +156,6 @@ class Order extends Model
             } elseif ($user->role === 'vip' && $totalSpent < $vipThreshold) {
                 $user->update(['role' => 'customer']);
             }
-            */
         });
 
         static::deleted(function (Order $order) {
@@ -153,17 +164,16 @@ class Order extends Model
             $user = User::find($order->user_id);
             if (! $user || ! in_array($user->role, ['customer', 'vip'])) return;
 
-            /*
             $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
             $totalSpent = static::where('user_id', $order->user_id)
                 ->whereNotIn('status', [self::STATUS_CANCELLED])
+                ->where('payment_status', 'paid')
                 ->sum('total');
 
             if ($user->role === 'vip' && $totalSpent < $vipThreshold) {
                 $user->update(['role' => 'customer']);
             }
-            */
         });
     }
 

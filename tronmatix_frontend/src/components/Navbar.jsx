@@ -14,62 +14,62 @@ const navItems = [
   { label: 'HOME', path: '/' },
   {
     label: 'PC BUILD', path: '/category/pc-build',
-    categories: ['PC BUILD UNDER 1K','PC BUILD UNDER 2K','PC BUILD UNDER 3K','PC BUILD UNDER 4K','PC BUILD UNDER 5K','PC BUILD 5K UP'],
-    sub: ['PC BUILD UNDER 1K','PC BUILD UNDER 2K','PC BUILD UNDER 3K','PC BUILD UNDER 4K','PC BUILD UNDER 5K','PC BUILD 5K UP'],
+    categories: ['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'],
+    sub: ['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'],
   },
   {
     label: 'MONITOR', path: '/category/monitor',
-    categories: ['MONITOR 25INCH','MONITOR 27INCH','MONITOR 32INCH','MONITOR 34INCH','MONITOR 39INCH','MONITOR 42INCH','MONITOR 48INCH','MONITOR 49INCH'],
-    sub: ['MONITOR 25INCH','MONITOR 27INCH','MONITOR 32INCH','MONITOR 34INCH','MONITOR 39INCH','MONITOR 42INCH','MONITOR 48INCH','MONITOR 49INCH'],
+    categories: ['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'],
+    sub: ['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'],
   },
   {
     label: 'PC PART', path: '/category/pc-part',
-    categories: ['CPU','RAM','MAINBOARD','COOLING','M2','VGA','CASE','POWER SUPPLY','FAN'],
+    categories: ['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'],
     sub: [
-      { label: 'CPU',          brands: ['INTEL 12TH','INTEL 13TH','INTEL 14TH','INTEL 15TH ULTRA','AMD ALL SERIES'] },
-      { label: 'RAM',          brands: ['8GB DDR4','16GB DDR4','16GB DDR5','32GB DDR5','24GB DDR5','48GB DDR5','96GB DDR5','RAM DDR5 64GB X2 128GB'] },
-      { label: 'MAINBOARD',    brands: ['H610 SERIES','B760 SERIES','Z790 SERIES','Z890 SERIES','X670 SERIES','X870 SERIES','B850 SERIES','H810 SERIES','B860 SERIES'] },
-      { label: 'COOLING',      brands: ['THERMAL GREASE','COOLER','LIQUID 240MM','LIQUID 360MM','LIQUID WATERLOOP'] },
-      { label: 'M2',           brands: ['256G','500G','1TB','2TB','4TB','8TB','4TB','ENCLOSURE','M.2 TRAY'] },
-      { label: 'VGA',          brands: ['RTX 3050','RTX 5080','RTX 5090','RTX 5070TI','INTER VGA','VGA AMD ALL SERIES','VGA RTX5070', 'RTX5060TI', 'RTX 5060'] },
-      { label: 'CASE',         brands: ['UNDER 50$','UNDER 100$','UNDER 200$','UNDER 300$','UNDER 500$','UNDER 1000$','UNDER 10000$','MINI ITX'] },
-      { label: 'POWER SUPPLY', brands: ['550W','650W','750W','850W','1000W','1200W','1600W', '2200W'] },
+      { label: 'CPU', brands: ['INTEL 12TH', 'INTEL 13TH', 'INTEL 14TH', 'INTEL 15TH ULTRA', 'AMD ALL SERIES'] },
+      { label: 'RAM', brands: ['8GB DDR4', '16GB DDR4', '16GB DDR5', '32GB DDR5', '24GB DDR5', '48GB DDR5', '96GB DDR5', 'RAM DDR5 64GB X2 128GB'] },
+      { label: 'MAINBOARD', brands: ['H610 SERIES', 'B760 SERIES', 'Z790 SERIES', 'Z890 SERIES', 'X670 SERIES', 'X870 SERIES', 'B850 SERIES', 'H810 SERIES', 'B860 SERIES'] },
+      { label: 'COOLING', brands: ['THERMAL GREASE', 'COOLER', 'LIQUID 240MM', 'LIQUID 360MM', 'LIQUID WATERLOOP'] },
+      { label: 'M2', brands: ['256G', '500G', '1TB', '2TB', '4TB', '8TB', '4TB', 'ENCLOSURE', 'M.2 TRAY'] },
+      { label: 'VGA', brands: ['RTX 3050', 'RTX 5080', 'RTX 5090', 'RTX 5070TI', 'INTER VGA', 'VGA AMD ALL SERIES', 'VGA RTX5070', 'RTX5060TI', 'RTX 5060'] },
+      { label: 'CASE', brands: ['UNDER 50$', 'UNDER 100$', 'UNDER 200$', 'UNDER 300$', 'UNDER 500$', 'UNDER 1000$', 'UNDER 10000$', 'MINI ITX'] },
+      { label: 'POWER SUPPLY', brands: ['550W', '650W', '750W', '850W', '1000W', '1200W', '1600W', '2200W'] },
       { label: 'FAN', brands: ['CASE FAN', 'RGB FAN', 'INDUSTRIAL FAN'] },
     ],
   },
   {
     label: 'HOT ITEM', path: '/category/hot-item',
-    categories: ['BEST PRICE','BEST SET'], sub: ['BEST PRICE','BEST SET'],
+    categories: ['BEST PRICE', 'BEST SET'], sub: ['BEST PRICE', 'BEST SET'],
   },
   {
     label: 'ACCESSORY', path: '/category/accessory',
-    categories: ['KEYBOARD','MOUSE','HEADSET','EARPHONE','MONITOR STAND','SPEAKER','MICROPHONE','WEBCAM','MOUSEPAD','LIGHTBAR','ROUTER'],
-    sub: ['KEYBOARD','MOUSE','HEADSET','EARPHONE','MONITOR STAND','SPEAKER','MICROPHONE','WEBCAM','MOUSEPAD','LIGHTBAR','ROUTER'],
+    categories: ['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'],
+    sub: ['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'],
   },
   {
     label: 'TABLE CHAIR', path: '/category/table-chair',
-    categories: ['DX RACER','SECRETLAB','RAZER','CONSAIR','FANTECH','COOLER MASTER','TTR RACING'],
-    sub: ['DX RACER','SECRETLAB','RAZER','CONSAIR','FANTECH','COOLER MASTER','TTR RACING'],
+    categories: ['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'],
+    sub: ['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'],
   },
-  {
-    label: 'RESLL ITEM', path: '/category/resell-item',
-    categories: ['Second Hand', 'Used', 'Pre-owned'],
-    sub: ['Second Hand', 'Used', 'Pre-owned'],
-  },
+  // {
+  //   label: 'RESLL ITEM', path: '/category/resell-item',
+  //   categories: ['Second Hand', 'Used', 'Pre-owned'],
+  //   sub: ['Second Hand', 'Used', 'Pre-owned'],
+  // },
   { label: 'CONTACT US', path: '/contact' },
 ]
 
 // Maps English label → i18n key so URLs stay English but text translates
 const NAV_LABEL_KEYS = {
-  'HOME':        'nav.home',
-  'PC BUILD':    'nav.pcBuild',
-  'MONITOR':     'nav.monitor',
-  'PC PART':     'nav.pcPart',
-  'HOT ITEM':    'nav.hotItem',
-  'ACCESSORY':   'nav.accessory',
+  'HOME': 'nav.home',
+  'PC BUILD': 'nav.pcBuild',
+  'MONITOR': 'nav.monitor',
+  'PC PART': 'nav.pcPart',
+  'HOT ITEM': 'nav.hotItem',
+  'ACCESSORY': 'nav.accessory',
   'TABLE CHAIR': 'nav.tableChair',
-  'RESLL ITEM':  'nav.resellItem',
-  'CONTACT US':  'nav.contactUs',
+  // 'RESLL ITEM':  'nav.resellItem',
+  'CONTACT US': 'nav.contactUs',
 }
 
 /* ── Theme Toggle ─────────────────────────────────────────────────────────── */
@@ -83,13 +83,13 @@ function ThemeToggle() {
       <span className="absolute transition-all duration-300"
         style={{ opacity: dark ? 0 : 1, transform: dark ? 'scale(0.4) rotate(90deg)' : 'scale(1) rotate(0deg)' }}>
         <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm5 10a5 5 0 11-10 0 5 5 0 0110 0zm4.95-1H21a1 1 0 110 2h-1.05A8.001 8.001 0 0113 20.95V22a1 1 0 11-2 0v-1.05A8.001 8.001 0 013.05 13H2a1 1 0 110-2h1.05A8.001 8.001 0 0111 3.05V2a1 1 0 112 0v1.05A8.001 8.001 0 0120.95 11z"/>
+          <path d="M12 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm5 10a5 5 0 11-10 0 5 5 0 0110 0zm4.95-1H21a1 1 0 110 2h-1.05A8.001 8.001 0 0113 20.95V22a1 1 0 11-2 0v-1.05A8.001 8.001 0 013.05 13H2a1 1 0 110-2h1.05A8.001 8.001 0 0111 3.05V2a1 1 0 112 0v1.05A8.001 8.001 0 0120.95 11z" />
         </svg>
       </span>
       <span className="absolute transition-all duration-300"
         style={{ opacity: dark ? 1 : 0, transform: dark ? 'scale(1) rotate(0deg)' : 'scale(0.4) rotate(-90deg)' }}>
         <svg className="w-4 h-4" fill="#F97316" viewBox="0 0 24 24">
-          <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>
+          <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
         </svg>
       </span>
     </button>
@@ -180,9 +180,9 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
             onMouseEnter={() => setOpenSub(subObj.label)}
             onMouseLeave={() => setOpenSub(null)}>
             <div className="flex items-center justify-between transition-colors"
-                 style={{ backgroundColor: openSub === subObj.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
-                 onMouseEnter={() => setOpenSub(subObj.label)}
-                 onMouseLeave={() => setOpenSub(null)}>
+              style={{ backgroundColor: openSub === subObj.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
+              onMouseEnter={() => setOpenSub(subObj.label)}
+              onMouseLeave={() => setOpenSub(null)}>
               <Link to={`/category/${slugify(item.label)}/${slugify(subObj.label)}`}
                 className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
                 style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
@@ -191,31 +191,31 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
               </Link>
               <span className="pr-3 text-gray-500">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </span>
             </div>
             {openSub === subObj.label && (
-            <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
-              style={{
-                background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
-                backdropFilter: 'blur(12px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
-              }}
-              onMouseEnter={() => setOpenSub(subObj.label)}
-              onMouseLeave={() => setOpenSub(null)}>                
-              <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
+              <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
+                style={{
+                  background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                  backdropFilter: 'blur(12px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                  border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+                }}
+                onMouseEnter={() => setOpenSub(subObj.label)}
+                onMouseLeave={() => setOpenSub(null)}>
+                <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
                   {subObj.label}
                 </div>
                 {subObj.brands.map(brand => (
                   <Link key={brand}
                     to={`/category/${slugify(item.label)}/${slugify(subObj.label)}?brand=${encodeURIComponent(brand)}`}
                     className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
-                    style={{ 
-                      fontFamily: dropFont, 
-                      fontSize: 16, 
-                      letterSpacing: isKhmer ? 0 : undefined, 
+                    style={{
+                      fontFamily: dropFont,
+                      fontSize: 16,
+                      letterSpacing: isKhmer ? 0 : undefined,
                       color: dark ? '#d1d5db' : '#374151',
                       backgroundColor: 'transparent'
                     }}
@@ -233,10 +233,10 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
           <Link key={sub}
             to={`/category/${slugify(item.label)}/${slugify(sub)}`}
             className="block px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
-            style={{ 
-              fontFamily: dropFont, 
-              fontSize: 16, 
-              letterSpacing: isKhmer ? 0 : undefined, 
+            style={{
+              fontFamily: dropFont,
+              fontSize: 16,
+              letterSpacing: isKhmer ? 0 : undefined,
               color: dark ? '#d1d5db' : '#374151',
               backgroundColor: 'transparent'
             }}
@@ -252,40 +252,41 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
 }
 
 export default function Navbar({ onAuthOpen }) {
-  const [openDrop, setOpenDrop]     = useState(null)
-  const [openSub, setOpenSub]       = useState(null)
+  const [openDrop, setOpenDrop] = useState(null)
+  const [openSub, setOpenSub] = useState(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [mobileSub,   setMobileSub]   = useState(null)
+  const [mobileSub, setMobileSub] = useState(null)
   const [mobileSubItem, setMobileSubItem] = useState(null)
-  const [search, setSearch]         = useState('')
-  const [userMenu, setUserMenu]     = useState(false)
-  const [scrolled, setScrolled]     = useState(false)
-  const { user, logout, ready }     = useAuth()
-  const { items, setCartOpen }      = useCart()
-  const { favorites }               = useFavorites()
-  const { dark }                    = useTheme()
-  const { t, isKhmer }              = useLang()
-  const navigate                    = useNavigate()
-  const location                    = useLocation()
-  const headerRef          = useRef(null)
-  const userMenuRef        = useRef(null)
+  const [search, setSearch] = useState('')
+  const [userMenu, setUserMenu] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [hoveredNav, setHoveredNav] = useState(null)
+  const { user, logout, ready } = useAuth()
+  const { items, setCartOpen } = useCart()
+  const { favorites } = useFavorites()
+  const { dark } = useTheme()
+  const { t, isKhmer } = useLang()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const headerRef = useRef(null)
+  const userMenuRef = useRef(null)
   const compactUserMenuRef = useRef(null)
-  const drawerRef          = useRef(null)
+  const drawerRef = useRef(null)
 
   const totalQty = items.reduce((s, i) => s + i.qty, 0)
 
-  const navBg        = dark ? '#111827' : '#ffffff'
-  const navBorder    = dark ? '#1f2937' : '#e5e7eb'
-  const textColor    = dark ? '#f9fafb' : '#1f2937'
+  const navBg = dark ? '#111827' : '#ffffff'
+  const navBorder = dark ? '#1f2937' : '#e5e7eb'
+  const textColor = dark ? '#f9fafb' : '#1f2937'
   const subTextColor = dark ? '#9ca3af' : '#6b7280'
-  const inputBg      = dark ? '#1f2937' : '#ffffff'
-  const inputBorder  = dark ? '#374151' : '#d1d5db'
-  const ddBg         = dark ? '#1f2937' : '#ffffff'
-  const ddBorder     = dark ? '#374151' : '#e5e7eb'
-  const ddHover      = dark ? '#374151' : '#f3f4f6'
-  const drawerBg     = dark ? '#111827' : '#ffffff'
+  const inputBg = dark ? '#1f2937' : '#ffffff'
+  const inputBorder = dark ? '#374151' : '#d1d5db'
+  const ddBg = dark ? '#1f2937' : '#ffffff'
+  const ddBorder = dark ? '#374151' : '#e5e7eb'
+  const ddHover = dark ? '#374151' : '#f3f4f6'
+  const drawerBg = dark ? '#111827' : '#ffffff'
   const drawerBorder = dark ? '#1f2937' : '#e5e7eb'
-  const drawerSubBg  = dark ? '#0f172a' : '#f1f5f9'
+  const drawerSubBg = dark ? '#0f172a' : '#f1f5f9'
 
   // Khmer font for nav links when in Khmer mode
   const navFont = isKhmer
@@ -306,7 +307,7 @@ export default function Navbar({ onAuthOpen }) {
       if (headerRef.current && !headerRef.current.contains(e.target)) {
         setOpenDrop(null); setOpenSub(null)
       }
-      const inFull    = userMenuRef.current        && userMenuRef.current.contains(e.target)
+      const inFull = userMenuRef.current && userMenuRef.current.contains(e.target)
       const inCompact = compactUserMenuRef.current && compactUserMenuRef.current.contains(e.target)
       if (!inFull && !inCompact) setUserMenu(false)
     }
@@ -325,10 +326,22 @@ export default function Navbar({ onAuthOpen }) {
     document.body.style.overflow = ''
   }, [location.pathname])
 
+  useEffect(() => {
+    if (openDrop === null) {
+      setHoveredNav(null)
+    }
+  }, [openDrop])
+
   const handleSearch = e => {
     e.preventDefault()
     const q = search.trim().toLowerCase()
     if (q) { navigate(`/category/search?q=${encodeURIComponent(q)}`); setSearch(''); setMobileOpen(false) }
+  }
+
+  const isActive = (item) => {
+    if (!item.path) return false
+    if (item.path === '/') return location.pathname === '/'
+    return location.pathname === item.path || location.pathname.startsWith(item.path + '/')
   }
 
   const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub, isKhmer, dark }
@@ -366,8 +379,9 @@ export default function Navbar({ onAuthOpen }) {
         ) : user ? (
           <>
             <UserAvatar size={10} fontSize={16} />
-            <span className="font-bold max-w-[64px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
+            <span className="font-bold truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: user.role === 'vip' ? 78 : 64 }}>
               {user.username || user.name || 'User'}
+              {user.role === 'vip' && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#F97316', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap', lineHeight: 1.2 }}>VIP</span>}
             </span>
           </>
         ) : (
@@ -387,7 +401,7 @@ export default function Navbar({ onAuthOpen }) {
           style={{ background: ddBg, borderColor: ddBorder }}>
           {[
             { labelKey: 'nav.myProfile', icon: '👤', path: '/profile' },
-            { labelKey: 'nav.myOrders',  icon: '📦', path: '/orders'  },
+            { labelKey: 'nav.myOrders', icon: '📦', path: '/orders' },
           ].map(({ labelKey, icon, path }) => (
             <button key={path}
               className="w-full flex items-center gap-2 px-4 py-2 transition-colors text-left"
@@ -422,243 +436,153 @@ export default function Navbar({ onAuthOpen }) {
         boxShadow: scrolled ? '0 4px 30px rgba(0,0,0,0.1)' : 'none',
       }}>
 
-      {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
-      <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-        <div className="max-w-[1500px] mx-auto px-4 flex items-center gap-1" style={{ height: 70}}>
-          <Link to="/" className="flex-shrink-0">
-            <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
-          </Link>
-
-          <div className="flex flex-col gap-0.5 ml-2">
-            <a href="tel:0967333725" className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-              </svg>
-              <span className="font-bold text-[12px]" style={{ color: textColor }}>096 733 3725</span>
-            </a>
-            <a href="tel:077711126" className="flex items-center gap-1">
-              <span className="w-4" /> {/* Spacer for alignment */}
-              <span className="font-bold text-[13px]" style={{ color: textColor }}>077 711 126</span>
-            </a>
-          </div>
-
-          {/* Inline nav tablet+ */}
-          <nav className="hidden xl:flex items-center flex-1 min-w-0 justify-center">
-            <ul className="flex items-center flex-wrap">
-              {navItems.map(item => (
-                <li key={item.label} className="relative flex-shrink-0">
-                  <div onMouseEnter={() => item.sub && setOpenDrop(item.label)}
-                    onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
-                    <Link
-                      to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                      className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
-                      style={{ fontFamily: navbFont, fontSize: isKhmer ? 16 : 18, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
-                      onMouseLeave={e => e.currentTarget.style.color = textColor}
-                      onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
-                      {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                      {item.sub && (
-                        <svg className={`w-2 h-2 flex-shrink-0 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
-                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      )}
-                    </Link>
-                    {item.sub && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Right icons compact */}
-          <div className="flex items-center gap-1 ml-auto flex-shrink-0">
-            <div className="hidden md:flex items-center gap-1">
-              <ThemeToggle />
-              <LanguageToggle />
-            </div>
-
-            <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
-              <svg className="w-5 h-5"
-                fill={favorites.length > 0 ? '#F97316' : 'none'}
-                stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
-                strokeWidth={2} viewBox="0 0 24 24">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-              </svg>
-              {favorites.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
-                  {favorites.length}
-                </span>
-              )}
-            </IconBtn>
-
-            <IconBtn onClick={() => setCartOpen(true)} className="hidden md:flex" style={{ color: textColor }}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {totalQty > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
-                  {totalQty}
-                </span>
-              )}
-            </IconBtn>
-
-            {/* Compact user menu */}
-            <div className="relative" ref={compactUserMenuRef}>
-              <button className="flex items-center gap-1 px-1 py-2"
-                style={{ color: textColor, transition: 'color 0.15s' }}
-                onMouseEnter={e => { if (!user) e.currentTarget.style.color = '#F97316' }}
-                onMouseLeave={e => { if (!user) e.currentTarget.style.color = textColor }}
-                onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>
-                {user ? (
-                  <>
-                    <UserAvatar size={9} fontSize={15} />
-                    <span className="font-bold hidden lg:block max-w-[60px] truncate" style={{ fontSize: 13, color: '#F97316' }}>
-                      {user.username || user.name}
-                    </span>
-                  </>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                )}
-              </button>
-
-              {user && userMenu && (
-                <div className="absolute right-0 top-full mt-1 rounded-lg shadow-xl w-44 py-1 z-[200] border"
-                  style={{ background: ddBg, borderColor: ddBorder }}>
-                  {[
-                    { labelKey: 'nav.myProfile', icon: '👤', path: '/profile' },
-                    { labelKey: 'nav.myOrders',  icon: '📦', path: '/orders'  },
-                  ].map(({ labelKey, icon, path }) => (
-                    <button key={path}
-                      className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
-                      style={{ fontFamily: navbFont, fontSize: 14, color: textColor }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
-                      onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
-                      onClick={() => { setUserMenu(false); navigate(path) }}>
-                      {icon} {t(labelKey)}
-                    </button>
-                  ))}
-                  <hr style={{ borderColor: ddBorder, margin: '2px 0' }} />
-                  <button
-                    onClick={() => { logout(); setUserMenu(false) }}
-                    className="w-full text-left px-3 py-2 text-red-500 font-semibold"
-                    style={{ fontFamily: navFont, fontSize: 14 }}
-                    onMouseEnter={e => e.currentTarget.style.background = ddHover}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    🚪 {t('nav.logout')}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <IconBtn onClick={() => setCartOpen(true)} className="xl:hidden" style={{ color: textColor }}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {totalQty > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
-                  {totalQty}
-                </span>
-              )}
-            </IconBtn>
-
-            <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
-              onMouseLeave={e => e.currentTarget.style.color = textColor}
-              onClick={() => setMobileOpen(true)}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ══════════ FULL BAR (not scrolled) ════════════════════════════════ */}
-      <div style={{ display: scrolled ? 'none' : 'block' }}>
-
-        {/* ── TOP BAR ── */}
-        <div style={{ borderBottom: `1px solid ${navBorder}` }}>
-          <div className="max-w-[1280px] mx-auto px-4 flex items-center py-2 gap-3">
+        {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
+        <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
+          <div className="max-w-[1500px] mx-auto px-4 flex items-center gap-1" style={{ height: 70 }}>
             <Link to="/" className="flex-shrink-0">
-              <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 70 }} />
+              <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
             </Link>
 
-            <div className="hidden md:flex flex-col items-start ml-2 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+            <div className="flex flex-col gap-0.5 ml-2">
+              <a href="tel:0967333725" className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <div>
-                  <div style={{ fontFamily: navbFont, fontSize: 13, color: subTextColor, fontWeight: 700, letterSpacing: isKhmer ? 0 : 0.5 }}>
-                    {isKhmer ? 'ទំនាក់ទំនងយើង' : 'Call us now'}
-                  </div>
-                  <div style={{ fontFamily: navFont, fontSize: 13, fontWeight: 700, color: textColor, letterSpacing: isKhmer ? 0 : 0.5  }}>{isKhmer ? '096 733 3725 / 077 711 126' : '096 733 3725 / 077 711 126'}</div>
-                </div>
-              </div>
-              <div className="flex gap-3 mt-1.5 ml-7">
-                <a href="https://www.facebook.com/TronmatixComputer?_rdc=1&_rdr#" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color='#F97316'} onMouseLeave={e => e.currentTarget.style.color=subTextColor}><FacebookIcon /></a>
-                <a href="https://t.me/+VZScFi_U95PsFk0M" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color='#F97316'} onMouseLeave={e => e.currentTarget.style.color=subTextColor}><TelegramIcon /></a>
-                <a href="https://www.tiktok.com/@tronmatixcomputer" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color='#F97316'} onMouseLeave={e => e.currentTarget.style.color=subTextColor}><TikTokIcon /></a>
-              </div>
+                <span className="font-bold text-[14px]" style={{ color: textColor }}>096 733 3725</span>
+              </a>
+              <a href="tel:077711126" className="flex items-center gap-1">
+                <span className="w-4" /> {/* Spacer for alignment */}
+                <span className="font-bold text-[14px]" style={{ color: textColor }}>077 711 126</span>
+              </a>
             </div>
 
-            <form onSubmit={handleSearch} className="flex-1 hidden md:flex mx-3">
-              <div className="relative w-full max-w-md">
-                <input value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder={t('nav.search')}
-                  className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none transition-colors"
-                  style={{ fontFamily: navFont, fontSize: 15, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }}
-                />
-                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}
-                  onMouseEnter={e => e.currentTarget.style.color='#F97316'}
-                  onMouseLeave={e => e.currentTarget.style.color=subTextColor}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-              </div>
-            </form>
+            {/* Inline nav tablet+ */}
+            <nav className="hidden xl:flex items-center flex-1 min-w-0 justify-center">
+              <ul className="flex items-center flex-wrap">
+                {navItems.map(item => (
+                  <li key={item.label} className="relative flex-shrink-0">
+                    <div onMouseEnter={() => { if (item.sub) setOpenDrop(item.label); setHoveredNav(item.label) }}
+                      onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
+                      <Link
+                        to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+                        className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
+                        style={{ fontFamily: navbFont, fontSize: isKhmer ? 18 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                        onClick={() => { setOpenDrop(null); setOpenSub(null); setHoveredNav(null) }}>
+                        {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                        {item.sub && (
+                          <svg className={`w-2 h-2 flex-shrink-0 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                      </Link>
+                      {item.sub && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-            <div className="flex items-center gap-1.5 ml-auto">
-              <ThemeToggle />
-              <LanguageToggle />
+            {/* Right icons compact */}
+            <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+              <div className="hidden md:flex items-center gap-1">
+                <ThemeToggle />
+                <LanguageToggle />
+              </div>
 
               <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
-                <svg className="w-6 h-6"
+                <svg className="w-5 h-5"
                   fill={favorites.length > 0 ? '#F97316' : 'none'}
                   stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
                   strokeWidth={2} viewBox="0 0 24 24">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
                 </svg>
                 {favorites.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
+                  <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
                     {favorites.length}
                   </span>
                 )}
               </IconBtn>
 
-              <IconBtn onClick={() => setCartOpen(true)} style={{ color: textColor }}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <IconBtn onClick={() => setCartOpen(true)} className="hidden md:flex" style={{ color: textColor }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {totalQty > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
+                  <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
                     {totalQty}
                   </span>
                 )}
               </IconBtn>
 
-              <UserDropdown menuRef={userMenuRef} />
+              {/* Compact user menu */}
+              <div className="relative" ref={compactUserMenuRef}>
+                <button className="flex items-center gap-1 px-1 py-2"
+                  style={{ color: textColor, transition: 'color 0.15s' }}
+                  onMouseEnter={e => { if (!user) e.currentTarget.style.color = '#F97316' }}
+                  onMouseLeave={e => { if (!user) e.currentTarget.style.color = textColor }}
+                  onClick={() => user ? setUserMenu(p => !p) : onAuthOpen?.('login')}>
+                  {user ? (
+                    <>
+                      <UserAvatar size={9} fontSize={15} />
+                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: user.role === 'vip' ? 72 : 60 }}>
+                        {user.username || user.name}
+                        {user.role === 'vip' && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#F97316', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap', lineHeight: 1.2 }}>VIP</span>}
+                      </span>
+                    </>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  )}
+                </button>
+
+                {user && userMenu && (
+                  <div className="absolute right-0 top-full mt-1 rounded-lg shadow-xl w-44 py-1 z-[200] border"
+                    style={{ background: ddBg, borderColor: ddBorder }}>
+                    {[
+                      { labelKey: 'nav.myProfile', icon: '👤', path: '/profile' },
+                      { labelKey: 'nav.myOrders', icon: '📦', path: '/orders' },
+                    ].map(({ labelKey, icon, path }) => (
+                      <button key={path}
+                        className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
+                        style={{ fontFamily: navbFont, fontSize: 14, color: textColor }}
+                        onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
+                        onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
+                        onClick={() => { setUserMenu(false); navigate(path) }}>
+                        {icon} {t(labelKey)}
+                      </button>
+                    ))}
+                    <hr style={{ borderColor: ddBorder, margin: '2px 0' }} />
+                    <button
+                      onClick={() => { logout(); setUserMenu(false) }}
+                      className="w-full text-left px-3 py-2 text-red-500 font-semibold"
+                      style={{ fontFamily: navFont, fontSize: 14 }}
+                      onMouseEnter={e => e.currentTarget.style.background = ddHover}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      🚪 {t('nav.logout')}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <IconBtn onClick={() => setCartOpen(true)} className="xl:hidden" style={{ color: textColor }}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {totalQty > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
+                    {totalQty}
+                  </span>
+                )}
+              </IconBtn>
 
               <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                 onMouseLeave={e => e.currentTarget.style.color = textColor}
                 onClick={() => setMobileOpen(true)}>
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -666,338 +590,427 @@ export default function Navbar({ onAuthOpen }) {
           </div>
         </div>
 
-        {/* ── DESKTOP NAV BAR ── */}
-        <nav className="hidden xl:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
-          <div className="max-w-[1280px] mx-auto px-2 flex items-center">
-            <ul className="flex items-center justify-center flex-1 flex-wrap">
-              {navItems.map(item => (
-                <li key={item.label} className="relative">
-                  <div className="flex items-center"
-                    onMouseEnter={() => item.sub && setOpenDrop(item.label)}
-                    onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
-                    <Link
-                      to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                      className="flex items-center gap-0.5 border-b-2 border-transparent whitespace-nowrap font-bold tracking-wide"
-                      style={{
-                        fontFamily: navbFont,
-                        fontSize: 'clamp(14px, 1.5vw, 18px)',
-                        fontWeight: 700,
-                        padding: 'clamp(10px, 1.2vw, 20px) clamp(6px, 0.8vw, 18px)',
-                        color: textColor,
-                        letterSpacing: isKhmer ? 0 : undefined,
-                        transition: 'color 0.15s, border-color 0.15s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.borderBottomColor = '#F97316' }}
-                      onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.borderBottomColor = 'transparent' }}
-                      onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
-                      {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                      {item.sub && (
-                        <svg className={`w-3 h-3 flex-shrink-0 ml-0.5 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
-                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      )}
-                    </Link>
-                    {item.sub && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
-      </div>
+        {/* ══════════ FULL BAR (not scrolled) ════════════════════════════════ */}
+        <div style={{ display: scrolled ? 'none' : 'block' }}>
 
-      </header>
+          {/* ── TOP BAR ── */}
+          <div style={{ borderBottom: `1px solid ${navBorder}` }}>
+            <div className="max-w-[1280px] mx-auto px-4 flex items-center py-2 gap-3">
+              <Link to="/" className="flex-shrink-0">
+                <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 70 }} />
+              </Link>
 
-      {createPortal(
-      <>
-        {mobileOpen && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.55)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-              zIndex: 80,
-            }}
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-        <div ref={drawerRef}
-          style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            height: '100%',
-            width: 300,
-            zIndex: 90,
-            display: 'flex',
-            flexDirection: 'column',
-            /* ── Glassmorphism ── */
-            background: dark
-              ? 'rgba(15, 23, 42, 0.82)'
-              : 'rgba(255, 255, 255, 0.82)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            borderLeft: dark
-              ? '1px solid rgba(249,115,22,0.25)'
-              : '1px solid rgba(249,115,22,0.18)',
-            boxShadow: dark
-              ? '-8px 0 40px rgba(0,0,0,0.6), inset 1px 0 0 rgba(249,115,22,0.12)'
-              : '-8px 0 40px rgba(0,0,0,0.18), inset 1px 0 0 rgba(249,115,22,0.10)',
-            visibility: mobileOpen ? 'visible' : 'hidden',
-            transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
-            transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1), visibility 0.32s',
-            overflowX: 'hidden',
-            overflowY: 'auto',
-          }}>
-          {/* Drawer header — glass accent strip */}
-          <div className="flex-shrink-0" style={{
-            borderBottom: dark ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(249,115,22,0.15)',
-            background: dark ? 'rgba(249,115,22,0.06)' : 'rgba(249,115,22,0.04)',
-            position: 'relative', overflow: 'hidden',
-          }}>
-            {/* top shimmer line */}
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-              background: 'linear-gradient(90deg, transparent 0%, #F97316 40%, #FBBF24 60%, #F97316 80%, transparent 100%)',
-              opacity: 0.8,
-            }} />
-            {/* Top row: user info OR login buttons + right controls */}
-            <div className="flex items-center gap-2 px-4 py-3" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
-              {/* Left side: user info or login buttons */}
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                {user ? (
-                  <>
-                    <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
-                      style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.username}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>
-                          {(user.username || user.name || 'U').charAt(0).toUpperCase()}
-                        </div>
-                      )}
+              <div className="hidden md:flex flex-col items-start ml-2 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <div>
+                    <div style={{ fontFamily: navbFont, fontSize: 13, color: subTextColor, fontWeight: 700, letterSpacing: isKhmer ? 0 : 0.5 }}>
+                      {isKhmer ? 'ទំនាក់ទំនងយើង' : 'Call us now'}
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-black truncate" style={{ fontSize: 15, color: '#F97316' }}>{user.username || user.name}</div>
-                      <div style={{ fontFamily: navFont, fontSize: 11, color: subTextColor }}>
-                        {isKhmer ? 'បានចូល' : 'Logged in'}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex gap-2 flex-wrap">
-                    <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
-                      className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
-                      style={{ fontFamily: navFont, fontSize: 13 }}>
-                      {t('nav.login').toUpperCase()}
-                    </button>
-                    <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
-                      className="border-2 border-primary px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
-                      style={{ fontFamily: navFont, fontSize: 13, color: '#F97316' }}>
-                      {t('nav.register').toUpperCase()}
-                    </button>
+                    <div style={{ fontFamily: navFont, fontSize: 13, fontWeight: 700, color: textColor, letterSpacing: isKhmer ? 0 : 0.5 }}>{isKhmer ? '096 733 3725 / 077 711 126' : '096 733 3725 / 077 711 126'}</div>
                   </div>
-                )}
+                </div>
+                <div className="flex gap-3 mt-1.5 ml-7">
+                  <a href="https://www.facebook.com/TronmatixComputer?_rdc=1&_rdr#" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#F97316'} onMouseLeave={e => e.currentTarget.style.color = subTextColor}><FacebookIcon /></a>
+                  <a href="https://t.me/+VZScFi_U95PsFk0M" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#F97316'} onMouseLeave={e => e.currentTarget.style.color = subTextColor}><TelegramIcon /></a>
+                  <a href="https://www.tiktok.com/@tronmatixcomputer" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#F97316'} onMouseLeave={e => e.currentTarget.style.color = subTextColor}><TikTokIcon /></a>
+                </div>
               </div>
 
-              {/* Right controls: theme + lang + close — always in a row, never pushed off screen */}
-              <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+              <form onSubmit={handleSearch} className="flex-1 hidden md:flex mx-3">
+                <div className="relative w-full max-w-md">
+                  <input value={search} onChange={e => setSearch(e.target.value)}
+                    placeholder={t('nav.search')}
+                    className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none transition-colors"
+                    style={{ fontFamily: navFont, fontSize: 15, fontWeight: 700, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }}
+                  />
+                  <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                    onMouseLeave={e => e.currentTarget.style.color = subTextColor}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </div>
+              </form>
+
+              <div className="flex items-center gap-1.5 ml-auto">
                 <ThemeToggle />
                 <LanguageToggle />
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0"
-                  style={{ background: dark ? '#374151' : '#f3f4f6', color: textColor, fontSize: 18 }}>
-                  ✕
+
+                <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
+                  <svg className="w-6 h-6"
+                    fill={favorites.length > 0 ? '#F97316' : 'none'}
+                    stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
+                    strokeWidth={2} viewBox="0 0 24 24">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                  </svg>
+                  {favorites.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
+                      {favorites.length}
+                    </span>
+                  )}
+                </IconBtn>
+
+                <IconBtn onClick={() => setCartOpen(true)} style={{ color: textColor }}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  {totalQty > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
+                      {totalQty}
+                    </span>
+                  )}
+                </IconBtn>
+
+                <UserDropdown menuRef={userMenuRef} />
+
+                <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                  onMouseLeave={e => e.currentTarget.style.color = textColor}
+                  onClick={() => setMobileOpen(true)}>
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Mobile search */}
-          <form onSubmit={handleSearch} className="px-4 py-3 flex-shrink-0" style={{
-            borderBottom: dark ? '1px solid rgba(249,115,22,0.15)' : '1px solid rgba(249,115,22,0.1)',
-            background: dark ? 'rgba(249,115,22,0.03)' : 'rgba(249,115,22,0.02)',
-          }}>
-            <div className="relative">
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder={t('nav.search')}
-                className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
-                style={{
-                  fontFamily: navbFont, fontSize: 15, color: textColor,
-                  background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
-                  border: dark ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(249,115,22,0.2)',
-                }} />
-              <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
+          {/* ── DESKTOP NAV BAR ── */}
+          <nav className="hidden xl:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
+            <div className="max-w-[1280px] mx-auto px-2 flex items-center">
+              <ul className="flex items-center justify-center flex-1 flex-wrap">
+                {navItems.map(item => (
+                  <li key={item.label} className="relative">
+                    <div className="flex items-center"
+                      onMouseEnter={() => { if (item.sub) setOpenDrop(item.label); setHoveredNav(item.label) }}
+                      onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
+                      <Link
+                        to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+                        className="flex items-center gap-0.5 border-b-2 border-transparent whitespace-nowrap font-bold tracking-wide"
+                        style={{
+                          fontFamily: navbFont,
+                          fontSize: isKhmer ? 20 : 21,
+                          fontWeight: 700,
+                          padding: 'clamp(10px, 1.2vw, 20px) clamp(6px, 0.8vw, 18px)',
+                          color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor,
+                          borderBottomColor: (hoveredNav === item.label || isActive(item)) ? '#F97316' : 'transparent',
+                          letterSpacing: isKhmer ? 0 : undefined,
+                          transition: 'color 0.15s, border-color 0.15s',
+                        }}
+                        onClick={() => { setOpenDrop(null); setOpenSub(null); setHoveredNav(null) }}>
+                        {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                        {item.sub && (
+                          <svg className={`w-3 h-3 flex-shrink-0 ml-0.5 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                      </Link>
+                      {item.sub && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </form>
+          </nav>
+        </div>
 
-          {/* Nav items */}
-          <div className="flex-1 overflow-y-auto" style={{ overflowX: 'hidden' }}>
-            {navItems.map(item => (
-              <div key={item.label} style={{
-                borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
-              }}>
-                <div className="flex items-center justify-between px-4 py-3.5 select-none"
-                     onClick={() => {
-                       if (item.sub) {
-                         setMobileSub(mobileSub === item.label ? null : item.label);
-                       } else {
-                         const dest = item.categories
-                           ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
-                           : item.path;
-                         navigate(dest);
-                         setMobileOpen(false);
-                       }
-                     }}>
-                  <span
-                    className="font-bold tracking-wide cursor-pointer flex-1"
-                    style={{ fontFamily: navbFont, fontSize: 16, color: textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
-                    onMouseEnter={e => e.currentTarget.style.color='#F97316'}
-                    onMouseLeave={e => e.currentTarget.style.color=textColor}
-                  >
-                    {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                  </span>
-                  {item.sub && (
-                    <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${mobileSub === item.label ? 'rotate-180' : ''}`}
-                         fill="none" stroke={textColor} viewBox="0 0 24 24"
-                         onClick={(e) => { e.stopPropagation(); setMobileSub(mobileSub === item.label ? null : item.label); }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                    </svg>
+      </header>
+
+      {createPortal(
+        <>
+          {mobileOpen && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.55)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                zIndex: 80,
+              }}
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
+          <div ref={drawerRef}
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              height: '100%',
+              width: 300,
+              zIndex: 90,
+              display: 'flex',
+              flexDirection: 'column',
+              /* ── Glassmorphism ── */
+              background: dark
+                ? 'rgba(15, 23, 42, 0.82)'
+                : 'rgba(255, 255, 255, 0.82)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              borderLeft: dark
+                ? '1px solid rgba(249,115,22,0.25)'
+                : '1px solid rgba(249,115,22,0.18)',
+              boxShadow: dark
+                ? '-8px 0 40px rgba(0,0,0,0.6), inset 1px 0 0 rgba(249,115,22,0.12)'
+                : '-8px 0 40px rgba(0,0,0,0.18), inset 1px 0 0 rgba(249,115,22,0.10)',
+              visibility: mobileOpen ? 'visible' : 'hidden',
+              transform: mobileOpen ? 'translateX(0)' : 'translateX(100%)',
+              transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1), visibility 0.32s',
+              overflowX: 'hidden',
+              overflowY: 'auto',
+            }}>
+            {/* Drawer header — glass accent strip */}
+            <div className="flex-shrink-0" style={{
+              borderBottom: dark ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(249,115,22,0.15)',
+              background: dark ? 'rgba(249,115,22,0.06)' : 'rgba(249,115,22,0.04)',
+              position: 'relative', overflow: 'hidden',
+            }}>
+              {/* top shimmer line */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+                background: 'linear-gradient(90deg, transparent 0%, #F97316 40%, #FBBF24 60%, #F97316 80%, transparent 100%)',
+                opacity: 0.8,
+              }} />
+              {/* Top row: user info OR login buttons + right controls */}
+              <div className="flex items-center gap-2 px-4 py-3" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
+                {/* Left side: user info or login buttons */}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {user ? (
+                    <>
+                      <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden"
+                        style={{ border: '2.5px solid #F97316', background: '#F97316' }}>
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={user.username}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: 18 }}>
+                            {(user.username || user.name || 'U').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-black truncate" style={{ fontSize: 15, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          {user.username || user.name}
+                          {user.role === 'vip' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#F97316', padding: '1px 6px', borderRadius: 3, whiteSpace: 'nowrap', lineHeight: 1.2 }}>⭐ VIP</span>}
+                        </div>
+                        <div style={{ fontFamily: navFont, fontSize: 11, color: subTextColor }}>
+                          {isKhmer ? 'បានចូល' : 'Logged in'}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex gap-2 flex-wrap">
+                      <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
+                        className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
+                        style={{ fontFamily: navFont, fontSize: 13 }}>
+                        {t('nav.login').toUpperCase()}
+                      </button>
+                      <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
+                        className="border-2 border-primary px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
+                        style={{ fontFamily: navFont, fontSize: 13, color: '#F97316' }}>
+                        {t('nav.register').toUpperCase()}
+                      </button>
+                    </div>
                   )}
                 </div>
-                <div>
-                {item.sub && mobileSub === item.label && (
-                  <div className="pb-2" style={{ background: drawerSubBg }}>
-                    <Link
-                      to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                      className="block px-8 py-2 font-bold text-primary border-b mb-1"
-                      style={{ fontSize: 14, borderColor: drawerBorder }}
-                      onClick={() => setMobileOpen(false)}>
-                      ALL {item.label}
-                    </Link>
-                    {/* State for all sub-category expansions */}
-                    {item.sub.map(sub => {
-                      const isObj  = typeof sub === 'object'
-                      const label  = isObj ? sub.label : sub
-                      const brands = isObj ? sub.brands : []
-                      const path   = `/category/${slugify(item.label)}/${slugify(label)}`
-                      const expanded = mobileSub === item.label && mobileSubItem === label;
 
-                      return (
-                        <div key={label}>
-                          <div className="flex items-center justify-between">
-                            <Link to={path}
-                              className="block px-8 py-2 font-bold flex-1"
-                              style={{ fontSize: 14, color: '#F97316', transition: 'color 0.15s' }}
-                              onClick={() => setMobileOpen(false)}>{label}</Link>
-                            {isObj && brands.length > 0 && (
-                              <button 
-                                className="px-4 py-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setMobileSubItem(expanded ? null : label);
-                                }}>
-                                <span style={{ 
-                                  color: subTextColor, 
-                                  display: 'inline-block', 
-                                  transition: 'transform 0.3s', 
-                                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' 
-                                }}>
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </span>
-                              </button>
-                            )}
-                          </div>
-                          
-                          {isObj && brands.length > 0 && (
-                            <div className="pl-12 pb-1 overflow-hidden transition-all duration-300 ease-in-out"
-                                 style={{ 
-                                   maxHeight: expanded ? brands.length * 35 : 0,
-                                   opacity: expanded ? 1 : 0
-                                 }}>
-                              {brands.map(brand => (
-                                <Link key={brand} to={`${path}?brand=${encodeURIComponent(brand)}`}
-                                  className="block py-1 font-semibold"
-                                  style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
-                                  onMouseEnter={e => e.currentTarget.style.color='#F97316'}
-                                  onMouseLeave={e => e.currentTarget.style.color=subTextColor}
-                                  onClick={() => setMobileOpen(false)}>- {brand}</Link>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+                {/* Right controls: theme + lang + close — always in a row, never pushed off screen */}
+                <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
+                  <ThemeToggle />
+                  <LanguageToggle />
+                  <button
+                    onClick={() => setMobileOpen(false)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0"
+                    style={{ background: dark ? '#374151' : '#f3f4f6', color: textColor, fontSize: 18 }}>
+                    ✕
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Profile actions at bottom */}
-          {user && (
-            <div className="flex-shrink-0 p-4" style={{
-              borderTop: dark ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(249,115,22,0.15)',
-              background: dark ? 'rgba(249,115,22,0.05)' : 'rgba(249,115,22,0.03)',
-            }}>
-              <div className="flex flex-col gap-1.5 mb-3">
-                {[
-                  { to: '/profile',   labelKey: 'nav.myProfile',   icon: '👤' },
-                  { to: '/orders',    labelKey: 'nav.myOrders',    icon: '📦' },
-                  { to: '/favorites', labelKey: 'nav.myFavorites', icon: '❤️' },
-                ].map(({ to, labelKey, icon }) => (
-                  <Link key={to} to={to} onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
-                    style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = ddHover}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    {icon} {t(labelKey)}
-                  </Link>
-                ))}
-              </div>
-              <button onClick={() => { logout(); setMobileOpen(false) }}
-                className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg"
-                style={{ fontFamily: navFont, fontSize: 15 }}>
-                🚪 {t('nav.logout')}
-              </button>
             </div>
-          )}
-        </div>
-      </>,
-      document.body
-    )}
 
-    <style>{`
+            {/* Mobile search */}
+            <form onSubmit={handleSearch} className="px-4 py-3 flex-shrink-0" style={{
+              borderBottom: dark ? '1px solid rgba(249,115,22,0.15)' : '1px solid rgba(249,115,22,0.1)',
+              background: dark ? 'rgba(249,115,22,0.03)' : 'rgba(249,115,22,0.02)',
+            }}>
+              <div className="relative">
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder={t('nav.search')}
+                  className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
+                  style={{
+                    fontFamily: navbFont, fontSize: 15, color: textColor,
+                    background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
+                    border: dark ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(249,115,22,0.2)',
+                  }} />
+                <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+
+            {/* Nav items */}
+            <div className="flex-1 overflow-y-auto" style={{ overflowX: 'hidden' }}>
+              {navItems.map(item => (
+                <div key={item.label} style={{
+                  borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
+                }}>
+                  <div className="flex items-center justify-between px-4 py-3.5 select-none"
+                    onClick={() => {
+                      if (item.sub) {
+                        setMobileSub(mobileSub === item.label ? null : item.label);
+                      } else {
+                        const dest = item.categories
+                          ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
+                          : item.path;
+                        navigate(dest);
+                        setMobileOpen(false);
+                      }
+                    }}>
+                    <span
+                      className="font-bold tracking-wide cursor-pointer flex-1"
+                      style={{ fontFamily: navbFont, fontSize: 16, color: isActive(item) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                    >
+                      {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                    </span>
+                    {item.sub && (
+                      <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${mobileSub === item.label ? 'rotate-180' : ''}`}
+                        fill="none" stroke={textColor} viewBox="0 0 24 24"
+                        onClick={(e) => { e.stopPropagation(); setMobileSub(mobileSub === item.label ? null : item.label); }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    {item.sub && mobileSub === item.label && (
+                      <div className="pb-2" style={{ background: drawerSubBg }}>
+                        <Link
+                          to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+                          className="block px-8 py-2 font-bold text-primary border-b mb-1"
+                          style={{ fontSize: 14, borderColor: drawerBorder }}
+                          onClick={() => setMobileOpen(false)}>
+                          ALL {item.label}
+                        </Link>
+                        {/* State for all sub-category expansions */}
+                        {item.sub.map(sub => {
+                          const isObj = typeof sub === 'object'
+                          const label = isObj ? sub.label : sub
+                          const brands = isObj ? sub.brands : []
+                          const path = `/category/${slugify(item.label)}/${slugify(label)}`
+                          const expanded = mobileSub === item.label && mobileSubItem === label;
+
+                          return (
+                            <div key={label}>
+                              <div className="flex items-center justify-between">
+                                <Link to={path}
+                                  className="block px-8 py-2 font-bold flex-1"
+                                  style={{ fontSize: 14, color: '#F97316', transition: 'color 0.15s' }}
+                                  onClick={() => setMobileOpen(false)}>{label}</Link>
+                                {isObj && brands.length > 0 && (
+                                  <button
+                                    className="px-4 py-2"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setMobileSubItem(expanded ? null : label);
+                                    }}>
+                                    <span style={{
+                                      color: subTextColor,
+                                      display: 'inline-block',
+                                      transition: 'transform 0.3s',
+                                      transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                                    }}>
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                      </svg>
+                                    </span>
+                                  </button>
+                                )}
+                              </div>
+
+                              {isObj && brands.length > 0 && (
+                                <div className="pl-12 pb-1 overflow-hidden transition-all duration-300 ease-in-out"
+                                  style={{
+                                    maxHeight: expanded ? brands.length * 35 : 0,
+                                    opacity: expanded ? 1 : 0
+                                  }}>
+                                  {brands.map(brand => (
+                                    <Link key={brand} to={`${path}?brand=${encodeURIComponent(brand)}`}
+                                      className="block py-1 font-semibold"
+                                      style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
+                                      onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                                      onMouseLeave={e => e.currentTarget.style.color = subTextColor}
+                                      onClick={() => setMobileOpen(false)}>- {brand}</Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Profile actions at bottom */}
+            {user && (
+              <div className="flex-shrink-0 p-4" style={{
+                borderTop: dark ? '1px solid rgba(249,115,22,0.2)' : '1px solid rgba(249,115,22,0.15)',
+                background: dark ? 'rgba(249,115,22,0.05)' : 'rgba(249,115,22,0.03)',
+              }}>
+                <div className="flex flex-col gap-1.5 mb-3">
+                  {[
+                    { to: '/profile', labelKey: 'nav.myProfile', icon: '👤' },
+                    { to: '/orders', labelKey: 'nav.myOrders', icon: '📦' },
+                    { to: '/favorites', labelKey: 'nav.myFavorites', icon: '❤️' },
+                  ].map(({ to, labelKey, icon }) => (
+                    <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
+                      style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = ddHover}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {icon} {t(labelKey)}
+                    </Link>
+                  ))}
+                </div>
+                <button onClick={() => { logout(); setMobileOpen(false) }}
+                  className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg"
+                  style={{ fontFamily: navFont, fontSize: 15 }}>
+                  🚪 {t('nav.logout')}
+                </button>
+              </div>
+            )}
+          </div>
+        </>,
+        document.body
+      )}
+
+      <style>{`
       @keyframes slideInRight {
         from { transform: translateX(100%) }
         to   { transform: translateX(0) }
       }
     `}</style>
-  </>
+    </>
   )
 }
 
 function FacebookIcon() {
-  return <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+  return <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" /></svg>
 }
 function TelegramIcon() {
-  return <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+  return <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
 }
 function TikTokIcon() {
-  return <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.84 1.55V6.78a4.85 4.85 0 01-1.07-.09z"/></svg>
+  return <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.84 1.55V6.78a4.85 4.85 0 01-1.07-.09z" /></svg>
 }

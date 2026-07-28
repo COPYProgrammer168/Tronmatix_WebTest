@@ -42,42 +42,55 @@ fi
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-# ── Telegram poll — background daemon ────────────────────────────────────────
+# ── Telegram — prefer webhook, fallback to polling ──────────────────────────
 if [ -n "$TELEGRAM_USER_BOT_TOKEN" ]; then
 
     # FIX: Kill any lingering poll process from the previous deploy.
-    # Without this, old instance keeps calling getUpdates → Telegram Error 409.
     echo ">>> Killing any existing telegram:poll processes..."
     pkill -SIGTERM -f "artisan telegram:poll" 2>/dev/null || true
-
-    # Wait for Telegram's server to release the long-poll session.
-    # Telegram holds the connection for up to `timeout` seconds after SIGTERM.
-    # 5s is safe for --timeout=25 because SIGTERM breaks the HTTP read immediately.
-    echo ">>> Waiting for Telegram session to release..."
     sleep 5
 
-    echo ">>> Starting Telegram poll worker in background..."
-    (
-        while true; do
-            echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — starting..."
-            php /var/www/html/artisan telegram:poll --timeout=25 --limit=10
-            EXIT_CODE=$?
+    # Try webhook mode first — production has a public URL, so Telegram can
+    # POST updates directly. This avoids 409 conflicts with local dev polling.
+    WEBHOOK_URL="${APP_URL}/api/telegram/bot-webhook"
+    if [[ "$APP_URL" =~ ^https:// ]]; then
+        echo ">>> Registering webhook: ${WEBHOOK_URL}"
+        php artisan telegram:setup --url="${APP_URL}" --commands-only 2>/dev/null || true
+        WEBHOOK_OK=$(php artisan telegram:setup --info 2>/dev/null | grep -c '"ok":true' || true)
 
-            # Exit code 0 = clean SIGTERM shutdown — do NOT restart.
-            # Any other code = crash — restart after delay.
-            if [ "$EXIT_CODE" -eq 0 ]; then
-                echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — clean exit, stopping loop."
-                break
-            fi
+        if [ "$WEBHOOK_OK" -gt 0 ]; then
+            # Also register bot commands
+            php artisan telegram:setup --commands-only 2>/dev/null || true
+            echo ">>> ✅ Webhook mode active — no poller needed."
+        else
+            echo ">>> Webhook registration failed — falling back to polling mode."
+            # Fall through to polling below
+        fi
+    fi
 
-            echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — crashed (exit $EXIT_CODE), restarting in 5s..."
-            sleep 5
-        done
-    ) &
-    echo ">>> Telegram poll PID: $!"
+    # Polling mode (fallback or when APP_URL is not HTTPS)
+    if [[ ! "$APP_URL" =~ ^https:// ]] || [ "$WEBHOOK_OK" -eq 0 ]; then
+        echo ">>> Starting Telegram poll worker in background..."
+        (
+            while true; do
+                echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — starting..."
+                php /var/www/html/artisan telegram:poll --timeout=25 --limit=10
+                EXIT_CODE=$?
+
+                if [ "$EXIT_CODE" -eq 0 ]; then
+                    echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — clean exit, stopping loop."
+                    break
+                fi
+
+                echo "[telegram-poll] $(date '+%Y-%m-%d %H:%M:%S') — crashed (exit $EXIT_CODE), restarting in 5s..."
+                sleep 5
+            done
+        ) &
+        echo ">>> Telegram poll PID: $!"
+    fi
 
 else
-    echo ">>> TELEGRAM_USER_BOT_TOKEN not set — skipping telegram:poll"
+    echo ">>> TELEGRAM_USER_BOT_TOKEN not set — skipping telegram setup"
 fi
 
 echo ">>> Launching Apache on port $PORT..."

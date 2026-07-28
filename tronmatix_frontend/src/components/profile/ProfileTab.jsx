@@ -32,25 +32,25 @@ const getInputStyle = (hasError, editable = true, dark = false) => ({
 
 const ROLE_STYLE = {
   customer: { bg: '#F9FAFB', border: '#E5E7EB', color: '#6B7280', icon: '👤', label: 'CUSTOMER', note: 'Standard Member' },
-  vip:      { bg: 'rgba(249,115,22,0.06)', border: '#FDBA74', color: '#F97316', icon: '⭐', label: 'VIP', note: 'VIP Member' },
+  vip: { bg: 'rgba(249,115,22,0.06)', border: '#FDBA74', color: '#F97316', icon: '⭐', label: 'VIP', note: 'VIP Member' },
   reseller: { bg: 'rgba(59,130,246,0.06)', border: '#93C5FD', color: '#3B82F6', icon: '🏪', label: 'RESELLER', note: 'Reseller Partner' },
-  banned:   { bg: 'rgba(239,68,68,0.06)', border: '#FCA5A5', color: '#EF4444', icon: '🚫', label: 'BANNED', note: 'Contact support' },
+  banned: { bg: 'rgba(239,68,68,0.06)', border: '#FCA5A5', color: '#EF4444', icon: '🚫', label: 'BANNED', note: 'Contact support' },
 }
 
 const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify, dark }) {
   const { t, isKhmer } = useLang()
-  const khFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
-  const khBodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif'   : 'Rajdhani,sans-serif'
+  const khFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
+  const khBodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
   // Bind context-aware helpers
-  const labelStyle  = getLabelStyleProfile(isKhmer)
-  const inputStyle  = (hasError, editable = true) => getInputStyle(hasError, editable, dark)
-  const [editing,   setEditing]   = useState(false)
-  const [saving,    setSaving]    = useState(false)
-  const [saved,     setSaved]     = useState(false)
-  const [errors,    setErrors]    = useState({})
-  const [form,      setForm]      = useState({ name: '', phone: '' })
+  const labelStyle = getLabelStyleProfile(isKhmer)
+  const inputStyle = (hasError, editable = true) => getInputStyle(hasError, editable, dark)
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [form, setForm] = useState({ name: '', phone: '' })
   const [localUser, setLocalUser] = useState(user)
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
     try {
       await axiosClient.put('/api/user/profile', {
         username: form.name.trim(),
-        phone:    form.phone.trim(),
+        phone: form.phone.trim(),
       })
       setSaved(true)
       setEditing(false)
@@ -95,12 +95,12 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
 
   const cancel = () => { setEditing(false); setErrors({}) }
 
-  const role      = user?.role || 'customer'
-  const spent     = totalSpent ?? 0
-  const pct       = Math.min(100, Math.round((spent / VIP_GOAL) * 100))
+  const role = user?.role || 'customer'
+  const spent = totalSpent ?? 0
+  const pct = Math.min(100, Math.round((spent / VIP_GOAL) * 100))
   const remaining = Math.max(0, VIP_GOAL - spent)
-  const showVip   = role === 'vip' || pct >= 100
-  const s         = ROLE_STYLE[showVip ? 'vip' : role] || ROLE_STYLE.customer
+  const showVip = role === 'vip' || pct >= 100
+  const s = ROLE_STYLE[showVip ? 'vip' : role] || ROLE_STYLE.customer
 
   return (
     <div style={{ padding: 32, animation: 'fadeUp 0.3s ease', position: 'relative' }}>
@@ -108,12 +108,12 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       {/* Save success flash */}
       {saved && (
         <div className="relative overflow-hidden"
-        style={{
-          position: 'absolute', inset: 0, zIndex: 10, borderRadius: 20,
-          background: 'rgba(34,197,94,0.07)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          pointerEvents: 'none',
-        }}>
+          style={{
+            position: 'absolute', inset: 0, zIndex: 10, borderRadius: 20,
+            background: 'rgba(34,197,94,0.07)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#22C55E,#16A34A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>✓</div>
           <div style={{ marginTop: 14, fontSize: 18, fontWeight: 800, color: '#16A34A', fontFamily: 'Rajdhani,sans-serif', letterSpacing: 2 }}>SAVED!</div>
         </div>
@@ -184,17 +184,17 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
         )}
       </div>
 
-        {/* ── Telegram Connect Section ───────────────────────────────────── */}
-        <TelegramConnect
-          user={localUser}
-          dark={dark ?? false}
-          onUpdate={(data) => {
-            setLocalUser(prev => ({ ...prev, ...data }))
-            onSaved?.()
-          }}
-          notify={notify}
-        />
-        
+      {/* ── Telegram Connect Section ───────────────────────────────────── */}
+      <TelegramConnect
+        user={localUser}
+        dark={dark ?? false}
+        onUpdate={(data) => {
+          setLocalUser(prev => ({ ...prev, ...data }))
+          onSaved?.()
+        }}
+        notify={notify}
+      />
+
       {/* Role card + VIP progress */}
       <div style={{ marginTop: 28 }}>
         <div style={{ padding: '14px 18px', borderRadius: 12, background: s.bg, border: `1px solid ${s.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -207,7 +207,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 12, color: s.color, fontWeight: 600, opacity: 0.8 }}>{s.note}</div>
-            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} sqent</div>}
+            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} spent</div>}
           </div>
         </div>
 
@@ -245,8 +245,8 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       }}>
         {[
           { label: 'MEMBER SINCE', value: user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—' },
-          { label: 'ACCOUNT ID',   value: `#${user?.id || '—'}` },
-          { label: 'STATUS',       value: user?.role === 'banned' ? 'Banned 🚫' : 'Active ✓' },
+          { label: 'ACCOUNT ID', value: `#${user?.id || '—'}` },
+          { label: 'STATUS', value: user?.role === 'banned' ? 'Banned 🚫' : 'Active ✓' },
         ].map(({ label, value }) => (
           <div key={label} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 10, letterSpacing: 2, color: '#9CA3AF', fontWeight: 700 }}>{label}</div>

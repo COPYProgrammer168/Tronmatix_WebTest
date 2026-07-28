@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminSetting;
+use App\Models\MarqueeMessage;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StaffRequest;
@@ -19,8 +20,9 @@ class SettingsController extends Controller
         // FIX [3]: AdminSetting::allMap() — camelCase, not all_map()
         $settings = AdminSetting::allMap();
         $counts = $this->liveCounts($settings);
+        $marqueeMessages = MarqueeMessage::orderBy('order')->get(['id','route','text_en','text_kh','is_active','order']);
 
-        return view('dashboard.settings', compact('settings', 'counts'));
+        return view('dashboard.settings', compact('settings', 'counts', 'marqueeMessages'));
     }
 
     // ── Save settings ─────────────────────────────────────────────────────────
@@ -341,5 +343,89 @@ class SettingsController extends Controller
 
         return redirect()->route('dashboard.settings')
             ->with('success', "VIP roles reset: {$updated} users demoted to customer.");
+    }
+
+    // ── Marquee messages CRUD ──────────────────────────────────────────────────
+
+    public function marquees(Request $request)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $messages = \App\Models\MarqueeMessage::orderBy('order')->get(['id','route','text_en','text_kh','is_active','order']);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $messages]);
+        }
+
+        return view('dashboard.settings', array_merge(
+            $this->show()->getData(),
+            ['marqueeMessages' => $messages]
+        ));
+    }
+
+    public function storeMarquee(Request $request)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $request->validate([
+            'route'      => 'nullable|string|max:100',
+            'text_en'    => 'required|string|max:500',
+            'text_kh'    => 'required|string|max:500',
+            'is_active'  => 'boolean',
+            'order'      => 'nullable|integer|min:0',
+        ]);
+
+        \App\Models\MarqueeMessage::create([
+            'route'     => $request->input('route') ?: null,
+            'text_en'   => $request->input('text_en'),
+            'text_kh'   => $request->input('text_kh'),
+            'is_active' => $request->boolean('is_active', true),
+            'order'     => (int) ($request->input('order', 0)),
+        ]);
+
+        return redirect()->route('dashboard.settings.marquees')->with('success', 'Marquee message created.');
+    }
+
+    public function updateMarquee(Request $request, $id)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $message = \App\Models\MarqueeMessage::findOrFail($id);
+
+        $request->validate([
+            'route'      => 'nullable|string|max:100',
+            'text_en'    => 'required|string|max:500',
+            'text_kh'    => 'required|string|max:500',
+            'is_active'  => 'boolean',
+            'order'      => 'nullable|integer|min:0',
+        ]);
+
+        $message->update([
+            'route'     => $request->input('route') ?: null,
+            'text_en'   => $request->input('text_en'),
+            'text_kh'   => $request->input('text_kh'),
+            'is_active' => $request->boolean('is_active', true),
+            'order'     => (int) ($request->input('order', 0)),
+        ]);
+
+        return redirect()->route('dashboard.settings.marquees')->with('success', 'Marquee message updated.');
+    }
+
+    public function destroyMarquee(Request $request, $id)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $message = \App\Models\MarqueeMessage::findOrFail($id);
+        $message->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('dashboard.settings.marquees')->with('success', 'Marquee message deleted.');
     }
 }

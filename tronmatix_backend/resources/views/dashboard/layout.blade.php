@@ -5,6 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
+    @php $_storeName = \App\Models\AdminSetting::str('store_name', 'Tronmatix Computer'); @endphp
+    <title>@yield('title', strtoupper(__('dashboard.nav.dashboard'))) — {{ $_storeName }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('tronmatix_theme')||'dark');</script>
 
     {{-- English font --}}
@@ -35,6 +39,7 @@
             --title-size: var(--text-md);
             --heading-size: var(--text-xl);
             --label-size:   var(--text-xs);
+            --label-status:   var(--text-sm);
             --icon-size:    20px;
         }
 
@@ -1125,8 +1130,13 @@
                   <polygon points="54,18 32,54 48,54 44,82 68,46 52,46" fill="url(#lg)"/>
                 </svg>
                 <div>
-                    <div class="brand-name">TRONMATIX</div>
-                    <div class="brand-sub">COMPUTER</div>
+                    @php
+                        $_parts = explode(' ', $_storeName, 2);
+                        $_brand = strtoupper($_parts[0]);
+                        $_sub   = isset($_parts[1]) ? strtoupper($_parts[1]) : 'COMPUTER';
+                    @endphp
+                    <div class="brand-name">{{ $_brand }}</div>
+                    <div class="brand-sub">{{ $_sub }}</div>
                 </div>
             </a>
         </div>
@@ -1514,7 +1524,7 @@
         };
 
         function loadBellAlerts() {
-            fetch('{{ route('dashboard.notifications') }}', {
+            fetch('{{ route("dashboard.notifications") }}', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(r => r.json())
@@ -1763,7 +1773,7 @@
         }
 
         function pollBellDot() {
-            fetch('{{ route('dashboard.notifications') }}', {
+            fetch("{{ route('dashboard.notifications') }}", {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(r => r.json())

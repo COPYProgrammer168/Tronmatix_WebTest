@@ -209,6 +209,56 @@ setTimeout(closeSavePopup, 3500);
         </div>
     </div>
 
+    {{-- ── TELEGRAM MARQUEE ─────────────────────────────────────────────────── --}}
+    <div class="card">
+        <div class="card-header">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div class="s-icon-box" style="background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.25);">📢</div>
+                <div>
+                    <div class="s-card-title">TELEGRAM MARQUEE</div>
+                    <div class="s-card-sub">Edit marquee text shown to users (English & Khmer)</div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding:16px 20px;">
+            @forelse($marqueeMessages as $msg)
+            <form method="POST" action="{{ route('dashboard.settings.marquees.update', $msg->id) }}" style="margin-bottom:16px; padding:16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
+                @csrf @method('PUT')
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div>
+                        <div class="s-sub-label">ROUTE</div>
+                        <input type="text" name="route" value="{{ $msg->route ?? '' }}"
+                               class="s-input" style="margin-top:6px; font-size:13px; color:rgba(255,255,255,0.5);"
+                               placeholder="e.g. /cart or leave empty for all pages">
+                    </div>
+                    <div>
+                        <div class="s-sub-label">ENGLISH TEXT</div>
+                        <textarea name="text_en" rows="2" class="s-input" style="margin-top:6px; resize:vertical;">{{ $msg->text_en }}</textarea>
+                    </div>
+                    <div>
+                        <div class="s-sub-label">KHMER TEXT</div>
+                        <textarea name="text_kh" rows="2" class="s-input" style="margin-top:6px; resize:vertical;">{{ $msg->text_kh }}</textarea>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button type="submit" style="
+                            padding:8px 20px; border-radius:8px; border:none; cursor:pointer;
+                            background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
+                            font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                            letter-spacing:1px; transition:all .2s;
+                        " onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+                            💾 SAVE
+                        </button>
+                    </div>
+                </div>
+            </form>
+            @empty
+            <div style="text-align:center; padding:20px; color:rgba(255,255,255,0.3); font-size: var(--title-size);">
+                No marquee messages yet.
+            </div>
+            @endforelse
+        </div>
+    </div>
+
 </div>
 
 {{-- ════════════════════════ RIGHT COLUMN ═══════════════════════════════════ --}}
@@ -312,9 +362,6 @@ setTimeout(closeSavePopup, 3500);
                            value="{{ sval($s,'order_auto_cancel_hours','0') }}"
                            min="0" max="720" class="s-num-input">
                     <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); white-space:nowrap;">hrs</span>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -358,8 +405,6 @@ setTimeout(closeSavePopup, 3500);
             </div>
         </div>
     </div>
-</div>
-</div>{{-- end grid --}}
 
     {{-- ── SAVE / RESET buttons ─────────────────────────────────────────────── --}}
     <div style="display:flex; gap:12px; margin-top:20px;">
@@ -388,7 +433,8 @@ setTimeout(closeSavePopup, 3500);
             🔄 RESET
         </a>
     </div>
-</div>
+    </div>
+</div> <!-- close grid -->
 </form>
 
 {{-- ════════════════════════════════════════════════════════════════════════════
@@ -486,7 +532,7 @@ setTimeout(closeSavePopup, 3500);
     </div>
 
     {{-- Permission matrix card --}}
-    <div class="card" style="{{ !$canEditPerms ? 'opacity:0.75; pointer-events:none;' : '' }}">
+    <div class="card" style="{{ !$canEditPerms ? 'opacity:0.75; pointer-events:none;' : '' }}; overflow: visible;">
         <form method="POST" action="{{ route('dashboard.settings.permissions') }}" id="perms-form">
             @csrf @method('PUT')
 
@@ -666,10 +712,10 @@ setTimeout(closeSavePopup, 3500);
             <div>
                 <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1px; color:{{ $color }};">{{ $label }}</div>
                 <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:2px;">{{ $desc }}</div>
-            </div>
         </div>
-        @endforeach
     </div>
+
+</div>
 
     {{-- ── VIP MANAGEMENT ──────────────────────────────────────────────────────── --}}
     <div class="card" style="margin-top:20px;">

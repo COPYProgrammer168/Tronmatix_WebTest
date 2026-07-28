@@ -37,7 +37,7 @@
                     style="
                     display:inline-flex; align-items:center; gap:6px;
                     padding:8px 16px; border-radius:30px; font-family:Rajdhani,sans-serif;
-                    font-size: var(--title-size); font-weight:700; letter-spacing:1px; text-decoration:none;
+                    font-size: var(--text-sm); font-weight:700; letter-spacing:1px; text-decoration:none;
                     transition:all 0.2s;
                     background: {{ $isActive ? $tab['color'] : 'var(--hover-bg)' }};
                     color:      {{ $isActive ? $tab['dark'] : 'var(--text-muted)' }};
@@ -121,7 +121,7 @@
                             <th>ORDER ID</th>
                             <th>CUSTOMER</th>
                             <th>SHIPPING TO</th>
-                            <th>ITEMS</th>
+                            <th>ITEMS PRODUCTS</th>
                             <th>SUBTOTAL</th>
                             <th>DISCOUNT</th>
                             <th>TOTAL</th>
@@ -163,6 +163,9 @@
                                 {{-- CUSTOMER --}}
                                 <td style="font-weight:600; color:var(--text); white-space:nowrap;">
                                     {{ $order->user?->username ?? 'Guest' }}
+                                    @if(($order->user?->role ?? '') === 'vip')
+                                        <span style="font-size:10px; font-weight:800; color:#fff; background:#F97316; padding:1px 6px; border-radius:3px; white-space:nowrap; line-height:1.2; margin-left:4px;">⭐ VIP</span>
+                                    @endif
                                 </td>
 
                                 {{-- SHIPPING TO --}}
@@ -210,7 +213,7 @@
                                             </div>
                                             <div style="min-width:0;">
                                                 <div
-                                                    style="font-size:var(--text-xs); font-weight:600; color:var(--text);
+                                                    style="font-size:var(--text-md); font-weight:600; color:var(--text);
                                                             white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
                                                     {{ $firstItem->name }}
                                                     <span

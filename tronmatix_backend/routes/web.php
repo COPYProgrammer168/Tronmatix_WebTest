@@ -10,6 +10,7 @@ use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Dashboard\StaffController;
+use App\Http\Controllers\Dashboard\DeliveryProviderController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffRequestController;
@@ -118,6 +119,21 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/settings/reset-vip', [SettingsController::class, 'resetVipRoles'])->name('settings.reset-vip');
         Route::get('/settings/reset', [SettingsController::class, 'reset'])->name('settings.reset');
         Route::put('/settings/permissions', [SettingsController::class, 'updatePermissions'])->name('settings.permissions');
+
+        // Marquee messages CRUD
+        Route::get('/settings/marquees', [SettingsController::class, 'marquees'])->name('settings.marquees');
+        Route::post('/settings/marquees', [SettingsController::class, 'storeMarquee'])->name('settings.marquees.store');
+        Route::put('/settings/marquees/{id}', [SettingsController::class, 'updateMarquee'])->name('settings.marquees.update');
+        Route::delete('/settings/marquees/{id}', [SettingsController::class, 'destroyMarquee'])->name('settings.marquees.destroy');
+
+        // Delivery providers
+        Route::get('/delivery-providers', [DeliveryProviderController::class, 'index'])->name('delivery-providers.index');
+        Route::get('/delivery-providers/create', [DeliveryProviderController::class, 'create'])->name('delivery-providers.create');
+        Route::post('/delivery-providers', [DeliveryProviderController::class, 'store'])->name('delivery-providers.store');
+        Route::get('/delivery-providers/{deliveryProvider}/edit', [DeliveryProviderController::class, 'edit'])->name('delivery-providers.edit');
+        Route::put('/delivery-providers/{deliveryProvider}', [DeliveryProviderController::class, 'update'])->name('delivery-providers.update');
+        Route::patch('/delivery-providers/{deliveryProvider}/toggle', [DeliveryProviderController::class, 'toggleStatus'])->name('delivery-providers.toggle');
+        Route::delete('/delivery-providers/{deliveryProvider}', [DeliveryProviderController::class, 'destroy'])->name('delivery-providers.destroy');
 
         // Staff management — StaffController::assertAdmin() enforces role
         Route::get('/staff', [StaffController::class, 'index'])->name('staff');

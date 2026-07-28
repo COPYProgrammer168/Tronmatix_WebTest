@@ -38,8 +38,12 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,          // 50 customers with lat/lng locations
             UserLocationSeeder::class,      // after UserSeeder
             DiscountSeeder::class,          // Populate discounts first
+            DeliveryZoneSeeder::class,
+            DeliveryProviderSeeder::class,
+            ProvinceSeeder::class,
             OrderSeeder::class,             // 120+ orders with map coordinates
             DeliveryScheduleSeeder::class,
+            MarqueeSeeder::class,           // Telegram connect marquee messages
         ]);
     }
 }

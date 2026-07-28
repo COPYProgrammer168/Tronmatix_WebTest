@@ -169,7 +169,7 @@
 @if(isset($top_discount_codes) && $top_discount_codes->isNotEmpty())
 <div class="card" style="margin-bottom:24px;">
     <div class="card-header">
-        <span class="card-title">🏷️ TOP DISCOUNT CODES THIS MONTH</span>
+            <span class="card-title">🏷️ TOP DISCOUNT CODES THIS MONTH ({{ $top_discount_codes->count() }})</span>
         <a href="{{ route('dashboard.discounts') }}" class="btn btn-outline btn-sm">VIEW ALL</a>
     </div>
     <div class="table-wrap">
@@ -298,7 +298,7 @@
 
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🏆 TOP PRODUCTS</span>
+            <span class="card-title">🏆 TOP PRODUCTS ({{ $top_products->count() }})</span>
             <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm">VIEW ALL</a>
         </div>
         <div class="table-wrap">
@@ -341,7 +341,7 @@
 
     <div class="card">
         <div class="card-header">
-            <span class="card-title">⚠ LOW STOCK</span>
+            <span class="card-title">⚠ LOW STOCK ({{ $low_stock->count() }})</span>
             <a href="{{ route('dashboard.products', ['stock'=>'low']) }}" class="btn btn-outline btn-sm">VIEW ALL</a>
         </div>
         <div class="table-wrap">
@@ -393,6 +393,7 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
 // ── Theme-aware colour helpers ────────────────────────────────────────────────
 function isLight() {
@@ -425,6 +426,20 @@ function applyChartDefaults() {
     Chart.defaults.plugins.tooltip.bodyColor       = c.bodyClr;
 }
 applyChartDefaults();
+
+// ── Register datalabels plugin globally ───────────────────────────────────
+Chart.register(ChartDataLabels);
+const dlBase = {
+    color: isLight() ? '#0F172A' : 'rgba(255,255,255,0.9)',
+    font: { weight: '600', size: 10 },
+    anchor: 'end',
+    align: 'end',
+    offset: 1,
+    clamp: true,
+    clip: false,
+};
+const dlDollar = { ...dlBase, formatter: function(v) { return v === 0 ? '' : '$' + v.toLocaleString(); } };
+const dlNumber = { ...dlBase, formatter: function(v) { return v === 0 ? '' : v.toLocaleString(); } };
 
 // ── Data from Laravel ─────────────────────────────────────────────────────────
 const monthDailyLabels   = @json($monthDailyLabels);
@@ -465,7 +480,7 @@ const revenueChart = new Chart(rCtx, {
         borderColor:orange, borderWidth:2.5, pointBackgroundColor:orange,
         pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         fill:true, backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), tension:0.4 }] },
-    options: { responsive:true, plugins:{ legend:{display:false},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
@@ -478,7 +493,7 @@ const ordersChart = new Chart(oCtx, {
     data: { labels: monthDailyLabels, datasets: [{ label:'Orders', data:monthOrdersDaily,
         backgroundColor:makeGradient(oCtx, orangeMid,'rgba(249,115,22,0.15)'),
         borderColor:orange, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
-    options: { responsive:true, plugins:{legend:{display:false}},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });
@@ -491,7 +506,7 @@ const dailyChart = new Chart(dCtx, {
         borderColor:blue, borderWidth:2.5, pointBackgroundColor:blue,
         pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
         fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
-    options: { responsive:true, plugins:{ legend:{display:false},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{ callback: v => '$'+v.toLocaleString() }}}}
@@ -504,7 +519,7 @@ const usersChart = new Chart(uCtx, {
     data: { labels: monthlySalesLabels, datasets: [{ label:'New Users', data:monthlyUsers,
         backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
-    options: { responsive:true, plugins:{legend:{display:false}},
+    options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
             ticks:{stepSize:1}}}}
 });

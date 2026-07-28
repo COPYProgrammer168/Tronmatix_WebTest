@@ -6,6 +6,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar";
 import ProductCard from "../components/ProductCard";
+import TelegramConnectMarquee from "../components/TelegramConnectMarquee";
 import { useTheme } from "../context/ThemeContext";
 import axios from "../lib/axios";
 import { useLang } from "../context/LanguageContext";
@@ -90,7 +91,7 @@ export default function HomePage() {
 
   // Font stacks that auto-switch based on language
   const headingFont = isKhmer
-    ? "Kh_Jrung_Thom, Khmer OS, sans-serif"
+    ? "Kdam Thmor Pro, Khmer OS, sans-serif"
     : "HurstBagod, Rajdhani, sans-serif";
   const bodyFont = isKhmer
     ? "Kdam Thmor Pro, Khmer OS, sans-serif"
@@ -310,7 +311,7 @@ export default function HomePage() {
   }
 `}</style>
 
-      <div className="w-full mb-8">
+      <div className="w-full mb-2">
         <div
           className="banner-wrap relative overflow-hidden"
           style={{
@@ -328,9 +329,9 @@ export default function HomePage() {
             const detailLink = banner.product_id
               ? `/product/${banner.product_id}`
               : banner.link ||
-                (banner.category
-                  ? `/category/${banner.category.toLowerCase()}`
-                  : `/category/search?q=${encodeURIComponent((banner.title || "").replace("\n", " "))}`);
+              (banner.category
+                ? `/category/${banner.category.toLowerCase()}`
+                : `/category/search?q=${encodeURIComponent((banner.title || "").replace("\n", " "))}`);
 
             return (
               <div
@@ -361,7 +362,7 @@ export default function HomePage() {
                     src={imgUrl}
                     alt={banner.title}
                     className="absolute inset-0 w-full h-full object-cover banner-media"
-                    style={{ opacity: hasVideo ? 0.25 : 0.7 }}
+                    style={{ opacity: hasVideo ? 0.25 : 1 }}
                   />
                 )}
 
@@ -370,7 +371,7 @@ export default function HomePage() {
                   className="absolute inset-0 hidden lg:block"
                   style={{
                     background:
-                      "linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 100%)",
+                      "linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.10) 100%)",
                   }}
                 />
 
@@ -382,17 +383,20 @@ export default function HomePage() {
 
                 {/* ── Banner Content (Desktop only) ──────────────────────────────────── */}
                 <div className="absolute inset-0 z-10 hidden lg:flex items-center px-12 pointer-events-none">
-                  <div className="max-w-2xl text-white pointer-events-auto">
+                  <div className="max-w-6xl pl-20 text-white pointer-events-auto">
                     {banner.badge && (
                       <div className="inline-block px-3 py-1 mb-3 text-xs font-black tracking-widest text-orange-500 bg-white/95 rounded-full">
                         {banner.badge}
                       </div>
                     )}
                     <h2
-                      className="mb-3 font-black tracking-tighter"
+                      className="mb-3 font-black tracking-tighter banner-title"
                       style={{
-                        fontSize: "clamp(28px, 5vw, 60px)",
-                        lineHeight: 1.1,
+                        fontFamily: headingFont,
+                        fontSize: isKhmer ? "clamp(36px, 4vw, 50px)" : "clamp(50px, 5vw, 60px)",
+                        lineHeight: isKhmer ? 1.35 : 1.1,
+                        fontWeight: 500,
+                        letterSpacing: .5,
                       }}
                     >
                       {banner.title.split("\n").map((line, i) => (
@@ -400,7 +404,7 @@ export default function HomePage() {
                       ))}
                     </h2>
                     <p
-                      className="mb-10 font-medium opacity-90 tracking-tighter"
+                      className="mb-10 font-semibold opacity-90 tracking-tighte "
                       style={{ fontSize: "clamp(16px, 2vw, 24px)" }}
                     >
                       {banner.subtitle}
@@ -469,6 +473,8 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      <TelegramConnectMarquee />
 
       <div className="max-w-[1280px] mx-auto px-4 pt-2 pb-2">
         {/* NEW ARRIVAL heading */}
@@ -655,19 +661,19 @@ export default function HomePage() {
               >
                 {isLoading
                   ? Array(6).fill(null).map((_, i) => (
-                      <SwiperSlide key={i} style={{ width: 210 }}>
-                        <div className="rounded-xl skeleton-shimmer" style={{
-                          width: 210, aspectRatio: "1 / 1",
-                          "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                          "--sk-shine": dark ? "#374151" : "#e9eaec",
-                        }} />
-                      </SwiperSlide>
-                    ))
+                    <SwiperSlide key={i} style={{ width: 210 }}>
+                      <div className="rounded-xl skeleton-shimmer" style={{
+                        width: 210, aspectRatio: "1 / 1",
+                        "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                        "--sk-shine": dark ? "#374151" : "#e9eaec",
+                      }} />
+                    </SwiperSlide>
+                  ))
                   : catItems.map((p, i) => (
-                      <SwiperSlide key={p.id || i} style={{ width: 210 }}>
-                        <ProductCard product={p} />
-                      </SwiperSlide>
-                    ))}
+                    <SwiperSlide key={p.id || i} style={{ width: 210 }}>
+                      <ProductCard product={p} />
+                    </SwiperSlide>
+                  ))}
               </Swiper>
             )}
 

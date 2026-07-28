@@ -180,12 +180,12 @@ export default function ProductCard({ product }) {
   const discountedPrice =
     bestDiscount && numPrice
       ? Math.max(
-          0,
-          numPrice -
-            (bestDiscount.type === "percentage"
-              ? (numPrice * bestDiscount.value) / 100
-              : Math.min(bestDiscount.value, numPrice)),
-        )
+        0,
+        numPrice -
+        (bestDiscount.type === "percentage"
+          ? (numPrice * bestDiscount.value) / 100
+          : Math.min(bestDiscount.value, numPrice)),
+      )
       : null;
 
   // Product badge (set from admin dashboard)
@@ -199,7 +199,7 @@ export default function ProductCard({ product }) {
 
   // Detect "Ask Price" state
   const isAskPrice = product.price === "$$$" || (product.stock ?? 99) <= 0;
-  const telegramLink = `https://t.me/smoz_mes?text=${encodeURIComponent("Hello, I would like to ask about the price of: " + product.name)}`;
+  const telegramLink = `https://t.me/KJ_Jen?text=${encodeURIComponent("Hello, I would like to ask about the price of: " + product.name)}`;
 
   return (
     <div
@@ -260,25 +260,61 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
+        {/* Featured / Hot item flags */}
+        {(product.is_featured || product.is_hot) && (
+          <div className="flex flex-col gap-1">
+            {product.is_featured && (
+              <span className="flex items-center gap-1 font-black rounded-full shadow-lg"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 0.5,
+                  padding: "2px 8px",
+                  background: "rgba(234,179,8,0.18)",
+                  border: "1.5px solid rgba(234,179,8,0.55)",
+                  color: "#eab308",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                  lineHeight: 1.2,
+                }}>
+                FEATURED
+              </span>
+            )}
+            {product.is_hot && (
+              <span className="flex items-center gap-1 font-black rounded-full shadow-lg"
+                style={{
+                  fontSize: isKhmer ? 10 : 12,
+                  letterSpacing: 0.5,
+                  padding: "2px 8px",
+                  background: "#EE8100",
+                  border: "1.5px solid #EE8100",
+                  color: "white",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                  lineHeight: 1.2,
+                }}>
+                HOT PRICE
+              </span>
+            )}
+          </div>
+        )}
+
         {/* One badge per discount that applies to this product */}
         {itemDiscounts.map((d, idx) => {
           const bc = d.badge_config;
           const bgStyle = bc
             ? {
-                background: bc.bg || "rgba(249,115,22,0.18)",
-                border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
-              }
+              background: bc.bg || "rgba(249,115,22,0.18)",
+              border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
+            }
             : d.source === "public"
               ? {
-                  background:
-                    "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
-                  border: "none",
-                }
+                background:
+                  "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                border: "none",
+              }
               : {
-                  background:
-                    "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
-                  border: "none",
-                };
+                background:
+                  "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+                border: "none",
+              };
           const badgeColor = bc ? bc.color || "#F97316" : "#fff";
           const badgeIcon = bc ? bc.icon || "🏷" : "🏷";
           const badgeText = bc
@@ -385,9 +421,9 @@ export default function ProductCard({ product }) {
         <Link to={`/product/${product.id}`} className="flex flex-col">
           {/* Fixed-height title zone (2 lines max, clamped) — keeps price/button aligned across every card */}
           <h3
-            className="font-bold mb-1 hover:text-primary transition-colors"
+            className="font-bold mb-1 transition-colors"
             style={{
-              color: text,
+              color: hovered ? "#F97316" : text,
               letterSpacing: isKhmer ? 0 : undefined,
               fontSize: isKhmer ? 18 : 20,
               lineHeight: 1.25,
@@ -400,28 +436,28 @@ export default function ProductCard({ product }) {
           >
             {product.name}
           </h3>
-          {/* Caption \u2014 shows full text; minHeight reserves space for cards without caption */}
-          <p
-            className="mb-2"
-            style={{
-              fontSize: isKhmer ? 13 : 15,
-              fontWeight: isKhmer ? 500 : 600,
-              color: text,
-              opacity: 0.6,
-              minHeight: "1.3em",
-              lineHeight: 1.3,
-              wordBreak: "break-word",
-            }}
-          >
-            {product.caption || "\u00A0"}
-          </p>
+          {product.caption && (
+            <p
+              className="mb-2"
+              style={{
+                fontSize: isKhmer ? 13 : 15,
+                fontWeight: isKhmer ? 500 : 600,
+                color: text,
+                opacity: 0.6,
+                lineHeight: 1.3,
+                wordBreak: "break-word",
+              }}
+            >
+              {product.caption}
+            </p>
+          )}
         </Link>
 
         {/* Fixed-height price block — reserves room for the tallest case (discount price + strike-through row)
             so ADD TO CART stays aligned whether or not this card has a discount */}
         <div
           className="flex flex-col items-center justify-end mb-3"
-          style={{ minHeight: 56 }}
+          style={{ minHeight: 20 }}
         >
           {isAskPrice ? (
             <div

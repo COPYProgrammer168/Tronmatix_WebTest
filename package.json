@@ -2,13 +2,14 @@
   "name": "tronmatix",
   "private": true,
   "scripts": {
-    "telegram:poll": "cd tronmatix_backend && php artisan telegram:poll --timeout=25 --limit=10",
+    "telegram:poll": "cd tronmatix_backend && php artisan telegram:poll --timeout=5 --limit=10",
     "telegram:poll:daemon": "cd tronmatix_backend && while true; do php artisan telegram:poll --timeout=25 --limit=10; sleep 1; done",
     "queue": "cd tronmatix_backend && php artisan queue:listen --tries=1",
     "pail": "cd tronmatix_backend && php artisan pail --timeout=0",
     "dev:frontend": "cd tronmatix_frontend && npm run dev",
     "dev:backend": "cd tronmatix_backend && php artisan serve",
-    "dev": "concurrently -n backend,frontend -c \"#93c5fd,#34d399\" \"npm run dev:backend\" \"npm run dev:frontend\""
+    "dev": "concurrently -n backend,poller,frontend -c \"#93c5fd,#f59e0b,#34d399\" \"npm run dev:backend\" \"npm run telegram:poll\" \"npm run dev:frontend\"",
+    "dev:lite": "concurrently -n backend,frontend -c \"#93c5fd,#34d399\" \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\TelegramAuthController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\TelegramBotController;
 use App\Http\Controllers\Api\TelegramController;
+use App\Http\Controllers\Api\DeliveryController;
+use App\Http\Controllers\Api\MarqueeController;
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\StaffAuthController;
@@ -42,6 +44,9 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/videos', [VideoController::class, 'index']);
+Route::get('/marquees', [MarqueeController::class, 'index']);
+Route::get('/provinces', [DeliveryController::class, 'provinces']);
+Route::get('/delivery-providers', [DeliveryController::class, 'deliveryProviders']);
 
 // Staff product management — gated by staff role middleware inside the protected block later
 
