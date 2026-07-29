@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Scrollbar } from "swiper/modules";
+import { Scrollbar } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar";
@@ -422,7 +422,6 @@ export default function HomePage() {
               </div>
             );
           })}
-          {/* ── Prev / Next buttons ─────────────────────────────────────── */}
           {banners.length > 1 && (
             <>
               <button
@@ -455,7 +454,6 @@ export default function HomePage() {
               </button>
             </>
           )}
-
           {/* ── Dot indicators ─────────────────────────────────────────── */}
           {banners.length > 1 && (
             <div
@@ -557,15 +555,12 @@ export default function HomePage() {
           >
             <style>{`.new-prod-scroll::-webkit-scrollbar{display:none}`}</style>
             <Swiper
-              modules={[Navigation, Scrollbar]}
+              modules={[Scrollbar]}
               spaceBetween={16}
               slidesPerView="auto"
-              navigation
               scrollbar={{ draggable: true, hide: false }}
               style={{
                 paddingBottom: 8,
-                "--swiper-navigation-size": "20px",
-                "--swiper-navigation-color": "#fff",
                 "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
                 "--swiper-scrollbar-drag-bg-color": "#F97316",
               }}
@@ -645,15 +640,12 @@ export default function HomePage() {
             {/* Product rows */}
             {(isLoading || catItems.length > 0) && (
               <Swiper
-                modules={[Navigation, Scrollbar]}
+                modules={[Scrollbar]}
                 spaceBetween={16}
                 slidesPerView="auto"
-                navigation
                 scrollbar={{ draggable: true, hide: false }}
                 style={{
                   paddingBottom: 8,
-                  "--swiper-navigation-size": "20px",
-                  "--swiper-navigation-color": "#fff",
                   "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
                   "--swiper-scrollbar-drag-bg-color": "#F97316",
                 }}
@@ -1061,24 +1053,6 @@ function VideoRow({ videos, label, isKhmer, dark }) {
         >
           {label}
         </h3>
-        {videos.length > 1 && (
-          <div className="hidden lg:flex gap-1">
-            {["‹", "›"].map((a, i) => (
-              <button
-                key={i}
-                onClick={() =>
-                  scrollRef.current?.scrollBy({
-                    left: i === 0 ? -400 : 400,
-                    behavior: "smooth",
-                  })
-                }
-                className="w-8 h-8 flex items-center justify-center font-bold rounded-full transition-colors bg-primary text-white hover:bg-orange-600"
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       <div

@@ -23,7 +23,7 @@ return [
         'profile' => 'ប្រវត្តិរូប',
         'feedback' => 'មតិកែលម្អ',
         'logout' => 'ចេញពីប្រព័ន្ធ',
-        'deliveryProviders' => 'អ្នកដឹកជញ្ជូន',
+        'deliveryProviders' => 'ការដឹកជញ្ជូន',
     ],
 
     // ── Dashboard stats ─────────────────────────────────────────────────────
@@ -116,9 +116,9 @@ return [
 
     // ── Form labels ─────────────────────────────────────────────────────────
     'form' => [
-        'deliveryProvider' => 'អ្នកដឹកជញ្ជូន',
+        'deliveryProvider' => 'ដឹកជញ្ជូន',
         'deliveryZone' => 'ជំនិតការដឹក',
-        'providerName' => 'ឈ្មោះអ្នកដឹក',
+        'providerName' => 'ឈ្មោះដឹកជញ្ជូន',
         'fee' => 'ថ្លៃ ($)',
         'estimatedTime' => 'ពេលវេលាដំណើរការ',
         'logo' => 'ឡូហ្គ់',
@@ -178,9 +178,9 @@ return [
 
     // ── Buttons ─────────────────────────────────────────────────────────────
     'btn' => [
-        'saveProvider' => 'រក្សាទុកអ្នកដឹក',
-        'updateProvider' => 'អាប់ដេតអ្នកដឹក',
-        'createProvider' => 'បន្ថែមអ្នកដឹក',
+        'saveProvider' => 'រក្សាទុកដឹកជញ្ជូន',
+        'updateProvider' => 'អាប់ដេតដឹកជញ្ជូន',
+        'createProvider' => 'បន្ថែមដឹកជញ្ជូន',
         'addProvider' => 'បន្ថែមអ្នកផ្ដល់សេវា',
         'save' => 'រក្សាទុក',
         'cancel' => 'បោះបង់',

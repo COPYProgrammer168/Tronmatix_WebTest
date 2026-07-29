@@ -22,7 +22,7 @@ return [
         'profile' => 'Profile',
         'feedback' => 'Feedback',
         'logout' => 'Logout',
-        'deliveryProviders' => 'Delivery Providers',
+        'deliveryProviders' => 'Delivery',
     ],
 
     'stats' => [

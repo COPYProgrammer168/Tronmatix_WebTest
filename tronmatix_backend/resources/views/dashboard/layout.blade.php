@@ -32,7 +32,7 @@
             --lh-kh: 1.5;   /* Khmer needs more line height for diacritics */
 
             /* ── English type scale (default) ─────────────────────────────────── */
-            --text-nav:  22px;   /* nav items  */
+            --text-nav:  20px;   /* nav items  */
             --text-xs:   14px;   /* badges, faint labels          */
             --text-sm:   16px;   /* table cells, secondary text   */
             --text-base: 17px;   /* body, buttons      */
@@ -290,7 +290,7 @@
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 6px;
             padding: 8px 22px;
             color: var(--text-muted);
             text-decoration: none;

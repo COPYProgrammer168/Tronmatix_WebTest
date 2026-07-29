@@ -634,7 +634,7 @@
                 <form method="POST" action="{{ route('dashboard.settings.permissions') }}" id="perms-form">
                     @csrf @method('PUT')
 
-                    <div style="overflow-x:auto; display:flex; justify-content:center;">
+                    <div class="perm-table-wrapper" style="overflow-x:auto; display:flex; justify-content:center; width:100%;">
                         <table style="border-collapse:collapse;">
                             <thead>
                                 <tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
@@ -691,11 +691,12 @@
                                             </div>
                                         </td>
                                         {{-- Superadmin always ✅ --}}
-                                        <td style="padding:14px; text-align:center;">
+                                        <td style="padding:14px; text-align:center; vertical-align:middle;">
                                             <span
                                                 style="display:inline-flex; align-items:center; justify-content:center;
                                              width:28px; height:28px; border-radius:8px;
-                                             background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3);">
+                                             background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3);
+                                             margin: 0 auto;">
                                                 <svg width="14" height="14" fill="none" stroke="#F97316"
                                                     stroke-width="2.5" viewBox="0 0 24 24">
                                                     <polyline points="20 6 9 17 4 12" />
@@ -722,7 +723,7 @@
                                                     in_array($roleKey, ['delivery', 'developer']) &&
                                                     in_array($featureKey, ['settings', 'staff', 'users']);
                                             @endphp
-                                            <td style="padding:14px; text-align:center;">
+                                            <td style="padding:14px; text-align:center; vertical-align:middle;">
                                                 @if ($lockedOn)
                                                     {{-- Hidden forced value: 1 --}}
                                                     <input type="hidden"
@@ -731,7 +732,8 @@
                                                     <span
                                                         style="display:inline-flex; align-items:center; justify-content:center;
                                                  width:28px; height:28px; border-radius:8px;
-                                                 background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3);"
+                                                 background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3);
+                                                 margin: 0 auto; display: flex;"
                                                         title="Admin always has this permission">
                                                         <svg width="14" height="14" fill="none"
                                                             stroke="#F97316" stroke-width="2.5" viewBox="0 0 24 24">
@@ -746,7 +748,8 @@
                                                     <span
                                                         style="display:inline-flex; align-items:center; justify-content:center;
                                                  width:28px; height:28px; border-radius:8px;
-                                                 background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2);"
+                                                 background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2);
+                                                 margin: 0 auto; display: flex;"
                                                         title="This role cannot access this page">
                                                         <svg width="14" height="14" fill="none"
                                                             stroke="rgba(239,68,68,0.5)" stroke-width="2.5"
@@ -759,14 +762,17 @@
                                                     </span>
                                                 @else
                                                     <label class="perm-toggle"
-                                                        style="cursor:{{ $canEditPerms ? 'pointer' : 'not-allowed' }};">
+                                                        style="cursor:{{ $canEditPerms ? 'pointer' : 'not-allowed' }};
+                                                           display: flex; align-items: center; justify-content: center;
+                                                           margin: 0 auto;">
                                                         <input type="checkbox"
                                                             name="perm_{{ $roleKey }}_{{ $featureKey }}"
                                                             value="1" {{ $checked ? 'checked' : '' }}
                                                             {{ !$canEditPerms ? 'disabled' : '' }}
                                                             onchange="markPermDirty()" style="display:none;" />
                                                         <span class="perm-check {{ $checked ? 'perm-on' : 'perm-off' }}"
-                                                            data-color="{{ $roleMeta['color'] }}"></span>
+                                                            data-color="{{ $roleMeta['color'] }}"
+                                                            style="display: inline-flex; align-items: center; justify-content: center;"></span>
                                                     </label>
                                                 @endif
                                             </td>
@@ -1258,8 +1264,15 @@
 
         <style>
             /* ── Permission toggle checkboxes ───────────────────────────────────────── */
+            .perm-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;
+            }
+
             .perm-check {
-                display: inline-flex;
+                display: flex;
                 align-items: center;
                 justify-content: center;
                 width: 28px;
@@ -1267,6 +1280,7 @@
                 border-radius: 8px;
                 transition: background .18s, border-color .18s, transform .15s;
                 --perm-color: #a78bfa;
+                margin: 0 auto;
             }
 
             .perm-check.perm-on {
@@ -1309,10 +1323,21 @@
             }
 
             /* Settings cards stack on mobile */
+            /* ── Permission matrix responsive ────────────────────────────── */
             @media (max-width: 700px) {
+                .perm-table-wrapper {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
 
+                .perm-table-wrapper table {
+                    min-width: 480px;
+                }
+
+                /* Stack the settings cards vertically on small screens */
                 div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"],
                 div[style*="display:grid"][style*="grid-template-columns: 1fr 1fr"] {
+                    grid-template-columns: 1fr;
                     grid-template-columns: 1fr !important;
                 }
             }

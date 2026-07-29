@@ -2,13 +2,15 @@ import { useAuth } from '../context/AuthContext'
 import { Link, useLocation } from 'react-router-dom'
 import { useLang } from '../context/LanguageContext'
 import axiosClient from '../lib/axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function TelegramConnectMarquee() {
   const { user } = useAuth()
   const { isKhmer } = useLang()
   const location = useLocation()
   const [text, setText] = useState(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const trackRef = useRef(null)
 
   if (!user || user.telegram_connected) return null
 
@@ -24,6 +26,19 @@ export default function TelegramConnectMarquee() {
       .catch(() => {})
   }, [location.pathname, isKhmer])
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const togglePause = () => {
+    if (!trackRef.current) return
+    const current = trackRef.current.style.animationPlayState
+    trackRef.current.style.animationPlayState = current === 'paused' ? 'running' : 'paused'
+  }
+
   const fontFamily = isKhmer
     ? "Kdam Thmor Pro, Rajdhani, sans-serif"
     : undefined
@@ -31,26 +46,30 @@ export default function TelegramConnectMarquee() {
   return (
     <Link
       to="/profile"
-      className="block w-full overflow-hidden cursor-pointer"
+      className="block w-full overflow-hidden cursor-pointer select-none"
       style={{
         background: "rgba(249,115,22,0.08)",
         borderBottom: "1px solid rgba(249,115,22,0.18)",
-        padding: "10px 0",
+        padding: isMobile ? "8px 0" : "10px 0",
       }}
     >
       <div
+        ref={trackRef}
         className="flex whitespace-nowrap"
         style={{
-          animation: "marqueeScroll 28s linear infinite",
+          animation: `marqueeScroll ${isMobile ? 36 : 28}s linear infinite`,
           width: "max-content",
         }}
         onMouseEnter={(e) => (e.currentTarget.style.animationPlayState = 'paused')}
         onMouseLeave={(e) => (e.currentTarget.style.animationPlayState = 'running')}
+        onClick={togglePause}
+        role="marquee"
+        aria-label={text || 'Telegram connect notice'}
       >
         <span
           aria-hidden="false"
           style={{
-            fontSize: 14,
+            fontSize: isMobile ? 13 : 14,
             fontWeight: 600,
             color: "#F97316",
             fontFamily,
@@ -62,7 +81,7 @@ export default function TelegramConnectMarquee() {
         <span
           aria-hidden="true"
           style={{
-            fontSize: 14,
+            fontSize: isMobile ? 13 : 14,
             fontWeight: 600,
             color: "#F97316",
             fontFamily,
@@ -79,7 +98,7 @@ export default function TelegramConnectMarquee() {
           100% { transform: translateX(0%); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .telegram-marquee-track {
+          .marquee-track {
             animation: none !important;
           }
         }
