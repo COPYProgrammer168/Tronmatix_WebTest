@@ -120,7 +120,7 @@ class ChatController extends Controller
         return array_values($cleaned);
     }
 
-    // ── Call Google Gemini API ────────────────────────────────────────────────
+    // ── Call Groq API (LLaMA via OpenAI-compatible endpoint) ──────────────────
 
     private function callGroq(string $userMessage, array $history): string
     {
@@ -167,7 +167,14 @@ PROMPT;
                 'content' => $userMessage,
             ];
 
-            $response = Http::withHeaders([
+            $cacertPath = storage_path('cacert.pem');
+            $httpOptions = [];
+            if (file_exists($cacertPath)) {
+                $httpOptions['verify'] = $cacertPath;
+            }
+
+            $response = Http::withOptions($httpOptions)
+                ->withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
             ])->timeout(30)->post('https://api.groq.com/openai/v1/chat/completions', [

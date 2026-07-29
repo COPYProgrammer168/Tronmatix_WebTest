@@ -355,7 +355,7 @@ export default function SupportChat() {
                   width: 7, height: 7, borderRadius: '50%', background: '#4ade80',
                   animation: 'pulse 2s infinite',
                 }} />
-                <span style={{ color: '#4ade80', fontSize: 11 }}>Online · Powered by Gemin AI</span>
+                <span style={{ color: '#4ade80', fontSize: 11 }}>Online · Powered by AI</span>
               </div>
             </div>
           </div>
@@ -493,7 +493,7 @@ export default function SupportChat() {
           paddingBottom: 8, background: '#fafafa',
           letterSpacing: 0.3,
         }}>
-          Powered by Google Gemini AI · TRONMATIX COMPUTER
+          Powered by AI · TRONMATIX COMPUTER
         </div>
       </div>
 

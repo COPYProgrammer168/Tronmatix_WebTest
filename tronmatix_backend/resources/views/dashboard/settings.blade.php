@@ -493,6 +493,7 @@
                             </div>
                         </div>
                     </div> <!-- close grid -->
+                </div>
         </form>
 
         {{-- ════════════════════════════════════════════════════════════════════════════
@@ -585,7 +586,7 @@
             };
         @endphp
 
-        <div style="margin-top:24px;">
+        <div style="margin:24px auto 0; max-width:1100px;">
 
             {{-- Section header --}}
             <div
