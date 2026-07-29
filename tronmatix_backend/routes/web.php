@@ -135,6 +135,9 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::patch('/delivery-providers/{deliveryProvider}/toggle', [DeliveryProviderController::class, 'toggleStatus'])->name('delivery-providers.toggle');
         Route::delete('/delivery-providers/{deliveryProvider}', [DeliveryProviderController::class, 'destroy'])->name('delivery-providers.destroy');
 
+        // Activity log — admin + superadmin only
+        Route::get('/activity-logs', [\App\Http\Controllers\Dashboard\ActivityLogController::class, 'show'])->name('activity-logs');
+
         // Staff management — StaffController::assertAdmin() enforces role
         Route::get('/staff', [StaffController::class, 'index'])->name('staff');
         Route::post('/staff/invite', [StaffController::class, 'invite'])->name('staff.invite');

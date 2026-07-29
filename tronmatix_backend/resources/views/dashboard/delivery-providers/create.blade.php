@@ -98,18 +98,18 @@
                 </div>
 
                 <div style="display:flex; gap:12px; margin-top:8px;">
-                    <button type="submit" style="
+                    <button type="submit" class="btn" style="
                         flex:1; padding:14px; border-radius:10px; border:none; cursor:pointer;
                         background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
-                        font-family:Rajdhani,sans-serif; font-size:16px; font-weight:800; letter-spacing:2px;
+                        font-size:16px; font-weight:800; letter-spacing:2px;
                         box-shadow:0 4px 20px rgba(249,115,22,0.35); transition:all .2s;
                     " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
                         💾 {{ __('dashboard.btn.createProvider') }}
                     </button>
-                    <a href="{{ route('dashboard.delivery-providers.index') }}" style="
+                    <a href="{{ route('dashboard.delivery-providers.index') }}" class="btn" style="
                         flex:1; padding:14px; border-radius:10px; text-align:center; text-decoration:none;
                         border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
-                        color:rgba(255,255,255,0.4); font-family:Rajdhani,sans-serif;
+                        color:rgba(255,255,255,0.4);
                         font-size:16px; font-weight:700; letter-spacing:1px; transition:all .2s;
                     " onmouseover="this.style.borderColor='rgba(255,255,255,0.2)'; this.style.color='rgba(255,255,255,0.6)'"
                        onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.4)'">

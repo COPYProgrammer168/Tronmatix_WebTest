@@ -15,6 +15,7 @@ return [
         'users' => 'Users',
         'discounts' => 'Discounts',
         'staff' => 'Staff',
+        'activityLog' => 'Activity Log',
         'settings' => 'Settings',
         'reports' => 'Reports',
         'banners' => 'Banners',
@@ -89,6 +90,8 @@ return [
         'unitPrice' => 'Unit Price',
         'name' => 'Name',
         'qty' => 'Qty',
+        'details' => 'Details',
+        'ip' => 'IP Address',
     ],
 
     'status' => [
@@ -290,6 +293,27 @@ return [
         'success' => 'Success',
         'error' => 'Error',
     ],
+
+    'activityLog' => [
+        'pageDesc' => 'Track all actions performed by admins and staff',
+        'filters' => 'Filters',
+        'action' => 'Action',
+        'entity' => 'Entity Type',
+        'actor' => 'Actor',
+        'from' => 'From',
+        'to' => 'To',
+        'allActions' => 'All Actions',
+        'allEntities' => 'All Entities',
+        'actorPlaceholder' => 'Search actor name...',
+        'totalLogs' => 'Total Logs',
+        'thisPage' => 'This Page',
+        'lastPage' => 'Pages',
+        'perPage' => 'Per Page',
+        'showing' => 'Showing',
+        'of' => 'of',
+        'noLogs' => 'No activity logs found.',
+    ],
+
 
     'discounts' => [
         'couponCodeTitle' => 'Coupon Code Discounts',

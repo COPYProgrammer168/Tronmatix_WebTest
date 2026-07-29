@@ -31,6 +31,58 @@ class ActivityLogController extends Controller
     }
 
     /**
+     * Show the activity log page (blade view).
+     */
+    public function show(Request $request)
+    {
+        $this->assertAdmin();
+
+        $query = ActivityLog::query();
+
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+        if ($request->filled('entity_type')) {
+            $query->where('entity_type', $request->entity_type);
+        }
+        if ($request->filled('actor_name')) {
+            $query->where('actor_name', 'like', '%' . $request->actor_name . '%');
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('include_logins') && $request->include_logins === '0') {
+            $query->where('action', '!=', 'login_failed');
+            $query->where('action', '!=', 'login_rate_limited');
+        }
+
+        $perPage = min((int) $request->input('per_page', 50), 200);
+        $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        $actorNames = ActivityLog::select('actor_name')
+            ->distinct()
+            ->whereNotNull('actor_name')
+            ->orderBy('actor_name')
+            ->pluck('actor_name');
+
+        $entityTypes = ActivityLog::select('entity_type')
+            ->distinct()
+            ->whereNotNull('entity_type')
+            ->orderBy('entity_type')
+            ->pluck('entity_type');
+
+        $actions = ActivityLog::select('action')
+            ->distinct()
+            ->orderBy('action')
+            ->pluck('action');
+
+        return view('dashboard.activity-log', compact('logs', 'actorNames', 'entityTypes', 'actions'));
+    }
+
+    /**
      * List activity logs with optional filters.
      */
     public function index(Request $request)
