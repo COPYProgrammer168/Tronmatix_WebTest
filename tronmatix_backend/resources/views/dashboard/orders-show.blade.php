@@ -444,38 +444,73 @@
 
                 {{-- Leaflet Setup --}}
                 <link rel="stylesheet" href="{{ asset('css/leaflet/leaflet.css') }}" />
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                        onerror="document.getElementById('order-map').innerHTML='<div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:14px;gap:8px;\"><span>⚠️</span> Map failed to load — check internet connection</div>'">
+                </script>
                 <script>
                 (function(){
-                    const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
-                    const USER_LAT  = {{ (float) $mapLat }};
-                    const USER_LNG  = {{ (float) $mapLng }};
+                    let mapInstance = null;
+                    try {
+                        const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
+                        const USER_LAT  = {{ (float) $mapLat }};
+                        const USER_LNG  = {{ (float) $mapLng }};
 
-                    const map = L.map('order-map').setView([USER_LAT, USER_LNG], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(map);
+                        if (!window.L || !USER_LAT || !USER_LNG) return;
 
-                    // Markers
-                    L.circleMarker([STORE_LAT, STORE_LNG], { radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Store');
-                    L.circleMarker([USER_LAT, USER_LNG], { radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Customer');
+                        const container = document.getElementById('order-map');
+                        if (!container || container._leaflet_id) return;
 
-                    // Polyline route
-                    const routeLine = L.polyline([], { color: '#F97316', weight: 4, opacity: 0.9, dashArray: '10, 10' }).addTo(map);
+                        mapInstance = L.map(container, {
+                            fadeAnimation: false,
+                            zoomAnimation: false
+                        });
 
-                    // Fetch real route from OSRM
-                    fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.routes && data.routes.length > 0) {
-                                routeLine.setLatLngs(decodeOSRM(data.routes[0].geometry));
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; OpenStreetMap contributors',
+                            detectRetina: true
+                        }).addTo(mapInstance);
+
+                        L.circleMarker([STORE_LAT, STORE_LNG], { radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(mapInstance).bindPopup('Store');
+                        L.circleMarker([USER_LAT, USER_LNG], { radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(mapInstance).bindPopup('Customer');
+
+                        const routeLine = L.polyline([], { color: '#F97316', weight: 4, opacity: 0.9, dashArray: '10, 10' }).addTo(mapInstance);
+
+                        fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.routes && data.routes.length > 0) {
+                                    routeLine.setLatLngs(decodeOSRM(data.routes[0].geometry));
+                                } else {
+                                    routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]);
+                                }
+                            })
+                            .catch(() => routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]));
+
+                        mapInstance.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
+                    } catch (e) {
+                        console.warn('Leaflet init error:', e);
+                    }
+
+                    // ── Fix tile glitch: re-check container size after layout settles ──
+                    // The map is inside a grid layout (1col / 2col @ 900px). If Leaflet
+                    // initializes before the grid finishes resizing, tiles render at wrong
+                    // dimensions. Poll invalidateSize() until size stabilises.
+                    if (mapInstance) {
+                        let prevW = 0, prevH = 0, stable = 0;
+                        const fixTimer = setInterval(function(){
+                            const c = document.getElementById('order-map');
+                            if (!c || !mapInstance) { clearInterval(fixTimer); return; }
+                            const w = c.offsetWidth, h = c.offsetHeight;
+                            if (w === prevW && h === prevH) {
+                                stable++;
+                                if (stable >= 3) { clearInterval(fixTimer); }
                             } else {
-                                routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]);
+                                stable = 0;
                             }
-                        })
-                        .catch(() => routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]));
-
-                    map.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
+                            prevW = w; prevH = h;
+                            mapInstance.invalidateSize();
+                        }, 200);
+                    }
                 })();
 
                 function decodeOSRM(str, precision = 5) {

@@ -70,8 +70,10 @@ Route::middleware('throttle:10,1')->group(function () {
 });
 
 // ── Protected (requires Sanctum login) ───────────────────────────────────────
+// Base throttle 60 req/min per user — generous guard against runaway abuse.
+// Tighter per-group throttles below for sensitive mutation endpoints.
 
-Route::middleware(['auth:sanctum', 'not_banned'])->group(function () {
+Route::middleware(['auth:sanctum', 'not_banned', 'throttle:60,1'])->group(function () {
 
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -107,13 +109,15 @@ Route::middleware(['auth:sanctum', 'not_banned'])->group(function () {
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     });
 
-    // Orders
+    // Orders — read (60/min via parent), mutations (20/min)
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::post('/orders', [OrderController::class, 'store']);
+        Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
+        Route::delete('/orders/{order}', [OrderController::class, 'destroy']);
+        Route::post('/orders/{order}/confirm-delivery', [OrderController::class, 'confirmDelivery']);
+    });
     Route::get('/orders', [OrderController::class, 'index']);
-    Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
-    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy']);
-    Route::post('/orders/{order}/confirm-delivery', [OrderController::class, 'confirmDelivery']);
 
     // Staff order management — update status, verify payment, force delivery
     Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
@@ -122,10 +126,12 @@ Route::middleware(['auth:sanctum', 'not_banned'])->group(function () {
         Route::post('/orders/{order}/staff-confirm-delivery', [OrderController::class, 'staffConfirmDelivery']);
     });
 
-    // Payment
-    Route::post('/payment/generate-qr', [GenerateKhqrController::class, 'generate']);
-    Route::post('/payment/verify', [CheckPaymentController::class, 'verify']);
-    Route::post('/payment/confirm-manual', [CheckPaymentController::class, 'confirmManual']);
+    // Payment — tightly rate limited (10/min) to prevent abuse/payment brute-force
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('/payment/generate-qr', [GenerateKhqrController::class, 'generate']);
+        Route::post('/payment/verify', [CheckPaymentController::class, 'verify']);
+        Route::post('/payment/confirm-manual', [CheckPaymentController::class, 'confirmManual']);
+    });
 
     // Discounts
     Route::get('/discounts', [DiscountController::class, 'index']);

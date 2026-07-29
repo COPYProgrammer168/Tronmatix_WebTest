@@ -86,7 +86,7 @@ class MonthlySalesSheet implements FromCollection, WithTitle, WithHeadings, Shou
                 // Re-get lastRow after title insert (addSheetTitle inserts 2 rows)
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event, 2);
+                $this->applyBaseFormatting($event, 3);
                 $this->accentColumn($sheet, 'B', $lastRow);             // Revenue
                 $this->accentColumn($sheet, 'F', $lastRow, 'FFA855F7'); // Discount
 

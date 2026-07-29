@@ -60,7 +60,7 @@ class CategoryRevenueSheet implements FromCollection, WithTitle, WithHeadings, S
                 $this->addSheetTitle($event, '🍩 Revenue by Category');
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event, 2);
+                $this->applyBaseFormatting($event, 3);
                 $this->accentColumn($sheet, 'C', $lastRow);
 
                 // Number formats

@@ -586,7 +586,7 @@
             };
         @endphp
 
-        <div style="margin:24px auto 0; max-width:1100px;">
+        <div style="margin:24px auto 0; width:100%;">
 
             {{-- Section header --}}
             <div
@@ -630,12 +630,12 @@
             </div>
 
             {{-- Permission matrix card --}}
-            <div class="card" style="{{ !$canEditPerms ? 'opacity:0.75; pointer-events:none;' : '' }}">
+            <div class="card" style="{{ !$canEditPerms ? 'opacity:0.75; pointer-events:none;' : '' }} width:100%;">
                 <form method="POST" action="{{ route('dashboard.settings.permissions') }}" id="perms-form">
                     @csrf @method('PUT')
 
-                    <div class="perm-table-wrapper" style="overflow-x:auto; display:flex; justify-content:center; width:100%;">
-                        <table style="border-collapse:collapse;">
+                    <div class="perm-table-wrapper" style="overflow-x:auto; display:flex; justify-content:flex-start; width:100%;">
+                        <table style="border-collapse:collapse; width:100%;">
                             <thead>
                                 <tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
                                     <th
@@ -645,7 +645,7 @@
                                     </th>
 
                                     {{-- Superadmin: always full --}}
-                                    <th style="padding:16px 14px; text-align:center; white-space:nowrap;">
+                                    <th style="padding:16px 14px; text-align:center; white-space:nowrap; width:12%;">
                                         <div
                                             style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
                                             <div
@@ -659,7 +659,7 @@
                                     </th>
 
                                     @foreach ($permRoles as $roleKey => $roleMeta)
-                                        <th style="padding:16px 14px; text-align:center; white-space:nowrap;">
+                                        <th style="padding:16px 14px; text-align:center; white-space:nowrap; width:12%;">
                                             <div
                                                 style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
                                                 <div

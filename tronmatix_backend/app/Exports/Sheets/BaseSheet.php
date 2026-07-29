@@ -32,16 +32,16 @@ trait BaseSheet
         $lastRow = $sheet->getHighestRow();
         $lastCol = $sheet->getHighestColumn();
 
-        // Header row styling — applied via AfterSheet event for reliable persistence
-        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
+        // Header row styling — white font on dark background
+        $sheet->getStyle("{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
             'font' => [
                 'bold'  => true,
                 'size'  => 11,
-                'color' => ['argb' => 'FFFFFFFF'],
+                'color' => ['argb' => self::BRAND_WHITE],
             ],
             'fill' => [
                 'fillType'   => Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FF1A1A1A'],
+                'startColor' => ['argb' => self::HEADER_BG],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -162,8 +162,8 @@ trait BaseSheet
             ]);
             $sheet->freezePane('A4');
         } else {
-            // No subtitle: style header row at row 2 with white font
-            $sheet->getStyle("A2:{$lastCol}2")->applyFromArray([
+            // No subtitle: style header row at row 3 (headings shifted down by title insert)
+            $sheet->getStyle("A3:{$lastCol}3")->applyFromArray([
                 'font' => [
                     'bold'  => true,
                     'size'  => 11,
@@ -179,7 +179,7 @@ trait BaseSheet
                     'vertical'   => Alignment::VERTICAL_CENTER,
                 ],
             ]);
-            $sheet->freezePane('A3');
+            $sheet->freezePane('A4');
         }
     }
 

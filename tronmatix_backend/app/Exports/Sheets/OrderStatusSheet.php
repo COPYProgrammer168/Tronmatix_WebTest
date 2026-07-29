@@ -60,7 +60,7 @@ class OrderStatusSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                 $this->addSheetTitle($event, '🥧 Order Status Breakdown');
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event, 2);
+                $this->applyBaseFormatting($event, 3);
                 $this->accentColumn($sheet, 'D', $lastRow);
 
                 // Number formats

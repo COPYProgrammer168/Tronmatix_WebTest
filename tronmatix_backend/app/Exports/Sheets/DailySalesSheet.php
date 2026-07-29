@@ -71,7 +71,7 @@ class DailySalesSheet implements FromCollection, WithTitle, WithHeadings, Should
                 $this->addSheetTitle($event, '📅 Daily Sales (Last 14 Days)');
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event, 2);
+                $this->applyBaseFormatting($event, 3);
                 $this->accentColumn($sheet, 'B', $lastRow);
                 $this->accentColumn($sheet, 'E', $lastRow, 'FFA855F7');
 

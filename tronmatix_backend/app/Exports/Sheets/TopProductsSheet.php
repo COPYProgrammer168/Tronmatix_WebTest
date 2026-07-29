@@ -68,7 +68,7 @@ class TopProductsSheet implements FromCollection, WithTitle, WithHeadings, Shoul
                 $this->addSheetTitle($event, '🏆 Top Products by Units Sold');
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event, 2);
+                $this->applyBaseFormatting($event, 3);
                 $this->accentColumn($sheet, 'G', $lastRow);  // Units Sold
                 $this->accentColumn($sheet, 'H', $lastRow);  // Revenue
 

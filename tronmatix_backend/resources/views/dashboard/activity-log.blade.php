@@ -127,6 +127,94 @@
     </div>
 </div>
 
+{{-- Recent Alerts — Order Status Updates & Login Events --}}
+@if($recentAlerts->count())
+<div style="margin-bottom:20px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <span style="font-size:16px;">🔔</span>
+        <span style="font-size:13px; font-weight:700; color:var(--text-muted); letter-spacing:1px;">
+            {{ __('dashboard.activityLog.recentAlerts') ?? 'RECENT ALERTS (LAST 24H)' }}
+        </span>
+        <span style="font-size:11px; padding:2px 10px; border-radius:9999px; background:rgba(249,115,22,0.12); color:#F97316; font-weight:700;">
+            {{ $recentAlerts->count() }}
+        </span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+        @foreach($recentAlerts as $alert)
+            @php
+                $isOrder = $alert->action === 'order_status_update' || $alert->action === 'order_cancelled';
+                $isLogin = $alert->action === 'login_success' || $alert->action === 'login_failed';
+                $alertDetails = $alert->details ?: [];
+
+                if ($alert->action === 'order_status_update') {
+                    $old = $alertDetails['old_status'] ?? '?';
+                    $new = $alertDetails['new_status'] ?? '?';
+                    $icon = '📦';
+                    $bgColor = 'rgba(99,102,241,0.08)';
+                    $borderColor = 'rgba(99,102,241,0.25)';
+                    $accentColor = '#6366f1';
+                    $title = "Order #{$alert->entity_name}";
+                    $desc = "Status changed: <strong style='color:var(--text-primary)'>" . ucwords(str_replace('_', ' ', $old)) . "</strong> → <strong style='color:{$accentColor}'>" . ucwords(str_replace('_', ' ', $new)) . "</strong>";
+                } elseif ($alert->action === 'order_cancelled') {
+                    $icon = '❌';
+                    $bgColor = 'rgba(239,68,68,0.08)';
+                    $borderColor = 'rgba(239,68,68,0.25)';
+                    $accentColor = '#ef4444';
+                    $title = "Order #{$alert->entity_name}";
+                    $desc = "Order was <strong style='color:#ef4444'>cancelled</strong>";
+                } elseif ($alert->action === 'login_success') {
+                    $guard = $alertDetails['guard'] ?? '';
+                    $icon = '✅';
+                    $bgColor = 'rgba(16,185,129,0.08)';
+                    $borderColor = 'rgba(16,185,129,0.25)';
+                    $accentColor = '#10b981';
+                    $title = $alert->actor_name ?: 'Login';
+                    $roleLabel = $guard ? ucfirst($guard) : ($alert->actor_type ?? 'User');
+                    $desc = "<strong style='color:#10b981'>Successful login</strong> as <span style='color:var(--text-primary);font-weight:600;'>{$roleLabel}</span>";
+                } elseif ($alert->action === 'login_failed') {
+                    $icon = '🚫';
+                    $bgColor = 'rgba(239,68,68,0.08)';
+                    $borderColor = 'rgba(239,68,68,0.25)';
+                    $accentColor = '#ef4444';
+                    $title = $alert->entity_name ?: 'Unknown';
+                    $desc = "<strong style='color:#ef4444'>Failed login</strong> attempt" . (!empty($alertDetails['reason']) ? " ({$alertDetails['reason']})" : '');
+                } elseif ($alert->action === 'payment_verified') {
+                    $icon = '💳';
+                    $bgColor = 'rgba(16,185,129,0.08)';
+                    $borderColor = 'rgba(16,185,129,0.25)';
+                    $accentColor = '#10b981';
+                    $title = "Order #{$alert->entity_name}";
+                    $desc = "<strong style='color:#10b981'>Payment verified</strong> — marked as paid";
+                } elseif ($alert->action === 'delivery_confirmed') {
+                    $by = $alertDetails['confirmed_by'] ?? '';
+                    $icon = '📬';
+                    $bgColor = 'rgba(16,185,129,0.08)';
+                    $borderColor = 'rgba(16,185,129,0.25)';
+                    $accentColor = '#10b981';
+                    $title = "Order #{$alert->entity_name}";
+                    $desc = "<strong style='color:#10b981'>Delivery confirmed</strong>" . ($by ? " by <span style='color:var(--text-primary);font-weight:600;'>{$by}</span>" : '');
+                }
+            @endphp
+            <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; border-radius:10px; background:{{ $bgColor }}; border:1px solid {{ $borderColor }}; transition:all .15s;"
+                 onmouseover="this.style.borderColor='{{ $accentColor }}66'"
+                 onmouseout="this.style.borderColor='{{ $borderColor }}'">
+                <span style="font-size:18px;">{{ $icon }}</span>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:13px; font-weight:700; color:var(--text-primary);">{{ $title }}</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">{!! $desc !!}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                    <span style="font-size:11px; color:var(--text-muted);">{{ $alert->created_at->format('H:i') }}</span>
+                    <span style="font-size:11px; padding:2px 8px; border-radius:6px; background:{{ $accentColor }}18; color:{{ $accentColor }}; font-weight:600; white-space:nowrap;">
+                        {{ $alert->ip_address ?: '—' }}
+                    </span>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 {{-- Logs Table --}}
 <div class="card" style="border-color:rgba(249,115,22,0.15); overflow:hidden;">
     <div style="overflow-x:auto;">
@@ -185,7 +273,18 @@
                             {{ $log->created_at->format('Y-m-d H:i') }}
                         </td>
                         <td style="padding:10px 16px;">
-                            <div style="font-weight:700; color:var(--text-primary);">{{ $log->actor_name ?: '—' }}</div>
+                            <div style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
+                                {{ $log->actor_name ?: '—' }}
+                                @if($log->action === 'login_success')
+                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(16,185,129,0.12); color:#10b981; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(16,185,129,0.2);">LOGIN</span>
+                                @elseif($log->action === 'login_failed' || $log->action === 'login_rate_limited')
+                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(239,68,68,0.12); color:#ef4444; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(239,68,68,0.2);">FAILED</span>
+                                @elseif($log->action === 'order_status_update')
+                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(99,102,241,0.12); color:#6366f1; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(99,102,241,0.2);">ORDER</span>
+                                @elseif($log->action === 'order_cancelled')
+                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(239,68,68,0.12); color:#ef4444; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(239,68,68,0.2);">CANCEL</span>
+                                @endif
+                            </div>
                             <div style="font-size:11px; color:var(--text-muted);">{{ $log->actor_type ?: 'System' }}</div>
                         </td>
                         <td style="padding:10px 16px;">
@@ -204,7 +303,52 @@
                             @endif
                         </td>
                         <td style="padding:10px 16px; max-width:260px;">
-                            @if($detailsJson && $detailsJson !== '[]')
+                            @php
+                                $showDetailAlert = false;
+                                $detailIcon = '';
+                                $detailText = '';
+                                $detailColor = 'var(--text-muted)';
+                                if ($log->action === 'order_status_update' && isset($log->details['old_status'], $log->details['new_status'])) {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '📦';
+                                    $detailText = ucwords(str_replace('_', ' ', $log->details['old_status'])) . ' → ' . ucwords(str_replace('_', ' ', $log->details['new_status']));
+                                    $detailColor = '#6366f1';
+                                } elseif ($log->action === 'order_cancelled') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '❌';
+                                    $detailText = 'Order Cancelled';
+                                    $detailColor = '#ef4444';
+                                } elseif ($log->action === 'login_success') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '✅';
+                                    $guard = $log->details['guard'] ?? $log->actor_type ?? 'User';
+                                    $detailText = 'Login — ' . ucfirst($guard);
+                                    $detailColor = '#10b981';
+                                } elseif ($log->action === 'login_failed') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '🚫';
+                                    $reason = $log->details['reason'] ?? 'invalid_credentials';
+                                    $detailText = 'Failed: ' . ucwords(str_replace('_', ' ', $reason));
+                                    $detailColor = '#ef4444';
+                                } elseif ($log->action === 'payment_verified') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '💳';
+                                    $detailText = 'Payment verified';
+                                    $detailColor = '#10b981';
+                                } elseif ($log->action === 'delivery_confirmed') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '📬';
+                                    $by = $log->details['confirmed_by'] ?? '';
+                                    $detailText = 'Delivered' . ($by ? " by {$by}" : '');
+                                    $detailColor = '#10b981';
+                                }
+                            @endphp
+                            @if($showDetailAlert)
+                                <div style="font-size:12px; color:{{ $detailColor }}; font-weight:600; display:flex; align-items:center; gap:4px;">
+                                    <span>{{ $detailIcon }}</span>
+                                    <span>{{ $detailText }}</span>
+                                </div>
+                            @elseif($detailsJson && $detailsJson !== '[]')
                                 <div style="font-size:12px; color:var(--text-muted); word-break:break-all; max-height:60px; overflow:hidden; text-overflow:ellipsis;">
                                     {{ $detailsJson }}
                                 </div>

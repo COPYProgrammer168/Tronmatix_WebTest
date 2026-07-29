@@ -79,7 +79,18 @@ class ActivityLogController extends Controller
             ->orderBy('action')
             ->pluck('action');
 
-        return view('dashboard.activity-log', compact('logs', 'actorNames', 'entityTypes', 'actions'));
+        // Recent critical alerts — order status updates & login events (last 24h)
+        $recentAlerts = ActivityLog::whereIn('action', [
+                'order_status_update', 'order_cancelled',
+                'login_success', 'login_failed',
+                'payment_verified', 'delivery_confirmed',
+            ])
+            ->where('created_at', '>=', now()->subHours(24))
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        return view('dashboard.activity-log', compact('logs', 'actorNames', 'entityTypes', 'actions', 'recentAlerts'));
     }
 
     /**

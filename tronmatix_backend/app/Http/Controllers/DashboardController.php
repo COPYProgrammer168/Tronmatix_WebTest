@@ -388,6 +388,13 @@ class DashboardController extends Controller
 
         $order->update(['status' => $newStatus]);
 
+        // ── Log activity ────────────────────────────────────────────────────────
+        try {
+            \App\Services\ActivityLogger::orderStatusChange($order, $oldStatus, $newStatus, $request);
+        } catch (\Throwable $e) {
+            Log::warning('[ActivityLog] Status update log failed: ' . $e->getMessage());
+        }
+
         // Load relations needed by Telegram message builders
         $order->load(['items', 'user']);
 
@@ -432,6 +439,14 @@ class DashboardController extends Controller
 
         $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
 
+        // ── Log activity ────────────────────────────────────────────────────────
+        try {
+            $me = auth('admin')->user() ?? auth('staff')->user();
+            \App\Services\ActivityLogger::deliveryConfirmed($order, $me?->name ?? 'Admin', request());
+        } catch (\Throwable $e) {
+            Log::warning('[ActivityLog] Delivery confirm log failed: ' . $e->getMessage());
+        }
+
         // Load relations needed by Telegram message builders
         $order->load(['items', 'user']);
 
@@ -462,6 +477,13 @@ class DashboardController extends Controller
             'payment_status' => 'paid',
             'status'         => $order->status === 'pending' ? 'confirmed' : $order->status
         ]);
+
+        // ── Log activity ────────────────────────────────────────────────────────
+        try {
+            \App\Services\ActivityLogger::paymentVerified($order, request());
+        } catch (\Throwable $e) {
+            Log::warning('[ActivityLog] Payment verify log failed: ' . $e->getMessage());
+        }
 
         // Load relations needed by Telegram message builders
         $order->load(['items', 'user']);
