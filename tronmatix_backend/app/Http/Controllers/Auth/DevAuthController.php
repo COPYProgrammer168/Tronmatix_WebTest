@@ -21,6 +21,7 @@ class DevAuthController extends Controller
         // Validate secret developer key from .env
         if ($request->dev_key !== config('app.dev_portal_key')) {
             sleep(1); // Slow down brute-force
+            \App\Services\ActivityLogger::loginFailed($request->email, $request, 'invalid_dev_key');
             return response()->json(['message' => 'Invalid developer key.'], 403);
         }
 
@@ -30,6 +31,7 @@ class DevAuthController extends Controller
                       ->first();
 
         if (! $staff || ! Hash::check($request->password, $staff->password)) {
+            \App\Services\ActivityLogger::loginFailed($request->email, $request, 'invalid_credentials');
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials.'],
             ]);
@@ -47,6 +49,8 @@ class DevAuthController extends Controller
         $token = $staff->createToken('dev-token')->plainTextToken;
 
         $staff->recordLogin();
+
+        \App\Services\ActivityLogger::loginSuccess($staff, $request);
 
         return response()->json([
             'token' => $token,

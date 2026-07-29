@@ -177,6 +177,7 @@ return [
         'saveProvider' => 'Save Provider',
         'updateProvider' => 'Update Provider',
         'createProvider' => 'Create Provider',
+        'addProvider' => 'Add Provider',
         'save' => 'Save',
         'cancel' => 'Cancel',
         'edit' => 'Edit',

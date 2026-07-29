@@ -24,6 +24,8 @@ class StaffAuthController extends Controller
         $staff = Staff::where('email', $request->email)->first();
 
         if (! $staff || ! Hash::check($request->password, $staff->password)) {
+            \App\Services\ActivityLogger::loginFailed($request->email, $request, 'invalid_credentials');
+
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials.'],
             ]);
@@ -31,6 +33,8 @@ class StaffAuthController extends Controller
 
         // Block deactivated accounts
         if (! $staff->isActive()) {
+            \App\Services\ActivityLogger::loginFailed($request->email, $request, 'account_deactivated');
+
             return response()->json([
                 'message' => 'Your account is deactivated. Contact your administrator.',
             ], 403);
@@ -38,6 +42,8 @@ class StaffAuthController extends Controller
 
         // Developer must use /api/dev/login
         if (! in_array($staff->role, self::STAFF_ROLES, true)) {
+            \App\Services\ActivityLogger::loginFailed($request->email, $request, 'insufficient_role');
+
             return response()->json([
                 'message' => 'Access denied. Use the developer portal to login.',
             ], 403);
@@ -49,6 +55,8 @@ class StaffAuthController extends Controller
 
         // Track last login
         $staff->recordLogin();
+
+        \App\Services\ActivityLogger::loginSuccess($staff, $request);
 
         return response()->json([
             'token' => $token,

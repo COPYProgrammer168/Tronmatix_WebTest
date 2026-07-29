@@ -7,7 +7,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const STAFF_ROLES = ['admin', 'superadmin', 'staff', 'delivery']
+const STAFF_ROLES = ['admin', 'superadmin', 'editor', 'seller', 'delivery']
 
 // ── Staff Guard ───────────────────────────────────────────────────────────────
 export function StaffGuard({ children }) {

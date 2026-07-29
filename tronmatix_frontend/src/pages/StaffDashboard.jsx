@@ -68,6 +68,12 @@ const NAV_SECTIONS = [
       { id: 'report',    label: 'Reports',   icon: '📊', tab: 'report' },
     ],
   },
+  {
+    label: 'AUDIT',
+    items: [
+      { id: 'activity',  label: 'Activity',  icon: '📋', tab: 'activity' },
+    ],
+  },
 ]
 
 const STATUS_COLORS = {
@@ -249,6 +255,20 @@ function getWeeklyTrend(weekly) {
 function getTrendBg(weekly) { const t = getWeeklyTrend(weekly); return t.dir === 'up' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }
 function getTrendColor(weekly) { const t = getWeeklyTrend(weekly); return t.dir === 'up' ? '#22C55E' : '#EF4444' }
 function getTrendLabel(weekly) { const t = getWeeklyTrend(weekly); return `${t.dir === 'up' ? '▲' : '▼'} ${t.pct}%` }
+
+function formatTimeAgo(dateStr) {
+  const d = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now - d
+  const diffMins = Math.floor(diffMs / 60000)
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays < 7) return `${diffDays}d ago`
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
 
 // ═════════════════════════════════════════════════════════════════════════════
 // OVERVIEW TAB
@@ -1018,9 +1038,9 @@ function ProductsTab() {
 
       {error ? <ErrorState message={error} onRetry={refetch} /> : (
         <div style={{ overflowX: 'auto' }}>
-          <TableBox headers={['IMAGE','NAME','CATEGORY','PRICE','STOCK','ACTIONS']}>
-            {loading ? <SkeletonRows cols={6} rows={4} /> : filtered.length === 0 ? (
-              <tr><td colSpan={6}><EmptyState label="No products found" /></td></tr>
+          <TableBox headers={['IMAGE','NAME','CATEGORY','PRICE','STOCK','UPDATED','ACTIONS']}>
+            {loading ? <SkeletonRows cols={7} rows={4} /> : filtered.length === 0 ? (
+              <tr><td colSpan={7}><EmptyState label="No products found" /></td></tr>
             ) : filtered.map((p, i) => {
               const thumb = p.all_images?.[0] || p.image
               return (
@@ -1057,6 +1077,9 @@ function ProductsTab() {
                     </span>
                     {p.stock_status && <span style={{ fontSize: 10, color: TEXT_FAINT }}>{p.stock_status}</span>}
                   </div>
+                </td>
+                <td style={{ padding: '12px 16px', fontSize: 11, color: TEXT_FAINT, whiteSpace: 'nowrap' }}>
+                  {p.updated_at ? formatTimeAgo(p.updated_at) : '—'}
                 </td>
                 <td style={{ padding: '12px 16px', display: 'flex', gap: 6 }}>
                   <button onClick={() => setModal({ type: 'edit', product: p })} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(59,130,246,0.25)', background: 'rgba(59,130,246,0.12)', color: B, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>EDIT</button>
@@ -1566,13 +1589,168 @@ function ReportTab() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// ACTIVITY LOG TAB
+// ═════════════════════════════════════════════════════════════════════════════
+const ACTION_LABELS = {
+  order_status_update: 'Status Update',
+  payment_verified:    'Payment Verified',
+  delivery_confirmed:  'Delivery Confirmed',
+  order_cancelled:     'Order Cancelled',
+  product_create:      'Product Created',
+  product_update:      'Product Updated',
+  product_delete:      'Product Deleted',
+  staff_invited:       'Staff Invited',
+  staff_role_changed:  'Role Changed',
+  staff_activated:     'Activated',
+  staff_deactivated:   'Deactivated',
+  staff_deleted:       'Staff Removed',
+  login_success:       'Login Success',
+  login_failed:        'Login Failed',
+  login_rate_limited:  'Rate Limited ❗',
+}
+
+const ACTION_COLORS = {
+  login_failed:       { bg: 'rgba(239,68,68,0.12)', color: R },
+  login_rate_limited: { bg: 'rgba(239,68,68,0.25)', color: R },
+  order_status_update: { bg: 'rgba(59,130,246,0.12)', color: B },
+  payment_verified:   { bg: 'rgba(34,197,94,0.12)', color: G },
+  delivery_confirmed: { bg: 'rgba(249,115,22,0.12)', color: O },
+  product_create:     { bg: 'rgba(34,197,94,0.12)', color: G },
+  product_update:     { bg: 'rgba(168,85,247,0.12)', color: P },
+  staff_invited:      { bg: 'rgba(59,130,246,0.12)', color: B },
+  login_success:      { bg: 'rgba(34,197,94,0.12)', color: G },
+}
+
+function ActivityTab() {
+  const [logs, setLogs] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [actionFilter, setActionFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  const fetchLogs = useCallback(async (p = 1) => {
+    setLoading(true); setError(null)
+    try {
+      const params = new URLSearchParams({ per_page: '30', page: String(p) })
+      if (actionFilter) params.set('action', actionFilter)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
+      const res = await api.get(`/api/activity-logs?${params}`)
+      const raw = res.data?.data ?? []
+      setLogs(raw)
+      const meta = res.data?.meta
+      if (meta) setTotalPages(meta.last_page ?? 1)
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to load activity logs.')
+    } finally { setLoading(false) }
+  }, [actionFilter, dateFrom, dateTo])
+
+  useEffect(() => { fetchLogs(page) }, [fetchLogs, page])
+
+  return (
+    <div>
+      {/* Filters */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap', alignItems: 'end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 11, color: TEXT_MUTED, fontWeight: 700, letterSpacing: 1 }}>ACTION</label>
+          <select value={actionFilter} onChange={e => { setActionFilter(e.target.value); setPage(1) }}
+            style={{ padding: '8px 12px', background: SURFACE, border: `1px solid ${BORDER_INPUT}`, borderRadius: 8, color: TEXT_PRIMARY, fontSize: 13, outline: 'none' }}>
+            <option value="">All Actions</option>
+            {Object.entries(ACTION_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 11, color: TEXT_MUTED, fontWeight: 700, letterSpacing: 1 }}>FROM</label>
+          <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1) }}
+            style={{ padding: '7px 12px', background: SURFACE, border: `1px solid ${BORDER_INPUT}`, borderRadius: 8, color: TEXT_PRIMARY, fontSize: 13, outline: 'none' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 11, color: TEXT_MUTED, fontWeight: 700, letterSpacing: 1 }}>TO</label>
+          <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1) }}
+            style={{ padding: '7px 12px', background: SURFACE, border: `1px solid ${BORDER_INPUT}`, borderRadius: 8, color: TEXT_PRIMARY, fontSize: 13, outline: 'none' }} />
+        </div>
+        {(actionFilter || dateFrom || dateTo) && (
+          <button onClick={() => { setActionFilter(''); setDateFrom(''); setDateTo(''); setPage(1) }}
+            style={{ padding: '7px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, color: R, fontSize: 12, fontWeight: 700, cursor: 'pointer', letterSpacing: 1 }}>
+            ✕ CLEAR
+          </button>
+        )}
+        <button onClick={() => fetchLogs(page)}
+          style={{ padding: '7px 16px', background: `${O}1a`, border: `1px solid ${O}44`, borderRadius: 8, color: O, fontSize: 12, fontWeight: 700, cursor: 'pointer', letterSpacing: 1 }}>
+          ⟳ REFRESH
+        </button>
+      </div>
+
+      {loading ? <Spinner /> : error ? <ErrorState message={error} onRetry={() => fetchLogs(page)} /> : !logs?.length ? <EmptyState label="No activity found" /> : (
+        <>
+          <TableBox headers={['TIME', 'ACTOR', 'ACTION', 'ENTITY', 'DETAILS']}>
+            {logs.map((log, i) => {
+              const ac = ACTION_COLORS[log.action] || { bg: 'rgba(75,85,99,0.15)', color: TEXT_MUTED }
+              const details = log.details ? (typeof log.details === 'object' ? Object.entries(log.details).map(([k, v]) => `${k}: ${v}`).join(' | ') : String(log.details)) : ''
+              return (
+                <tr key={log.id ?? i} style={{ borderBottom: i < logs.length - 1 ? `1px solid ${BORDER}` : 'none' }}>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap', fontSize: 12, color: TEXT_FAINT }}>
+                    {new Date(log.created_at).toLocaleString()}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    <span style={{ color: log.actor_type === 'Admin' ? O : B, fontSize: 11, fontWeight: 700, letterSpacing: '0.5px' }}>
+                      [{log.actor_type}]
+                    </span>{' '}
+                    {log.actor_name}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{
+                      display: 'inline-block', padding: '2px 8px', borderRadius: 12,
+                      fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                      background: ac.bg, color: ac.color, border: `1px solid ${ac.color}33`,
+                    }}>
+                      {ACTION_LABELS[log.action] || log.action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: TEXT_FAINT, whiteSpace: 'nowrap' }}>
+                    {log.entity_type && <><span style={{ fontWeight: 600 }}>{log.entity_type}</span>{log.entity_name && <>: {log.entity_name}</>}</>}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: 12, color: TEXT_FAINT, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {details}
+                  </td>
+                </tr>
+              )
+            })}
+          </TableBox>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 18 }}>
+              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+                style={{ padding: '6px 14px', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, color: page <= 1 ? TEXT_XFAINT : TEXT_PRIMARY, fontSize: 13, fontWeight: 600, cursor: page <= 1 ? 'default' : 'pointer', opacity: page <= 1 ? 0.5 : 1 }}>
+                ← PREV
+              </button>
+              <span style={{ padding: '6px 14px', color: TEXT_MUTED, fontSize: 13 }}>
+                {page} / {totalPages}
+              </span>
+              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
+                style={{ padding: '6px 14px', background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, color: page >= totalPages ? TEXT_XFAINT : TEXT_PRIMARY, fontSize: 13, fontWeight: 600, cursor: page >= totalPages ? 'default' : 'pointer', opacity: page >= totalPages ? 0.5 : 1 }}>
+                NEXT →
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // MAIN LAYOUT
 // ═════════════════════════════════════════════════════════════════════════════
 export default function StaffDashboard() {
   const [tab, setTab] = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('tronmatix_theme') || 'dark')
-  const { user, logout } = useAuth()
+  const { user, logout, startHeartbeat } = useAuth()
   const navigate = useNavigate()
 
   const toggleTheme = () => {
@@ -1587,6 +1765,11 @@ export default function StaffDashboard() {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
+  // Start heartbeat when dashboard mounts -- keeps user online while active
+  useEffect(() => {
+    startHeartbeat()
+  }, [startHeartbeat])
+
   const handleLogout = async () => { await logout(); navigate('/staff/login', { replace: true }) }
 
   const TAB_CONTENT = {
@@ -1596,6 +1779,7 @@ export default function StaffDashboard() {
     users:    <UsersTab />,
     delivery: <DeliveryTab />,
     report:   <ReportTab />,
+    activity: <ActivityTab />,
   }
 
   const flatNav = NAV_SECTIONS.flatMap(s => s.items)
@@ -1751,6 +1935,17 @@ export default function StaffDashboard() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Online status indicator */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '3px 10px', borderRadius: 20,
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.5px',
+              background: 'rgba(34,197,94,0.10)',
+              color: G, border: '1px solid rgba(34,197,94,0.25)',
+            }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: G, display: 'inline-block' }} />
+              ONLINE
+            </div>
             {/* Theme toggle */}
             <button onClick={toggleTheme} style={{
               width: 34, height: 34, borderRadius: 8, border: `1px solid rgba(255,255,255,0.1)`,

@@ -89,7 +89,10 @@
     "khqrBanner": "After placing your order, a KHQR code will appear. This page automatically detects your payment — no button needed.",
     "pickupReminderTitle": "Store Pickup Order",
     "pickupReminderHint": "You will pick up your order at our store. If you choose Cash, pay when you arrive.",
-    "placePickupOrder": "PLACE PICKUP ORDER ✓"
+    "placePickupOrder": "PLACE PICKUP ORDER ✓",
+    "deliveryProvider": "Delivery Provider",
+    "feeVaries": "Fee varies",
+    "noProviders": "No delivery providers available for this province."
   },
   "favorites": {
     "title": "MY FAVORITES",
@@ -230,6 +233,9 @@
     "phoneNumber": "PHONE NUMBER",
     "streetAddress": "STREET ADDRESS",
     "cityProvince": "CITY / PROVINCE",
+    "province": "Province *",
+    "searchProvince": "Search province...",
+    "empty": "No provinces available.",
     "mapPin": "MAP PIN (OPTIONAL)",
     "savedAddresses": "saved addresses",
     "defaultTip": "The Default location will be pre-filled at checkout automatically."

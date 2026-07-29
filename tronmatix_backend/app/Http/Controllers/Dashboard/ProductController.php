@@ -64,7 +64,9 @@ class ProductController extends Controller
         $validated           = $this->validateProduct($request);
         $validated['images'] = $this->buildImagesArray($request);
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        \App\Services\ActivityLogger::productCreated($product, $request);
 
         return redirect()->route('dashboard.products')->with('success', 'Product created.');
     }
@@ -91,13 +93,25 @@ class ProductController extends Controller
 
         $product->update($validated);
 
+        \App\Services\ActivityLogger::productUpdated($product, $request);
+
         return redirect()->route('dashboard.products')->with('success', 'Product updated.');
     }
 
     public function destroy(Product $product)
     {
         $this->storage->deleteMany($product->all_images);
+        $productName = $product->name;
+        $productId = $product->id;
         $product->delete();
+
+        \App\Services\ActivityLogger::log([
+            'action'      => 'product_delete',
+            'entity_type' => 'Product',
+            'entity_id'   => $productId,
+            'entity_name' => $productName,
+            'details'     => ['name' => $productName],
+        ], $request);
 
         return redirect()->route('dashboard.products')->with('success', 'Product deleted.');
     }

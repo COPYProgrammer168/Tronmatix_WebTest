@@ -91,7 +91,7 @@ class StaffController extends Controller
             'password' => ['required', Password::min(8)],
         ]);
 
-        Staff::create([
+        $staff = Staff::create([
             'name' => $data['name'],
             'username' => $data['username'],
             'email' => $data['email'],
@@ -99,6 +99,8 @@ class StaffController extends Controller
             'password' => Hash::make($data['password']),
             'is_active' => true,
         ]);
+
+        \App\Services\ActivityLogger::staffInvited($data['name'], $data['role'], $request);
 
         return redirect()->route('dashboard.staff')
             ->with('success', "{$data['name']} has been added to the team.");
@@ -115,7 +117,10 @@ class StaffController extends Controller
         ]);
 
         $member = Staff::findOrFail($id);
+        $oldRole = $member->role;
         $member->update(['role' => $data['role']]);
+
+        \App\Services\ActivityLogger::staffRoleChanged($member, $oldRole, $data['role'], $request);
 
         return back()->with('success', "{$member->name}'s role updated to " . ucfirst($data['role']) . '.');
     }
@@ -127,9 +132,12 @@ class StaffController extends Controller
         $this->assertAdmin();
 
         $member = Staff::findOrFail($id);
+        $wasActive = $member->is_active;
         $member->update(['is_active' => !$member->is_active]);
 
         $status = $member->is_active ? 'activated' : 'deactivated';
+
+        \App\Services\ActivityLogger::staffToggled($member, $member->is_active, $request);
 
         return back()->with('success', "{$member->name} has been {$status}.");
     }
@@ -138,14 +146,17 @@ class StaffController extends Controller
 
     public function heartbeat(Request $request)
     {
-        $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
-        if ($user instanceof Staff) {
+        // Try session guards first (web dashboard), then Sanctum token (React dashboard)
+        $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user() ?? $request->user();
+
+        if ($user) {
+            $now = now();
             $user->update([
-                'last_seen_at' => now(),
+                'last_seen_at'  => $now,
                 'online_status' => 'online',
             ]);
         }
-        return response()->json(['ok' => true]);
+        return response()->json(['ok' => true, 'user' => $user?->name]);
     }
 
     // ── setOffline ────────────────────────────────────────────────────────────
@@ -167,7 +178,10 @@ class StaffController extends Controller
 
         $member = Staff::findOrFail($id);
         $name = $member->name;
+        $memberId = $member->id;
         $member->delete();
+
+        \App\Services\ActivityLogger::staffDeleted($member, $request);
 
         return redirect()->route('dashboard.staff')
             ->with('success', "{$name} has been removed from the team.");

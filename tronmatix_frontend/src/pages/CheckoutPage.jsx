@@ -82,6 +82,8 @@ export default function CheckoutPage() {
   const [showLocPicker,  setShowLocPicker]  = useState(false)
   const [mapPin,         setMapPin]         = useState(null)
   const [locationId,     setLocationId]     = useState(null)
+  const [selectedProvince, setSelectedProvince] = useState(null)
+  const [selectedProviderId, setSelectedProviderId] = useState(null)
   const pendingOrderAfterLogin              = useRef(false)
 
   const isPickup = fulfillment === "pickup"
@@ -189,6 +191,8 @@ export default function CheckoutPage() {
         delivery_map_address: isPickup ? null : (mapPin?.address || null),
         // ── NEW ──
         fulfillment_type: fulfillment,
+        province_id: !isPickup ? (selectedProvince?.id || null) : null,
+        delivery_provider_id: !isPickup ? (selectedProviderId || null) : null,
       })
 
       const orderData = {
@@ -425,8 +429,15 @@ export default function CheckoutPage() {
           mapPin={mapPin} onMapPin={setMapPin}
           onSaveToProfile={user ? handleSaveToProfile : undefined}
           onNext={() => setStep(2)}
-          // Pass isPickup so Step1 can hide address fields
           isPickup={isPickup}
+          // NEW: province / provider
+          onProvinceSelect={(prov) => {
+            setSelectedProvince(prov)
+            setSelectedProviderId(null) // reset provider when province changes
+          }}
+          selectedProvince={selectedProvince}
+          onProviderSelect={(prov) => setSelectedProviderId(prov.id)}
+          selectedProviderId={selectedProviderId}
         />
       )}
 

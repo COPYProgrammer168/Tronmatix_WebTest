@@ -374,6 +374,14 @@ class OrderController extends Controller
             }
         });
 
+        \App\Services\ActivityLogger::log([
+            'action'      => 'order_cancelled',
+            'entity_type' => 'Order',
+            'entity_id'   => $order->id,
+            'entity_name' => $order->order_id,
+            'details'     => ['cancelled_by' => $user->name ?? 'Customer'],
+        ], $request);
+
         // Load both relations — onOrderCancelled() needs items for itemSummaryLine()
         $order->load(['user', 'items']);
 
@@ -467,6 +475,8 @@ class OrderController extends Controller
         $order->update(['status' => $newStatus]);
         $order->load(['items', 'user']);
 
+        \App\Services\ActivityLogger::orderStatusChange($order, $oldStatus, $newStatus, $request);
+
         // Bot alerts (same as backend Blade dashboard)
         try {
             app(TelegramService::class)->sendAlert(
@@ -498,6 +508,8 @@ class OrderController extends Controller
 
         $order->load(['items', 'user']);
 
+        \App\Services\ActivityLogger::paymentVerified($order, $request);
+
         try {
             app(TelegramService::class)->sendPaymentConfirmed($order, 'Manual Verification');
         } catch (\Throwable $e) {
@@ -524,6 +536,8 @@ class OrderController extends Controller
 
         $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
         $order->load(['user', 'items']);
+
+        \App\Services\ActivityLogger::deliveryConfirmed($order, $user->name ?? 'Staff', $request);
 
         try {
             app(TelegramService::class)->sendDeliveryConfirmed($order);

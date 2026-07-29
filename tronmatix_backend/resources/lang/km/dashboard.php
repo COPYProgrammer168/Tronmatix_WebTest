@@ -181,6 +181,7 @@ return [
         'saveProvider' => 'រក្សាទុកអ្នកដឹក',
         'updateProvider' => 'អាប់ដេតអ្នកដឹក',
         'createProvider' => 'បន្ថែមអ្នកដឹក',
+        'addProvider' => 'បន្ថែមអ្នកផ្ដល់សេវា',
         'save' => 'រក្សាទុក',
         'cancel' => 'បោះបង់',
         'edit' => 'កែប្រែ',

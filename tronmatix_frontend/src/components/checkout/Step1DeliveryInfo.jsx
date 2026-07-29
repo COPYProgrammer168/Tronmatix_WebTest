@@ -3,6 +3,8 @@ import { useState } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { useLang } from "../../context/LanguageContext"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
+import ProvinceSelect from "./ProvinceSelect"
+import DeliveryProviderSelector from "./DeliveryProviderSelector"
 import MapPickerModal from "../profile/MapPickerModal"
 
 export default function Step1DeliveryInfo({
@@ -10,6 +12,8 @@ export default function Step1DeliveryInfo({
   saveAddr, onSaveAddr, savedLocations, onPickLocation,
   onSaveToProfile, onNext, mapPin, onMapPin,
   isPickup,
+  // NEW: province / provider props
+  onProvinceSelect, selectedProvince, onProviderSelect, selectedProviderId,
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
@@ -133,15 +137,17 @@ export default function Step1DeliveryInfo({
             />
           </div>
 
-          {/* City */}
-          <div>
-            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>{isKhmer ? t("checkout.cityProvince") : "City / Province"}</label>
-            <input
-              name="city" value={location.city} onChange={onChange} placeholder="City or Province"
-              className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
-              style={inputStyle} {...focusHandlers}
+          {/* City / Province — replaced with ProvinceSelect */}
+          <ProvinceSelect onSelect={onProvinceSelect} selectedValue={selectedProvince?.id} />
+
+          {/* Delivery Provider — shown after province is selected */}
+          {selectedProvince && (
+            <DeliveryProviderSelector
+              zoneId={selectedProvince.delivery_zone_id}
+              onSelect={onProviderSelect}
+              selectedValue={selectedProviderId}
             />
-          </div>
+          )}
 
           {/* Map pin picker */}
           <div>

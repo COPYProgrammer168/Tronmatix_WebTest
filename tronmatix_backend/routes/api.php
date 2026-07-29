@@ -24,6 +24,7 @@ use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Auth\DevAuthController;
 use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\DevToolsController;
+use App\Http\Controllers\Dashboard\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public ────────────────────────────────────────────────────────────────────
@@ -79,6 +80,17 @@ Route::middleware(['auth:sanctum', 'not_banned'])->group(function () {
     Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
         Route::get('/admin/stats', [AdminStatsController::class, 'stats']);
         Route::get('/admin/users', [AdminStatsController::class, 'users']);
+    });
+
+    // Activity logs — admin + superadmin only
+    Route::middleware('role:admin,superadmin')->group(function () {
+        Route::get('/activity-logs', [ActivityLogController::class, 'index']);
+        Route::get('/activity-logs/stats', [ActivityLogController::class, 'stats']);
+    });
+
+    // Staff heartbeat — keep online status alive (all staff roles)
+    Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
+        Route::post('/staff/heartbeat', [App\Http\Controllers\Dashboard\StaffController::class, 'heartbeat']);
     });
 
     // Dev tools — developer only

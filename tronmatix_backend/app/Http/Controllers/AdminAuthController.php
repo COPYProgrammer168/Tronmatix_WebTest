@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
+use function App\Services\ActivityLogger;
+
 class AdminAuthController extends Controller
 {
     public function showLogin()
@@ -37,6 +39,8 @@ class AdminAuthController extends Controller
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
+            \App\Services\ActivityLogger::loginRateLimited($request->login, $request);
+
             return back()->withInput($request->only('login'))
                 ->with('error', "Too many login attempts. Please try again in {$seconds} seconds.");
         }
@@ -55,12 +59,14 @@ class AdminAuthController extends Controller
             if ($staff) {
                 if (! $staff->isActive()) {
                     RateLimiter::hit($throttleKey, 60);
+                    \App\Services\ActivityLogger::loginFailed($request->login, $request, 'account_deactivated');
                     return back()->withInput($request->only('login'))
                         ->with('error', 'Your account has been deactivated. Contact your admin.');
                 }
 
                 if (! Hash::check($request->password, $staff->password)) {
                     RateLimiter::hit($throttleKey, 60);
+                    \App\Services\ActivityLogger::loginFailed($request->login, $request, 'invalid_credentials');
                     return back()->withInput($request->only('login'))
                         ->with('error', 'No account found with those credentials.');
                 }
@@ -70,12 +76,15 @@ class AdminAuthController extends Controller
                 $staff->recordLogin();
                 $request->session()->regenerate();
 
+                \App\Services\ActivityLogger::loginSuccess($staff, $request);
+
                 return redirect()->intended(route('dashboard.index'))
                     ->with('success', 'Welcome back, ' . $staff->name . '!');
             }
 
             // Staff mode failed — do NOT check admins table
             RateLimiter::hit($throttleKey, 60);
+            \App\Services\ActivityLogger::loginFailed($request->login, $request, 'no_match');
             return back()->withInput($request->only('login'))
                 ->with('error', 'No staff account found with those credentials.');
 
@@ -86,12 +95,14 @@ class AdminAuthController extends Controller
             if ($admin) {
                 if (! $admin->isActive()) {
                     RateLimiter::hit($throttleKey, 60);
+                    \App\Services\ActivityLogger::loginFailed($request->login, $request, 'account_deactivated');
                     return back()->withInput($request->only('login'))
                         ->with('error', 'Your account has been deactivated. Contact superadmin.');
                 }
 
                 if (! Hash::check($request->password, $admin->password)) {
                     RateLimiter::hit($throttleKey, 60);
+                    \App\Services\ActivityLogger::loginFailed($request->login, $request, 'invalid_credentials');
                     return back()->withInput($request->only('login'))
                         ->with('error', 'No account found with those credentials.');
                 }
@@ -101,12 +112,15 @@ class AdminAuthController extends Controller
                 $admin->recordLogin();
                 $request->session()->regenerate();
 
+                \App\Services\ActivityLogger::loginSuccess($admin, $request);
+
                 return redirect()->intended(route('dashboard.index'))
                     ->with('success', 'Welcome back, ' . $admin->name . '!');
             }
 
             // Admin mode failed — do NOT check staff table
             RateLimiter::hit($throttleKey, 60);
+            \App\Services\ActivityLogger::loginFailed($request->login, $request, 'no_match');
             return back()->withInput($request->only('login'))
                 ->with('error', 'No admin account found with those credentials.');
         }

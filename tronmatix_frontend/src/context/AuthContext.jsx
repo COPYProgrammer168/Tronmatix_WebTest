@@ -241,16 +241,37 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // ── LOGOUT ────────────────────────────────────────────────────────────────
+    // ── HEARTBEAT ──────────────────────────────────────────────
+  // Keep the session alive and mark user as online while dashboard is open
+  const heartbeatIntervalRef = useRef(null)
+
+  const startHeartbeat = useCallback(() => {
+    if (heartbeatIntervalRef.current) return // already running
+    heartbeatIntervalRef.current = setInterval(async () => {
+      try {
+        await api.post('/api/staff/heartbeat')
+      } catch { /* ignore heartbeat failures */ }
+    }, 30_000)
+  }, [])
+
+  const stopHeartbeat = useCallback(() => {
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current)
+      heartbeatIntervalRef.current = null
+    }
+  }, [])
+
+  // ── LOGOUT ──────────────────────────────────────────────
   const logout = useCallback(async () => {
     try { await api.post('/api/auth/logout') } catch { /* ignore */ }
+    stopHeartbeat()
     clearSession()
-  }, [clearSession])
-
+  }, [clearSession, stopHeartbeat])
   return (
     <AuthContext.Provider value={{
       user, token, loading, ready,
       login, staffLogin, devLogin, register, logout, refreshUser,
+      startHeartbeat, stopHeartbeat,
       forgotPassword, googleLogin,
     }}>
       {children}
