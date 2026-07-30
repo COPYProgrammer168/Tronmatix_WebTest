@@ -159,8 +159,8 @@ tbody tr:hover td { background: var(--dark-700); }
         </div>
         @php $telegramCount = \App\Models\User::whereNotNull('telegram_chat_id')->count(); @endphp
         <div class="stat-card" style="border-color:rgba(34,158,217,0.25);background:rgba(34,158,217,0.06);">
-            <div class="stat-icon" style="background:rgba(34,158,217,0.15);border-color:rgba(34,158,217,0.3);">
-                <span style="font-size: var(--title-size);">&#9992;&#65039;</span>
+            <div class="stat-icon" style="background:rgba(34,158,217,0.15);border-color:rgba(34,158,217,0.3);padding:5px;">
+                <svg viewBox="0 0 256 256" style="width:24px;height:24px;" preserveAspectRatio="xMidYMid"><defs><linearGradient id="tg_s" x1="50%" x2="50%" y1="0%" y2="100%"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs><path fill="url(#tg_s)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.038 128.038 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51 0-33.934-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0Z"/><path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z"/></svg>
             </div>
             <div>
                 <div class="stat-value" style="color:#229ED9;">{{ $telegramCount }}</div>
@@ -199,7 +199,7 @@ tbody tr:hover td { background: var(--dark-700); }
                           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <input type="text" id="searchInput" name="search" class="search-input"
-                       placeholder="Search username, email..."
+                       placeholder="{{ __('dashboard.users.searchName') }}"
                        value="{{ request('search') }}" />
             </form>
         </div>
@@ -210,15 +210,15 @@ tbody tr:hover td { background: var(--dark-700); }
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>USERNAME</th>
-                        <th>EMAIL</th>
-                        <th>PHONE</th>
-                        <th>ORDERS</th>
-                        <th>SPENT</th>
-                        <th>2FA</th>
+                        <th>{{ strtoupper(__('dashboard.table.username')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.email')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.phone')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.stats.kpiOrders')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.spent')) }}</th>
+                        <th>{{ __('dashboard.users.twoFactor') }}</th>
                         <th>TELEGRAM</th>
-                        <th>ROLE</th>
-                        <th>JOINED</th>
+                        <th>{{ strtoupper(__('dashboard.table.role')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.joined')) }}</th>
                         {{-- <th style="min-width:200px;">CHANGE ROLE</th> --}}
                     </tr>
                 </thead>
@@ -310,7 +310,7 @@ tbody tr:hover td { background: var(--dark-700); }
                             </div>
                             @else
                             <div style="font-size: var(--text-sm); color:#F97316; margin-top:3px; letter-spacing:1px; font-weight:700;">
-                                ⭐ VIP MEMBER
+                                ⭐ VIP CUSTOMER
                             </div>
                             @endif
                         </td>
@@ -444,19 +444,19 @@ tbody tr:hover td { background: var(--dark-700); }
                     <div id="ui-orders" style="font-size: var(--title-size); color:#F97316; font-weight:900;"></div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TOTAL SPENT</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.totalSpent')) }}</div>
                     <div id="ui-spent" style="font-size: var(--title-size); color:#22c55e; font-weight:900;"></div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">JOINED</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.table.joined')) }}</div>
                     <div id="ui-joined" style="font-size: var(--title-size); color:#fff; font-weight:600;"></div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">2FA</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.twoFactor')) }}</div>
                     <div id="ui-2fa" style="font-size: var(--title-size); font-weight:700;"></div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">TELEGRAM</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ __('dashboard.table.name') }}</div>
                     <div id="ui-telegram" style="font-size: var(--title-size); font-weight:700;"></div>
                 </div>
             </div>
@@ -531,7 +531,7 @@ tbody tr:hover td { background: var(--dark-700); }
             ? '<span style="color:#22c55e;">✓ ENABLED</span>'
             : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
         document.getElementById('ui-telegram').innerHTML = telegram
-            ? '<span style="color:#229ED9;">✈️ ' + telegram + '</span>'
+            ? '<span style="display:inline-flex;align-items:center;gap:4px;color:#229ED9;"><svg width="16" height="16" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid"><defs><linearGradient id="tg_u" x1="50%" x2="50%" y1="0%" y2="100%"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs><path fill="url(#tg_u)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.038 128.038 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51 0-33.934-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0Z"/><path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z"/></svg> ' + telegram + '</span>'
             : '<span style="color:rgba(255,255,255,0.3);">— Not connected</span>';
 
         // Role badge

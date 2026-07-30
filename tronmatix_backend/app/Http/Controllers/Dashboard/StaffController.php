@@ -127,7 +127,7 @@ class StaffController extends Controller
 
     // ── toggle active/inactive ────────────────────────────────────────────────
 
-    public function toggle(int $id)
+    public function toggle(int $id, \Illuminate\Http\Request $request)
     {
         $this->assertAdmin();
 

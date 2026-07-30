@@ -4,7 +4,13 @@
 @section('content')
 
 @include('dashboard._permission_check', ['feature' => 'activity_log'])
-@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+@php
+    $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false;
+    $_km = app()->getLocale() === 'km';
+    $_fw7 = $_km ? 400 : 700;
+    $_fw9 = $_km ? 400 : 900;
+    $_fw6 = $_km ? 400 : 600;
+@endphp
 
 @if(!$_permDenied)
 
@@ -15,7 +21,7 @@
                     border:1px solid rgba(249,115,22,0.3); display:flex; align-items:center;
                     justify-content:center; font-size: var(--title-size);">📋</div>
         <div>
-            <div style="font-size: var(--title-size); font-weight:900; letter-spacing:3px;">
+            <div style="font-size: var(--title-size); font-weight:{{ $_fw9 }}; letter-spacing:3px;">
                 {{ strtoupper(__('dashboard.nav.activityLog')) }}
             </div>
             <div style="font-size: var(--title-size); color:var(--text-muted); margin-top:2px;">
@@ -27,7 +33,7 @@
        style="display:inline-flex; align-items:center; gap:6px; padding:9px 18px;
               border-radius:9px; border:1px solid rgba(255,255,255,0.1);
               background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5);
-              font-family: inherit; font-size: var(--title-size); font-weight:700;
+              font-family: inherit; font-size: var(--title-size); font-weight:{{ $_fw7 }};
               letter-spacing:1px; text-decoration:none; transition:all .2s;"
        onmouseover="this.style.color='var(--text-primary)'"
        onmouseout="this.style.color='rgba(255,255,255,0.5)'">
@@ -44,10 +50,10 @@
         <form method="GET" action="{{ route('dashboard.activity-logs') }}" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
 
             <div style="flex:1; min-width:180px;">
-                <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px; font-weight:600; letter-spacing:0.5px;">
+                <label style="display:block; font-size:var(--text-xs); color:var(--text-muted); margin-bottom:4px; font-weight:{{ $_fw6 }}; letter-spacing:0.5px;">
                     {{ __('dashboard.activityLog.action') ?? 'ACTION' }}
                 </label>
-                <select name="action" class="input" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:14px;">
+                <select name="action" class="input" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:var(--text-base);">
                     <option value="">{{ __('dashboard.activityLog.allActions') ?? 'All Actions' }}</option>
                     @foreach($actions as $a)
                         <option value="{{ $a }}" {{ request('action') === $a ? 'selected' : '' }}>{{ $a }}</option>
@@ -56,10 +62,10 @@
             </div>
 
             <div style="flex:1; min-width:180px;">
-                <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px; font-weight:600; letter-spacing:0.5px;">
+                <label style="display:block; font-size:var(--text-xs); color:var(--text-muted); margin-bottom:4px; font-weight:{{ $_fw6 }}; letter-spacing:0.5px;">
                     {{ __('dashboard.activityLog.entity') ?? 'ENTITY TYPE' }}
                 </label>
-                <select name="entity_type" class="input" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:14px;">
+                <select name="entity_type" class="input" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:var(--text-base);">
                     <option value="">{{ __('dashboard.activityLog.allEntities') ?? 'All Entities' }}</option>
                     @foreach($entityTypes as $et)
                         <option value="{{ $et }}" {{ request('entity_type') === $et ? 'selected' : '' }}>{{ $et }}</option>
@@ -68,31 +74,31 @@
             </div>
 
             <div style="flex:1; min-width:160px;">
-                <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px; font-weight:600; letter-spacing:0.5px;">
+                <label style="display:block; font-size:var(--text-xs); color:var(--text-muted); margin-bottom:4px; font-weight:{{ $_fw6 }}; letter-spacing:0.5px;">
                     {{ __('dashboard.activityLog.actor') ?? 'ACTOR' }}
                 </label>
-                <input type="text" name="actor_name" class="input" value="{{ request('actor_name') }}" placeholder="{{ __('dashboard.activityLog.actorPlaceholder') ?? 'Search actor...' }}" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:14px;">
+                <input type="text" name="actor_name" class="input" value="{{ request('actor_name') }}" placeholder="{{ __('dashboard.activityLog.actorPlaceholder') ?? 'Search actor...' }}" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:var(--text-base);">
             </div>
 
             <div style="min-width:130px;">
-                <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px; font-weight:600; letter-spacing:0.5px;">
+                <label style="display:block; font-size:var(--text-xs); color:var(--text-muted); margin-bottom:4px; font-weight:{{ $_fw6 }}; letter-spacing:0.5px;">
                     {{ __('dashboard.activityLog.from') ?? 'FROM' }}
                 </label>
-                <input type="date" name="date_from" class="input" value="{{ request('date_from') }}" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:14px;">
+                <input type="date" name="date_from" class="input" value="{{ request('date_from') }}" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:var(--text-base);">
             </div>
 
             <div style="min-width:130px;">
-                <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px; font-weight:600; letter-spacing:0.5px;">
+                <label style="display:block; font-size:var(--text-xs); color:var(--text-muted); margin-bottom:4px; font-weight:{{ $_fw6 }}; letter-spacing:0.5px;">
                     {{ __('dashboard.activityLog.to') ?? 'TO' }}
                 </label>
-                <input type="date" name="date_to" class="input" value="{{ request('date_to') }}" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:14px;">
+                <input type="date" name="date_to" class="input" value="{{ request('date_to') }}" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:var(--text-base);">
             </div>
 
             <div style="display:flex; gap:8px; align-items:flex-end; padding-bottom:1px;">
-                <button type="submit" class="btn" style="padding:9px 18px; border-radius:8px; background:#F97316; color:#fff; font-weight:700; border:none; cursor:pointer; font-size:14px; letter-spacing:0.5px; white-space:nowrap;">
-                    {{ __('dashboard.btn.search') ?? 'SEARCH' }}
+                <button type="submit" class="btn" style="padding:9px 18px; border-radius:8px; background:#F97316; color:#fff; font-weight:{{ $_fw7 }}; border:none; cursor:pointer; font-size:var(--text-base); letter-spacing:0.5px; white-space:nowrap;">
+                    SEARCH
                 </button>
-                <a href="{{ route('dashboard.activity-logs') }}" style="padding:9px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:var(--text-muted); text-decoration:none; font-family: inherit; font-size:14px; font-weight:600; white-space:nowrap;">
+                <a href="{{ route('dashboard.activity-logs') }}" style="padding:9px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:var(--text-muted); text-decoration:none; font-family: inherit; font-size:var(--text-base); font-weight:{{ $_fw6 }}; white-space:nowrap;">
                     {{ __('dashboard.btn.clearFilters') ?? 'CLEAR' }}
                 </a>
             </div>
@@ -103,20 +109,20 @@
 {{-- Stats Row --}}
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px;">
     <div class="card" style="border-color:rgba(249,115,22,0.15); text-align:center; padding:16px;">
-        <div style="font-size:11px; color:var(--text-muted); letter-spacing:1px; font-weight:700;">{{ __('dashboard.activityLog.totalLogs') ?? 'TOTAL LOGS' }}</div>
-        <div style="font-size:28px; font-weight:900; color:#F97316; margin-top:4px;">{{ number_format($logs->total()) }}</div>
+        <div style="font-size:var(--text-xs); color:var(--text-muted); letter-spacing:1px; font-weight:{{ $_fw7 }};">{{ __('dashboard.activityLog.totalLogs') ?? 'TOTAL LOGS' }}</div>
+        <div style="font-size:28px; font-weight:{{ $_fw9 }}; color:#F97316; margin-top:4px;">{{ number_format($logs->total()) }}</div>
     </div>
     <div class="card" style="border-color:rgba(249,115,22,0.15); text-align:center; padding:16px;">
-        <div style="font-size:11px; color:var(--text-muted); letter-spacing:1px; font-weight:700;">{{ __('dashboard.activityLog.thisPage') ?? 'THIS PAGE' }}</div>
-        <div style="font-size:28px; font-weight:900; color:var(--text-primary); margin-top:4px;">{{ number_format($logs->count()) }}</div>
+        <div style="font-size:var(--text-xs); color:var(--text-muted); letter-spacing:1px; font-weight:{{ $_fw7 }};">{{ __('dashboard.activityLog.thisPage') ?? 'THIS PAGE' }}</div>
+        <div style="font-size:28px; font-weight:{{ $_fw9 }}; color:var(--text-primary); margin-top:4px;">{{ number_format($logs->count()) }}</div>
     </div>
     <div class="card" style="border-color:rgba(249,115,22,0.15); text-align:center; padding:16px;">
-        <div style="font-size:11px; color:var(--text-muted); letter-spacing:1px; font-weight:700;">{{ __('dashboard.activityLog.lastPage') ?? 'PAGES' }}</div>
-        <div style="font-size:28px; font-weight:900; color:var(--text-primary); margin-top:4px;">{{ $logs->lastPage() }}</div>
+        <div style="font-size:var(--text-xs); color:var(--text-muted); letter-spacing:1px; font-weight:{{ $_fw7 }};">{{ __('dashboard.activityLog.lastPage') ?? 'PAGES' }}</div>
+        <div style="font-size:28px; font-weight:{{ $_fw9 }}; color:var(--text-primary); margin-top:4px;">{{ $logs->lastPage() }}</div>
     </div>
     <div class="card" style="border-color:rgba(249,115,22,0.15); text-align:center; padding:16px;">
-        <div style="font-size:11px; color:var(--text-muted); letter-spacing:1px; font-weight:700;">{{ __('dashboard.activityLog.perPage') ?? 'PER PAGE' }}</div>
-        <div style="font-size:28px; font-weight:900; color:var(--text-primary); margin-top:4px;">{{ $logs->perPage() }}</div>
+        <div style="font-size:var(--text-xs); color:var(--text-muted); letter-spacing:1px; font-weight:{{ $_fw7 }};">{{ __('dashboard.activityLog.perPage') ?? 'PER PAGE' }}</div>
+        <div style="font-size:28px; font-weight:{{ $_fw9 }}; color:var(--text-primary); margin-top:4px;">{{ $logs->perPage() }}</div>
     </div>
 </div>
 
@@ -125,10 +131,10 @@
 <div style="margin-bottom:20px;">
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
         <span style="font-size:16px;">🔔</span>
-        <span style="font-size:13px; font-weight:700; color:var(--text-muted); letter-spacing:1px;">
-            {{ __('dashboard.activityLog.recentAlerts') ?? 'RECENT ALERTS (LAST 24H)' }}
+        <span style="font-size:var(--text-sm); font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:1px;">
+            {{ __('dashboard.activityLog.recentAlerts') }}
         </span>
-        <span style="font-size:11px; padding:2px 10px; border-radius:9999px; background:rgba(249,115,22,0.12); color:#F97316; font-weight:700;">
+        <span style="font-size:var(--text-xs); padding:2px 10px; border-radius:9999px; background:rgba(249,115,22,0.12); color:#F97316; font-weight:{{ $_fw7 }};">
             {{ $recentAlerts->count() }}
         </span>
     </div>
@@ -163,7 +169,7 @@
                     $accentColor = '#10b981';
                     $title = $alert->actor_name ?: 'Login';
                     $roleLabel = $guard ? ucfirst($guard) : ($alert->actor_type ?? 'User');
-                    $desc = "<strong style='color:#10b981'>Successful login</strong> as <span style='color:var(--text-primary);font-weight:600;'>{$roleLabel}</span>";
+                    $desc = "<strong style='color:#10b981'>Successful login</strong> as <span style='color:var(--text-primary);font-weight:{{ $_fw6 }};'>{$roleLabel}</span>";
                 } elseif ($alert->action === 'login_failed') {
                     $icon = '🚫';
                     $bgColor = 'rgba(239,68,68,0.08)';
@@ -185,7 +191,7 @@
                     $borderColor = 'rgba(16,185,129,0.25)';
                     $accentColor = '#10b981';
                     $title = "Order #{$alert->entity_name}";
-                    $desc = "<strong style='color:#10b981'>Delivery confirmed</strong>" . ($by ? " by <span style='color:var(--text-primary);font-weight:600;'>{$by}</span>" : '');
+                    $desc = "<strong style='color:#10b981'>Delivery confirmed</strong>" . ($by ? " by <span style='color:var(--text-primary);font-weight:{{ $_fw6 }};'>{$by}</span>" : '');
                 }
             @endphp
             <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; border-radius:10px; background:{{ $bgColor }}; border:1px solid {{ $borderColor }}; transition:all .15s;"
@@ -193,12 +199,12 @@
                  onmouseout="this.style.borderColor='{{ $borderColor }}'">
                 <span style="font-size:18px;">{{ $icon }}</span>
                 <div style="flex:1; min-width:0;">
-                    <div style="font-size:13px; font-weight:700; color:var(--text-primary);">{{ $title }}</div>
-                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">{!! $desc !!}</div>
+                    <div style="font-size:var(--text-sm); font-weight:{{ $_fw7 }}; color:var(--text-primary);">{{ $title }}</div>
+                    <div style="font-size:var(--text-xs); color:var(--text-muted); margin-top:2px;">{!! $desc !!}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                    <span style="font-size:11px; color:var(--text-muted);">{{ $alert->created_at->format('H:i') }}</span>
-                    <span style="font-size:11px; padding:2px 8px; border-radius:6px; background:{{ $accentColor }}18; color:{{ $accentColor }}; font-weight:600; white-space:nowrap;">
+                    <span style="font-size:var(--text-xs); color:var(--text-muted);">{{ $alert->created_at?->format('H:i') ?? '—' }}</span>
+                    <span style="font-size:var(--text-xs); padding:2px 8px; border-radius:6px; background:{{ $accentColor }}18; color:{{ $accentColor }}; font-weight:{{ $_fw6 }}; white-space:nowrap;">
                         {{ $alert->ip_address ?: '—' }}
                     </span>
                 </div>
@@ -211,15 +217,15 @@
 {{-- Logs Table --}}
 <div class="card" style="border-color:rgba(249,115,22,0.15); overflow:hidden;">
     <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; font-family: inherit; font-size:14px;">
+        <table style="width:100%; border-collapse:collapse; font-family: inherit; font-size:var(--text-sm);">
             <thead>
                 <tr style="background:rgba(249,115,22,0.06); border-bottom:1px solid rgba(249,115,22,0.15);">
-                    <th style="text-align:left; padding:12px 16px; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.table.date') ?? 'DATE' }}</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.activityLog.actor') ?? 'ACTOR' }}</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.activityLog.action') ?? 'ACTION' }}</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.activityLog.entity') ?? 'ENTITY' }}</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.table.details') ?? 'DETAILS' }}</th>
-                    <th style="text-align:left; padding:12px 16px; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.table.ip') ?? 'IP' }}</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.table.date') ?? 'DATE' }}</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.activityLog.actor') ?? 'ACTOR' }}</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.activityLog.action') ?? 'ACTION' }}</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.activityLog.entity') ?? 'ENTITY' }}</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.table.details') ?? 'DETAILS' }}</th>
+                    <th style="text-align:left; padding:12px 16px; font-weight:{{ $_fw7 }}; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap;">{{ __('dashboard.table.ip') ?? 'IP' }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -263,33 +269,33 @@
                         onmouseover="this.style.background='rgba(255,255,255,0.02)'"
                         onmouseout="this.style.background='transparent'">
                         <td style="padding:10px 16px; white-space:nowrap; color:var(--text-muted);">
-                            {{ $log->created_at->format('Y-m-d H:i') }}
+                            {{ $log->created_at?->format('Y-m-d H:i') ?? '—' }}
                         </td>
                         <td style="padding:10px 16px;">
-                            <div style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
+                            <div style="font-weight:{{ $_fw7 }}; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
                                 {{ $log->actor_name ?: '—' }}
                                 @if($log->action === 'login_success')
-                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(16,185,129,0.12); color:#10b981; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(16,185,129,0.2);">LOGIN</span>
+                                    <span style="font-size:var(--text-xs); padding:1px 7px; border-radius:9999px; background:rgba(16,185,129,0.12); color:#10b981; font-weight:{{ $_fw7 }}; letter-spacing:0.5px; border:1px solid rgba(16,185,129,0.2);">LOGIN</span>
                                 @elseif($log->action === 'login_failed' || $log->action === 'login_rate_limited')
-                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(239,68,68,0.12); color:#ef4444; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(239,68,68,0.2);">FAILED</span>
+                                    <span style="font-size:var(--text-xs); padding:1px 7px; border-radius:9999px; background:rgba(239,68,68,0.12); color:#ef4444; font-weight:{{ $_fw7 }}; letter-spacing:0.5px; border:1px solid rgba(239,68,68,0.2);">FAILED</span>
                                 @elseif($log->action === 'order_status_update')
-                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(99,102,241,0.12); color:#6366f1; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(99,102,241,0.2);">ORDER</span>
+                                    <span style="font-size:var(--text-xs); padding:1px 7px; border-radius:9999px; background:rgba(99,102,241,0.12); color:#6366f1; font-weight:{{ $_fw7 }}; letter-spacing:0.5px; border:1px solid rgba(99,102,241,0.2);">ORDER</span>
                                 @elseif($log->action === 'order_cancelled')
-                                    <span style="font-size:10px; padding:1px 7px; border-radius:9999px; background:rgba(239,68,68,0.12); color:#ef4444; font-weight:700; letter-spacing:0.5px; border:1px solid rgba(239,68,68,0.2);">CANCEL</span>
+                                    <span style="font-size:var(--text-xs); padding:1px 7px; border-radius:9999px; background:rgba(239,68,68,0.12); color:#ef4444; font-weight:{{ $_fw7 }}; letter-spacing:0.5px; border:1px solid rgba(239,68,68,0.2);">CANCEL</span>
                                 @endif
                             </div>
-                            <div style="font-size:11px; color:var(--text-muted);">{{ $log->actor_type ?: 'System' }}</div>
+                            <div style="font-size:var(--text-xs); color:var(--text-muted);">{{ $log->actor_type ?: 'System' }}</div>
                         </td>
                         <td style="padding:10px 16px;">
-                            <span style="display:inline-block; padding:3px 10px; border-radius:9999px; font-size:12px; font-weight:700; background:{{ $actionColor }}22; color:{{ $actionColor }}; border:1px solid {{ $actionColor }}44;">
+                            <span style="display:inline-block; padding:3px 10px; border-radius:9999px; font-size:var(--text-xs); font-weight:{{ $_fw7 }}; background:{{ $actionColor }}22; color:{{ $actionColor }}; border:1px solid {{ $actionColor }}44;">
                                 {{ $actionLabel }}
                             </span>
                         </td>
                         <td style="padding:10px 16px; white-space:nowrap;">
                             @if($log->entity_type)
-                                <span style="font-weight:600; color:var(--text-primary);">{{ $log->entity_type }}</span>
+                                <span style="font-weight:{{ $_fw6 }}; color:var(--text-primary);">{{ $log->entity_type }}</span>
                                 @if($log->entity_name)
-                                    <div style="font-size:12px; color:var(--text-muted);">{{ $log->entity_name }}</div>
+                                    <div style="font-size:var(--text-xs); color:var(--text-muted);">{{ $log->entity_name }}</div>
                                 @endif
                             @else
                                 <span style="color:var(--text-muted);">—</span>
@@ -337,19 +343,19 @@
                                 }
                             @endphp
                             @if($showDetailAlert)
-                                <div style="font-size:12px; color:{{ $detailColor }}; font-weight:600; display:flex; align-items:center; gap:4px;">
+                                <div style="font-size:var(--text-xs); color:{{ $detailColor }}; font-weight:{{ $_fw6 }}; display:flex; align-items:center; gap:4px;">
                                     <span>{{ $detailIcon }}</span>
                                     <span>{{ $detailText }}</span>
                                 </div>
                             @elseif($detailsJson && $detailsJson !== '[]')
-                                <div style="font-size:12px; color:var(--text-muted); word-break:break-all; max-height:60px; overflow:hidden; text-overflow:ellipsis;">
+                                <div style="font-size:var(--text-xs); color:var(--text-muted); word-break:break-all; max-height:60px; overflow:hidden; text-overflow:ellipsis;">
                                     {{ $detailsJson }}
                                 </div>
                             @else
                                 <span style="color:var(--text-muted);">—</span>
                             @endif
                         </td>
-                        <td style="padding:10px 16px; white-space:nowrap; color:var(--text-muted); font-size:12px;">
+                        <td style="padding:10px 16px; white-space:nowrap; color:var(--text-muted); font-size:var(--text-xs);">
                             {{ $log->ip_address ?: '—' }}
                         </td>
                     </tr>
@@ -367,28 +373,28 @@
     {{-- Pagination --}}
     @if($logs->hasPages())
         <div style="padding:14px 20px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-            <div style="font-size:13px; color:var(--text-muted);">
+            <div style="font-size:var(--text-sm); color:var(--text-muted);">
                 {{ __('dashboard.activityLog.showing') ?? 'Showing' }} {{ $logs->firstItem() ?? 0 }}–{{ $logs->lastItem() ?? 0 }} {{ __('dashboard.activityLog.of') ?? 'of' }} {{ number_format($logs->total()) }}
             </div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
                 @if($logs->onFirstPage())
-                    <span style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.06); color:var(--text-muted); font-size:13px;">← Prev</span>
+                    <span style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.06); color:var(--text-muted); font-size:var(--text-sm);">← Prev</span>
                 @else
-                    <a href="{{ $logs->previousPageUrl() }}" style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.1); color:var(--text-primary); text-decoration:none; font-size:13px; font-weight:600; transition:all .15s;" onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">← Prev</a>
+                    <a href="{{ $logs->previousPageUrl() }}" style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.1); color:var(--text-primary); text-decoration:none; font-size:var(--text-sm); font-weight:{{ $_fw6 }}; transition:all .15s;" onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">← Prev</a>
                 @endif
 
                 @foreach($logs->getUrlRange(1, $logs->lastPage()) as $page => $url)
                     @if($page === $logs->currentPage())
-                        <span style="padding:7px 14px; border-radius:7px; background:#F97316; color:#fff; font-size:13px; font-weight:700;">{{ $page }}</span>
+                        <span style="padding:7px 14px; border-radius:7px; background:#F97316; color:#fff; font-size:var(--text-sm); font-weight:{{ $_fw7 }};">{{ $page }}</span>
                     @else
-                        <a href="{{ $url }}" style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.1); color:var(--text-primary); text-decoration:none; font-size:13px; font-weight:600; transition:all .15s;" onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">{{ $page }}</a>
+                        <a href="{{ $url }}" style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.1); color:var(--text-primary); text-decoration:none; font-size:var(--text-sm); font-weight:{{ $_fw6 }}; transition:all .15s;" onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">{{ $page }}</a>
                     @endif
                 @endforeach
 
                 @if($logs->hasMorePages())
-                    <a href="{{ $logs->nextPageUrl() }}" style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.1); color:var(--text-primary); text-decoration:none; font-size:13px; font-weight:600; transition:all .15s;" onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">Next →</a>
+                    <a href="{{ $logs->nextPageUrl() }}" style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.1); color:var(--text-primary); text-decoration:none; font-size:var(--text-sm); font-weight:{{ $_fw6 }}; transition:all .15s;" onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'">Next →</a>
                 @else
-                    <span style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.06); color:var(--text-muted); font-size:13px;">Next →</span>
+                    <span style="padding:7px 14px; border-radius:7px; border:1px solid rgba(255,255,255,0.06); color:var(--text-muted); font-size:var(--text-sm);">Next →</span>
                 @endif
             </div>
         </div>

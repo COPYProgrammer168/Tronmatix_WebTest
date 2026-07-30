@@ -158,7 +158,7 @@
 
         {{-- ── Stats ────────────────────────────────────────────────────────────────── --}}
         <div class="disc-stats">
-            @foreach ([['label' => 'ACTIVE', 'val' => $activeCount, 'color' => '#22c55e'], ['label' => 'EXPIRED', 'val' => $expiredCount, 'color' => '#ef4444'], ['label' => 'EXHAUSTED', 'val' => $exhaustedCount, 'color' => '#a855f7'], ['label' => 'DISABLED', 'val' => $disabledCount, 'color' => '#6b7280'], ['label' => 'TOTAL USES', 'val' => $totalUses, 'color' => '#F97316']] as $stat)
+            @foreach ([['label' => strtoupper(__('dashboard.status.active')), 'val' => $activeCount, 'color' => '#22c55e'], ['label' => strtoupper(__('dashboard.status.expired')), 'val' => $expiredCount, 'color' => '#ef4444'], ['label' => strtoupper(__('dashboard.discounts.exhausted')), 'val' => $exhaustedCount, 'color' => '#a855f7'], ['label' => strtoupper(__('dashboard.discounts.disabled')), 'val' => $disabledCount, 'color' => '#6b7280'], ['label' => strtoupper(__('dashboard.discounts.usage')), 'val' => $totalUses, 'color' => '#F97316']] as $stat)
                 <div
                     style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:14px 18px;">
                     <div
@@ -181,15 +181,14 @@
                     <span style="font-size: var(--title-size);">🎟️</span>
                     <div>
                         <span class="card-title"
-                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">COUPON CODE
-                            DISCOUNTS</span>
+                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">{{ strtoupper(__('dashboard.discounts.couponCodes')) }}</span>
                         <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:2px;">Customer
                             types code at checkout to receive the discount</div>
                     </div>
                     <div class="disc-actions">
                         <button type="button" onclick="openCouponModal()" class="btn btn-orange"
                             style="font-size: var(--title-size); padding:8px 18px; white-space:nowrap; display:flex; align-items:center; gap:6px;">
-                            + ADD COUPON
+                            + {{ strtoupper(__('dashboard.discounts.addCoupon')) }}
                         </button>
                     </div>
                 </div>
@@ -198,15 +197,15 @@
                 <table class="disc-table" style="min-width:680px;">
                     <thead>
                         <tr>
-                            <th>CODE</th>
-                            <th>KIND</th>
-                            <th>TYPE / VALUE</th>
-                            <th>PRODUCT</th>
-                            <th>CATEGORIES</th>
-                            <th>MIN ORDER</th>
-                            <th>USAGE</th>
-                            <th>EXPIRES</th>
-                            <th>STATUS</th>
+                            <th>{{ strtoupper(__('dashboard.discounts.code')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.discounts.kind')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.discounts.typeValue')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.product')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.category')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.discounts.minOrder')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.discounts.usage')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.discounts.expires')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.status')) }}</th>
                             <th>ACTIONS</th>
                         </tr>
                     </thead>
@@ -408,7 +407,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" style="text-align:center; padding:40px; color:rgba(255,255,255,0.3);">
-                                    No discounts yet. Click <strong style="color:#F97316;">+ ADD COUPON</strong> to create
+                                    {{ __('dashboard.discounts.noBadges') }}. <strong style="color:#F97316;">+ {{ strtoupper(__('dashboard.discounts.addCoupon')) }}</strong>
                                     one.
                                 </td>
                             </tr>
@@ -429,15 +428,13 @@
                     <span style="font-size: var(--title-size);">🏷️</span>
                     <div>
                         <span class="card-title"
-                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">DISCOUNT
-                            BADGES</span>
+                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">{{ strtoupper(__('dashboard.discounts.discountBadges')) }}</span>
                         <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:2px;">
-                            Auto-displayed on product cards &amp; cart page — no code required</div>
+                            {{ __('dashboard.discounts.badgeDesc') }}</div>
                     </div>
                     <div class="disc-actions">
                         <span style="font-size: var(--title-size); color:rgba(255,255,255,0.3); font-style:italic;">
-                            → Click <strong style="color:#a78bfa; font-style:normal;">BADGE</strong> on any row above to
-                            configure
+                            → <strong style="color:#a78bfa; font-style:normal;">{{ strtoupper(__('dashboard.discounts.badge')) }}</strong>
                         </span>
                     </div>
                 </div>
@@ -492,7 +489,7 @@
                                     </div>
                                 @else
                                     <div class="badge-discound">
-                                        🏷️ NO BADGE YET
+                                        🏷️ {{ strtoupper(__('dashboard.discounts.noBadges')) }}
                                     </div>
                                 @endif
                                 <div style="font-size: var(--title-size); font-weight:900; color:#fff;">
@@ -521,7 +518,7 @@
                             <div>
                                 <div
                                     style="font-size: var(--title-size); color:rgba(255,255,255,0.3); letter-spacing:1px; margin-bottom:5px;">
-                                    APPLIES TO</div>
+                                    {{ __('dashboard.form.appliesTo') }}</div>
                                 @if ($d->product_id)
                                     <div style="color:#F97316; font-size: var(--title-size); font-weight:700;">
                                         {{ $d->product->name ?? 'Product ID: ' . $d->product_id }}
@@ -606,14 +603,14 @@
 
                     <div class="modal-grid">
                         <div class="modal-full">
-                            <label class="form-label">DISCOUNT CODE *</label>
+                            <label class="form-label">{{ __('dashboard.form.discountCode') }}</label>
                             <input type="text" name="code" id="fCode" class="form-control" required
                                 placeholder="e.g. SAVE20"
                                 style="text-transform:uppercase; letter-spacing:2px; width:100%; box-sizing:border-box;"
                                 oninput="this.value=this.value.toUpperCase()">
                         </div>
                         <div>
-                            <label class="form-label">TYPE *</label>
+                            <label class="form-label">{{ __('dashboard.form.discountType') }}</label>
                             <select name="type" id="fType" class="form-control" required
                                 style="width:100%; box-sizing:border-box;">
                                 <option value="percentage">Percentage (%)</option>
@@ -621,28 +618,28 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">VALUE *</label>
+                            <label class="form-label">{{ __('dashboard.form.discountValue') }}</label>
                             <input type="number" name="value" id="fValue" class="form-control" required
                                 min="0" step="0.01" placeholder="e.g. 20"
                                 style="width:100%; box-sizing:border-box;">
                         </div>
                         <div>
-                            <label class="form-label">MIN ORDER ($)</label>
+                            <label class="form-label">{{ __('dashboard.form.minOrder') }}</label>
                             <input type="number" name="min_order" id="fMinOrder" class="form-control" min="0"
                                 step="0.01" placeholder="0 = no minimum" style="width:100%; box-sizing:border-box;">
                         </div>
                         <div>
-                            <label class="form-label">MAX USES</label>
+                            <label class="form-label">{{ __('dashboard.form.maxUses') }}</label>
                             <input type="number" name="max_uses" id="fMaxUses" class="form-control" min="1"
                                 placeholder="Blank = unlimited" style="width:100%; box-sizing:border-box;">
                         </div>
                         <div class="modal-full">
-                            <label class="form-label">EXPIRY DATE</label>
+                            <label class="form-label">{{ __('dashboard.form.expiryDate') }}</label>
                             <input type="date" name="expires_at" id="fExpires" class="form-control"
                                 style="width:100%; box-sizing:border-box;">
                         </div>
                         <div class="modal-full">
-                            <label class="form-label">APPLY TO PRODUCT</label>
+                            <label class="form-label">{{ __('dashboard.form.appliesTo') }} PRODUCT</label>
                             <div style="position:relative;">
                                 <input type="text" id="productSearch" placeholder="🔍 Search product…"
                                     autocomplete="off" oninput="filterProducts(this.value)"
@@ -668,7 +665,7 @@
                         </div>
                         <div class="modal-full">
                             <label class="form-label">
-                                APPLY TO CATEGORIES
+                                {{ __('dashboard.form.appliesTo') }} CATEGORIES
                                 <span
                                     style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(empty
                                     = all categories)</span>
@@ -741,10 +738,10 @@
                                     <div>
                                         <div id="kindBadgeText"
                                             style="font-weight:800; font-size: var(--title-size); letter-spacing:1px; color:rgba(255,255,255,0.5);">
-                                            🏷 DISCOUNT BADGE</div>
+                                            🏷 {{ strtoupper(__('dashboard.discounts.discountBadge')) }}</div>
                                         <div
                                             style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:1px;">
-                                            Auto-shown on product cards</div>
+                                            {{ __('dashboard.discounts.autoShown') }}</div>
                                     </div>
                                 </label>
 
@@ -842,9 +839,9 @@
                             🏷️</div>
                         <div>
                             <div style="font-size: var(--title-size); font-weight:900; color:#fff; letter-spacing:2px;"
-                                id="badgeModalTitle">DISCOUNT BADGE</div>
+                                id="badgeModalTitle">{{ strtoupper(__('dashboard.discounts.discountBadge')) }}</div>
                             <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:1px;"
-                                id="badgeModalSubtitle">Auto-shown on cart &amp; product cards</div>
+                                id="badgeModalSubtitle">{{ __('dashboard.discounts.autoShown') }}</div>
                         </div>
                     </div>
                     <button onclick="closeBadgeModal()"
@@ -859,7 +856,7 @@
                     padding:16px; margin-bottom:20px; text-align:center;">
                     <div
                         style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:12px; font-weight:700;">
-                        LIVE PREVIEW</div>
+                        {{ strtoupper(__('dashboard.discounts.livePreview')) }}</div>
                     <div
                         style="display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;">
                         <div id="bPreview"
@@ -873,8 +870,7 @@
 
                 <div style="margin-bottom:14px;">
                     <label
-                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:6px;">BADGE
-                        TEXT *</label>
+                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:6px;">{{ strtoupper(__('dashboard.form.badgeLabel')) }}</label>
                     <input type="text" id="bText" placeholder="e.g. SALE, HOT, 20% OFF" maxlength="18"
                         style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.12); color:#fff;
                           border-radius:8px; padding:10px 14px; font-size: var(--title-size); font-weight:800; letter-spacing:1.5px;
@@ -886,7 +882,7 @@
 
                 <div style="margin-bottom:14px;">
                     <label
-                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">ICON</label>
+                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">{{ strtoupper(__('dashboard.discounts.discountBadge')) }} ICON</label>
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
                         @foreach (['🏷️', '🔥', '⚡', '💥', '🎯', '✨', '🎁', '💎', '🚀', '⭐', '🆕', '💰'] as $ico)
                             <button type="button" onclick="selectBIcon('{{ $ico }}')"
@@ -900,7 +896,7 @@
 
                 <div style="margin-bottom:20px;">
                     <label
-                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">COLOR</label>
+                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">{{ strtoupper(__('dashboard.form.textColor')) }}</label>
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
                         @php $bcp = [['l' => 'Orange', 'bg' => 'rgba(249,115,22,0.18)', 'bd' => 'rgba(249,115,22,0.55)', 'c' => '#F97316'], ['l' => 'Red', 'bg' => 'rgba(239,68,68,0.18)', 'bd' => 'rgba(239,68,68,0.55)', 'c' => '#ef4444'], ['l' => 'Green', 'bg' => 'rgba(34,197,94,0.18)', 'bd' => 'rgba(34,197,94,0.55)', 'c' => '#22c55e'], ['l' => 'Blue', 'bg' => 'rgba(59,130,246,0.18)', 'bd' => 'rgba(59,130,246,0.55)', 'c' => '#3b82f6'], ['l' => 'Purple', 'bg' => 'rgba(167,139,250,0.18)', 'bd' => 'rgba(167,139,250,0.55)', 'c' => '#a78bfa'], ['l' => 'Yellow', 'bg' => 'rgba(234,179,8,0.18)', 'bd' => 'rgba(234,179,8,0.55)', 'c' => '#eab308'], ['l' => 'Solid', 'bg' => '#F97316', 'bd' => '#F97316', 'c' => '#fff']]; @endphp
                         @foreach ($bcp as $i => $p)
@@ -1214,7 +1210,7 @@
                 document.getElementById('couponModal').style.display = 'flex'
 
                 if (id) {
-                    document.getElementById('couponModalTitle').textContent = 'EDIT COUPON'
+                    document.getElementById('couponModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.editCoupon")) }}'
                     document.getElementById('couponForm').action = `/dashboard/discounts/${id}`
                     document.getElementById('couponMethod').value = 'PUT'
                     document.getElementById('couponId').value = id
@@ -1236,7 +1232,7 @@
                     setKind(kind || 'code')
                     updateProductSelect()
                 } else {
-                    document.getElementById('couponModalTitle').textContent = 'ADD COUPON'
+                    document.getElementById('couponModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.addCouponLabel")) }}'
                     document.getElementById('couponForm').action = '{{ route('dashboard.discounts.store') }}'
                     document.getElementById('couponMethod').value = 'POST'
                     document.getElementById('couponId').value = ''
@@ -1277,7 +1273,7 @@
                     _bBg = existingBadge.bg || 'rgba(249,115,22,0.18)'
                     _bBd = existingBadge.border || 'rgba(249,115,22,0.55)';
                     _bC = existingBadge.color || '#F97316'
-                    document.getElementById('badgeModalTitle').textContent = 'EDIT BADGE'
+                    document.getElementById('badgeModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.editBadge")) }}'
                     document.getElementById('badgeModalSubtitle').textContent = `Discount #${discountId}`
                     document.getElementById('badgeClearBtn').style.display = 'block'
                 } else {
@@ -1286,7 +1282,7 @@
                     _bBg = 'rgba(249,115,22,0.18)';
                     _bBd = 'rgba(249,115,22,0.55)';
                     _bC = '#F97316'
-                    document.getElementById('badgeModalTitle').textContent = 'ADD BADGE'
+                    document.getElementById('badgeModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.addBadgeLabel")) }}'
                     document.getElementById('badgeModalSubtitle').textContent = `Discount #${discountId}`
                     document.getElementById('badgeClearBtn').style.display = 'none'
                 }

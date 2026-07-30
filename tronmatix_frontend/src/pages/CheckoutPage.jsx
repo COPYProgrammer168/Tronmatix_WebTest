@@ -119,6 +119,10 @@ export default function CheckoutPage() {
       city: loc.city || null, note: loc.note || null,
       is_default: isDefault,
     })
+    // Also sync phone to user profile so it auto-appears in ProfileTab
+    if (loc.phone && loc.phone !== user.phone) {
+      await axios.put('/api/user/profile', { phone: loc.phone }).catch(() => {})
+    }
     const res = await axios.get("/api/user/locations")
     const list = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : []
     setSavedLocations(list)
@@ -171,6 +175,11 @@ export default function CheckoutPage() {
 
     setLoading(true)
     if (saveAddr && !isPickup) saveLocation(location)
+
+    // Auto-sync phone to user profile so it shows in ProfileTab
+    if (location.phone && location.phone !== user.phone) {
+      axios.put('/api/user/profile', { phone: location.phone }).catch(() => {})
+    }
 
     try {
       const res = await axios.post("/api/orders", {

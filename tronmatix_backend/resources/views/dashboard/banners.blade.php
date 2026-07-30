@@ -28,14 +28,14 @@ function banner_img_url(?string $path): string {
 {{-- Header --}}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
     <div>
-        <p style="color:rgba(255,255,255,0.8); font-size: var(--title-size);">{{ $banners->count() }} banners total</p>
+        <p style="color:rgba(255,255,255,0.8); font-size: var(--title-size);">{{ $banners->count() }} {{ __('dashboard.banners.bannersTotal') }}</p>
     </div>
     <button onclick="openModal()" class="btn btn-orange" style="font-size: var(--title-size);">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        ADD BANNER
+        {{ strtoupper(__('dashboard.banners.addBanner')) }}
     </button>
 </div>
 
@@ -111,7 +111,7 @@ function banner_img_url(?string $path): string {
                         style="background:{{ $b->active ? 'rgba(34,197,94,0.85)' : 'rgba(107,114,128,0.85)' }};
                                color:#fff; border:none; border-radius:20px; padding:3px 10px;
                                font-size: var(--title-size); font-weight:700; cursor:pointer; letter-spacing:.5px;">
-                        {{ $b->active ? '● ON' : '○ OFF' }}
+                        {{ $b->active ? '● ' . strtoupper(__('dashboard.banners.on')) : '○ ' . strtoupper(__('dashboard.banners.off')) }}
                     </button>
                 </form>
             </div>
@@ -121,7 +121,7 @@ function banner_img_url(?string $path): string {
                 <div style="position:absolute; top:8px; left:8px; z-index:3;
                      background:rgba(249,115,22,0.85); color:#fff; border-radius:20px;
                      padding:3px 8px; font-size: var(--title-size); font-weight:800; letter-spacing:1px;">
-                    🎬 VIDEO
+                    🎬 {{ strtoupper(__('dashboard.banners.video')) }}
                 </div>
             @endif
 
@@ -141,11 +141,11 @@ function banner_img_url(?string $path): string {
                 </div>
                 <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:2px;">
                     @php $isGif = $b->image && str_ends_with(strtolower($b->image), '.gif'); @endphp
-                    @if($b->image && $b->has_video) {{ $isGif ? 'GIF + Video' : 'Image + Video' }}
-                    @elseif($b->has_video) Video only
-                    @elseif($isGif) GIF animation
-                    @elseif($b->image) Image only
-                    @else Text only
+                    @if($b->image && $b->has_video) {{ $isGif ? __('dashboard.banners.gifVideo') : __('dashboard.banners.imageVideo') }}
+                    @elseif($b->has_video) {{ __('dashboard.banners.videoOnly') }}
+                    @elseif($isGif) {{ __('dashboard.banners.gifAnimation') }}
+                    @elseif($b->image) {{ __('dashboard.banners.imageOnly') }}
+                    @else {{ __('dashboard.banners.textOnly') }}
                     @endif
                 </div>
             </div>
@@ -164,20 +164,20 @@ function banner_img_url(?string $path): string {
                 @js($b->video_type ?? ''),
                 {{ $b->product_id ?? 'null' }},
                 @js($b->product?->name ?? '')
-                )" class="btn btn-outline btn-sm">EDIT</button>
+                )" class="btn btn-outline btn-sm">{{ strtoupper(__('dashboard.banners.edit')) }}</button>
 
                 <form method="POST" action="{{ route('dashboard.banners.destroy', $b) }}"
-                      onsubmit="return confirm('Delete this banner?')" style="display:inline;">
+                      onsubmit="return confirm('{{ __('dashboard.banners.deleteConfirm') }}')" style="display:inline;">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-sm"
-                        style="border:1px solid #ef4444; color:#ef4444; background:transparent;">DEL</button>
+                        style="border:1px solid #ef4444; color:#ef4444; background:transparent;">{{ strtoupper(__('dashboard.banners.delete')) }}</button>
                 </form>
             </div>
         </div>
     </div>
     @empty
     <div style="grid-column:1/-1; text-align:center; color:rgba(255,255,255,0.3); padding:60px 0; font-size: var(--title-size);">
-        No banners yet — click ADD BANNER to get started.
+        {{ __('dashboard.banners.noBanners') }}
     </div>
     @endforelse
 </div>
@@ -204,7 +204,7 @@ function banner_img_url(?string $path): string {
             <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
                         border-radius:10px; padding:12px 16px; margin-bottom:16px;">
                 <div style="color:#ef4444; font-weight:800; font-size: var(--title-size); margin-bottom:6px;">
-                    ✕ Please fix the following errors:
+                    ✕ {{ __('dashboard.banners.validateError') }}
                 </div>
                 @foreach($errors->all() as $e)
                     <div style="color:#fca5a5; font-size: var(--title-size); margin-bottom:2px;">• {{ $e }}</div>
@@ -228,31 +228,31 @@ function banner_img_url(?string $path): string {
 
                 {{-- Title --}}
                 <div style="grid-column:1/-1;">
-                    <label class="form-label">TITLE *</label>
+                    <label class="form-label">{{ __('dashboard.banners.title') }}</label>
                     <input type="text" name="title" id="fTitle" class="form-control" required placeholder="e.g. Tronmatix Build PC">
                 </div>
 
                 {{-- Subtitle --}}
                 <div style="grid-column:1/-1;">
-                    <label class="form-label">SUBTITLE</label>
+                    <label class="form-label">{{ __('dashboard.banners.subtitle') }}</label>
                     <input type="text" name="subtitle" id="fSubtitle" class="form-control" placeholder="e.g. RTX 5090 NEW Stock">
                 </div>
 
                 {{-- Badge + Order --}}
                 <div>
-                    <label class="form-label">BADGE LABEL</label>
+                    <label class="form-label">{{ __('dashboard.banners.badgeLabel') }}</label>
                     <input type="text" name="badge" id="fBadge" class="form-control" placeholder="e.g. New Arrival">
                 </div>
                 <div>
-                    <label class="form-label">DISPLAY ORDER</label>
+                    <label class="form-label">{{ __('dashboard.banners.displayOrder') }}</label>
                     <input type="number" name="order" id="fOrder" class="form-control" min="0" value="0">
                 </div>
 
                 {{-- Product ID --}}
                 <div style="grid-column:1/-1;">
-                    <label class="form-label">APPLY TO PRODUCT (Optional)</label>
+                    <label class="form-label">{{ __('dashboard.banners.applyProduct') }}</label>
                     <div style="position:relative;">
-                        <input type="text" id="productSearch" placeholder="🔍 Search product…"
+                        <input type="text" id="productSearch" placeholder="🔍 {{ __('dashboard.banners.searchProduct') }}"
                             autocomplete="off" oninput="filterProducts(this.value)"
                             onfocus="showProductDropdown()"
                             style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; padding:10px 14px; box-sizing:border-box; outline:none;"
@@ -260,7 +260,7 @@ function banner_img_url(?string $path): string {
                             onblur="setTimeout(hideProductDropdown,200); this.style.borderColor='rgba(255,255,255,0.15)'">
                         {{-- hidden real select for form submit --}}
                         <select name="product_id" id="fProductId" style="display:none;">
-                            <option value="">-- All products (sitewide) --</option>
+                            <option value="">-- {{ __('dashboard.banners.allProducts') }} --</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}">{{ $product->name }}</option>
                             @endforeach
@@ -277,7 +277,7 @@ function banner_img_url(?string $path): string {
 
                 {{-- Colors --}}
                 <div>
-                    <label class="form-label">BACKGROUND COLOR</label>
+                    <label class="form-label">{{ __('dashboard.banners.bgColor') }}</label>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <input type="color" name="bg_color" id="fBgColor" value="#111111"
                                style="width:42px; height:42px; border:none; border-radius:8px; cursor:pointer; background:none; padding:2px;">
@@ -287,7 +287,7 @@ function banner_img_url(?string $path): string {
                     </div>
                 </div>
                 <div>
-                    <label class="form-label">TEXT COLOR</label>
+                    <label class="form-label">{{ __('dashboard.banners.textColor') }}</label>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <input type="color" name="text_color" id="fTextColor" value="#F97316"
                                style="width:42px; height:42px; border:none; border-radius:8px; cursor:pointer; background:none; padding:2px;">
@@ -300,8 +300,8 @@ function banner_img_url(?string $path): string {
                 {{-- ─── IMAGE / GIF ──────────────────────────────────────── --}}
                 <div style="grid-column:1/-1; border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:18px;">
                     <label class="form-label">
-                        BANNER IMAGE / GIF
-                        <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(GIFs animate automatically)</span>
+                        {{ __('dashboard.banners.imageGif') }}
+                        <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">{{ __('dashboard.banners.gifAnimate') }}</span>
                     </label>
                     <div style="background:#111; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:16px;">
                         {{-- Current image/GIF preview --}}
@@ -316,7 +316,7 @@ function banner_img_url(?string $path): string {
                             <label style="display:flex; align-items:center; gap:6px; margin-top:8px; cursor:pointer; font-size: var(--title-size); color:rgba(255,255,255,0.5);">
                                 <input type="checkbox" name="remove_image" id="fRemoveImage" value="1"
                                        style="accent-color:#ef4444; width:15px; height:15px;">
-                                Remove current image
+                                {{ __('dashboard.banners.removeCurrent') }}
                             </label>
                         </div>
 
@@ -336,11 +336,11 @@ function banner_img_url(?string $path): string {
                                       background:rgba(168,85,247,0.9); color:#fff; font-size: var(--title-size); font-weight:800;
                                       letter-spacing:1px; border-radius:4px; padding:2px 6px;">GIF</span>
                             </div>
-                            <p style="color:#22c55e; font-size: var(--title-size); margin-top:4px; font-weight:700;">✓ New image selected</p>
+                            <p style="color:#22c55e; font-size: var(--title-size); margin-top:4px; font-weight:700;">✓ {{ __('dashboard.banners.newImageSelected') }}</p>
                         </div>
 
                         <p style="color:rgba(255,255,255,0.3); font-size: var(--title-size); margin-top:6px;">
-                            JPG, PNG, WEBP, <strong style="color:rgba(168,85,247,0.8);">GIF</strong> — max 50 MB
+                            {{ __('dashboard.banners.imageFormat') }}
                         </p>
                     </div>
                 </div>
@@ -348,8 +348,8 @@ function banner_img_url(?string $path): string {
                 {{-- ─── VIDEO ─────────────────────────────────────────────── --}}
                 <div style="grid-column:1/-1;">
                     <label class="form-label">
-                        BANNER VIDEO
-                        <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(optional — plays as background)</span>
+                        {{ __('dashboard.banners.bannerVideo') }}
+                        <span style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">{{ __('dashboard.banners.videoOptional') }}</span>
                     </label>
 
                     <div id="videoPanel_upload" style="background:#111; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:16px;">
@@ -360,12 +360,12 @@ function banner_img_url(?string $path): string {
                             <label style="display:flex; align-items:center; gap:6px; margin-top:8px; cursor:pointer; font-size: var(--title-size); color:rgba(255,255,255,0.5);">
                                 <input type="checkbox" name="remove_video" id="fRemoveVideo" value="1"
                                        style="accent-color:#ef4444; width:15px; height:15px;">
-                                Remove current video
+                                {{ __('dashboard.banners.removeCurrentVideo') }}
                             </label>
                         </div>
                         <input type="file" name="video_file" id="fVideoFile" accept="video/mp4,video/webm,video/ogg"
                                class="form-control" style="border:none; background:transparent; padding:0; font-size: var(--title-size);">
-                        <p style="color:rgba(255,255,255,0.3); font-size: var(--title-size); margin-top:6px;">MP4, WebM, OGG — max 50 MB. Will autoplay muted on loop.</p>
+                        <p style="color:rgba(255,255,255,0.3); font-size: var(--title-size); margin-top:6px;">{{ __('dashboard.banners.videoFormat') }}</p>
                     </div>
                 </div>
 
@@ -373,13 +373,13 @@ function banner_img_url(?string $path): string {
                 <div style="grid-column:1/-1; display:flex; align-items:center; gap:10px;">
                     <input type="checkbox" name="active" id="fActive" value="1" checked
                            style="width:18px; height:18px; accent-color:#F97316;">
-                    <label for="fActive" class="form-label" style="margin:0; cursor:pointer;">Active (visible on storefront)</label>
+                    <label for="fActive" class="form-label" style="margin:0; cursor:pointer;">{{ __('dashboard.banners.active') }}</label>
                 </div>
             </div>
 
             <div style="margin-top:24px; display:flex; gap:12px;">
-                <button type="button" onclick="closeModal()" class="btn btn-outline" style="flex:1;">CANCEL</button>
-                <button type="submit" class="btn btn-orange" style="flex:1; font-size: var(--title-size);">SAVE BANNER</button>
+                <button type="button" onclick="closeModal()" class="btn btn-outline" style="flex:1;">{{ strtoupper(__('dashboard.banners.cancel')) }}</button>
+                <button type="submit" class="btn btn-orange" style="flex:1; font-size: var(--title-size);">{{ strtoupper(__('dashboard.banners.saveBanner')) }}</button>
             </div>
         </form>
     </div>
@@ -494,7 +494,7 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
     document.getElementById('bannerModal').style.display = 'flex'
 
     if (id) {
-        document.getElementById('modalTitle').textContent  = 'EDIT BANNER'
+        document.getElementById('modalTitle').textContent  = '{{ strtoupper(__("dashboard.banners.editBanner")) }}'
         document.getElementById('bannerForm').action       = `/dashboard/banners/${id}`
         document.getElementById('formMethod').value        = 'PUT'
         document.getElementById('fTitle').value            = title    || ''
@@ -532,7 +532,7 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
             document.getElementById('currentVideoWrap').style.display = 'none'
         }
     } else {
-        document.getElementById('modalTitle').textContent  = 'ADD BANNER'
+        document.getElementById('modalTitle').textContent  = '{{ strtoupper(__("dashboard.banners.addBanner")) }}'
         document.getElementById('bannerForm').action       = '{{ route("dashboard.banners.store") }}'
         document.getElementById('formMethod').value        = 'POST'
         document.getElementById('bannerForm').reset()

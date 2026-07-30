@@ -16,9 +16,9 @@
                     border:1px solid rgba(249,115,22,0.3); display:flex; align-items:center;
                     justify-content:center; font-size: var(--title-size);">📊</div>
         <div>
-            <div style="font-size: var(--title-size); font-weight:900; letter-spacing:3px;">REPORTS</div>
+            <div style="font-size: var(--title-size); font-weight:900; letter-spacing:3px;">{{ strtoupper(__('dashboard.nav.reports')) }}</div>
             <div style="font-size: var(--title-size); color:var(--text-muted); margin-top:2px;">
-                Analytics overview &amp; data export
+                {{ __('dashboard.report.pageDesc') }}
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@
               letter-spacing:1px; text-decoration:none; transition:all .2s;"
        onmouseover="this.style.color='var(--text-primary)'"
        onmouseout="this.style.color='rgba(255,255,255,0.5)'">
-        ← BACK TO DASHBOARD
+        ← {{ strtoupper(__('dashboard.btn.goToDashboard')) }}
     </a>
 </div>
 
@@ -45,17 +45,17 @@
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card label="Revenue" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green">
+        <x-kpi-card :label="__('dashboard.stats.kpiRevenue')" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card label="New Customers" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue">
+        <x-kpi-card :label="__('dashboard.stats.kpiCustomers')" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card label="Total Products" value="{{ number_format($stats['total_products']) }}" color="purple">
+        <x-kpi-card :label="__('dashboard.stats.totalProducts')" value="{{ number_format($stats['total_products']) }}" color="purple">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             </x-slot>
@@ -73,9 +73,9 @@
                         border:1px solid rgba(249,115,22,0.25); display:flex; align-items:center;
                         justify-content:center; font-size: var(--title-size); flex-shrink:0;">⬇</div>
             <div>
-                <span class="card-title">EXPORT DATA</span>
+                <span class="card-title">{{ strtoupper(__('dashboard.report.exportData')) }}</span>
                 <div style="font-size: var(--title-size); color:var(--text-muted); margin-top:1px;">
-                    Excel exports all 8 sheets &middot; CSV exports Summary sheet only
+                    {{ __('dashboard.report.exportDesc') }}
                 </div>
             </div>
         </div>
@@ -86,28 +86,28 @@
         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
             <div style="background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.2);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">THIS MONTH SAVED</div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">{{ strtoupper(__('dashboard.report.thisMonthSaved')) }}</div>
                 <div style="font-size: var(--text-2xl); font-weight:800; color:#A855F7; letter-spacing:1px;">
                     ${{ number_format($stats['monthly_discount_used'], 2) }}
                 </div>
             </div>
             <div style="background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">DISCOUNT USES (30 DAYS)</div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">{{ strtoupper(__('dashboard.report.discountUses30d')) }}</div>
                 <div style="font-size: var(--text-2xl); font-weight:800; color:#F97316; letter-spacing:1px;">
                     {{ number_format($stats['monthly_discount_count']) }}
                 </div>
             </div>
             <div style="background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.18);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TOTAL REVENUE</div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">{{ strtoupper(__('dashboard.stats.totalRevenue')) }}</div>
                 <div style="font-size: var(--text-2xl); font-weight:800; color:#22C55E; letter-spacing:1px;">
                     ${{ number_format($stats['total_revenue'], 0) }}
                 </div>
             </div>
             <div style="background:rgba(59,130,246,0.07); border:1px solid rgba(59,130,246,0.18);
                  border-radius:10px; padding:14px 20px; flex:1; min-width:160px;">
-                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">TOTAL ORDERS</div>
+                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; margin-bottom:4px;">{{ strtoupper(__('dashboard.stats.totalOrders')) }}</div>
                 <div style="font-size: var(--text-2xl); font-weight:800; color:#3B82F6; letter-spacing:1px;">
                     {{ number_format($stats['total_orders']) }}
                 </div>
@@ -121,7 +121,7 @@
                      border:1px solid rgba(255,255,255,0.07); border-radius:12px;">
 
             <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FROM MONTH</label>
+                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">{{ strtoupper(__('dashboard.report.fromMonth')) }}</label>
                 <input type="month" name="from"
                        class="export-input"
                        value="{{ now()->subMonth()->format('Y-m') }}"
@@ -129,7 +129,7 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">TO MONTH</label>
+                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">{{ strtoupper(__('dashboard.report.toMonth')) }}</label>
                 <input type="month" name="to"
                        class="export-input"
                        value="{{ now()->format('Y-m') }}"
@@ -137,16 +137,16 @@
             </div>
 
             <div style="display:flex; flex-direction:column; gap:6px;">
-                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">FORMAT</label>
+                <label style="font-size: var(--title-size); color:rgba(255,255,255,0.4); letter-spacing:1.5px; font-weight:700;">{{ strtoupper(__('dashboard.report.format')) }}</label>
                 <select name="format" class="export-input export-select">
-                    <option value="xlsx">📊 Excel (.xlsx) — All 8 sheets</option>
+                    <option value="xlsx">📊 {{ __('dashboard.report.excel') }}</option>
                     <!-- <option value="csv">📄 CSV (.csv) — Summary only</option> -->
-                    <option value="pdf">📕 PDF (.pdf) — Styled report</option>
+                    <option value="pdf">📕 {{ __('dashboard.report.pdf') }}</option>
                 </select>
             </div>
 
             <button type="submit" class="btn btn-orange" style="padding:10px 24px; gap:8px;">
-                ⬇ EXPORT
+                ⬇ {{ strtoupper(__('dashboard.export.button')) }}
             </button>
 
         </form>
@@ -225,7 +225,7 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📈 MONTHLY REVENUE</span>
+            <span class="card-title">📈 {{ strtoupper(__('dashboard.report.monthlyRevenue')) }}</span>
             <span class="chart-badge">{{ $month->format('F Y') }}</span>
         </div>
         <div class="card-body">
@@ -234,7 +234,7 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📦 MONTHLY ORDERS</span>
+            <span class="card-title">📦 {{ strtoupper(__('dashboard.report.monthlyOrders')) }}</span>
             <span class="chart-badge">{{ $month->format('F Y') }}</span>
         </div>
         <div class="card-body">
@@ -247,8 +247,8 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">📅 REVENUE TREND</span>
-            <span class="chart-badge">Last 12 Months</span>
+            <span class="card-title">📅 {{ strtoupper(__('dashboard.report.revenueTrend')) }}</span>
+            <span class="chart-badge">{{ __('dashboard.report.last12Months') }}</span>
         </div>
         <div class="card-body">
             <canvas id="dailyChart" height="110"></canvas>
@@ -256,7 +256,7 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">👤 USER REGISTRATIONS</span>
+            <span class="card-title">👤 {{ strtoupper(__('dashboard.report.userRegistrations')) }}</span>
             <span class="chart-badge">Last 12 Months</span>
         </div>
         <div class="card-body">
@@ -269,8 +269,8 @@
 <div class="chart-grid-2" style="margin-bottom:20px;">
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🥧 ORDER STATUS</span>
-            <span class="chart-badge">All Time</span>
+            <span class="card-title">🥧 {{ strtoupper(__('dashboard.report.orderStatus')) }}</span>
+            <span class="chart-badge">{{ __('dashboard.report.allTime') }}</span>
         </div>
         <div class="card-body" style="display:flex; justify-content:center;">
             <div style="width:260px; height:260px;">
@@ -280,8 +280,8 @@
     </div>
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🍩 REVENUE BY CATEGORY</span>
-            <span class="chart-badge">All Time</span>
+            <span class="card-title">🍩 {{ strtoupper(__('dashboard.report.revenueByCategory')) }}</span>
+            <span class="chart-badge">{{ __('dashboard.report.allTime') }}</span>
         </div>
         <div class="card-body" style="display:flex; justify-content:center;">
             <div style="width:260px; height:260px;">
@@ -298,13 +298,13 @@
 
     <div class="card">
         <div class="card-header">
-            <span class="card-title">🏆 TOP PRODUCTS ({{ $top_products->count() }})</span>
-            <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm">VIEW ALL</a>
+            <span class="card-title">🏆 {{ strtoupper(__('dashboard.report.topProducts')) }} ({{ $top_products->count() }})</span>
+            <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm">{{ strtoupper(__('dashboard.report.viewAll')) }}</a>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>PRODUCT</th><th>CATEGORY</th><th>SOLD</th></tr>
+                    <tr><th>{{ strtoupper(__('dashboard.table.product')) }}</th><th>{{ strtoupper(__('dashboard.table.category')) }}</th><th>{{ strtoupper(__('dashboard.table.sold')) }}</th></tr>
                 </thead>
                 <tbody>
                     @forelse($top_products as $product)
@@ -341,13 +341,13 @@
 
     <div class="card">
         <div class="card-header">
-            <span class="card-title">⚠ LOW STOCK ({{ $low_stock->count() }})</span>
-            <a href="{{ route('dashboard.products', ['stock'=>'low']) }}" class="btn btn-outline btn-sm">VIEW ALL</a>
+            <span class="card-title">⚠ {{ strtoupper(__('dashboard.report.lowStock')) }} ({{ $low_stock->count() }})</span>
+            <a href="{{ route('dashboard.products', ['stock'=>'low']) }}" class="btn btn-outline btn-sm">{{ strtoupper(__('dashboard.report.viewAll')) }}</a>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>PRODUCT</th><th>STOCK</th></tr>
+                    <tr><th>{{ strtoupper(__('dashboard.table.product')) }}</th><th>{{ strtoupper(__('dashboard.table.stock')) }}</th></tr>
                 </thead>
                 <tbody>
                     @forelse($low_stock as $product)

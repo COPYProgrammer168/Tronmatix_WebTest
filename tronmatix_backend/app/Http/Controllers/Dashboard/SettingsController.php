@@ -329,14 +329,18 @@ class SettingsController extends Controller
 
         $updated = User::where('role', 'vip')
             ->where(function ($query) use ($vipGoal) {
+                // No non-cancelled orders at all
                 $query->whereDoesntHave('orders', function ($q) {
                     $q->whereNotIn('status', [Order::STATUS_CANCELLED]);
                 })
-                ->orWhereHas('orders', function ($q) use ($vipGoal) {
-                    $q->whereNotIn('status', [Order::STATUS_CANCELLED])
-                      ->selectRaw('SUM(total) as total_spent')
-                      ->groupBy('user_id')
-                      ->havingRaw('total_spent < ?', [$vipGoal]);
+                // Total spent from non-cancelled orders < threshold
+                ->orWhereIn('id', function ($sub) use ($vipGoal) {
+                    $sub->select('user_id')
+                        ->from('orders')
+                        ->whereNotIn('status', [Order::STATUS_CANCELLED])
+                        ->whereColumn('orders.user_id', 'users.id')
+                        ->groupBy('user_id')
+                        ->havingRaw('SUM(total) < ?', [$vipGoal]);
                 });
             })
             ->update(['role' => 'customer']);

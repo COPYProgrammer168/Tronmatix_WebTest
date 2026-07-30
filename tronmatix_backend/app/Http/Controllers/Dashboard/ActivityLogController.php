@@ -37,7 +37,7 @@ class ActivityLogController extends Controller
     {
         $this->assertAdmin();
 
-        $query = ActivityLog::query();
+        $query = ActivityLog::query()->whereNotNull('created_at');
 
         if ($request->filled('action')) {
             $query->where('action', $request->action);
@@ -100,7 +100,7 @@ class ActivityLogController extends Controller
     {
         $this->assertAdmin();
 
-        $query = ActivityLog::query()->withCount([]);
+        $query = ActivityLog::query()->whereNotNull('created_at');
 
         // Filters
         if ($request->filled('action')) {

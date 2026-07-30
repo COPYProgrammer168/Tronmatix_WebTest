@@ -104,7 +104,7 @@ export default function Step1DeliveryInfo({
           <span style={{ fontSize: 22 }}>🏪</span>
           <div>
             <p className="font-bold" style={{ fontSize: 14, color: '#22c55e' }}>{t("checkout.pickupSelectedTitle")}</p>
-            <p style={{ fontSize: 13, color: c.textSub, marginTop: 2 }}>{t("checkout.pickupSelectedHint")}</p>
+            <p style={{ fontSize: isKhmer ? 13 : 14, color: c.textSub, marginTop: 2 }}>{t("checkout.pickupSelectedHint")}</p>
           </div>
         </div>
       )}
@@ -113,7 +113,7 @@ export default function Step1DeliveryInfo({
       <div className="grid grid-cols-2 gap-4">
         {[["name", "Full Name *", "Your name"], ["phone", "Phone *", "Phone number"]].map(([n, l, p]) => (
           <div key={n}>
-            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>{l}</label>
+            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>{l}</label>
             <input
               name={n} value={location[n]} onChange={onChange} placeholder={p}
               className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
@@ -128,7 +128,7 @@ export default function Step1DeliveryInfo({
         <>
           {/* Address */}
           <div>
-            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>{isKhmer ? t("checkout.address") : "Address *"}</label>
+            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>{isKhmer ? t("checkout.address") : "Address *"}</label>
             <input
               name="address" value={location.address} onChange={onChange}
               placeholder="Street / Village / Commune"
@@ -151,7 +151,7 @@ export default function Step1DeliveryInfo({
 
           {/* Map pin picker */}
           <div>
-            <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>
+            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>
               {isKhmer ? t("locations.mapPin") : "PIN LOCATION ON MAP (optional)"}
             </label>
             <button type="button" onClick={() => setShowMapPicker(true)}
@@ -260,7 +260,7 @@ export default function Step1DeliveryInfo({
       {/* Pickup schedule */}
       {isPickup && (
         <div className="rounded-xl p-4" style={{ background: c.scheduleBg, border: `1px solid ${c.scheduleBor}` }}>
-          <p className="font-bold mb-2" style={{ fontSize: 13, letterSpacing: isKhmer ? 0 : 1, color: c.label }}>{t("checkout.preferredPickupDate")}</p>
+          <p className="font-bold mb-2" style={{ fontSize: isKhmer ? 13 : 15, letterSpacing: isKhmer ? 0 : 1, color: c.label }}>{t("checkout.preferredPickupDate")}</p>
           <DeliverySchedulePicker value={delivery} onChange={onDeliveryChange} />
         </div>
       )}
@@ -279,7 +279,7 @@ export default function Step1DeliveryInfo({
             <span className="font-bold" style={{ fontSize: 15, color: c.saveText }}>
               💾 {isKhmer ? t("checkout.saveAddress") : "Save this address when I place the order"}
             </span>
-            <p style={{ fontSize: 12, color: dark ? '#6b7280' : '#9ca3af', marginTop: 2 }}>
+            <p style={{ fontSize: isKhmer ? 12 : 13, color: dark ? '#6b7280' : '#9ca3af', marginTop: 2 }}>
               {isKhmer ? t("checkout.saveAddressHint") : "Automatically saved to your profile when you checkout"}
             </p>
           </div>

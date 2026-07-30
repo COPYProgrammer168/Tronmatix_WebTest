@@ -99,19 +99,22 @@
         font-family:var(--font-kh);
         font-weight:400;
         line-height:var(--lh-kh);
+        font-size:var(--text-xs);
     }
 
-    /* ── Table overrides for Khmer ───────────────────────────────────── */
-    :lang(km) #providerTable thead th,
-    :lang(km) #providerTable tbody td {
-        font-family:var(--font-kh) !important;
-        font-weight:400 !important;
-        line-height:var(--lh-kh);
-    }
-    :lang(km) #providerTable .provider-name {
-        font-weight:400 !important;
-    }
-    :lang(km) .btn-text {
+    /* ── Khmer font override for all text on this page ───────────────── */
+    :lang(km) body,
+    :lang(km) .s-input,
+    :lang(km) .modal-box,
+    :lang(km) .modal-box *,
+    :lang(km) #providerTable,
+    :lang(km) #providerTable *,
+    :lang(km) button,
+    :lang(km) .btn-text,
+    :lang(km) label,
+    :lang(km) input,
+    :lang(km) select,
+    :lang(km) textarea {
         font-family:var(--font-kh) !important;
         font-weight:400 !important;
     }
@@ -140,12 +143,12 @@
         <table style="width:100%; border-collapse:collapse;">
             <thead>
                 <tr style="background:var(--surface-2); border-bottom:1px solid var(--border);">
-                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-xs); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.providerName')</th>
-                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-xs); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.deliveryZone')</th>
-                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-xs); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.fee')</th>
-                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-xs); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.estimatedTime')</th>
-                    <th style="text-align:center; padding:14px 16px; font-size:var(--text-xs); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.table.status')</th>
-                    <th style="text-align:center; padding:14px 16px; font-size:var(--text-xs); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.table.actions')</th>
+                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-sm); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.providerName')</th>
+                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-sm); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.deliveryZone')</th>
+                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-sm); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.fee')</th>
+                    <th style="text-align:left; padding:14px 16px; font-size:var(--text-sm); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.form.estimatedTime')</th>
+                    <th style="text-align:center; padding:14px 16px; font-size:var(--text-sm); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.table.status')</th>
+                    <th style="text-align:center; padding:14px 16px; font-size:var(--text-sm); font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">@lang('dashboard.table.actions')</th>
                 </tr>
             </thead>
             <tbody>
@@ -162,7 +165,7 @@
                             @endif
                             <div>
                                 <div class="provider-name" style="font-size:var(--text-md); font-weight:700; color:var(--text);">{{ $provider->name }}</div>
-                                <div style="font-size:var(--text-xs); color:var(--text-xfaint); margin-top:2px;">{{ __('Sort') }}: {{ $provider->sort_order }}</div>
+                                <div style="font-size:var(--text-xs); color:var(--text-xfaint); margin-top:2px;">{{ __('dashboard.btn.sort') }}: {{ $provider->sort_order }}</div>
                             </div>
                         </div>
                     </td>
@@ -173,7 +176,7 @@
                         @if($provider->fee !== null)
                         <span style="font-size:var(--text-md); font-weight:800; color:var(--orange);">${{ number_format($provider->fee, 2) }}</span>
                         @else
-                        <span style="font-size:var(--text-sm); color:var(--text-xfaint); font-style:italic;">{{ __('Varies') }}</span>
+                        <span style="font-size:var(--text-sm); color:var(--text-xfaint); font-style:italic;">{{ __('checkout.feeVaries') }}</span>
                         @endif
                     </td>
                     <td style="padding:14px 16px; font-size:var(--text-sm); color:var(--text-muted);">
@@ -189,7 +192,7 @@
                                 color:{{ $provider->is_active ? '#22c55e' : '#ef4444' }};
                                 border:1px solid {{ $provider->is_active ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)' }};
                             " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
-                                {{ $provider->is_active ? '● ' . __('ACTIVE') : '○ ' . __('INACTIVE') }}
+                                {{ $provider->is_active ? '● ' . strtoupper(__('dashboard.status.active')) : '○ ' . strtoupper(__('dashboard.status.inactive')) }}
                             </button>
                         </form>
                     </td>

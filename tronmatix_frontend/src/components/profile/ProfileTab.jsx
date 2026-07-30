@@ -8,7 +8,7 @@ import TelegramConnect from './TelegramConnect'
 // NOTE: khFont/khBodyFont/isKhmer/dark defined inside component below
 // inputStyle is now a factory called inside the component with dark context
 const getLabelStyleProfile = (isKhmer) => ({
-  display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 2,
+  display: 'block', fontSize: isKhmer ? 11 : 13, fontWeight: isKhmer ? 400 : 700, letterSpacing: isKhmer ? 0 : 2,
   fontFamily: isKhmer ? 'Kh-Koulen, sans-serif' : 'Rajdhani, sans-serif',
   color: '#9CA3AF', marginBottom: 8,
   textTransform: isKhmer ? 'none' : 'uppercase',
@@ -32,7 +32,7 @@ const getInputStyle = (hasError, editable = true, dark = false) => ({
 
 const ROLE_STYLE = {
   customer: { bg: '#F9FAFB', border: '#E5E7EB', color: '#6B7280', icon: '👤', label: 'CUSTOMER', note: 'Standard Member' },
-  vip: { bg: 'rgba(249,115,22,0.06)', border: '#FDBA74', color: '#F97316', icon: '⭐', label: 'VIP', note: 'VIP Member' },
+  vip: { bg: 'rgba(249,115,22,0.06)', border: '#FDBA74', color: '#F97316', icon: '⭐', label: 'VIP', note: 'VIP Customer' },
   reseller: { bg: 'rgba(59,130,246,0.06)', border: '#93C5FD', color: '#3B82F6', icon: '🏪', label: 'RESELLER', note: 'Reseller Partner' },
   banned: { bg: 'rgba(239,68,68,0.06)', border: '#FCA5A5', color: '#EF4444', icon: '🚫', label: 'BANNED', note: 'Contact support' },
 }
@@ -115,7 +115,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
             pointerEvents: 'none',
           }}>
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg,#22C55E,#16A34A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>✓</div>
-          <div style={{ marginTop: 14, fontSize: 18, fontWeight: 800, color: '#16A34A', fontFamily: 'Rajdhani,sans-serif', letterSpacing: 2 }}>SAVED!</div>
+          <div style={{ marginTop: 14, fontSize: 18, fontWeight: isKhmer ? 400 : 800, color: '#16A34A', fontFamily: 'Rajdhani,sans-serif', letterSpacing: 2 }}>SAVED!</div>
         </div>
       )}
 
@@ -125,13 +125,13 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, margin: 0, fontFamily: khFont }}>{isKhmer ? t('profile.personalInfo') : 'Personal Information'}</h2>
-          <div style={{ fontSize: 14, color: '#9CA3AF', marginTop: 4, fontFamily: khBodyFont }}>{isKhmer ? t('profile.manageAccount') : 'Manage your account details'}</div>
+          <h2 style={{ fontSize: isKhmer ? 20 : 22, fontWeight: isKhmer ? 400 : 800, letterSpacing: isKhmer ? 0 : 1, margin: 0, fontFamily: khFont }}>{isKhmer ? t('profile.personalInfo') : 'Personal Information'}</h2>
+          <div style={{ fontSize: isKhmer ? 14 : 15, color: '#9CA3AF', marginTop: 4, fontFamily: khBodyFont }}>{isKhmer ? t('profile.manageAccount') : 'Manage your account details'}</div>
         </div>
         {!editing ? (
-          <button onClick={() => setEditing(true)} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.edit') : '✏️ EDIT'}</button>
+          <button onClick={() => setEditing(true)} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: isKhmer ? 400 : 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.edit') : '✏️ EDIT'}</button>
         ) : (
-          <button onClick={cancel} style={{ background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.cancel') : 'CANCEL'}</button>
+          <button onClick={cancel} style={{ background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: isKhmer ? 400 : 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.cancel') : 'CANCEL'}</button>
         )}
       </div>
 
@@ -148,7 +148,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           <label style={{ fontFamily: khBodyFont, ...labelStyle }}>{isKhmer ? 'ឈ្មោះរបស់អ្នក' : 'USERNAME'}</label>
           <div style={{ position: 'relative' }}>
             <input value={user?.username || ''} readOnly style={{ ...inputStyle(false, false), paddingRight: 80 }} />
-            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 700, color: '#9CA3AF', background: dark ? '#374151' : '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
+            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: isKhmer ? 400 : 700, color: '#9CA3AF', background: dark ? '#374151' : '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
           </div>
         </div>
 
@@ -156,9 +156,9 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           <label style={{ fontFamily: khBodyFont, ...labelStyle }}>{isKhmer ? 'អុីម៉ែល' : 'EMAIL'}</label>
           <div style={{ position: 'relative' }}>
             <input value={user?.email || ''} readOnly style={{ ...inputStyle(false, false), paddingRight: 80 }} />
-            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 700, color: '#9CA3AF', background: dark ? '#374151' : '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
+            <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: isKhmer ? 400 : 700, color: '#9CA3AF', background: dark ? '#374151' : '#F3F4F6', padding: '2px 8px', borderRadius: 6 }}>LOCKED</span>
           </div>
-          <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 5 }}>Contact support to change your email address</div>
+          <div style={{ fontSize: isKhmer ? 12 : 13, color: '#9CA3AF', marginTop: 5 }}>Contact support to change your email address</div>
         </div>
 
         <div>
@@ -175,7 +175,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           <button onClick={handleSave} disabled={saving} style={{
             width: '100%', padding: 14, borderRadius: 12, border: 'none',
             background: saving ? 'linear-gradient(135deg,#FED7AA,#FCA5A5)' : 'linear-gradient(135deg,#F97316,#ea580c)',
-            color: '#fff', fontFamily: khFont, fontSize: 17, fontWeight: 800, letterSpacing: isKhmer ? 0 : 2,
+            color: '#fff', fontFamily: khFont, fontSize: 17, fontWeight: isKhmer ? 400 : 800, letterSpacing: isKhmer ? 0 : 2,
             cursor: saving ? 'wait' : 'pointer', boxShadow: saving ? 'none' : '0 4px 20px rgba(249,115,22,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
           }}>
@@ -201,13 +201,13 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 26 }}>{s.icon}</span>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: 2, color: '#9CA3AF', fontWeight: 700 }}>ACCOUNT ROLE</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: s.color, fontFamily: 'Rajdhani,sans-serif', letterSpacing: 1 }}>{s.label}</div>
+              <div style={{ fontSize: isKhmer ? 10 : 12, letterSpacing: 2, color: '#9CA3AF', fontWeight: isKhmer ? 400 : 700 }}>ACCOUNT ROLE</div>
+              <div style={{ fontSize: 18, fontWeight: isKhmer ? 400 : 800, color: s.color, fontFamily: 'Rajdhani,sans-serif', letterSpacing: 1 }}>{s.label}</div>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, color: s.color, fontWeight: 600, opacity: 0.8 }}>{s.note}</div>
-            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} spent</div>}
+            <div style={{ fontSize: isKhmer ? 12 : 13, color: s.color, fontWeight: 600, opacity: 0.8 }}>{s.note}</div>
+            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: isKhmer ? 400 : 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} spent</div>}
           </div>
         </div>
 
@@ -249,8 +249,8 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           { label: 'STATUS', value: user?.role === 'banned' ? 'Banned 🚫' : 'Active ✓' },
         ].map(({ label, value }) => (
           <div key={label} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: '#9CA3AF', fontWeight: 700 }}>{label}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: dark ? '#f9fafb' : '#374151', marginTop: 4 }}>{value}</div>
+            <div style={{ fontSize: isKhmer ? 10 : 12, letterSpacing: 2, color: '#9CA3AF', fontWeight: isKhmer ? 400 : 700 }}>{label}</div>
+            <div style={{ fontSize: isKhmer ? 15 : 16, fontWeight: isKhmer ? 400 : 700, color: dark ? '#f9fafb' : '#374151', marginTop: 4 }}>{value}</div>
           </div>
         ))}
       </div>

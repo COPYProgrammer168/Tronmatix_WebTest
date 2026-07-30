@@ -56,10 +56,10 @@ export default function DeliveryProviderSelector({ zoneId, onSelect, selectedVal
   // Loading state
   if (loading) return (
     <div>
-      <label className="block font-bold mb-2" style={{ fontSize: 13, color: c.muted, fontFamily: font }}>
+      <label className="block font-bold mb-2" style={{ fontSize: isKhmer ? 13 : 15, color: c.muted, fontFamily: font }}>
         {isKhmer ? t("checkout.deliveryProvider") : "Delivery Provider"}
       </label>
-      <div style={{ padding: "14px 16px", borderRadius: 10, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: 13 }}>
+      <div style={{ padding: "14px 16px", borderRadius: 10, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
         ⏳ {isKhmer ? t("locations.loading") : "Loading providers..."}
       </div>
     </div>
@@ -68,10 +68,10 @@ export default function DeliveryProviderSelector({ zoneId, onSelect, selectedVal
   // Error state
   if (error) return (
     <div>
-      <label className="block font-bold mb-2" style={{ fontSize: 13, color: c.muted, fontFamily: font }}>
+      <label className="block font-bold mb-2" style={{ fontSize: isKhmer ? 13 : 15, color: c.muted, fontFamily: font }}>
         {isKhmer ? t("checkout.deliveryProvider") : "Delivery Provider"}
       </label>
-      <div style={{ padding: "14px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontFamily: font, fontSize: 13 }}>
+      <div style={{ padding: "14px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
         ⚠ {error}
       </div>
     </div>
@@ -80,10 +80,10 @@ export default function DeliveryProviderSelector({ zoneId, onSelect, selectedVal
   // Empty state — zone has no active providers
   if (!providers.length) return (
     <div>
-      <label className="block font-bold mb-2" style={{ fontSize: 13, color: c.muted, fontFamily: font }}>
+      <label className="block font-bold mb-2" style={{ fontSize: isKhmer ? 13 : 15, color: c.muted, fontFamily: font }}>
         {isKhmer ? t("checkout.deliveryProvider") : "Delivery Provider"}
       </label>
-      <div style={{ padding: "14px 16px", borderRadius: 10, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: 13 }}>
+      <div style={{ padding: "14px 16px", borderRadius: 10, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
         <p>{isKhmer ? t("checkout.noProviders") : "No delivery providers available for this province."}</p>
       </div>
     </div>
@@ -91,7 +91,7 @@ export default function DeliveryProviderSelector({ zoneId, onSelect, selectedVal
 
   return (
     <div>
-      <label className="block font-bold mb-2" style={{ fontSize: 13, color: c.muted, fontFamily: font }}>
+      <label className="block font-bold mb-2" style={{ fontSize: isKhmer ? 13 : 15, color: c.muted, fontFamily: font }}>
         {isKhmer ? t("checkout.deliveryProvider") : "Delivery Provider"}
       </label>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -133,12 +133,12 @@ export default function DeliveryProviderSelector({ zoneId, onSelect, selectedVal
                       ${Number(p.fee).toFixed(2)}
                     </span>
                   ) : (
-                    <span style={{ fontSize: 13, color: c.muted, fontFamily: font }}>
+                    <span style={{ fontSize: 14, color: c.muted, fontFamily: font }}>
                       {isKhmer ? t("checkout.feeVaries") : "Fee varies"}
                     </span>
                   )}
                   {p.estimated_time && (
-                    <span style={{ fontSize: 13, color: c.muted, fontFamily: font }}>
+                    <span style={{ fontSize: 14, color: c.muted, fontFamily: font }}>
                       ⏱ {p.estimated_time}
                     </span>
                   )}

@@ -62,7 +62,7 @@
 
 {{-- ── Back button ───────────────────────────────────────────────────────────── --}}
 <a href="{{ route('dashboard.orders') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
-    ← BACK TO ORDERS
+    ← {{ strtoupper(__('dashboard.orders.backToOrders')) }}
 </a>
 
 <style>
@@ -87,7 +87,7 @@
         {{-- Order Info --}}
         <div class="card">
             <div class="card-header">
-                <span class="card-title">ORDER INFORMATION</span>
+                <span class="card-title">{{ strtoupper(__('dashboard.orders.orderInfo')) }}</span>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                     {{-- Fulfillment type badge & Payment status --}}
                     @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
@@ -163,9 +163,9 @@
         <div class="card">
             <div class="card-header">
                 @if($order->isPickup())
-                    <span class="card-title">🏪 PICKUP TIMELINE</span>
+                    <span class="card-title">{{ strtoupper(__('dashboard.orders.deliveryTimeline')) }}</span>
                 @else
-                    <span class="card-title">🚚 DELIVERY TIMELINE</span>
+                    <span class="card-title">{{ strtoupper(__('dashboard.orders.deliveryTimeline')) }}</span>
                 @endif
             </div>
             <div class="card-body">
@@ -243,7 +243,7 @@
         {{-- Order Items --}}
         <div class="card">
             <div class="card-header">
-                <span class="card-title">ORDER ITEMS</span>
+                <span class="card-title">{{ strtoupper(__('dashboard.orders.orderItems')) }}</span>
                 <span style="color:rgba(255,255,255,0.4); font-size: var(--title-size);">
                     {{ $order->items->count() }} item(s)
                 </span>
@@ -263,10 +263,10 @@
                     <thead>
                         <tr>
                             <th>PRODUCT</th>
-                            <th>UNIT PRICE</th>
-                            @if($hasDiscount) <th style="color:#4ade80;">AFTER DISCOUNT</th> @endif
-                            <th>QTY</th>
-                            <th>TOTAL</th>
+                            <th>{{ strtoupper(__('dashboard.orders.unitPrice')) }}</th>
+                            @if($hasDiscount) <th style="color:#4ade80;">{{ strtoupper(__('dashboard.orders.afterDiscount')) }}</th> @endif
+                            <th>{{ strtoupper(__('dashboard.orders.qty')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.total')) }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -368,14 +368,14 @@
         <div class="card">
             <div class="card-header">
                 @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
-                    <span class="card-title">🏪 STORE PICKUP — CUSTOMER INFO</span>
+                    <span class="card-title">🏪 {{ strtoupper(__('dashboard.orders.orderInfo')) }}</span>
                 @else
-                    <span class="card-title">🚚 SHIPPING ADDRESS & DELIVERY MAP</span>
+                    <span class="card-title">🚚 {{ strtoupper(__('dashboard.orders.shippingAddress')) }}</span>
                 @endif
                 @if($order->location)
                 <span style="font-size: var(--title-size); color:#F97316; letter-spacing:1px;">
-                    📌 SAVED #{{ $order->location->id }}
-                    @if($order->location->is_default) · DEFAULT @endif
+                    📌 #{{ $order->location->id }}
+                    @if($order->location->is_default) · {{ strtoupper(__('dashboard.common.default')) }} @endif
                 </span>
                 @endif
             </div>
@@ -386,21 +386,21 @@
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">👤</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NAME</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ strtoupper(__('dashboard.orders.name')) }}</div>
                             <div style="font-weight:500; color:#fff; font-size: var(--title-size);">{{ $name }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">📞</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">PHONE</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ strtoupper(__('dashboard.orders.phone')) }}</div>
                             <div style="font-weight:700; color:#F97316; font-size: var(--title-size);">{{ $phone }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">📍</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">ADDRESS</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ strtoupper(__('dashboard.orders.address')) }}</div>
                             <div style="font-weight:500; color:#fff; font-size: var(--title-size); line-height:1.5;">
                                 {{ $address }}{{ $city ? ', '.$city : '' }}
                             </div>
@@ -432,7 +432,7 @@
                 @if($mapLat && $mapLng)
                 <div>
                     <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-                        📍 PINNED DELIVERY ROUTE
+                        📍 {{ strtoupper(__('dashboard.orders.shippingAddress')) }}
                     </div>
                     <div id="order-map" style="height:400px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);"></div>
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; flex-wrap:wrap; gap:8px;">
@@ -550,8 +550,8 @@
                 'confirmed'  => [
                     'status'   => 'processing',
                     'icon'     => $isPickupOrder ? '📦' : '⚙️',
-                    'label'    => $isPickupOrder ? 'MARK AS READY' : 'START PROCESSING',
-                    'title'    => $isPickupOrder ? 'ORDER READY FOR PICKUP' : 'CONFIRM &amp; PROCESS',
+                    'label'    => $isPickupOrder ? strtoupper(__('dashboard.orders.markReady')) : strtoupper(__('dashboard.orders.startProcessing')),
+                    'title'    => $isPickupOrder ? strtoupper(__('dashboard.orders.readyPickup')) : strtoupper(__('dashboard.orders.confirmProcess')),
                     'desc'     => $isPickupOrder
                         ? 'Mark order as <strong style="color:#3b82f6;">Ready</strong> — customer will be notified to come collect.'
                         : 'Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.',
@@ -568,8 +568,8 @@
                 $nextActions['processing'] = [
                     'status'   => 'shipped',
                     'icon'     => '🚚',
-                    'label'    => 'SHIP ORDER',
-                    'title'    => 'MARK AS SHIPPED',
+                    'label'    => strtoupper(__('dashboard.orders.shipOrder')),
+                    'title'    => strtoupper(__('dashboard.orders.markShipped')),
                     'desc'     => 'Confirm the order has been <strong style="color:#a78bfa;">dispatched</strong> to the customer.',
                     'color'    => '#a78bfa',
                     'gradient' => 'linear-gradient(135deg,#a78bfa,#7c3aed)',
@@ -580,8 +580,8 @@
                 $nextActions['shipped'] = [
                     'status'   => 'delivered',
                     'icon'     => '📦',
-                    'label'    => 'CONFIRM DELIVERY',
-                    'title'    => 'MARK AS DELIVERED',
+                    'label'    => strtoupper(__('dashboard.orders.confirmDelivery')),
+                    'title'    => strtoupper(__('dashboard.orders.markDelivered')),
                     'desc'     => 'Confirm the order has been <strong style="color:#22c55e;">delivered</strong> successfully.',
                     'color'    => '#22c55e',
                     'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
@@ -594,8 +594,8 @@
                 $nextActions['processing'] = [
                     'status'   => 'delivered',
                     'icon'     => '🏪',
-                    'label'    => 'CONFIRM PICKUP',
-                    'title'    => 'MARK AS PICKED UP',
+                    'label'    => strtoupper(__('dashboard.orders.confirmPickup')),
+                    'title'    => strtoupper(__('dashboard.orders.markPickedUp')),
                     'desc'     => 'Confirm the customer has <strong style="color:#22c55e;">collected</strong> their order at the store.',
                     'color'    => '#22c55e',
                     'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
@@ -792,8 +792,8 @@
                 @endif
                 @if($order->location)
                 <span style="font-size: var(--title-size); color:#F97316; letter-spacing:1px;">
-                    📌 SAVED #{{ $order->location->id }}
-                    @if($order->location->is_default) · DEFAULT @endif
+                    📌 #{{ $order->location->id }}
+                    @if($order->location->is_default) · {{ strtoupper(__('dashboard.common.default')) }} @endif
                 </span>
                 @endif
             </div>

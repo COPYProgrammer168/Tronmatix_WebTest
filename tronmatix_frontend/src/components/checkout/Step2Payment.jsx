@@ -48,7 +48,7 @@ export default function Step2Payment({
           <span style={{ fontSize: 20 }}>🏪</span>
           <div>
             <p className="font-bold" style={{ fontSize: 14, color: '#22c55e' }}>{t("checkout.pickupReminderTitle")}</p>
-            <p style={{ fontSize: 13, color: c.textMuted, marginTop: 2 }}>{t("checkout.pickupReminderHint")}</p>
+            <p style={{ fontSize: isKhmer ? 13 : 14, color: c.textMuted, marginTop: 2 }}>{t("checkout.pickupReminderHint")}</p>
           </div>
         </div>
       )}
@@ -91,7 +91,7 @@ export default function Step2Payment({
               <span style={{ fontSize: 26 }}>{m.emoji}</span>
               <div className="flex-1">
                 <p className="font-black" style={{ fontSize: 16, color: c.text }}>{m.title}</p>
-                <p style={{ fontSize: 13, color: c.textMuted }}>{m.sub}</p>
+                <p style={{ fontSize: isKhmer ? 13 : 14, color: c.textMuted }}>{m.sub}</p>
               </div>
               {m.val === "bakong" && (
                 <div className="bg-blue-600 text-white rounded-lg px-2 py-1 font-black" style={{ fontSize: 11 }}>ABA</div>
@@ -108,7 +108,7 @@ export default function Step2Payment({
           style={{ background: c.bakongBg, border: `1px solid ${c.bakongBorder}` }}
         >
           <span style={{ fontSize: 20 }}>⚡</span>
-          <p style={{ fontSize: 13, color: c.bakongText }}>
+          <p style={{ fontSize: isKhmer ? 13 : 14, color: c.bakongText }}>
             {isKhmer
               ? t("checkout.khqrBanner")
               : <>{'After placing your order, a KHQR code will appear. This page '}<strong>automatically detects</strong>{'  your payment — no button needed.'}</>}
@@ -128,7 +128,7 @@ export default function Step2Payment({
       >
         <h3 className="font-black mb-4" style={{ fontSize: 15, color: c.summaryHead }}>
           {isKhmer ? t("checkout.orderSummary") : "Order Summary"}
-          {isPickup && <span className="ml-2 text-green-400 font-bold" style={{ fontSize: 12 }}>🏪 {isKhmer ? t("checkout.fulfillPickup") : "PICKUP"}</span>}
+          {isPickup && <span className="ml-2 text-green-400 font-bold" style={{ fontSize: isKhmer ? 12 : 13 }}>🏪 {isKhmer ? t("checkout.fulfillPickup") : "PICKUP"}</span>}
         </h3>
         <div className="space-y-2 mb-3">
           {items.map((item) => (
@@ -149,12 +149,12 @@ export default function Step2Payment({
           ))}
         </div>
         <div className="pt-3 space-y-1.5" style={{ borderTop: `1px solid ${c.divider}` }}>
-          <div className="flex justify-between" style={{ fontSize: 13, color: c.textMuted }}>
+          <div className="flex justify-between" style={{ fontSize: isKhmer ? 13 : 14, color: c.textMuted }}>
             <span>{isKhmer ? t("cart.subtotal").replace(" :", "") : "Subtotal"}</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
           {discountAmount > 0 && (
-            <div className="flex justify-between font-bold text-green-500" style={{ fontSize: 13 }}>
+            <div className="flex justify-between font-bold text-green-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
               <span>
                 🏷{discount?.code ? ` ${discount.code}` : ''}
                 {discount?.type

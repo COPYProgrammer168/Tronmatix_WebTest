@@ -267,7 +267,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               borderRadius: 12,
               padding: "10px 16px",
               marginBottom: 12,
-              fontSize: 13,
+              fontSize: isKhmer ? 13 : 14,
               textAlign: "center",
               fontWeight: 500,
             }}
@@ -360,10 +360,10 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                       margin: "0 auto 16px",
                     }}
                   />
-                  <p style={{ color: "#6b7280", fontSize: 14 }}>
+                  <p style={{ color: "#6b7280", fontSize: isKhmer ? 14 : 15 }}>
                     {isKhmer ? t("qr.generating") : "Generating QR Code..."}
                   </p>
-                  <p style={{ color: "#9ca3af", fontSize: 12, marginTop: 4 }}>
+                  <p style={{ color: "#9ca3af", fontSize: isKhmer ? 12 : 13, marginTop: 4 }}>
                     Connecting to ABA PayWay...
                   </p>
                 </>
@@ -472,7 +472,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                 }}>
                   ⚡ {qrData?.merchant_name || "TronmatixComputer"}
                 </div>
-                <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 1 }}>
+                <div style={{ fontSize: isKhmer ? 10 : 11, color: "#9ca3af", marginTop: 1 }}>
                   tronmatix.com
                 </div>
               </div>
@@ -499,12 +499,12 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               }}
             >
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 13, color: "#4b5563", marginBottom: 4 }}>
+                <div style={{ fontSize: isKhmer ? 13 : 14, color: "#4b5563", marginBottom: 4 }}>
                   Scan with ABA Mobile or any KHQR app
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite" }} />
-                  <span style={{ fontSize: 12, color: "#6b7280" }}>
+                  <span style={{ fontSize: isKhmer ? 12 : 13, color: "#6b7280" }}>
                     Auto-checking payment...
                   </span>
                 </div>

@@ -19,7 +19,7 @@ export default function DeliverySchedulePicker({ value, onChange }) {
 
   return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: 13, letterSpacing: 1, color: c.label }}>
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, letterSpacing: 1, color: c.label }}>
         {isKhmer ? t("checkout.preferredDate") : "PREFERRED DELIVERY DATE (optional)"}
       </label>
 

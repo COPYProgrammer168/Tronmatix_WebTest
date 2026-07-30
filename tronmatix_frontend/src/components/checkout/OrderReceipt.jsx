@@ -110,14 +110,14 @@ export default function OrderReceipt({ order, deliveryStatus }) {
             <h2 className="font-black tracking-widest" style={{ fontFamily: "HurstBagod, Rajdhani, sans-serif", fontSize: 19 }}>
               TRONMATIX COMPUTER
             </h2>
-            <span className="inline-block mt-1 bg-orange-50 border border-primary text-primary rounded-full px-3 py-0.5" style={{ fontSize: 11, letterSpacing: 2 }}>
+            <span className="inline-block mt-1 bg-orange-50 border border-primary text-primary rounded-full px-3 py-0.5" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>
               ORDER RECEIPT
             </span>
           </div>
           <div className="ml-auto text-right">
-            <div className="text-gray-400" style={{ fontSize: 12, letterSpacing: 1 }}>ORDER ID</div>
+            <div className="text-gray-400" style={{ fontSize: isKhmer ? 12 : 13, letterSpacing: 1 }}>ORDER ID</div>
             <div className="font-black text-primary" style={{ fontSize: 18 }}>#{order.order_id || order.id}</div>
-            <div className="text-gray-400" style={{ fontSize: 12 }}>
+            <div className="text-gray-400" style={{ fontSize: isKhmer ? 12 : 13 }}>
               {new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
             ...(order.location?.note ? [["Note", order.location.note]] : []),
           ].map(([k, v]) => (
             <div key={k} className="px-6 py-3 border-b border-gray-50">
-              <div className="text-gray-400 font-semibold" style={{ fontSize: 11, letterSpacing: 1 }}>{k.toUpperCase()}</div>
+              <div className="text-gray-400 font-semibold" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 1 }}>{k.toUpperCase()}</div>
               <div className="font-bold text-gray-800" style={{ fontSize: 14 }}>{v || "—"}</div>
             </div>
           ))}
@@ -166,7 +166,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
 
         {/* Status timeline */}
         <div className="px-6 py-5 border-b border-gray-100">
-          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: 11, letterSpacing: 2 }}>ORDER STATUS</div>
+          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>ORDER STATUS</div>
           <div className="flex items-center">
             {STATUS_STEPS.map((s, i) => (
               <div key={s.key} className="flex items-center flex-1 min-w-0">
@@ -177,7 +177,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
                     {s.icon}
                   </div>
                   <div className={`mt-1 text-center font-bold ${i <= deliveryStatus ? "text-primary" : "text-gray-300"}`}
-                    style={{ fontSize: 10, letterSpacing: 0.5 }}>
+                    style={{ fontSize: isKhmer ? 10 : 11, letterSpacing: 0.5 }}>
                     {s.label}
                   </div>
                 </div>
@@ -191,12 +191,12 @@ export default function OrderReceipt({ order, deliveryStatus }) {
 
         {/* Items table */}
         <div className="px-6 py-4 border-b border-gray-100">
-          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: 11, letterSpacing: 2 }}>ORDER ITEMS</div>
+          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>ORDER ITEMS</div>
           <table className="w-full" style={{ borderCollapse: "collapse", fontSize: 14 }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #f0f0f0" }}>
                 {["ITEM", "QTY", "UNIT", "TOTAL"].map((h) => (
-                  <th key={h} className="text-left pb-2 text-gray-400 font-bold" style={{ fontSize: 11, letterSpacing: 1 }}>{h}</th>
+                  <th key={h} className="text-left pb-2 text-gray-400 font-bold" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 1 }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -224,11 +224,11 @@ export default function OrderReceipt({ order, deliveryStatus }) {
           </table>
           {/* Totals */}
           <div className="mt-3 space-y-1" style={{ borderTop: "1px solid #f0f0f0", paddingTop: 12 }}>
-            <div className="flex justify-between text-gray-500" style={{ fontSize: 13 }}>
+            <div className="flex justify-between text-gray-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
               <span>Subtotal</span><span>${Number(order.subtotal || order.total).toFixed(2)}</span>
             </div>
             {snapDiscount > 0 && (
-              <div className="flex justify-between font-bold text-green-600" style={{ fontSize: 13 }}>
+              <div className="flex justify-between font-bold text-green-600" style={{ fontSize: isKhmer ? 13 : 14 }}>
                 <span>🏷 {discLabel}</span><span>−${snapDiscount.toFixed(2)}</span>
               </div>
             )}

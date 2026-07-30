@@ -426,7 +426,7 @@ export default function MapPickerModal({
                   style={{
                     padding: "14px 16px",
                     color: colors.subText,
-                    fontSize: 13,
+                    fontSize: isKhmer ? 13 : 14,
                     textAlign: "center",
                   }}
                 >
@@ -492,7 +492,7 @@ export default function MapPickerModal({
                       {/* Full address smaller */}
                       <div
                         style={{
-                          fontSize: 11,
+                          fontSize: isKhmer ? 11 : 12,
                           color: colors.subText,
                           marginTop: 2,
                           overflow: "hidden",
@@ -589,7 +589,7 @@ export default function MapPickerModal({
         <div
           style={{
             padding: "13px 20px",
-            fontSize: 13,
+            fontSize: isKhmer ? 13 : 14,
             color: colors.titleText,
             borderTop: `1px solid ${colors.headerBorder}`,
           }}
@@ -598,7 +598,7 @@ export default function MapPickerModal({
             style={{
               fontWeight: 700,
               marginBottom: 4,
-              fontSize: 12,
+              fontSize: isKhmer ? 12 : 13,
               letterSpacing: 0.5,
               color: colors.subText,
               textTransform: "uppercase",

@@ -36,7 +36,7 @@
         padding:40px 36px; text-align:center; max-width:340px; width:100%;
         box-shadow:0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(34,197,94,0.08);
         animation:sBoxIn .4s cubic-bezier(0.34,1.4,0.64,1);
-        font-family:Rajdhani,sans-serif;
+        font-family:Rajdhani, var(--font-kh), sans-serif;
     ">
                     <div
                         style="
@@ -49,14 +49,13 @@
                         ✓</div>
                     <div
                         style="font-size: var(--title-size); font-weight:900; color:#22c55e; letter-spacing:3px; margin-bottom:6px;">
-                        SAVED!</div>
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.45); margin-bottom:24px;">All settings
-                        have been updated</div>
+                        {{ strtoupper(__('dashboard.settings.saved')) }}</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.45); margin-bottom:24px;">{{ __('dashboard.settings.allUpdated') }}</div>
                     <button onclick="closeSavePopup()"
                         style="
             padding:10px 32px; border-radius:10px; cursor:pointer;
             background:rgba(34,197,94,0.12); border:1.5px solid rgba(34,197,94,0.3);
-            color:#22c55e; font-family:Rajdhani,sans-serif; font-size: var(--title-size);
+            color:#22c55e; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size);
             font-weight:700; letter-spacing:2px; transition:all .2s;
         "
                         onmouseover="this.style.background='rgba(34,197,94,0.22)'"
@@ -90,8 +89,8 @@
                                 <div class="s-icon-box"
                                     style="background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.25);">🔔</div>
                                 <div>
-                                    <div class="s-card-title">NOTIFICATIONS</div>
-                                    <div class="s-card-sub">Control which alerts appear in the dashboard bell</div>
+                                    <div class="s-card-title">{{ strtoupper(__('dashboard.settings.notifications')) }}</div>
+                                    <div class="s-card-sub">{{ __('dashboard.settings.alertControl') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -100,8 +99,8 @@
                             {{-- Low stock --}}
                             <div class="s-row">
                                 <div class="s-info">
-                                    <div class="s-label">🟠 Low Stock Alert</div>
-                                    <div class="s-desc">Notify when a product's stock drops to or below the threshold</div>
+                                    <div class="s-label">🟠 {{ __('dashboard.settings.lowStockAlert') }}</div>
+                                    <div class="s-desc">{{ __('dashboard.settings.bellLowStock') }}</div>
                                 </div>
                                 <label class="ts">
                                     <input type="checkbox" name="notif_low_stock" id="chk-low-stock"
@@ -111,7 +110,7 @@
                                 </label>
                             </div>
                             <div id="sub-threshold" class="s-sub {{ son($s, 'notif_low_stock') ? '' : 's-hidden' }}">
-                                <div class="s-sub-label">ALERT WHEN STOCK IS AT OR BELOW</div>
+                                <div class="s-sub-label">{{ strtoupper(__('dashboard.form.stockAlert')) }}</div>
                                 <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
                                     <input type="number" name="notif_low_stock_threshold"
                                         value="{{ sval($s, 'notif_low_stock_threshold', '5') }}" min="1"
@@ -121,7 +120,7 @@
                                         <span
                                             style="font-size: var(--title-size); color:#F97316; background:rgba(249,115,22,0.1);
                         border:1px solid rgba(249,115,22,0.2); border-radius:20px; padding:2px 10px;">
-                                            {{ $counts['low_stock'] }} products affected now
+                                            {{ $counts['low_stock'] }} {{ strtolower(__('dashboard.table.product')) }}(s) affected now
                                         </span>
                                     @endif
                                 </div>
@@ -131,8 +130,8 @@
                             {{-- New order --}}
                             <div class="s-row">
                                 <div class="s-info">
-                                    <div class="s-label">📦 New Order Alert</div>
-                                    <div class="s-desc">Bell notification when a new order is placed today</div>
+                                    <div class="s-label">📦 {{ __('dashboard.settings.newOrderAlert') }}</div>
+                                    <div class="s-desc">{{ __('dashboard.settings.bellNewOrder') }}</div>
                                 </div>
                                 <label class="ts">
                                     <input type="checkbox" name="notif_new_order"
@@ -145,8 +144,8 @@
                             {{-- Pending KHQR --}}
                             <div class="s-row">
                                 <div class="s-info">
-                                    <div class="s-label">📱 KHQR Awaiting Payment</div>
-                                    <div class="s-desc">Alert when a BAKONG order is still waiting for QR scan</div>
+                                    <div class="s-label">📱 {{ __('dashboard.settings.khqrAwaiting') }}</div>
+                                    <div class="s-desc">{{ __('dashboard.settings.bellKhqrAwaiting') }}</div>
                                 </div>
                                 <label class="ts">
                                     <input type="checkbox" name="notif_pending_payment"
@@ -159,8 +158,8 @@
                             {{-- QR confirmed --}}
                             <div class="s-row">
                                 <div class="s-info">
-                                    <div class="s-label">✅ KHQR Auto-Confirmed</div>
-                                    <div class="s-desc">Alert when ABA BAKONG auto-confirms a customer's QR payment</div>
+                                    <div class="s-label">✅ {{ __('dashboard.settings.khqrConfirmed') }}</div>
+                                    <div class="s-desc">{{ __('dashboard.settings.bellKhqrConfirmed') }}</div>
                                 </div>
                                 <label class="ts">
                                     <input type="checkbox" name="notif_qr_confirmed"
@@ -173,8 +172,8 @@
                             {{-- Delivery confirmed --}}
                             <div class="s-row">
                                 <div class="s-info">
-                                    <div class="s-label">🚚 Delivery Confirmed</div>
-                                    <div class="s-desc">Alert when an order delivery is confirmed today</div>
+                                    <div class="s-label">🚚 {{ __('dashboard.settings.deliveryAlert') }}</div>
+                                    <div class="s-desc">{{ __('dashboard.settings.bellDeliveryAlert') }}</div>
                                 </div>
                                 <label class="ts">
                                     <input type="checkbox" name="notif_delivery_confirm"
@@ -193,8 +192,8 @@
                                 <div class="s-icon-box"
                                     style="background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.25);">🏪</div>
                                 <div>
-                                    <div class="s-card-title">STORE</div>
-                                    <div class="s-card-sub">Store identity and open/close status</div>
+                                    <div class="s-card-title">{{ strtoupper(__('dashboard.settings.store')) }}</div>
+                                    <div class="s-card-sub">{{ __('dashboard.settings.storeIdentity') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -203,8 +202,8 @@
                             {{-- Store open toggle --}}
                             <div class="s-row">
                                 <div class="s-info">
-                                    <div class="s-label">🟢 Store Open</div>
-                                    <div class="s-desc">When OFF, the storefront shows a "We're closed" page to customers
+                                    <div class="s-label">🟢 {{ __('dashboard.settings.storeOpen') }}</div>
+                                    <div class="s-desc">{{ __('dashboard.settings.storeOpenDesc') }}
                                     </div>
                                 </div>
                                 <label class="ts">
@@ -215,14 +214,14 @@
                             <div class="s-divider"></div>
 
                             <div style="padding:12px 0 4px;">
-                                <div class="s-sub-label">STORE DISPLAY NAME</div>
+                                <div class="s-sub-label">{{ strtoupper(__('dashboard.settings.storeDisplayName')) }}</div>
                                 <input type="text" name="store_name"
                                     value="{{ sval($s, 'store_name', 'Tronmatix Computer') }}" class="s-input"
                                     style="margin-top:8px;" placeholder="e.g. Tronmatix Computer" />
                             </div>
 
                             <div style="padding:12px 0 4px;">
-                                <div class="s-sub-label">DEFAULT CURRENCY</div>
+                                <div class="s-sub-label">{{ strtoupper(__('dashboard.settings.defaultCurrency')) }}</div>
                                 <select name="store_currency" class="s-input" style="margin-top:8px; cursor:pointer;">
                                     @foreach (['USD' => '🇺🇸 USD — US Dollar', 'KHR' => '🇰🇭 KHR — Khmer Riel', 'EUR' => '🇪🇺 EUR — Euro', 'SGD' => '🇸🇬 SGD — Singapore Dollar'] as $code => $label)
                                         <option value="{{ $code }}"
@@ -273,12 +272,12 @@
                                                 style="
                             padding:8px 20px; border-radius:8px; border:none; cursor:pointer;
                             background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
-                            font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                            font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
                             letter-spacing:1px; transition:all .2s;
                         "
                                                 onmouseover="this.style.transform='translateY(-1px)'"
                                                 onmouseout="this.style.transform='none'">
-                                                💾 SAVE
+                                                💾 {{ strtoupper(__('dashboard.btn.saveSettings')) }}
                                             </button>
                                         </div>
                                     </div>
@@ -304,7 +303,7 @@
                                 <div class="s-icon-box"
                                     style="background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.25);">📊</div>
                                 <div>
-                                    <div class="s-card-title" style="color:#F97316;">LIVE ALERTS RIGHT NOW</div>
+                                    <div class="s-card-title" style="color:#F97316;">{{ strtoupper(__('dashboard.settings.liveAlerts')) }}</div>
                                     <div class="s-card-sub">Click any card to jump to the relevant page</div>
                                 </div>
                             </div>
@@ -322,7 +321,14 @@
                         <div class="card-body" style="padding:16px 20px;">
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
 
-                                @php $alertGrid = [['Low Stock', $counts['low_stock'], '🟠', '#F97316', 'rgba(249,115,22,.12)', 'rgba(249,115,22,.25)', route('dashboard.products')], ['New Orders Today', $counts['pending_orders'], '📦', '#eab308', 'rgba(234,179,8,.12)', 'rgba(234,179,8,.25)', route('dashboard.orders', ['status' => 'pending'])], ['Awaiting KHQR', $counts['pending_payment'], '📱', '#3b82f6', 'rgba(59,130,246,.12)', 'rgba(59,130,246,.25)', route('dashboard.orders')], ['KHQR Paid Today', $counts['qr_confirmed'], '✅', '#22c55e', 'rgba(34,197,94,.12)', 'rgba(34,197,94,.25)', route('dashboard.orders')], ['Delivered Today', $counts['delivered_today'], '🚚', '#a78bfa', 'rgba(167,139,250,.12)', 'rgba(167,139,250,.25)', route('dashboard.orders', ['status' => 'delivered'])]]; @endphp
+                                @php
+                                    $_ls = __('dashboard.settings.lowStockAlert');
+                                    $_no = __('dashboard.settings.newOrderAlert');
+                                    $_aw = __('dashboard.settings.khqrAwaiting');
+                                    $_qr = __('dashboard.settings.khqrConfirmed');
+                                    $_dl = __('dashboard.settings.deliveryAlert');
+                                    $alertGrid = [[$_ls, $counts['low_stock'], '🟠', '#F97316', 'rgba(249,115,22,.12)', 'rgba(249,115,22,.25)', route('dashboard.products')], [$_no, $counts['pending_orders'], '📦', '#eab308', 'rgba(234,179,8,.12)', 'rgba(234,179,8,.25)', route('dashboard.orders', ['status' => 'pending'])], [$_aw, $counts['pending_payment'], '📱', '#3b82f6', 'rgba(59,130,246,.12)', 'rgba(59,130,246,.25)', route('dashboard.orders')], [$_qr, $counts['qr_confirmed'], '✅', '#22c55e', 'rgba(34,197,94,.12)', 'rgba(34,197,94,.25)', route('dashboard.orders')], [$_dl, $counts['delivered_today'], '🚚', '#a78bfa', 'rgba(167,139,250,.12)', 'rgba(167,139,250,.25)', route('dashboard.orders', ['status' => 'delivered'])]];
+                                @endphp
 
                                 @foreach ($alertGrid as [$label, $count, $icon, $color, $bg, $border, $url])
                                     <a href="{{ $url }}"
@@ -338,7 +344,7 @@
                                         </div>
                                         <div
                                             style="font-size: var(--title-size); font-weight:900; color:{{ $count > 0 ? $color : 'rgba(255,255,255,0.2)' }};
-                         line-height:1; font-family:Rajdhani,sans-serif;">
+                         line-height:1; font-family:Rajdhani, var(--font-kh), sans-serif;">
                                             {{ $count }}</div>
                                         <div
                                             style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:5px; letter-spacing:0.5px;">
@@ -376,7 +382,7 @@
                                 <div class="s-icon-box"
                                     style="background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.25);">⚙️</div>
                                 <div>
-                                    <div class="s-card-title">ORDER AUTOMATION</div>
+                                    <div class="s-card-title">{{ strtoupper(__('dashboard.settings.orderAutomation')) }}</div>
                                     <div class="s-card-sub">Rules that run automatically on orders</div>
                                 </div>
                             </div>
@@ -423,22 +429,22 @@
                                             style="background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.25);">🖥️
                                         </div>
                                         <div>
-                                            <div class="s-card-title">DISPLAY</div>
+                                            <div class="s-card-title">{{ strtoupper(__('dashboard.settings.display')) }}</div>
                                             <div class="s-card-sub">Pagination size for orders and products</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="card-body" style="padding:16px 20px;">
-                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
                                         <div>
-                                            <div class="s-sub-label">ORDERS PER PAGE</div>
+                                            <div class="s-sub-label">{{ strtoupper(__('dashboard.form.ordersPerPage')) }}</div>
                                             <input type="number" name="dashboard_rows_per_page"
                                                 value="{{ sval($s, 'dashboard_rows_per_page', '20') }}" min="5"
                                                 max="200" class="s-input"
                                                 style="margin-top:8px; text-align:center;">
                                         </div>
                                         <div>
-                                            <div class="s-sub-label">PRODUCTS PER PAGE</div>
+                                            <div class="s-sub-label">{{ strtoupper(__('dashboard.form.productsPerPage')) }}</div>
                                             <input type="number" name="products_per_page"
                                                 value="{{ sval($s, 'products_per_page', '12') }}" min="4"
                                                 max="100" class="s-input"
@@ -468,27 +474,27 @@
                                     style="
             flex:2; padding:15px; border-radius:12px; border:none; cursor:pointer;
             background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
-            font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:800;
+            font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:800;
             letter-spacing:2px; box-shadow:0 4px 20px rgba(249,115,22,0.35);
             transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
         "
                                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(249,115,22,0.5)'"
                                     onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 20px rgba(249,115,22,0.35)'">
                                     <span id="save-icon">💾</span>
-                                    <span id="save-text">SAVE SETTINGS</span>
+                                    <span id="save-text">{{ strtoupper(__('dashboard.btn.saveSettings')) }}</span>
                                 </button>
                                 <a href="{{ route('dashboard.settings.reset') }}"
                                     onclick="return confirm('Reset all settings to factory defaults?')"
                                     style="
             flex:1; padding:15px; border-radius:12px; text-align:center; text-decoration:none;
             border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);
-            color:rgba(255,255,255,0.4); font-family:Rajdhani,sans-serif;
+            color:rgba(255,255,255,0.4); font-family:Rajdhani, var(--font-kh), sans-serif;
             font-size: var(--title-size); font-weight:700; letter-spacing:1px;
             display:flex; align-items:center; justify-content:center; gap:6px;
             transition:all .2s;"
                                     onmouseover="this.style.borderColor='rgba(239,68,68,0.4)'; this.style.color='#ef4444'; this.style.background='rgba(239,68,68,0.06)'"
                                     onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.4)'; this.style.background='rgba(255,255,255,0.04)'">
-                                    🔄 RESET
+                                    🔄 {{ strtoupper(__('dashboard.settings.reset')) }}
                                 </a>
                             </div>
                         </div>
@@ -497,7 +503,7 @@
         </form>
 
         {{-- ════════════════════════════════════════════════════════════════════════════
-        ROLE PERMISSIONS MATRIX — only admin/superadmin can save changes
+        {{ strtoupper(__('dashboard.settings.rolePermissions')) }}
         ════════════════════════════════════════════════════════════════════════════ --}}
         @php
             $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
@@ -506,24 +512,24 @@
 
             // Permission matrix definition: [feature_key => display_label]
             $permFeatures = [
-                'dashboard' => ['label' => 'Dashboard', 'icon' => '📊'],
-                'products' => ['label' => 'Products & Banners', 'icon' => '📦'],
-                'orders' => ['label' => 'Orders (view)', 'icon' => '📋'],
-                'orders_edit' => ['label' => 'Orders (edit status)', 'icon' => '✏️'],
-                'users' => ['label' => 'Users Management', 'icon' => '👥'],
-                'discounts' => ['label' => 'Discounts', 'icon' => '🏷️'],
-                'report' => ['label' => 'Reports', 'icon' => '📈'],
-                'settings' => ['label' => 'Settings', 'icon' => '⚙️'],
-                'staff' => ['label' => 'Staff & Roles', 'icon' => '🛡️'],
+                'dashboard' => ['label' => __('dashboard.nav.dashboard'), 'icon' => '📊'],
+                'products' => ['label' => __('dashboard.nav.products') . ' & ' . __('dashboard.nav.banners'), 'icon' => '📦'],
+                'orders' => ['label' => __('dashboard.nav.orders') . ' (view)', 'icon' => '📋'],
+                'orders_edit' => ['label' => __('dashboard.nav.orders') . ' (edit)', 'icon' => '✏️'],
+                'users' => ['label' => __('dashboard.nav.users'), 'icon' => '👥'],
+                'discounts' => ['label' => __('dashboard.nav.discounts'), 'icon' => '🏷️'],
+                'report' => ['label' => __('dashboard.nav.reports'), 'icon' => '📈'],
+                'settings' => ['label' => __('dashboard.nav.settings'), 'icon' => '⚙️'],
+                'staff' => ['label' => __('dashboard.nav.staff') . ' & ' . __('dashboard.table.role'), 'icon' => '🛡️'],
             ];
 
             // Roles that can be configured (superadmin is always full — not editable)
             $permRoles = [
-                'admin' => ['label' => 'Admin', 'color' => '#F97316', 'icon' => '🛡️'],
-                'editor' => ['label' => 'Editor', 'color' => '#3b82f6', 'icon' => '✏️'],
-                'seller' => ['label' => 'Seller', 'color' => '#10b981', 'icon' => '🏪'],
-                'delivery' => ['label' => 'Delivery', 'color' => '#a855f7', 'icon' => '🚚'],
-                'developer' => ['label' => 'Developer', 'color' => '#06b6d4', 'icon' => '💻'],
+                'admin' => ['label' => __('dashboard.staff.inviteAdmin'), 'color' => '#F97316', 'icon' => '🛡️'],
+                'editor' => ['label' => __('dashboard.staff.editor'), 'color' => '#3b82f6', 'icon' => '✏️'],
+                'seller' => ['label' => __('dashboard.staff.seller'), 'color' => '#10b981', 'icon' => '🏪'],
+                'delivery' => ['label' => __('dashboard.staff.delivery'), 'color' => '#a855f7', 'icon' => '🚚'],
+                'developer' => ['label' => __('dashboard.staff.developer'), 'color' => '#06b6d4', 'icon' => '💻'],
             ];
 
             // Default locked values for superadmin (always all true)
@@ -599,10 +605,10 @@
                     <div>
                         <div
                             style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; color:var(--text-main, #fff);">
-                            ROLE PERMISSIONS</div>
+                            {{ strtoupper(__('dashboard.settings.rolePermissions')) }}</div>
                         <div
                             style="font-size: var(--title-size); color:var(--text-muted, rgba(255,255,255,0.35)); margin-top:2px;">
-                            Define what each role can access across the dashboard
+                            {{ __('dashboard.settings.permDesc') }}
                         </div>
                     </div>
                 </div>
@@ -614,7 +620,7 @@
                       transition:all .2s;"
                         onmouseover="this.style.background='rgba(167,139,250,0.16)'"
                         onmouseout="this.style.background='rgba(167,139,250,0.08)'">
-                        👥 MANAGE STAFF
+                        👥 {{ strtoupper(__('dashboard.nav.staff')) }}
                     </a>
                     @if (!$canEditPerms)
                         <div
@@ -622,8 +628,7 @@
                         background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);">
                             <span style="font-size: var(--title-size);">🔒</span>
                             <span
-                                style="font-size: var(--title-size); color:#ef4444; font-weight:700; letter-spacing:1px;">ADMIN
-                                ONLY</span>
+                                style="font-size: var(--title-size); color:#ef4444; font-weight:700; letter-spacing:1px;">{{ strtoupper(__('dashboard.settings.adminOnly')) }}</span>
                         </div>
                     @endif
                 </div>
@@ -634,14 +639,14 @@
                 <form method="POST" action="{{ route('dashboard.settings.permissions') }}" id="perms-form">
                     @csrf @method('PUT')
 
-                    <div class="perm-table-wrapper" style="overflow-x:auto; display:flex; justify-content:flex-start; width:100%;">
-                        <table style="border-collapse:collapse; width:100%;">
+                    <div class="perm-table-wrapper" style="overflow-x:auto; overflow-y:visible; width:100%;">
+                        <table style="border-collapse:collapse; min-width:100%;">
                             <thead>
                                 <tr style="border-bottom:1px solid rgba(255,255,255,0.07);">
                                     <th
                                         style="padding:16px 20px; text-align:left; font-size: var(--title-size); letter-spacing:2px;
                                        color:var(--text-muted, rgba(255,255,255,0.35)); white-space:nowrap; font-weight:700; width:220px;">
-                                        FEATURE / MODULE
+                                        {{ strtoupper(__('dashboard.settings.featureModule')) }}
                                     </th>
 
                                     {{-- Superadmin: always full --}}
@@ -654,22 +659,22 @@
                                                 display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">
                                                 👑</div>
                                             <span
-                                                style="font-size: var(--title-size); letter-spacing:1.5px; color:#F97316; font-weight:800;">SUPER</span>
+                                                style="font-size: var(--title-size); letter-spacing:1.5px; color:#F97316; font-weight:800;">{{ strtoupper(__('dashboard.settings.superAdminShort')) }}</span>
                                         </div>
                                     </th>
 
                                     @foreach ($permRoles as $roleKey => $roleMeta)
-                                        <th style="padding:16px 14px; text-align:center; white-space:nowrap; width:12%;">
+                                        <th style="padding:16px 10px; text-align:center; white-space:nowrap; width:12%;">
                                             <div
                                                 style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
                                                 <div
-                                                    style="width:36px; height:36px; border-radius:10px;
+                                                    style="width:32px; height:32px; border-radius:8px;
                                                 background:{{ $roleMeta['color'] }}18; border:1px solid {{ $roleMeta['color'] }}44;
-                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);">
+                                                display:flex; align-items:center; justify-content:center; font-size: var(--text-sm);">
                                                     {{ $roleMeta['icon'] }}
                                                 </div>
                                                 <span
-                                                    style="font-size: var(--title-size); letter-spacing:1.5px; color:{{ $roleMeta['color'] }}; font-weight:800;">
+                                                    style="font-size: var(--text-xs); letter-spacing:1px; color:{{ $roleMeta['color'] }}; font-weight:800;">
                                                     {{ strtoupper($roleMeta['label']) }}
                                                 </span>
                                             </div>
@@ -793,13 +798,13 @@
                 opacity:0; pointer-events:none; transition:opacity .25s;
             ">
                             <span style="font-size: var(--title-size); color:rgba(255,255,255,0.4);">
-                                ⚠️ You have unsaved permission changes
+                                ⚠️ {{ __('dashboard.settings.unsavedPerms') }}
                             </span>
                             <div style="display:flex; gap:10px;">
                                 <button type="button" onclick="resetPermissions()"
                                     style="padding:9px 18px; border-radius:8px; border:1px solid rgba(255,255,255,0.12);
                                    background:transparent; color:rgba(255,255,255,0.5);
-                                   font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                                   font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
                                    letter-spacing:1px; cursor:pointer; transition:all .2s;"
                                     onmouseover="this.style.color='#fff'"
                                     onmouseout="this.style.color='rgba(255,255,255,0.5)'">
@@ -809,10 +814,10 @@
                                     style="display:flex; align-items:center; gap:6px; padding:9px 20px;
                                    border-radius:8px; border:none;
                                    background:linear-gradient(135deg,#a78bfa,#7c3aed); color:#fff;
-                                   font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:800;
+                                   font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:800;
                                    letter-spacing:1px; cursor:pointer; transition:all .2s;
                                    box-shadow:0 4px 16px rgba(167,139,250,0.3);">
-                                    🔐 SAVE PERMISSIONS
+                                    🔐 {{ strtoupper(__('dashboard.btn.saveSettings')) }}
                                 </button>
                             </div>
                         </div>
@@ -865,8 +870,8 @@
                         <div class="s-icon-box"
                             style="background:rgba(249,115,22,0.1); border-color:rgba(249,115,22,0.25);">⭐</div>
                         <div>
-                            <div class="s-card-title">VIP MANAGEMENT</div>
-                            <div class="s-card-sub">Demote VIP users who no longer meet the spending goal</div>
+                            <div class="s-card-title">{{ __('dashboard.settings.vipManagement') }}</div>
+                            <div class="s-card-sub">{{ __('dashboard.settings.vipDemoteDesc') }}</div>
                         </div>
                     </div>
                 </div>
@@ -876,11 +881,11 @@
                         <div>
                             <div
                                 style="font-size: var(--title-size); font-weight:700; color:var(--text-main, #fff); margin-bottom:4px;">
-                                Reset VIP Roles
+                                {{ __('dashboard.settings.resetVipRoles') }}
                             </div>
                             <div
                                 style="font-size: var(--title-size); color:var(--text-muted, rgba(60,60,60,0.7)); max-width:480px;">
-                                Demote all VIP users whose total spent is below the current VIP goal of
+                                {{ __('dashboard.settings.vipDemoteAction') }}
                                 <strong
                                     style="color:#F97316;">${{ number_format((float) ($s['vip_threshold'] ?? 5000), 0) }}</strong>
                                 back to Customer.
@@ -893,13 +898,13 @@
                                 style="
                         padding:12px 24px; border-radius:10px; border:none; cursor:pointer;
                         background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
-                        font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:800;
+                        font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:800;
                         letter-spacing:2px; box-shadow:0 4px 16px rgba(249,115,22,0.3);
                         transition:all .2s; display:flex; align-items:center; gap:8px;
                     "
                                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(249,115,22,0.45)'"
                                 onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 16px rgba(249,115,22,0.3)'">
-                                ⚠️ RESET VIP ROLES
+                                ⚠️ {{ strtoupper(__('dashboard.settings.resetVipRoles')) }}
                             </button>
                         </form>
                     </div>
@@ -1324,6 +1329,13 @@
 
             /* Settings cards stack on mobile */
             /* ── Permission matrix responsive ────────────────────────────── */
+            @media (max-width: 1100px) {
+                div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"] {
+                    grid-template-columns: 1fr;
+                    grid-template-columns: 1fr !important;
+                }
+            }
+
             @media (max-width: 700px) {
                 .perm-table-wrapper {
                     overflow-x: auto;

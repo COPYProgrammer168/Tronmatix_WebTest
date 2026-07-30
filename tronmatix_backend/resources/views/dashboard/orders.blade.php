@@ -61,7 +61,7 @@
                 @if ($activeTab && $activeTab !== 'all')
                     <input type="hidden" name="status" value="{{ $activeTab }}">
                 @endif
-                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search order ID or customer…"
+                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('dashboard.orders.searchPlaceholder') }}"
                     class="orders-search-input"
                     style="background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12);
                    color:#fff; border-radius:10px; padding:8px 16px; font-size: var(--title-size);
@@ -118,18 +118,18 @@
 
                     <thead>
                         <tr>
-                            <th>ORDER ID</th>
-                            <th>CUSTOMER</th>
-                            <th>SHIPPING TO</th>
-                            <th>ITEMS PRODUCTS</th>
-                            <th>SUBTOTAL</th>
-                            <th>DISCOUNT</th>
-                            <th>TOTAL</th>
-                            <th>PAYMENT</th>
-                            <th>PAY STATUS</th>
-                            <th>STATUS</th>
-                            <th>ORDER DATE</th>
-                            <th>DELIVERY</th>
+                            <th>{{ strtoupper(__('dashboard.table.orderId')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.customer')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.shippingTo')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.items')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.orders.subtotal')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.discount')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.total')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.payment')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.payStatus')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.status')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.orderDate')) }}</th>
+                            <th>{{ strtoupper(__('dashboard.table.delivery')) }}</th>
                         </tr>
                     </thead>
 

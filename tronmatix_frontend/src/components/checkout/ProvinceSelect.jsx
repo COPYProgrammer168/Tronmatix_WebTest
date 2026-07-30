@@ -83,10 +83,10 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
 
   if (loading) return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label, fontFamily: font }}>
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label, fontFamily: font }}>
         {isKhmer ? t("locations.province") : "Province *"}
       </label>
-      <div style={{ padding: "10px 14px", borderRadius: 8, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: 13 }}>
+      <div style={{ padding: "10px 14px", borderRadius: 8, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
         ⏳ {isKhmer ? t("locations.loading") : "Loading provinces..."}
       </div>
     </div>
@@ -94,10 +94,10 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
 
   if (error) return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label, fontFamily: font }}>
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label, fontFamily: font }}>
         {isKhmer ? t("locations.province") : "Province *"}
       </label>
-      <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontFamily: font, fontSize: 13 }}>
+      <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
         ⚠ {error}
       </div>
     </div>
@@ -105,7 +105,7 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
 
   return (
     <div ref={wrapperRef} style={{ position: "relative" }}>
-      <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label, fontFamily: font }}>
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label, fontFamily: font }}>
         {isKhmer ? t("locations.province") : "Province *"}
       </label>
 
@@ -146,7 +146,7 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
           borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
         }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: "14px 16px", color: c.muted, fontFamily: font, fontSize: 13, textAlign: "center" }}>
+            <div style={{ padding: "14px 16px", color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 15, textAlign: "center" }}>
               {isKhmer ? "រកមិនឃើញខេត្ត" : "No provinces found"}
             </div>
           ) : (
