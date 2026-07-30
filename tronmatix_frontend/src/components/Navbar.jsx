@@ -379,9 +379,8 @@ export default function Navbar({ onAuthOpen }) {
         ) : user ? (
           <>
             <UserAvatar size={10} fontSize={16} />
-            <span className="font-bold truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: user.role === 'vip' ? 78 : 64 }}>
+            <span className="font-bold truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 64 }}>
               {user.username || user.name || 'User'}
-              {user.role === 'vip' && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#F97316', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap', lineHeight: 1.2 }}>VIP</span>}
             </span>
           </>
         ) : (
@@ -525,9 +524,8 @@ export default function Navbar({ onAuthOpen }) {
                   {user ? (
                     <>
                       <UserAvatar size={9} fontSize={15} />
-                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: user.role === 'vip' ? 72 : 60 }}>
+                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 60 }}>
                         {user.username || user.name}
-                        {user.role === 'vip' && <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', background: '#F97316', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap', lineHeight: 1.2 }}>VIP</span>}
                       </span>
                     </>
                   ) : (
@@ -637,8 +635,10 @@ export default function Navbar({ onAuthOpen }) {
               </form>
 
               <div className="flex items-center gap-1.5 ml-auto">
-                <ThemeToggle />
-                <LanguageToggle />
+                <div className="hidden md:flex items-center gap-1">
+                  <ThemeToggle />
+                  <LanguageToggle />
+                </div>
 
                 <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
                   <svg className="w-6 h-6"
@@ -799,7 +799,6 @@ export default function Navbar({ onAuthOpen }) {
                       <div className="min-w-0">
                         <div className="font-black truncate" style={{ fontSize: 15, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                           {user.username || user.name}
-                          {user.role === 'vip' && <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: '#F97316', padding: '1px 6px', borderRadius: 3, whiteSpace: 'nowrap', lineHeight: 1.2 }}>⭐ VIP</span>}
                         </div>
                         <div style={{ fontFamily: navFont, fontSize: 11, color: subTextColor }}>
                           {isKhmer ? 'បានចូល' : 'Logged in'}
@@ -972,14 +971,14 @@ export default function Navbar({ onAuthOpen }) {
                   {[
                     { to: '/profile', labelKey: 'nav.myProfile', icon: '👤' },
                     { to: '/orders', labelKey: 'nav.myOrders', icon: '📦' },
-                    { to: '/favorites', labelKey: 'nav.myFavorites', icon: '❤️' },
-                  ].map(({ to, labelKey, icon }) => (
+                    { to: '/favorites', label: 'Bookmark', icon: '🔖' },
+                  ].map(({ to, labelKey, label, icon }) => (
                     <Link key={to} to={to} onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
                       style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.background = ddHover}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      {icon} {t(labelKey)}
+                      {icon} {t(labelKey ?? label)}
                     </Link>
                   ))}
                 </div>
