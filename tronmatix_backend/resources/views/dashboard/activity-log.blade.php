@@ -3,17 +3,10 @@
 
 @section('content')
 
-@php
-    $me = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
-    $myRole = $me->role ?? 'editor';
-    $isAdmin = in_array($myRole, ['admin', 'superadmin']);
-@endphp
+@include('dashboard._permission_check', ['feature' => 'activity_log'])
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
 
-@if(!$isAdmin)
-    @include('dashboard.partials.access-denied', ['feature' => 'activity_log'])
-@endif
-
-@if($isAdmin)
+@if(!$_permDenied)
 
 {{-- Page Header --}}
 <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:20px;">

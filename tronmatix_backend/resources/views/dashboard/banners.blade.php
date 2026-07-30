@@ -163,7 +163,7 @@ function banner_img_url(?string $path): string {
                 @js($b->video ? banner_img_url($b->video) : ''),
                 @js($b->video_type ?? ''),
                 {{ $b->product_id ?? 'null' }},
-                @js($b->product->name ?? '')
+                @js($b->product?->name ?? '')
                 )" class="btn btn-outline btn-sm">EDIT</button>
 
                 <form method="POST" action="{{ route('dashboard.banners.destroy', $b) }}"

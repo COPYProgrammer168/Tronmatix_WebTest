@@ -167,6 +167,7 @@ class ProductController extends Controller
             'remove_image'      => 'nullable|boolean',
             'is_featured'       => 'nullable|boolean',
             'is_hot'            => 'nullable|boolean',
+            'specs_title'       => 'nullable|string|max:255',
         ]);
 
         $raw = trim($validated['price'] ?? '');
@@ -180,6 +181,19 @@ class ProductController extends Controller
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_hot']      = $request->boolean('is_hot');
+
+        // ── Specs: parallel arrays → key-value JSON ─────────────────────────
+        $specs = [];
+        if ($request->has('specs.key')) {
+            foreach ((array) $request->input('specs.key') as $i => $k) {
+                $k = trim((string) ($k ?? ''));
+                $v = trim((string) (($request->input('specs.value')[$i] ?? '')));
+                if ($k !== '' && $v !== '') {
+                    $specs[$k] = $v;
+                }
+            }
+        }
+        $validated['specs'] = ! empty($specs) ? $specs : null;
 
         // Remove fields handled separately — not written directly to DB
         unset(

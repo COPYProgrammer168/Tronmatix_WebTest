@@ -91,7 +91,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {item.price === '$$$' ? (
-                      <Link to={`/product/${item.id}`} className="bg-primary text-white font-bold px-4 py-2 rounded text-sm hover:bg-orange-600">
+                      <Link to={`/product/${item.slug || item.id}`} className="bg-primary text-white font-bold px-4 py-2 rounded text-sm hover:bg-orange-600">
                         {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'View Detail'}
                       </Link>
                     ) : (

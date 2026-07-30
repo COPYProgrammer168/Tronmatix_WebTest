@@ -85,7 +85,9 @@ if ($request->filled('brand')) {
      */
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = is_numeric($id)
+            ? Product::findOrFail((int) $id)
+            : Product::where('slug', $id)->firstOrFail();
 
         //include all columns needed by ProductCard / ProductDetail
         $related = Product::where('category', $product->category)
@@ -122,6 +124,9 @@ if ($request->filled('brand')) {
             'image'           => 'nullable|string|max:500',
             'images'          => 'nullable|array',
             'images.*'        => 'nullable|string|max:500',
+            'specs'           => 'nullable|array',
+            'specs.*'         => 'nullable|string|max:500',
+            'specs_title'     => 'nullable|string|max:255',
         ]);
 
         $validated['is_featured'] = $request->boolean('is_featured');
@@ -137,7 +142,9 @@ if ($request->filled('brand')) {
      */
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $product = is_numeric($id)
+            ? Product::findOrFail((int) $id)
+            : Product::where('slug', $id)->firstOrFail();
 
         $validated = $request->validate([
             'name'            => 'sometimes|string|max:255',
@@ -156,6 +163,9 @@ if ($request->filled('brand')) {
             'image'           => 'nullable|string|max:500',
             'images'          => 'nullable|array',
             'images.*'        => 'nullable|string|max:500',
+            'specs'           => 'nullable|array',
+            'specs.*'         => 'nullable|string|max:500',
+            'specs_title'     => 'nullable|string|max:255',
         ]);
 
         if ($request->has('is_featured')) $validated['is_featured'] = $request->boolean('is_featured');
@@ -171,7 +181,9 @@ if ($request->filled('brand')) {
      */
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
+        $product = is_numeric($id)
+            ? Product::findOrFail((int) $id)
+            : Product::where('slug', $id)->firstOrFail();
         $product->delete();
 
         return response()->json(['success' => true, 'message' => 'Product deleted.']);

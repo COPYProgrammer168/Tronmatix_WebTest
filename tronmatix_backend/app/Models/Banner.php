@@ -4,6 +4,7 @@
 
 namespace App\Models;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -64,5 +65,12 @@ class Banner extends Model
         // e.g. https://r2.../banners/uuid.gif?X-Amz-... → 'gif'
         $path = parse_url($this->image, PHP_URL_PATH) ?? $this->image;
         return strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'gif';
+    }
+
+    // ── Relationships ─────────────────────────────────────────────────────────
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }

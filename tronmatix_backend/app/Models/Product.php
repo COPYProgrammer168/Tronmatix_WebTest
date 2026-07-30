@@ -7,12 +7,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\AdminSetting;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     // ── Mass assignable ───────────────────────────────────────────────────────
     protected $fillable = [
         'name',
+        'slug',
         'caption',
         'description',
         'price',
@@ -23,6 +25,7 @@ class Product extends Model
         'image_disk',
         'images',
         'specs',
+        'specs_title',
         'stock',
         'stock_status',
         'stock_details',
@@ -58,6 +61,17 @@ class Product extends Model
                 $product->stock_status = 'Sold Out';
             } elseif ($product->isDirty('stock') && $product->stock > 0 && ($product->stock_status === 'Sold Out' || empty($product->stock_status))) {
                 $product->stock_status = 'Available InStock Now';
+            }
+
+            // Auto-generate slug from name
+            if ($product->isDirty('name') || ! $product->slug) {
+                $base = Str::slug($product->name);
+                $slug = $base;
+                $i = 1;
+                while (static::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+                    $slug = $base . '-' . $i++;
+                }
+                $product->slug = $slug;
             }
         });
     }

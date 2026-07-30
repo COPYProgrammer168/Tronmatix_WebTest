@@ -16,7 +16,7 @@ class BannerController extends Controller
      */
     public function index()
     {
-        $banners = Banner::active()->get([
+        $banners = Banner::active()->with('product')->get([
             'id', 'title', 'subtitle', 'badge',
             'bg_color', 'text_color',
             'image',
@@ -37,6 +37,7 @@ class BannerController extends Controller
                 'video_type' => $b->video_type,
                 'has_video' => $b->has_video,
                 'product_id' => $b->product_id,
+                'product_slug' => $b->product?->slug,
                 'order' => $b->order,
             ];
         });

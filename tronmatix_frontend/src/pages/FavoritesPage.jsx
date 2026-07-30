@@ -120,7 +120,7 @@ export default function FavoritesPage() {
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
                   </svg>
                 </button>
-                <Link to={`/product/${product.id}`} className="block">
+                <Link to={`/product/${product.slug || product.id}`} className="block">
                   <div
                     className="flex items-center justify-center"
                     style={{ height: 150, background: imgBg }}
@@ -142,7 +142,7 @@ export default function FavoritesPage() {
                   </div>
                 </Link>
                 <div className="p-3 text-center flex flex-col flex-1">
-                  <Link to={`/product/${product.id}`}>
+                  <Link to={`/product/${product.slug || product.id}`}>
                     <h3
                       className="font-bold mb-1 hover:text-primary transition-colors"
                       style={{
@@ -161,7 +161,7 @@ export default function FavoritesPage() {
                     {isAskPrice ? '$$$' : displayPrice(product.price)}
                   </div>
                   {isAskPrice ? (
-                    <Link to={`/product/${product.id}`}
+                    <Link to={`/product/${product.slug || product.id}`}
                       className="mt-auto w-full text-white py-2 rounded font-bold transition-colors"
                       style={{
                         fontFamily: bodyFont,

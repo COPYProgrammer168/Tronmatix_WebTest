@@ -327,7 +327,7 @@ export default function HomePage() {
             const videoSrc = banner.video;
             const hasMedia = imgUrl || hasVideo;
             const detailLink = banner.product_id
-              ? `/product/${banner.product_id}`
+              ? `/product/${banner.product_slug ?? banner.product_id}`
               : banner.link ||
               (banner.category
                 ? `/category/${banner.category.toLowerCase()}`
@@ -789,7 +789,7 @@ function VideoCard({ video, isKhmer, dark }) {
   // which then falls through to the upload-frame poster or text placeholder.
   const thumb = resolveImage(video.thumbnail) || getYouTubeThumbnail(video);
   const wrapped = video.product_id
-    ? (children) => <Link to={`/product/${video.product_id}`}>{children}</Link>
+    ? (children) => <Link to={`/product/${video.product_slug ?? video.product_id}`}>{children}</Link>
     : null;
 
   const typeConfig = getVideoTypeConfig(video);

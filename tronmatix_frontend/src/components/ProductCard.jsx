@@ -370,7 +370,7 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Image — fixed aspect ratio ensures equal card height in rows */}
-      <Link to={`/product/${product.id}`} className="block">
+      <Link to={`/product/${product.slug || product.id}`} className="block">
         <div className="relative overflow-hidden" style={{ background: imgBg, aspectRatio: "1 / 1" }}>
           {imageUrl ? (
             <>
@@ -418,7 +418,7 @@ export default function ProductCard({ product }) {
       </Link>
 
       <div className="p-3 text-center flex flex-col flex-1">
-        <Link to={`/product/${product.id}`} className="flex flex-col">
+        <Link to={`/product/${product.slug || product.id}`} className="flex flex-col">
           {/* Fixed-height title zone (2 lines max, clamped) — keeps price/button aligned across every card */}
           <h3
             className="font-bold mb-1 transition-colors"
@@ -519,7 +519,7 @@ export default function ProductCard({ product }) {
 
         {isAskPrice ? (
           <Link
-            to={`/product/${product.id}`}
+            to={`/product/${product.slug || product.id}`}
             className="mt-auto w-full font-bold rounded transition-all duration-200 flex items-center justify-center gap-2"
             style={{
               fontSize: 15,

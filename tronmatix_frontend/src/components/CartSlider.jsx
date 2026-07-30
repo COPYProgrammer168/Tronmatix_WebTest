@@ -106,7 +106,7 @@ export default function CartSlider() {
 
                   <div className="flex items-center gap-2 mt-1">
                     {item.price === '$$$' ? (
-                      <button onClick={() => { setCartOpen(false); navigate(`/product/${item.id}`) }}
+                      <button onClick={() => { setCartOpen(false); navigate(`/product/${item.slug || item.id}`) }}
                         className="bg-primary text-white font-bold px-3 py-1 rounded text-sm hover:bg-orange-600 transition-colors">
                         {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'View Detail'}
                       </button>

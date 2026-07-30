@@ -15,7 +15,7 @@ class VideoController extends Controller
      */
     public function index()
     {
-        $videos = Video::active()->get([
+        $videos = Video::active()->with('product')->get([
             'id',
             'title',
             'description',
@@ -33,6 +33,7 @@ class VideoController extends Controller
                 'video' => $v->video_url,     // accessor resolves upload path or returns embed URL
                 'thumbnail' => $v->thumbnail_url,
                 'product_id' => $v->product_id,
+                'product_slug' => $v->product?->slug,
                 'order' => $v->order,
             ];
         });

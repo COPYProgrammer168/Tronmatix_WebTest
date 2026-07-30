@@ -17,7 +17,7 @@ class BannerController extends Controller
 
     public function index()
     {
-        $banners = Banner::orderBy('order')->get();
+        $banners = Banner::with('product')->orderBy('order')->get();
         $products = Product::all();
 
         return view('dashboard.banners', compact('banners', 'products'));

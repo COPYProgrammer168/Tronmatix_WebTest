@@ -33,14 +33,14 @@ echo ">>> Running migrations..."
 php artisan migrate --force || echo "⚠️ migrate failed — check DB"
 
 # ── Seed delivery zones, provinces & marquees (idempotent — deletes + re-inserts) ─
-echo ">>> Seeding delivery zones..."
-php artisan db:seed --class=DeliveryZoneSeeder --force || echo "⚠️ DeliveryZoneSeeder failed"
+# echo ">>> Seeding delivery zones..."
+# php artisan db:seed --class=DeliveryZoneSeeder --force || echo "⚠️ DeliveryZoneSeeder failed"
 
-echo ">>> Seeding provinces..."
-php artisan db:seed --class=ProvinceSeeder --force || echo "⚠️ ProvinceSeeder failed"
+# echo ">>> Seeding provinces..."
+# php artisan db:seed --class=ProvinceSeeder --force || echo "⚠️ ProvinceSeeder failed"
 
-echo ">>> Seeding marquee messages..."
-php artisan db:seed --class=MarqueeSeeder --force || echo "⚠️ MarqueeSeeder failed"
+# echo ">>> Seeding marquee messages..."
+# php artisan db:seed --class=MarqueeSeeder --force || echo "⚠️ MarqueeSeeder failed"
 
 # ── Storage symlink (local disk only) ─────────────────────────────────────────
 if [ "${FILESYSTEM_DISK}" != "s3" ]; then

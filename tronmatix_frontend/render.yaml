@@ -20,4 +20,4 @@ services:
     # ── Environment variables ──────────────────────────────────────────────────
     envVars:
       - key: VITE_API_URL
-        value: https://tronmatix-beckend.onrender.com
+        value: https://tronmatix-backend.onrender.com

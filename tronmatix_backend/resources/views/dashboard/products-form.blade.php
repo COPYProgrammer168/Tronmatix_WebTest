@@ -342,6 +342,68 @@
                                     placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
                             </div>
 
+                            {{-- ── Specifications Table ──────────────────────────── --}}
+                            <div style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px;">
+                                <label class="form-label" style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; margin-bottom:12px;">
+                                    📋 SPECIFICATIONS TABLE
+                                </label>
+
+                                <div class="form-group" style="margin-bottom:12px;">
+                                    <label class="form-label" style="font-size: var(--title-size);">TABLE TITLE</label>
+                                    <input type="text" name="specs_title" id="specsTitle" class="form-control"
+                                        value="{{ old('specs_title', $product?->specs_title) }}"
+                                        placeholder="e.g. Technical Specifications" />
+                                </div>
+
+                                <div id="specsRows">
+                                    @php
+                                        $_specs = old('specs.key')
+                                            ? array_combine(old('specs.key'), old('specs.value'))
+                                            : ($product?->specs ?? []);
+                                    @endphp
+                                    @if(is_array($_specs) && count($_specs))
+                                        @foreach($_specs as $sk => $sv)
+                                            @continue(is_numeric($sk) && $sk === '')
+                                            <div class="spec-row" style="display:flex; gap:8px; margin-bottom:8px;">
+                                                <input type="text" name="specs[key][]" value="{{ $sk }}"
+                                                    class="form-control" placeholder="Key (e.g. Model)"
+                                                    style="flex:1; min-width:0;"
+                                                    onfocusin="this.style.borderColor='#F97316'"
+                                                    onfocusout="this.style.borderColor=''">
+                                                <input type="text" name="specs[value][]" value="{{ $sv }}"
+                                                    class="form-control" placeholder="Value (e.g. AMD Ryzen 7)"
+                                                    style="flex:2; min-width:0;"
+                                                    onfocusin="this.style.borderColor='#F97316'"
+                                                    onfocusout="this.style.borderColor=''">
+                                                <button type="button" onclick="this.closest('.spec-row').remove()"
+                                                    class="btn btn-sm"
+                                                    style="border:1px solid rgba(239,68,68,0.3); color:#ef4444; background:transparent; flex-shrink:0; padding:0 12px;">✕</button>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="spec-row" style="display:flex; gap:8px; margin-bottom:8px;">
+                                            <input type="text" name="specs[key][]" class="form-control"
+                                                placeholder="Key (e.g. Model)"
+                                                style="flex:1; min-width:0;"
+                                                onfocusin="this.style.borderColor='#F97316'"
+                                                onfocusout="this.style.borderColor=''">
+                                            <input type="text" name="specs[value][]" class="form-control"
+                                                placeholder="Value (e.g. AMD Ryzen 7)"
+                                                style="flex:2; min-width:0;"
+                                                onfocusin="this.style.borderColor='#F97316'"
+                                                onfocusout="this.style.borderColor=''">
+                                            <button type="button" onclick="this.closest('.spec-row').remove()"
+                                                class="btn btn-sm"
+                                                style="border:1px solid rgba(239,68,68,0.3); color:#ef4444; background:transparent; flex-shrink:0; padding:0 12px;">✕</button>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <button type="button" onclick="addSpecRow()" class="btn btn-outline btn-sm" style="margin-top:4px;">
+                                    + ADD SPEC ROW
+                                </button>
+                            </div>
+
                             {{-- Stock Status + Details --}}
                             <div class="form-grid-2">
                                 <div class="form-group">
@@ -868,6 +930,30 @@
         function toggleRemoveImage(checkbox) {
             const gallery = document.getElementById('imageGallery')
             gallery.style.opacity = checkbox.checked ? '0.3' : '1'
+        }
+
+        // ── Add spec row ────────────────────────────────────────────────────────
+        function addSpecRow() {
+            const container = document.getElementById('specsRows');
+            const row = document.createElement('div');
+            row.className = 'spec-row';
+            row.style.cssText = 'display:flex; gap:8px; margin-bottom:8px;';
+            row.innerHTML = `
+                <input type="text" name="specs[key][]" class="form-control"
+                    placeholder="Key (e.g. Model)"
+                    style="flex:1; min-width:0;"
+                    onfocusin="this.style.borderColor='#F97316'"
+                    onfocusout="this.style.borderColor=''">
+                <input type="text" name="specs[value][]" class="form-control"
+                    placeholder="Value (e.g. AMD Ryzen 7)"
+                    style="flex:2; min-width:0;"
+                    onfocusin="this.style.borderColor='#F97316'"
+                    onfocusout="this.style.borderColor=''">
+                <button type="button" onclick="this.closest('.spec-row').remove()"
+                    class="btn btn-sm"
+                    style="border:1px solid rgba(239,68,68,0.3); color:#ef4444; background:transparent; flex-shrink:0; padding:0 12px;">✕</button>
+            `;
+            container.appendChild(row);
         }
 
         // ── Rebuild existing_images[] + sync file input before submit ───────────

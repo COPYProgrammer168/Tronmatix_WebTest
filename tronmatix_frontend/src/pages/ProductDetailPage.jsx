@@ -553,6 +553,76 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {/* ── Specifications Table ──────────────────────────────── */}
+          {product.specs && Object.keys(product.specs).length > 0 && (
+            <div
+              className="mb-5 rounded-xl overflow-hidden"
+              style={{
+                border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)"}`,
+              }}
+            >
+              {/* Table header */}
+              <div
+                style={{
+                  padding: "12px 18px",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  letterSpacing: 2,
+                  background: dark
+                    ? "linear-gradient(135deg, #F97316 0%, #ea580c 100%)"
+                    : "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+                  color: "#fff",
+                  fontFamily: headingFont,
+                }}
+              >
+                {product.specs_title || t("product.specifications") || "SPECIFICATIONS"}
+              </div>
+
+              {/* Table rows */}
+              {Object.entries(product.specs).map(([key, value], i, arr) => (
+                <div
+                  key={key}
+                  className={`flex ${isKhmer ? "flex-col gap-0.5" : "flex-row"} px-4 py-2.5`}
+                  style={{
+                    background: i % 2 === 0
+                      ? dark ? "rgba(255,255,255,0.02)" : "rgba(15,23,42,0.02)"
+                      : "transparent",
+                    borderBottom: i < arr.length - 1
+                      ? `1px solid ${dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.04)"}`
+                      : "none",
+                  }}
+                >
+                  <span
+                    className={isKhmer ? "" : "w-1/2"}
+                    style={{
+                      fontFamily: bodyFont,
+                      fontSize: isKhmer ? 14 : 15,
+                      fontWeight: 600,
+                      color: dark ? "#9ca3af" : "#6b7280",
+                      letterSpacing: isKhmer ? 0 : 0.5,
+                      minWidth: isKhmer ? "auto" : 140,
+                      paddingRight: 16,
+                    }}
+                  >
+                    {key}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: bodyFont,
+                      fontSize: isKhmer ? 15 : 15,
+                      fontWeight: 500,
+                      color: dark ? "#f9fafb" : "#1f2937",
+                      wordBreak: "break-word",
+                      flex: 1,
+                    }}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-col gap-1 mb-5">
             <div className="flex items-center gap-2">
               <span
