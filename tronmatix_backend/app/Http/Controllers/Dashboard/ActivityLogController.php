@@ -59,7 +59,7 @@ class ActivityLogController extends Controller
             $query->where('action', '!=', 'login_rate_limited');
         }
 
-        $perPage = min((int) $request->input('per_page', 50), 200);
+        $perPage = min((int) $request->input('per_page', 50), 500);
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         $actorNames = ActivityLog::select('actor_name')
@@ -133,7 +133,7 @@ class ActivityLogController extends Controller
             $query->where('action', '!=', 'login_rate_limited');
         }
 
-        $perPage = min((int) $request->input('per_page', 50), 200);
+        $perPage = min((int) $request->input('per_page', 50), 500);
 
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
 

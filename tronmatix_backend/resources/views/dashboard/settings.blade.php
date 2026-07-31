@@ -20,64 +20,43 @@
             }
         @endphp
 
-        {{-- ── Save success popup ───────────────────────────────────────────────────── --}}
+        {{-- ── Save success toast ───────────────────────────────────────────────────── --}}
         @if (session('success'))
-            <div id="save-popup"
+            <div id="save-toast"
                 style="
-    position:fixed; inset:0; z-index:9999; display:flex;
-    align-items:center; justify-content:center; padding:20px;
-    background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
-    animation:sOverlayIn .2s ease;
-">
-                <div
-                    style="
-        background:linear-gradient(145deg,#0b1f0e,#0a280c);
-        border:1px solid rgba(34,197,94,0.3); border-radius:24px;
-        padding:40px 36px; text-align:center; max-width:340px; width:100%;
-        box-shadow:0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(34,197,94,0.08);
-        animation:sBoxIn .4s cubic-bezier(0.34,1.4,0.64,1);
-        font-family:Rajdhani, var(--font-kh), sans-serif;
-    ">
-                    <div
-                        style="
-            width:86px; height:86px; border-radius:50%; margin:0 auto 20px;
-            background:linear-gradient(135deg,#22c55e,#15803d);
-            display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
-            box-shadow:0 0 48px rgba(34,197,94,0.5), 0 0 0 12px rgba(34,197,94,0.08);
-            animation:sPopIn .55s cubic-bezier(0.34,1.56,0.64,1) .1s both;
-        ">
-                        ✓</div>
-                    <div
-                        style="font-size: var(--title-size); font-weight:900; color:#22c55e; letter-spacing:3px; margin-bottom:6px;">
-                        {{ strtoupper(__('dashboard.settings.saved')) }}</div>
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.45); margin-bottom:24px;">{{ __('dashboard.settings.allUpdated') }}</div>
-                    <button onclick="closeSavePopup()"
-                        style="
-            padding:10px 32px; border-radius:10px; cursor:pointer;
-            background:rgba(34,197,94,0.12); border:1.5px solid rgba(34,197,94,0.3);
-            color:#22c55e; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size);
-            font-weight:700; letter-spacing:2px; transition:all .2s;
-        "
-                        onmouseover="this.style.background='rgba(34,197,94,0.22)'"
-                        onmouseout="this.style.background='rgba(34,197,94,0.12)'">
-                        CLOSE
-                    </button>
-                </div>
+                    position:fixed; top:20px; right:20px; z-index:9999;
+                    padding:12px 20px; background:#22c55e; color:#fff;
+                    border-radius:12px; box-shadow:0 10px 25px rgba(34,197,94,0.3);
+                    font-family:Rajdhani, sans-serif; font-weight:700; letter-spacing:1px;
+                    display:flex; align-items:center; gap:10px;
+                    animation:toastIn .4s cubic-bezier(0.34,1.56,0.64,1);
+                ">
+                <span>✓</span> {{ strtoupper(__('dashboard.settings.saved')) }}
             </div>
+            <style>
+                @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                @keyframes toastOut { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-20px); opacity: 0; } }
+            </style>
             <script>
-                function closeSavePopup() {
-                    const p = document.getElementById('save-popup');
-                    p.style.animation = 'sOverlayOut .25s ease forwards';
-                    setTimeout(() => p?.remove(), 240);
-                }
-                setTimeout(closeSavePopup, 3500);
+                setTimeout(() => {
+                    const t = document.getElementById('save-toast');
+                    if (t) {
+                        t.style.animation = 'toastOut .3s ease-out forwards';
+                        setTimeout(() => t.remove(), 300);
+                    }
+                }, 3000);
             </script>
         @endif
 
         <form method="POST" action="{{ route('dashboard.settings.update') }}" id="settings-form">
             @csrf @method('PUT')
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+            <div id="settings-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+                <style>
+                    @media (max-width: 900px) {
+                        #settings-grid { grid-template-columns: 1fr !important; }
+                    }
+                </style>
 
                 {{-- ════════════════════════ LEFT COLUMN ════════════════════════════════════ --}}
                 <div style="display:flex; flex-direction:column; gap:20px;">
@@ -500,6 +479,7 @@
                         </div>
                     </div> <!-- close grid -->
                 </div>
+            </div> <!-- close #settings-grid -->
         </form>
 
         {{-- ════════════════════════════════════════════════════════════════════════════
@@ -836,7 +816,7 @@
             </div>
 
             {{-- Role legend --}}
-            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
+            <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-top:14px;">
                 @php
                     $legend = [
                         ['👑', 'SUPER ADMIN', '#F97316', 'Full owner-level access to everything'],
@@ -849,14 +829,14 @@
                 @endphp
                 @foreach ($legend as [$icon, $label, $color, $desc])
                     <div
-                        style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px;
-                    background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); flex:1; min-width:200px;">
-                        <span style="font-size: var(--title-size);">{{ $icon }}</span>
+                        style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:12px;
+                    background:#ffffff; border:1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex:1;">
+                        <span style="font-size: 24px; padding:8px; background:{{$color}}15; border-radius:8px;">{{ $icon }}</span>
                         <div>
                             <div
-                                style="font-size: var(--title-size); font-weight:800; letter-spacing:1px; color:{{ $color }};">
+                                style="font-size: 14px; font-weight:800; letter-spacing:0.5px; color:{{ $color }};">
                                 {{ $label }}</div>
-                            <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:2px;">
+                            <div style="font-size: 13px; color:rgba(0,0,0,0.5); margin-top:2px;">
                                 {{ $desc }}</div>
                         </div>
                     </div>
@@ -915,53 +895,6 @@
 
         {{-- ════════════════════════ STYLES ══════════════════════════════════════════ --}}
         <style>
-            /* Popup animations */
-            @keyframes sOverlayIn {
-                from {
-                    opacity: 0
-                }
-
-                to {
-                    opacity: 1
-                }
-            }
-
-            @keyframes sOverlayOut {
-                from {
-                    opacity: 1
-                }
-
-                to {
-                    opacity: 0
-                }
-            }
-
-            @keyframes sBoxIn {
-                from {
-                    opacity: 0;
-                    transform: scale(.88) translateY(20px)
-                }
-
-                to {
-                    opacity: 1;
-                    transform: scale(1) translateY(0)
-                }
-            }
-
-            @keyframes sPopIn {
-                0% {
-                    transform: scale(0) rotate(-12deg)
-                }
-
-                60% {
-                    transform: scale(1.2) rotate(4deg)
-                }
-
-                100% {
-                    transform: scale(1) rotate(0)
-                }
-            }
-
             @keyframes sSubSlide {
                 from {
                     opacity: 0;
@@ -1318,21 +1251,20 @@
                 transform: scale(1.1);
             }
 
-            /* Permission matrix: scroll on small screens */
-            @media (max-width: 768px) {
-
-                div[style*="overflow-x:auto"] table,
-                .table-wrap table {
-                    min-width: 520px;
-                }
+            /* Responsive adjustments */
+            @media (max-width: 1100px) {
+                /* General responsive cleanup */
             }
 
-            /* Settings cards stack on mobile */
-            /* ── Permission matrix responsive ────────────────────────────── */
-            @media (max-width: 1100px) {
-                div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"] {
-                    grid-template-columns: 1fr;
-                    grid-template-columns: 1fr !important;
+            /* Role permissions language adjustments */
+            :lang(km) .perm-table-wrapper th,
+            :lang(km) .perm-table-wrapper td {
+                font-weight: 400 !important;
+            }
+
+            @media (max-width: 768px) {
+                .perm-table-wrapper table {
+                    min-width: 520px;
                 }
             }
 
@@ -1341,20 +1273,8 @@
                     overflow-x: auto;
                     -webkit-overflow-scrolling: touch;
                 }
-
-                .perm-table-wrapper table {
-                    min-width: 480px;
-                }
-
-                /* Stack the settings cards vertically on small screens */
-                div[style*="display:grid"][style*="grid-template-columns:1fr 1fr"],
-                div[style*="display:grid"][style*="grid-template-columns: 1fr 1fr"] {
-                    grid-template-columns: 1fr;
-                    grid-template-columns: 1fr !important;
-                }
             }
 
-            /* Role legend wraps nicely on mobile */
             @media (max-width: 540px) {
                 div[style*="min-width:200px"] {
                     min-width: 100% !important;
@@ -1362,12 +1282,6 @@
                 }
             }
 
-            /* Perm matrix role header compact on tablet */
-            @media (max-width: 860px) {
-                .perm-role-header {
-                    font-size: var(--title-size) !important;
-                }
-            }
         </style>
 
 
