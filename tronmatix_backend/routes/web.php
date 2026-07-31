@@ -10,6 +10,9 @@ use App\Http\Controllers\Dashboard\ProductController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Dashboard\StaffController;
+use App\Http\Controllers\Dashboard\StaffInviteController;
+use App\Http\Controllers\Dashboard\PasswordResetController;
+use App\Http\Controllers\Dashboard\PhoneOtpController;
 use App\Http\Controllers\Dashboard\DeliveryProviderController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
@@ -42,6 +45,12 @@ Route::post('/feedback', function (\Illuminate\Http\Request $request) {
     return back()->with('success', 'Thank you for your feedback!');
 })->name('feedback.submit');
 
+// ── Public staff invite accept (no auth — invited person is not yet a user) ──
+Route::prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::get('/invite/{token}', [StaffInviteController::class, 'show'])->name('invite.show');
+    Route::post('/invite/{token}', [StaffInviteController::class, 'accept'])->name('invite.accept');
+});
+
 // ── Admin Auth Routes (unauthenticated only) ──────────────────────────────────
 Route::prefix('dashboard')->name('dashboard.')
     ->middleware(\App\Http\Middleware\AdminGuest::class)
@@ -50,6 +59,27 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/login', [AdminAuthController::class, 'login'])->name('login.post');
         Route::get('/register', [AdminAuthController::class, 'showRegister'])->name('register');
         Route::post('/register', [AdminAuthController::class, 'register'])->name('register.post');
+
+        // ── Forgot password (Gmail reset link + phone OTP) ────────────────
+        // Named dashboard.password.* (no collision with Fortify's customer
+        // password.* routes at /forgot-password and /reset-password/{token}).
+        Route::get('/password/email', [PasswordResetController::class, 'showForgotForm'])->name('password.email');
+        Route::post('/password/email', [PasswordResetController::class, 'sendResetLink'])
+            ->middleware('throttle:5,1')
+            ->name('password.email.post');
+        Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+        Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])
+            ->middleware('throttle:5,1')
+            ->name('password.reset.post');
+
+        Route::get('/password/phone', [PhoneOtpController::class, 'showPhoneForm'])->name('password.phone');
+        Route::post('/password/phone', [PhoneOtpController::class, 'requestOtp'])
+            ->middleware('throttle:1,1')
+            ->name('password.phone.request');
+        Route::get('/password/phone/verify', [PhoneOtpController::class, 'showVerifyForm'])->name('password.phone.verify');
+        Route::post('/password/phone/verify', [PhoneOtpController::class, 'verifyOtpAndReset'])
+            ->middleware('throttle:5,1')
+            ->name('password.phone.verify.post');
     });
 
 // ── Protected Dashboard Routes ────────────────────────────────────────────────
@@ -141,6 +171,7 @@ Route::prefix('dashboard')->name('dashboard.')
         // Staff management — StaffController::assertAdmin() enforces role
         Route::get('/staff', [StaffController::class, 'index'])->name('staff');
         Route::post('/staff/invite', [StaffController::class, 'invite'])->name('staff.invite');
+        Route::post('/staff/invites/{id}/resend', [StaffController::class, 'resendInvite'])->name('staff.invite.resend');
         Route::patch('/staff/{id}/role', [StaffController::class, 'updateRole'])->name('staff.role');
         Route::patch('/staff/{id}/toggle', [StaffController::class, 'toggle'])->name('staff.toggle');
         Route::post('/staff/heartbeat', [StaffController::class, 'heartbeat'])->name('staff.heartbeat');

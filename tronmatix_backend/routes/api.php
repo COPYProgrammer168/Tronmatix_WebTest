@@ -78,6 +78,11 @@ Route::middleware(['auth:sanctum', 'not_banned', 'throttle:60,1'])->group(functi
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
 
+    // Portal-aware session restore — a staff/dev token's tokenable is a Staff row,
+    // so the customer /auth/me endpoint (users table) would 401. Return the correct
+    // payload based on the authenticated model instead.
+    Route::get('/portal/me', [AuthController::class, 'portalMe']);
+
     // Admin stats — all staff roles + superadmin
     Route::middleware('role:admin,superadmin,editor,seller,delivery,developer')->group(function () {
         Route::get('/admin/stats', [AdminStatsController::class, 'stats']);

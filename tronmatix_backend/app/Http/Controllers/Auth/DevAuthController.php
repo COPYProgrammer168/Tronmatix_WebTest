@@ -27,7 +27,7 @@ class DevAuthController extends Controller
 
         // Query staff table where role=developer — NOT users table
         $staff = Staff::where('email', $request->email)
-                      ->where('role', 'developer')
+                      ->whereIn('role', Staff::DEV_PORTAL_ROLES)
                       ->first();
 
         if (! $staff || ! Hash::check($request->password, $staff->password)) {

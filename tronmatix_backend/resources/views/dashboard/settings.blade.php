@@ -816,7 +816,7 @@
             </div>
 
             {{-- Role legend --}}
-            <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-top:14px;">
+            <div class="role-legend-grid" style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-top:14px;">
                 @php
                     $legend = [
                         ['👑', 'SUPER ADMIN', '#F97316', 'Full owner-level access to everything'],
@@ -827,17 +827,50 @@
                         ['💻', 'DEVELOPER', '#06b6d4', 'Technical access; no admin-sensitive pages'],
                     ];
                 @endphp
+                <style>
+                    /* Role legend cards — use the layout's real theme variables so
+                       they adapt to dark AND light mode correctly. */
+                    .role-legend-grid { transition: grid-template-columns .2s ease; }
+                    .role-card {
+                        display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+                        background: var(--surface-2, #1a1a1a);
+                        border: 1px solid var(--border, rgba(255,255,255,0.07));
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+                        flex: 1;
+                        min-width: 0;
+                    }
+                    .role-desc { color: var(--text-muted, rgba(255,255,255,0.55)); }
+
+                    /* 6 cols → 3 cols on tablet/mobile → 2 cols on very small screens */
+                    @media (max-width: 1200px) {
+                        .role-legend-grid { grid-template-columns: repeat(3, 1fr) !important; }
+                    }
+                    @media (max-width: 560px) {
+                        .role-legend-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+                        .role-card { flex-direction: column; align-items: flex-start; padding: 12px 14px; }
+                    }
+                    @media (max-width: 360px) {
+                        .role-legend-grid { grid-template-columns: 1fr !important; }
+                    }
+
+                    /* Light mode overrides (layout sets vars via [data-theme="light"]) */
+                    [data-theme='light'] .role-card {
+                        background: #ffffff;
+                        border: 1px solid rgba(15,23,42,0.10);
+                        box-shadow: 0 2px 4px rgba(15,23,42,0.04);
+                    }
+                    [data-theme='light'] .role-desc { color: rgba(15,23,42,0.55); }
+                </style>
                 @foreach ($legend as [$icon, $label, $color, $desc])
-                    <div
-                        style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:12px;
-                    background:#ffffff; border:1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex:1;">
+                    <div class="role-card">
                         <span style="font-size: 24px; padding:8px; background:{{$color}}15; border-radius:8px;">{{ $icon }}</span>
-                        <div>
-                            <div
-                                style="font-size: 14px; font-weight:800; letter-spacing:0.5px; color:{{ $color }};">
-                                {{ $label }}</div>
-                            <div style="font-size: 13px; color:rgba(0,0,0,0.5); margin-top:2px;">
-                                {{ $desc }}</div>
+                        <div style="min-width:0;">
+                            <div style="font-size: 14px; font-weight:800; letter-spacing:0.5px; color:{{ $color }};">
+                                {{ $label }}
+                            </div>
+                            <div class="role-desc" style="font-size: 13px; margin-top:2px;">
+                                {{ $desc }}
+                            </div>
                         </div>
                     </div>
                 @endforeach

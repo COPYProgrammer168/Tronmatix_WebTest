@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class StaffAuthController extends Controller
 {
     // editor | seller | delivery — matches Staff::ROLES (excluding developer)
-    private const STAFF_ROLES = ['editor', 'seller', 'delivery'];
+    private const STAFF_ROLES = Staff::STAFF_PORTAL_ROLES;
 
     public function login(Request $request)
     {

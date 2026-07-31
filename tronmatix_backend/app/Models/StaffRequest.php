@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StaffRequest extends Model
 {
     protected $fillable = [
-        'name', 'email', 'username', 'password',
+        'name', 'email', 'phone', 'username', 'password',
         'requested_role', 'message', 'status',
         'reviewed_by', 'reviewed_at',
     ];

@@ -178,6 +178,19 @@
                         @enderror
                     </div>
 
+                    {{-- Phone --}}
+                    <div class="form-group">
+                        <label class="form-label">PHONE NUMBER</label>
+                        <input type="tel" name="phone" class="form-control"
+                               value="{{ old('phone', $admin->phone) }}"
+                               placeholder="+855 12 345 678"
+                               style="border-color:{{ $errors->has('phone') ? '#EF4444' : 'rgba(255,255,255,0.1)' }};" />
+                        @error('phone')
+                            <div style="color:#EF4444; font-size: var(--title-size); margin-top:5px;">{{ $message }}</div>
+                        @enderror
+                        <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:6px;">Used for phone-based password reset.</div>
+                    </div>
+
                     <button type="submit" class="btn btn-orange"
                             style="width:100%; justify-content:center; font-size: var(--title-size);">
                         <svg style="width:16px;height:16px" fill="none" stroke="currentColor"

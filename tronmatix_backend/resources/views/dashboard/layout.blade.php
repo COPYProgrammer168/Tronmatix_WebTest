@@ -1255,8 +1255,17 @@
             @php
                 $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
                 $adminRole = $user?->role ?? 'editor';
+                // Reuse the same permission logic as dashboard._permission_check so the
+                // nav stays in sync with the perm_{role}_{feature} settings. superadmin
+                // always bypasses; admin always has full access.
+                $_navPermStaff    = ($adminRole === 'superadmin' || $adminRole === 'admin')
+                    ? true
+                    : \App\Models\AdminSetting::get("perm_{$adminRole}_staff", '0') === '1';
+                $_navPermActivity = ($adminRole === 'superadmin' || $adminRole === 'admin')
+                    ? true
+                    : \App\Models\AdminSetting::get("perm_{$adminRole}_activity_log", '0') === '1';
             @endphp
-            @if(in_array($adminRole, ['admin','superadmin']))
+            @if($_navPermStaff)
             <a href="{{ route('dashboard.staff') }}"
                class="nav-item {{ request()->routeIs('dashboard.staff*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -1268,6 +1277,8 @@
                 </svg>
                 {{ strtoupper(__('dashboard.nav.staff')) }}
             </a>
+            @endif
+            @if($_navPermActivity)
             <a href="{{ route('dashboard.activity-logs') }}"
                class="nav-item {{ request()->routeIs('dashboard.activity-logs*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

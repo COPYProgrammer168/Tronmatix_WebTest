@@ -75,12 +75,21 @@
     @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
     @if(!$_permDenied)
     {{-- Flash toasts --}}
+    @php
+        $_successMsg = session('success', '');
+        // Detect a trailing invite URL (created by StaffController::invite / resendInvite)
+        $_inviteLink = null;
+        if (preg_match('#(https?://\S+/dashboard/invite/\w+)#', $_successMsg, $_m)) {
+            $_inviteLink = $_m[1];
+            $_successMsg = trim(str_replace($_m[1], '', $_successMsg));
+        }
+    @endphp
     @if (session('success'))
         <div id="page-toast"
             style="position:fixed;top:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:12px;
     padding:14px 22px;border-radius:16px;background:var(--dark-800);
     border:1px solid rgba(34,197,94,0.4);box-shadow:0 16px 48px rgba(0,0,0,0.6);
-    font-family:Rajdhani, var(--font-kh), sans-serif;animation:stToastIn .4s cubic-bezier(0.34,1.4,0.64,1);max-width:340px;">
+    font-family:Rajdhani, var(--font-kh), sans-serif;animation:stToastIn .4s cubic-bezier(0.34,1.4,0.64,1);max-width:380px;">
             <div
                 style="width:38px;height:38px;border-radius:50%;background:rgba(34,197,94,0.15);flex-shrink:0;
                 border:1.5px solid rgba(34,197,94,0.4);display:flex;align-items:center;justify-content:center;
@@ -88,8 +97,20 @@
                 ✓</div>
             <div style="flex:1;min-width:0;">
                 <div style="font-size: var(--title-size);font-weight:{{ $_fw8 }};color:#22c55e;letter-spacing:1.5px;">SUCCESS</div>
-                <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;line-height:1.4;">{{ session('success') }}
+                <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:2px;line-height:1.4;">{{ $_successMsg }}
                 </div>
+                @if ($_inviteLink)
+                    <div
+                        style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 12px;border-radius:10px;
+                               background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.3);">
+                        <div style="flex:1;min-width:0;font-size: var(--title-size);color:#F97316;font-weight:{{ $_fw7 }};
+                            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="invite-link-text">{{ $_inviteLink }}</div>
+                        <button type="button" onclick="copyInviteLink(this)"
+                            style="flex-shrink:0;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                   font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1px;
+                                   background:linear-gradient(135deg,#F97316,#ea580c);border:none;color:#fff;">COPY</button>
+                    </div>
+                @endif
             </div>
             <button onclick="dismissToast('page-toast')"
                 style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.05);
@@ -100,12 +121,31 @@
             <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px;overflow:hidden;">
                 <div
                     style="height:100%;width:100%;background:linear-gradient(90deg,#22c55e,#4ade80);
-            animation:toastBar 4s linear forwards;border-radius:0 0 16px 16px;">
+            animation:toastBar 8s linear forwards;border-radius:0 0 16px 16px;">
                 </div>
             </div>
         </div>
         <script>
-            setTimeout(() => dismissToast('page-toast'), 4000);
+            setTimeout(() => dismissToast('page-toast'), 8000);
+            function copyInviteLink(btn) {
+                const text = document.getElementById('invite-link-text');
+                const val = text.textContent.trim();
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(val).then(() => {
+                        btn.textContent = 'COPIED ✓';
+                        setTimeout(() => btn.textContent = 'COPY', 2000);
+                    });
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = val;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    btn.textContent = 'COPIED ✓';
+                    setTimeout(() => btn.textContent = 'COPY', 2000);
+                }
+            }
         </script>
     @endif
 
@@ -253,6 +293,63 @@
             @endforeach
         </div>
 
+        {{-- Pending invitations (created but not yet accepted) --}}
+        @if (($pendingInvites ?? collect())->isNotEmpty())
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-header">
+                    <div class="card-title">✉️ PENDING INVITATIONS</div>
+                    <div style="font-size: var(--title-size);color:var(--text-muted);">{{ $pendingInvites->count() }}
+                        awaiting set-password</div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;" id="invite-table">
+                        <thead>
+                            <tr style="border-bottom:1px solid var(--border);">
+                                <th style="padding:12px 16px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">NAME</th>
+                                <th style="padding:12px 16px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">EMAIL</th>
+                                <th style="padding:12px 16px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">PHONE</th>
+                                <th style="padding:12px 16px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">ROLE</th>
+                                <th style="padding:12px 16px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">EXPIRES</th>
+                                <th style="padding:12px 16px;text-align:right;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($pendingInvites as $inv)
+                                @php
+                                    $iRole = $inv->role ?? 'editor';
+                                    $iMeta = $staffRoleMeta[$iRole] ?? $staffRoleMeta['editor'];
+                                @endphp
+                                <tr style="border-bottom:1px solid var(--border);">
+                                    <td style="padding:12px 16px;white-space:nowrap;font-weight:{{ $_fw7 }};color:var(--text-primary);">{{ $inv->name }}</td>
+                                    <td style="padding:12px 16px;font-size: var(--title-size);color:var(--text-secondary);">{{ $inv->email }}</td>
+                                    <td style="padding:12px 16px;font-size: var(--title-size);color:var(--text-secondary);">{{ $inv->phone ?? '—' }}</td>
+                                    <td style="padding:12px 16px;text-align:center;">
+                                        <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;
+                                            font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;
+                                            background:{{ $iMeta['color'] }}18;border:1px solid {{ $iMeta['color'] }}44;color:{{ $iMeta['color'] }};">
+                                            {{ $iMeta['icon'] }} {{ strtoupper($iMeta['label']) }}
+                                        </span>
+                                    </td>
+                                    <td style="padding:12px 16px;text-align:center;font-size: var(--title-size);color:var(--text-muted);">
+                                        {{ $inv->expires_at ? $inv->expires_at->format('d M Y') : '—' }}
+                                    </td>
+                                    <td style="padding:12px 16px;text-align:right;white-space:nowrap;">
+                                        <form method="POST" action="{{ route('dashboard.staff.invite.resend', $inv->id) }}" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" title="Generate a new invite link"
+                                                style="padding:6px 14px;border-radius:8px;cursor:pointer;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                                       font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;
+                                                       border:1px solid rgba(249,115,22,0.3);background:rgba(249,115,22,0.08);color:#F97316;">↻ NEW LINK</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+
         {{-- Filters --}}
         <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
             <div style="position:relative;flex:1;min-width:220px;">
@@ -304,7 +401,7 @@
                 <div style="overflow-x:auto;">
                     <style>
                         @media (max-width: 768px) {
-                            #staff-table .col-email, #staff-table .col-joined, #staff-table .col-status {
+                            #staff-table .col-email, #staff-table .col-phone, #staff-table .col-joined, #staff-table .col-status {
                                 display: none;
                             }
                         }
@@ -318,6 +415,9 @@
                                 <th class="col-email"
                                     style="padding:14px 14px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">
                                     {{ strtoupper(__('dashboard.table.email')) }}</th>
+                                <th class="col-phone"
+                                    style="padding:14px 14px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">
+                                    {{ strtoupper(__('dashboard.table.phone')) }}</th>
                                 <th
                                     style="padding:14px 14px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">
                                     {{ strtoupper(__('dashboard.table.role')) }}</th>
@@ -355,6 +455,7 @@
                                 <tr class="staff-row" data-table="staff" data-role="{{ $mRole }}"
                                     data-name="{{ strtolower($member->name ?? '') }}"
                                     data-email="{{ strtolower($member->email ?? '') }}"
+                                    data-phone="{{ strtolower($member->phone ?? '') }}"
                                     style="border-bottom:1px solid var(--border);transition:background .15s;"
                                     onmouseover="this.style.background='rgba(15,23,42,0.02)'"
                                     onmouseout="this.style.background=''">
@@ -393,6 +494,10 @@
                                     <td class="col-email"
                                         style="padding:16px 14px;font-size: var(--title-size);color:var(--text-secondary);">
                                         {{ $member->email }}</td>
+
+                                    <td class="col-phone"
+                                        style="padding:16px 14px;font-size: var(--title-size);color:var(--text-secondary);">
+                                        {{ $member->phone ?? '—' }}</td>
 
                                     <td style="padding:16px 14px;text-align:center;">
                                         <form method="POST" action="{{ route('dashboard.staff.role', $member->id) }}"
@@ -812,12 +917,12 @@
                 <input type="hidden" name="_target" id="invite-target" value="staff" />
                 <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
                     @php $_fullNameLabel = strtoupper(__('dashboard.staff.fullName')); $_usernameLabel = strtoupper(__('dashboard.staff.username')); $_emailLabel = strtoupper(__('dashboard.staff.emailAddress')); @endphp
-                    @foreach ([['name', $_fullNameLabel, 'e.g. John Doe', 'text'], ['username', $_usernameLabel, 'e.g. johndoe', 'text'], ['email', $_emailLabel, 'e.g. john@example.com', 'email']] as [$fn, $fl, $fp, $ft])
+                    @foreach ([['name', $_fullNameLabel, 'e.g. John Doe', 'text', true], ['username', $_usernameLabel, 'e.g. johndoe', 'text', true], ['email', $_emailLabel, 'e.g. john@example.com', 'email', true]] as [$fn, $fl, $fp, $ft, $req])
                         <div>
                             <label
                                 style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ $fl }}</label>
                             <input type="{{ $ft }}" name="{{ $fn }}"
-                                placeholder="{{ $fp }}" required
+                                placeholder="{{ $fp }}" {{ $req ? 'required' : '' }}
                                 style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
                                   border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
                                   font-size: var(--title-size);outline:none;transition:border-color .2s;"
@@ -825,6 +930,18 @@
                                 onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
                         </div>
                     @endforeach
+
+                    {{-- Phone (optional — used for SMS password reset) --}}
+                    <div>
+                        <label
+                            style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.table.phone')) }}</label>
+                        <input type="tel" name="phone" placeholder="e.g. +855 12 345 678"
+                            style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
+                                  border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                  font-size: var(--title-size);outline:none;transition:border-color .2s;"
+                            onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
+                            onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                    </div>
 
                     {{-- STAFF roles (shown when tab = staff) --}}
                     <div id="staff-role-section">
@@ -884,12 +1001,14 @@
                         </div>
                     @endif
 
-                    <div>
+                    {{-- Password: only required for ADMIN invites (direct create).
+                         Staff invites use the set-password link instead. --}}
+                    <div id="admin-password-section" style="display:none;">
                         <label
                             style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.staff.tempPassword')) }}</label>
                         <div style="position:relative;">
                             <input type="password" name="password" id="inv-pass" placeholder="Min 8 characters"
-                                required minlength="8"
+                                minlength="8"
                                 style="width:100%;padding:11px 44px 11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
                                       border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
                                       font-size: var(--title-size);outline:none;transition:border-color .2s;"
@@ -901,6 +1020,15 @@
                         </div>
                         <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:6px;">Member should change this after
                             first login.</div>
+                    </div>
+
+                    {{-- Staff invite hint (no password needed — the link sets it) --}}
+                    <div id="staff-invite-hint"
+                        style="padding:12px 14px;border-radius:10px;background:rgba(59,130,246,0.06);
+                               border:1px solid rgba(59,130,246,0.2);font-size: var(--title-size);color:var(--text-muted);line-height:1.5;">
+                        💡 After creating the invite, <strong style="color:#3b82f6;">copy the link</strong> from the success
+                        message and send it to this person. They'll set their own password and the account is activated
+                        automatically.
                     </div>
                 </div>
 
@@ -1051,6 +1179,13 @@
             document.getElementById('staff-role-section').style.display = tab === 'staff' ? '' : 'none';
             const adminSec = document.getElementById('admin-role-section');
             if (adminSec) adminSec.style.display = tab === 'admins' ? '' : 'none';
+            // Password only required for ADMIN invites (staff use the set-password link)
+            const passSec = document.getElementById('admin-password-section');
+            if (passSec) passSec.style.display = tab === 'admins' ? '' : 'none';
+            const passInput = document.getElementById('inv-pass');
+            if (passInput) passInput.required = tab === 'admins';
+            const hintSec = document.getElementById('staff-invite-hint');
+            if (hintSec) hintSec.style.display = tab === 'staff' ? '' : 'none';
             document.getElementById('invite-modal-title').textContent = tab === 'admins'
               ? '{{ strtoupper(__("dashboard.staff.inviteAdmin")) }}'
               : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
@@ -1059,6 +1194,15 @@
 
         // Set correct form action on page load without requiring switchTab() call
         document.getElementById('invite-form').action = currentTab === 'admins' ? routeAdminInvite : routeStaffInvite;
+        // Sync modal sections (password / hint) for the initially active tab
+        (function initInviteSections() {
+            const passSec = document.getElementById('admin-password-section');
+            if (passSec) passSec.style.display = currentTab === 'admins' ? '' : 'none';
+            const passInput = document.getElementById('inv-pass');
+            if (passInput) passInput.required = currentTab === 'admins';
+            const hintSec = document.getElementById('staff-invite-hint');
+            if (hintSec) hintSec.style.display = currentTab === 'staff' ? '' : 'none';
+        })();
 
         // ── Toast ─────────────────────────────────────────────────────────────────────
         function dismissToast(id) {
@@ -1118,7 +1262,8 @@
             const q = document.getElementById(table + '-search').value.toLowerCase();
             const activeRole = table === 'staff' ? activeStaffRole : activeAdminRole;
             document.querySelectorAll('.' + table + '-row').forEach(row => {
-                const match = (!q || row.dataset.name.includes(q) || row.dataset.email.includes(q)) &&
+                const match = (!q || row.dataset.name.includes(q) || row.dataset.email.includes(q) ||
+                    (row.dataset.phone || '').includes(q)) &&
                     (activeRole === 'all' || row.dataset.role === activeRole);
                 row.style.display = match ? '' : 'none';
             });
@@ -1312,7 +1457,8 @@
         @media(max-width:700px) {
 
             .col-joined,
-            .col-email {
+            .col-email,
+            .col-phone {
                 display: none;
             }
         }

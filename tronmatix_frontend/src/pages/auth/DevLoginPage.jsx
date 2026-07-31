@@ -22,6 +22,11 @@ export default function DevLoginPage() {
 
   // Already logged in as developer → skip login
   useEffect(() => {
+    // Staff roles (editor/seller/delivery) belong in the staff portal.
+    if (user && ['editor', 'seller', 'delivery'].includes(user.role)) {
+      navigate('/staff/login', { replace: true })
+      return
+    }
     if (user?.role === 'developer' && window.location.pathname !== '/dev/dashboard') {
       navigate('/dev/dashboard', { replace: true })
     }

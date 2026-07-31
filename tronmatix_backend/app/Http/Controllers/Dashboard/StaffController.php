@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Staff;
+use App\Models\StaffInvite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class StaffController extends Controller
@@ -61,10 +63,20 @@ class StaffController extends Controller
                 END
             ")->orderBy('name')->get();
 
-        return view('dashboard.staff', compact('admins', 'staff'));
+        // Pending invitations (not yet accepted) — shown in the staff tab
+        $pendingInvites = StaffInvite::whereNull('used_at')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('dashboard.staff', compact('admins', 'staff', 'pendingInvites'));
     }
 
     // ── invite ────────────────────────────────────────────────────────────────
+    // Creates a pending invitation with a set-password link. No staff account
+    // is created until the invited person opens the link and sets a password.
 
     public function invite(Request $request)
     {
@@ -87,23 +99,43 @@ class StaffController extends Controller
                 'unique:staff,email',
                 'unique:admins,email'
             ],
-            'role' => ['required', 'in:editor,seller,delivery,developer'],
-            'password' => ['required', Password::min(8)],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'role' => ['required', 'in:' . implode(',', Staff::ROLES)],
         ]);
 
-        $staff = Staff::create([
-            'name' => $data['name'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'role' => $data['role'],
-            'password' => Hash::make($data['password']),
-            'is_active' => true,
+        $invite = StaffInvite::create([
+            'token'      => Str::random(64),
+            'name'       => $data['name'],
+            'username'   => $data['username'],
+            'email'      => $data['email'],
+            'phone'      => $data['phone'] ?? null,
+            'role'       => $data['role'],
+            'expires_at' => now()->addDays(7),
         ]);
 
         \App\Services\ActivityLogger::staffInvited($data['name'], $data['role'], $request);
 
         return redirect()->route('dashboard.staff')
-            ->with('success', "{$data['name']} has been added to the team.");
+            ->with('success', "Invite created for {$data['name']}. Share this link — they set their own password: " . $invite->inviteUrl());
+    }
+
+    // ── resendInvite ──────────────────────────────────────────────────────────
+    // Regenerates the token for an already-created invite and returns the new
+    // link so the admin can copy/share it again.
+
+    public function resendInvite(int $id, Request $request)
+    {
+        $this->assertAdmin();
+
+        $invite = StaffInvite::findOrFail($id);
+
+        $invite->update([
+            'token'      => Str::random(64),
+            'expires_at' => now()->addDays(7),
+            'used_at'    => null,
+        ]);
+
+        return back()->with('success', 'New invite link: ' . $invite->inviteUrl());
     }
 
     // ── updateRole ────────────────────────────────────────────────────────────
@@ -172,7 +204,7 @@ class StaffController extends Controller
 
     // ── destroy ───────────────────────────────────────────────────────────────
 
-    public function destroy(int $id)
+    public function destroy(int $id, Request $request)
     {
         $this->assertAdmin();
 

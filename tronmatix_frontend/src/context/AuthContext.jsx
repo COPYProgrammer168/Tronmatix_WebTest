@@ -88,7 +88,10 @@ export function AuthProvider({ children }) {
     api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
     tokenRef.current = storedToken
 
-    api.get('/api/auth/me')
+    // Portal-aware restore: staff/dev tokens authenticate against the staff
+    // table, so the customer /api/auth/me (users table) would 401. /api/portal/me
+    // returns the correct payload for customers, staff and developers alike.
+    api.get('/api/portal/me')
       .then(res => {
         const fresh = extractUser(res.data)
         if (fresh) applyUser(fresh)
@@ -113,7 +116,7 @@ export function AuthProvider({ children }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const res   = await api.get('/api/auth/me')
+      const res   = await api.get('/api/portal/me')
       const fresh = extractUser(res.data)
       if (fresh) applyUser(fresh)
       return fresh

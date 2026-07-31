@@ -6,18 +6,23 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../lib/axios'                  // ADD: direct api call
 
-// Matches Staff::ROLES excluding developer
-const STAFF_ROLES = ['editor', 'seller', 'delivery']  // UPDATED roles
+// Matches Staff::STAFF_PORTAL_ROLES (editor | seller | delivery) — excludes developer
+const STAFF_ROLES = ['editor', 'seller', 'delivery']
 
 export default function StaffLoginPage() {
   const navigate = useNavigate()
-  const { user, staffLogin, loading } = useAuth() 
+  const { user, staffLogin, loading } = useAuth()
 
   const [form,     setForm]     = useState({ email: '', password: '' })
   const [error,    setError]    = useState(null)
   const [showPass, setShowPass] = useState(false)
 
   useEffect(() => {
+    // A developer belongs in the dev portal, not the staff portal.
+    if (user?.role === 'developer') {
+      navigate('/dev/login', { replace: true })
+      return
+    }
     if (user && STAFF_ROLES.includes(user.role) && window.location.pathname !== '/staff/dashboard') {
       navigate('/staff/dashboard', { replace: true })
     }

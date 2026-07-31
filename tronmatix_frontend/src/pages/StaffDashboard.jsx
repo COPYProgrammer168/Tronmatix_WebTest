@@ -41,6 +41,8 @@ const CARD_RADIUS = 14
 const transition = 'all 0.2s'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
+// 'activity' is filtered out for non-admin roles in StaffDashboard — its API
+// endpoint (/api/activity-logs) is admin/superadmin only.
 const NAV_SECTIONS = [
   {
     label: 'MAIN',
@@ -75,6 +77,9 @@ const NAV_SECTIONS = [
     ],
   },
 ]
+
+// Roles allowed to see the Activity tab (matches routes/api.php role:admin,superadmin)
+const ADMIN_ROLES = ['admin', 'superadmin']
 
 const STATUS_COLORS = {
   pending:    { bg: 'rgba(234,179,8,0.15)',  color: Y, border: 'rgba(234,179,8,0.3)' },
@@ -1782,7 +1787,15 @@ export default function StaffDashboard() {
     activity: <ActivityTab />,
   }
 
-  const flatNav = NAV_SECTIONS.flatMap(s => s.items)
+  // Hide the Activity tab (and its nav entry) for roles the API denies.
+  const isAdmin = ADMIN_ROLES.includes(user?.role)
+  const navSections = isAdmin
+    ? NAV_SECTIONS
+    : NAV_SECTIONS
+        .map(sec => ({ ...sec, items: sec.items.filter(n => n.id !== 'activity') }))
+        .filter(sec => sec.items.length > 0)
+
+  const flatNav = navSections.flatMap(s => s.items)
 
   return (
     <div className={theme === 'light' ? 'staff-light' : ''} style={{ minHeight: '100vh', background: BG, display: 'flex', fontFamily: "'Rajdhani', sans-serif" }}>
@@ -1864,7 +1877,7 @@ export default function StaffDashboard() {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '6px 0', overflowY: 'auto' }}>
-          {NAV_SECTIONS.map(section => (
+          {navSections.map(section => (
             <div key={section.label}>
               <div style={{ fontSize: 14, color: TEXT_XFAINT, fontWeight: 700, padding: '10px 20px 4px', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>
                 {section.label}

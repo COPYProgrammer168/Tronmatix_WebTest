@@ -145,6 +145,40 @@ class AuthController extends Controller
         ]);
     }
 
+    // ── Portal Me ─────────────────────────────────────────────────────────────
+    // Session-restore endpoint used by the React staff/dev portals.
+    // The authenticated model may be a customer (users table) OR a staff member
+    // (staff table, roles: editor/seller/delivery/developer). Build the payload
+    // from the resolved model rather than assuming the users table.
+    public function portalMe(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        if ($user instanceof \App\Models\Staff) {
+            return response()->json([
+                'success' => true,
+                'user'    => [
+                    'id'       => $user->id,
+                    'name'     => $user->name,
+                    'username' => $user->username,
+                    'email'    => $user->email,
+                    'role'     => $user->role,
+                    'avatar'   => $user->avatar,
+                ],
+            ]);
+        }
+
+        // Customer / admin fallback
+        return response()->json([
+            'success' => true,
+            'user'    => $this->userPayload($user),
+        ]);
+    }
+
     // ── Google OAuth ──────────────────────────────────────────────────────────
     // Called by AuthContext.jsx → POST /api/auth/google
     // Expects: { access_token: "<Google OAuth2 access token>" }

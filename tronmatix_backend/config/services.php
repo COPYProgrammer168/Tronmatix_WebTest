@@ -93,4 +93,13 @@ return [
         'maps_key' => env('GOOGLE_MAPS_KEY'),
     ],
 
+    // ── SMS (phone-OTP password reset) ─────────────────────────────────────────
+    // driver: 'twilio' (real SMS) or 'log' (write to security log for dev/testing)
+    'sms' => [
+        'driver'       => env('SMS_DRIVER', 'log'),
+        'twilio_sid'   => env('TWILIO_SID'),
+        'twilio_token' => env('TWILIO_TOKEN'),
+        'twilio_from'  => env('TWILIO_FROM'),
+    ],
+
 ];

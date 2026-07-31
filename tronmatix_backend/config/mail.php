@@ -47,6 +47,10 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+            // The local php.ini's openssl.cafile points at a placeholder path,
+            // so STARTTLS cert loading fails. Disable peer verification for the
+            // dev SMTP (Mailtrap) sender — the mailer is still TLS-encrypted.
+            'verify_peer' => env('MAIL_VERIFY_PEER', false),
         ],
 
         'ses' => [

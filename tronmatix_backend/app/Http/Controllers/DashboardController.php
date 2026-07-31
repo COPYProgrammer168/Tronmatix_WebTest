@@ -32,7 +32,11 @@ class DashboardController extends Controller
         $month = now();
         if ($request->filled('month')) {
             try {
-                $month = Carbon::createFromFormat('Y-m', $request->input('month'));
+                // FIX: append '-01' so the day is explicit. createFromFormat('Y-m', ...)
+                // fills the missing day/time from the CURRENT date in PHP 8.x, which
+                // can roll the month forward (e.g. "2026-06" → July) and break the
+                // daily charts + prev/next navigation.
+                $month = Carbon::createFromFormat('Y-m-d', $request->input('month') . '-01');
             } catch (\Throwable $e) {
                 // Invalid month format — silently use current month
                 $month = now();
@@ -57,7 +61,7 @@ class DashboardController extends Controller
     public function report(Request $request, MetricComparisonService $comparison)
     {
         $month = $request->filled('month')
-            ? Carbon::createFromFormat('Y-m', $request->input('month'))
+            ? Carbon::createFromFormat('Y-m-d', $request->input('month') . '-01')
             : now();
 
         $orders    = $comparison->compare(Order::query(), 'created_at', $month, 'count');
@@ -709,8 +713,9 @@ class DashboardController extends Controller
         }
 
         // Convert Y-m → full Y-m-d dates for the export class
-        $from = \Carbon\Carbon::createFromFormat('Y-m', $fromRaw)->startOfMonth()->format('Y-m-d');
-        $to = \Carbon\Carbon::createFromFormat('Y-m', $toRaw)->endOfMonth()->format('Y-m-d');
+        // (append '-01' so the day is explicit — see FIX in index())
+        $from = \Carbon\Carbon::createFromFormat('Y-m-d', $fromRaw . '-01')->startOfMonth()->format('Y-m-d');
+        $to = \Carbon\Carbon::createFromFormat('Y-m-d', $toRaw . '-01')->endOfMonth()->format('Y-m-d');
 
         // Ensure "from" is not after "to"
         if ($from > $to) {

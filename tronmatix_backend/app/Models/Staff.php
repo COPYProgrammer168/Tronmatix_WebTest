@@ -18,9 +18,16 @@ class Staff extends Authenticatable
 
     const ROLES = ['editor', 'seller', 'delivery', 'developer'];
 
+    // Roles that log in through the staff portal (/staff/login)
+    const STAFF_PORTAL_ROLES = ['editor', 'seller', 'delivery'];
+
+    // Roles that log in through the developer portal (/dev/login)
+    const DEV_PORTAL_ROLES = ['developer'];
+
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'username',
         'password',
         'avatar',
@@ -63,12 +70,12 @@ class Staff extends Authenticatable
 
     public function canAccessStaffPortal(): bool   // ADD: used by StaffAuthController
     {
-        return in_array($this->role, ['editor', 'seller', 'delivery'], true);
+        return in_array($this->role, self::STAFF_PORTAL_ROLES, true);
     }
 
     public function canAccessDevPortal(): bool     // ADD: used by DevAuthController
     {
-        return $this->role === 'developer';
+        return in_array($this->role, self::DEV_PORTAL_ROLES, true);
     }
 
     public function recordLogin(): void

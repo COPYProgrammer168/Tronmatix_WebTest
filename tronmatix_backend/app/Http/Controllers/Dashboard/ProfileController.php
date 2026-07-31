@@ -22,19 +22,23 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        /** @var \App\Models\Admin $admin */
-        $admin = Auth::guard('admin')->user();
+        // The profile page is shared by admins (admin guard) and staff (staff guard).
+        $admin  = Auth::guard('admin')->user();
+        $staff  = Auth::guard('staff')->user();
+        $user   = $admin ?? $staff;
+        $table  = $admin ? 'admins' : 'staff';
 
         $data = $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|email|max:255|unique:admins,email,' . $admin->id,
-            'username' => 'nullable|string|max:100|unique:admins,username,' . $admin->id,
+            'email'    => 'required|email|max:255|unique:' . $table . ',email,' . $user->id,
+            'username' => 'nullable|string|max:100|unique:' . $table . ',username,' . $user->id,
+            'phone'    => 'nullable|string|max:30',
             'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
             // Delete old avatar first, then store the new one
-            $this->storage->delete($admin->avatar);
+            $this->storage->delete($user->avatar);
             $data['avatar'] = $this->storage->store($request->file('avatar'), 'avatars/admins');
         }
 
@@ -43,7 +47,7 @@ class ProfileController extends Controller
             unset($data['avatar']);
         }
 
-        $admin->update(array_filter($data, fn($v) => $v !== null));
+        $user->update(array_filter($data, fn($v) => $v !== null));
 
         return redirect()->route('dashboard.profile')
             ->with('success', 'Profile updated successfully.');

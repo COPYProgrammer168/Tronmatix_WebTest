@@ -347,6 +347,11 @@
                     <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} />
                     <span>Remember me</span>
                 </label>
+                <a href="{{ route('dashboard.password.email', ['mode' => 'admin']) }}" id="forgotLink"
+                   style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;font-weight:600;"
+                   onmouseover="this.style.color='var(--orange)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+                    Forgot password?
+                </a>
             </div>
 
             <button type="submit" class="btn-submit" id="submitBtn">
@@ -373,6 +378,8 @@
 
 <script>
     var currentMode = 'admin';
+    var forgotEmailUrl = '{{ route('dashboard.password.email', ['mode' => 'admin']) }}';
+    var forgotStaffUrl = '{{ route('dashboard.password.email', ['mode' => 'staff']) }}';
 
     function setMode(mode) {
         currentMode = mode;
@@ -409,6 +416,9 @@
         // Request Access should ONLY appear in Staff mode
         document.getElementById('orDivider').style.display = isStaff ? 'flex' : 'none';
         document.getElementById('requestAccessFooter').style.display = isStaff ? 'block' : 'none';
+
+        // Forgot-password link preserves the active mode (admin | staff)
+        document.getElementById('forgotLink').href = isStaff ? forgotStaffUrl : forgotEmailUrl;
     }
 
     function togglePassword() {

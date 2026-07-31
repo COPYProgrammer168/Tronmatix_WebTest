@@ -7,7 +7,9 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const STAFF_ROLES = ['admin', 'superadmin', 'editor', 'seller', 'delivery']
+// Matches Staff::STAFF_PORTAL_ROLES — the roles that authenticate via /api/staff/login.
+// admin/superadmin live in the admins table and use the Blade dashboard, not this portal.
+const STAFF_ROLES = ['editor', 'seller', 'delivery']
 
 // ── Staff Guard ───────────────────────────────────────────────────────────────
 export function StaffGuard({ children }) {

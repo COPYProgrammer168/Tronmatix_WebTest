@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -25,15 +26,30 @@ trait BaseSheet
     private const BORDER_COLOR = 'FFE2E0DD';
     private const HEADER_BG    = 'FF374151'; // Slightly lighter dark for headers without subtitle
 
+    /**
+     * Normalise a column reference returned by getHighestColumn() to a letter.
+     * In a WithMultipleSheets export PhpSpreadsheet can hand back a NUMERIC
+     * index (e.g. 3) instead of a letter ("C"), which makes coordinate strings
+     * like "3:33" and throws "Invalid cell coordinate 3". Convert both.
+     */
+    protected function normCol(mixed $col): string
+    {
+        if (is_int($col) || ctype_digit((string) $col)) {
+            return Coordinate::stringFromColumnIndex((int) $col);
+        }
+
+        return (string) $col;
+    }
+
     // ── Apply consistent borders, row shading, freeze, auto-filter ─────────────
     protected function applyBaseFormatting(AfterSheet $event, int $headerRow = 2): void
     {
         $sheet   = $event->sheet->getDelegate();
         $lastRow = $sheet->getHighestRow();
-        $lastCol = $sheet->getHighestColumn();
+        $lastCol = $this->normCol($sheet->getHighestColumn());
 
         // Header row styling — white font on dark background
-        $sheet->getStyle("{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
+        $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
             'font' => [
                 'bold'  => true,
                 'size'  => 11,
@@ -96,7 +112,7 @@ trait BaseSheet
     protected function addSheetTitle(AfterSheet $event, string $title, string $subtitle = ''): void
     {
         $sheet   = $event->sheet->getDelegate();
-        $lastCol = $sheet->getHighestColumn();
+        $lastCol = $this->normCol($sheet->getHighestColumn());
 
         $sheet->insertNewRowBefore(1, 2);
 
@@ -244,7 +260,7 @@ trait BaseSheet
         $sheet     = $event->sheet->getDelegate();
         $summaryRow = $lastRow + 2;
         $col       = 'A';
-        $lastCol   = $sheet->getHighestColumn();
+        $lastCol   = $this->normCol($sheet->getHighestColumn());
 
         foreach ($summaryData as $value) {
             $sheet->setCellValue("{$col}{$summaryRow}", $value);

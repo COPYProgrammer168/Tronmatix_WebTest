@@ -52,6 +52,7 @@ class StaffRequestController extends Controller
                                  'unique:admins,username',
                                  'unique:staff,username',
                                  'unique:staff_requests,username'],
+            'phone'          => ['nullable', 'string', 'max:30'],
             'requested_role' => ['required', 'in:editor,seller,delivery,developer'],
             'message'        => ['nullable', 'string', 'max:500'],
             'password'       => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
@@ -60,6 +61,7 @@ class StaffRequestController extends Controller
         StaffRequest::create([
             'name'           => $request->name,
             'email'          => $request->email,
+            'phone'          => $request->phone,
             'username'       => $request->username,
             'password'       => Hash::make($request->password),
             'requested_role' => $request->requested_role,
@@ -105,6 +107,7 @@ class StaffRequestController extends Controller
         Staff::create([
             'name'      => $req->name,
             'email'     => $req->email,
+            'phone'     => $req->phone,
             'username'  => $req->username,
             'password'  => $req->password, // already hashed
             'role'      => $req->requested_role,
