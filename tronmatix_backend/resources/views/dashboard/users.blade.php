@@ -401,20 +401,19 @@ tbody tr:hover td { background: var(--dark-700); }
         background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
         align-items:center; justify-content:center; padding:16px;">
         <div id="user-info-card" style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
-                    background:linear-gradient(145deg,#141414,#1a1a1a);
-                    border:1px solid rgba(255,255,255,0.1);
-                    box-shadow:0 32px 80px rgba(0,0,0,0.7);
-                    animation:uiModalIn .3s cubic-bezier(0.34,1.2,0.64,1);
-                    font-family:Rajdhani,sans-serif;">
-
+            background:#ffffff;
+            border:1px solid rgba(0,0,0,0.1);
+            box-shadow:0 32px 80px rgba(0,0,0,0.1);
+            animation:uiModalIn .3s cubic-bezier(0.34,1.2,0.64,1);
+            font-family:Rajdhani,sans-serif; color: #1a1a1a;">
             {{-- Header --}}
             <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between;">
-                <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.7);">USER INFORMATION</div>
+                <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; color:rgba(0,0,0,0.4);">USER INFORMATION</div>
                 <button onclick="closeUserInfo()"
-                    style="width:32px; height:32px; border-radius:8px; background:rgba(255,255,255,0.06);
-                           border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.4);
+                    style="width:32px; height:32px; border-radius:8px; background:rgba(0,0,0,0.05);
+                           border:1px solid rgba(0,0,0,0.1); color:rgba(0,0,0,0.4);
                            font-size: var(--title-size); cursor:pointer; display:flex; align-items:center; justify-content:center;"
-                    onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">✕</button>
+                    onmouseover="this.style.color='#000'; this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.color='rgba(0,0,0,0.4)'; this.style.background='rgba(0,0,0,0.05)'">✕</button>
             </div>
 
             {{-- Avatar + name --}}
@@ -423,8 +422,8 @@ tbody tr:hover td { background: var(--dark-700); }
                     border:2.5px solid #F97316; box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
                 </div>
                 <div>
-                    <div id="ui-username" style="font-size: var(--title-size); font-weight:900; color:#fff; letter-spacing:1px;"></div>
-                    <div id="ui-name" style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:2px;"></div>
+                    <div id="ui-username" style="font-size: var(--title-size); font-weight:900; color:#1a1a1a; letter-spacing:1px;"></div>
+                    <div id="ui-name" style="font-size: var(--title-size); color:rgba(0,0,0,0.5); margin-top:2px;"></div>
                     <div id="ui-role-badge" style="margin-top:6px;"></div>
                 </div>
             </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ActivityLogController extends Controller
 {
@@ -59,25 +60,31 @@ class ActivityLogController extends Controller
             $query->where('action', '!=', 'login_rate_limited');
         }
 
-        $perPage = min((int) $request->input('per_page', 50), 500);
+        $perPage = min((int) $request->input('per_page', 50), 100);
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        $actorNames = ActivityLog::select('actor_name')
-            ->distinct()
-            ->whereNotNull('actor_name')
-            ->orderBy('actor_name')
-            ->pluck('actor_name');
+        $actorNames = Cache::remember('activity_log_actor_names', 3600, function () {
+            return ActivityLog::select('actor_name')
+                ->distinct()
+                ->whereNotNull('actor_name')
+                ->orderBy('actor_name')
+                ->pluck('actor_name');
+        });
 
-        $entityTypes = ActivityLog::select('entity_type')
-            ->distinct()
-            ->whereNotNull('entity_type')
-            ->orderBy('entity_type')
-            ->pluck('entity_type');
+        $entityTypes = Cache::remember('activity_log_entity_types', 3600, function () {
+            return ActivityLog::select('entity_type')
+                ->distinct()
+                ->whereNotNull('entity_type')
+                ->orderBy('entity_type')
+                ->pluck('entity_type');
+        });
 
-        $actions = ActivityLog::select('action')
-            ->distinct()
-            ->orderBy('action')
-            ->pluck('action');
+        $actions = Cache::remember('activity_log_actions', 3600, function () {
+            return ActivityLog::select('action')
+                ->distinct()
+                ->orderBy('action')
+                ->pluck('action');
+        });
 
         // Recent critical alerts — order status updates & login events (last 24h)
         $recentAlerts = ActivityLog::whereIn('action', [

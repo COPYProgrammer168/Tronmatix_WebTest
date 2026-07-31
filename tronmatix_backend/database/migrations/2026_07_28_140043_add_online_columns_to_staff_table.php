@@ -6,18 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
-    {
-        Schema::table('staff', function (Blueprint $table) {
-            $table->timestamp('last_seen_at')->nullable()->after('last_login_at');
-            $table->enum('online_status', ['online', 'offline'])->default('offline')->after('last_seen_at');
-        });
-    }
+    // public function up(): void
+    // {
+    //     Schema::table('staff', function (Blueprint $table) {
+    //         $table->timestamp('last_seen_at')->nullable()->after('last_login_at');
+    //         $table->enum('online_status', ['online', 'offline'])->default('offline')->after('last_seen_at');
+    //     });
+    // }
 
-    public function down(): void
-    {
-        Schema::table('staff', function (Blueprint $table) {
-            $table->dropColumn(['online_status', 'last_seen_at']);
-        });
-    }
+    // public function down(): void
+    // {
+    //     Schema::table('staff', function (Blueprint $table) {
+    //         $table->dropColumn(['online_status', 'last_seen_at']);
+    //     });
+    // }
 };
