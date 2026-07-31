@@ -400,20 +400,39 @@ tbody tr:hover td { background: var(--dark-700); }
     <div id="user-info-modal" style="display:none; position:fixed; inset:0; z-index:9999;
         background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
         align-items:center; justify-content:center; padding:16px;">
+        <style>
+            #user-info-card {
+                background: var(--card-bg, #1a1a1a);
+                color: var(--text-color, #ffffff);
+            }
+            [data-theme='light'] #user-info-card {
+                background: #ffffff;
+                color: #1a1a1a;
+            }
+            #user-info-card .info-label { color: var(--muted-text, rgba(255,255,255,0.35)); }
+            [data-theme='light'] #user-info-card .info-label { color: rgba(0,0,0,0.4); }
+            #user-info-card .info-value { color: var(--text-color, #ffffff); }
+            [data-theme='light'] #user-info-card .info-value { color: #1a1a1a; }
+            #user-info-card .grid-box {
+                background: var(--input-bg, rgba(255,255,255,0.03));
+                border: 1px solid var(--border-color, rgba(255,255,255,0.07));
+            }
+            [data-theme='light'] #user-info-card .grid-box {
+                background: rgba(0,0,0,0.03);
+                border: 1px solid rgba(0,0,0,0.1);
+            }
+        </style>
         <div id="user-info-card" style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
-            background:#ffffff;
-            border:1px solid rgba(0,0,0,0.1);
-            box-shadow:0 32px 80px rgba(0,0,0,0.1);
             animation:uiModalIn .3s cubic-bezier(0.34,1.2,0.64,1);
-            font-family:Rajdhani,sans-serif; color: #1a1a1a;">
+            font-family:Rajdhani,sans-serif;">
             {{-- Header --}}
             <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between;">
-                <div style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; color:rgba(0,0,0,0.4);">USER INFORMATION</div>
+                <div class="info-label" style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">USER INFORMATION</div>
                 <button onclick="closeUserInfo()"
-                    style="width:32px; height:32px; border-radius:8px; background:rgba(0,0,0,0.05);
-                           border:1px solid rgba(0,0,0,0.1); color:rgba(0,0,0,0.4);
+                    style="width:32px; height:32px; border-radius:8px; background:rgba(128,128,128,0.1);
+                           border:1px solid rgba(128,128,128,0.2);
                            font-size: var(--title-size); cursor:pointer; display:flex; align-items:center; justify-content:center;"
-                    onmouseover="this.style.color='#000'; this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.color='rgba(0,0,0,0.4)'; this.style.background='rgba(0,0,0,0.05)'">✕</button>
+                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">✕</button>
             </div>
 
             {{-- Avatar + name --}}
@@ -422,41 +441,41 @@ tbody tr:hover td { background: var(--dark-700); }
                     border:2.5px solid #F97316; box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
                 </div>
                 <div>
-                    <div id="ui-username" style="font-size: var(--title-size); font-weight:900; color:#1a1a1a; letter-spacing:1px;"></div>
-                    <div id="ui-name" style="font-size: var(--title-size); color:rgba(0,0,0,0.5); margin-top:2px;"></div>
+                    <div id="ui-username" class="info-value" style="font-size: var(--title-size); font-weight:900; letter-spacing:1px;"></div>
+                    <div id="ui-name" class="info-label" style="font-size: var(--title-size); margin-top:2px;"></div>
                     <div id="ui-role-badge" style="margin-top:6px;"></div>
                 </div>
             </div>
 
             {{-- Info grid --}}
             <div style="padding:0 24px 8px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
-                    <div id="ui-email" style="font-size: var(--title-size); color:#fff; font-weight:600; word-break:break-all;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
+                    <div id="ui-email" class="info-value" style="font-size: var(--title-size); font-weight:600; word-break:break-all;"></div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
-                    <div id="ui-phone" style="font-size: var(--title-size); color:#fff; font-weight:600;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
+                    <div id="ui-phone" class="info-value" style="font-size: var(--title-size); font-weight:600;"></div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
-                    <div id="ui-orders" style="font-size: var(--title-size); color:#F97316; font-weight:900;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
+                    <div id="ui-orders" style="font-size: var(--title-size); font-weight:900;"></div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.totalSpent')) }}</div>
-                    <div id="ui-spent" style="font-size: var(--title-size); color:#22c55e; font-weight:900;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.totalSpent')) }}</div>
+                    <div id="ui-spent" style="font-size: var(--title-size); font-weight:900;"></div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.table.joined')) }}</div>
-                    <div id="ui-joined" style="font-size: var(--title-size); color:#fff; font-weight:600;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.table.joined')) }}</div>
+                    <div id="ui-joined" class="info-value" style="font-size: var(--title-size); font-weight:600;"></div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.twoFactor')) }}</div>
-                    <div id="ui-2fa" style="font-size: var(--title-size); font-weight:700;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.twoFactor')) }}</div>
+                    <div id="ui-2fa" class="info-value" style="font-size: var(--title-size); font-weight:700;"></div>
                 </div>
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px; grid-column:span 2;">
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ __('dashboard.table.name') }}</div>
-                    <div id="ui-telegram" style="font-size: var(--title-size); font-weight:700;"></div>
+                <div class="grid-box" style="border-radius:10px; padding:12px; grid-column:span 2;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ __('dashboard.table.name') }}</div>
+                    <div id="ui-telegram" class="info-value" style="font-size: var(--title-size); font-weight:700;"></div>
                 </div>
             </div>
 
