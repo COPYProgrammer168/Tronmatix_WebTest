@@ -73,10 +73,6 @@ Route::prefix('dashboard')->name('dashboard.')
             ->name('password.reset.post');
 
         Route::get('/password/phone', [PhoneOtpController::class, 'showPhoneForm'])->name('password.phone');
-        Route::post('/password/phone', [PhoneOtpController::class, 'requestOtp'])
-            ->middleware('throttle:1,1')
-            ->name('password.phone.request');
-        Route::get('/password/phone/verify', [PhoneOtpController::class, 'showVerifyForm'])->name('password.phone.verify');
         Route::post('/password/phone/verify', [PhoneOtpController::class, 'verifyOtpAndReset'])
             ->middleware('throttle:5,1')
             ->name('password.phone.verify.post');
@@ -97,16 +93,16 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/products', [ProductController::class, 'index'])->name('products');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-        Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-        Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        Route::get('/products/{product:slug}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product:slug}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product:slug}', [ProductController::class, 'destroy'])->name('products.destroy');
 
         // ── Orders ────────────────────────────────────────────────────────────
         Route::get('/orders', [DashboardController::class, 'orders'])->name('orders');
-        Route::get('/orders/{order}', [DashboardController::class, 'showOrder'])->name('orders.show');
-        Route::put('/orders/{order}/status', [DashboardController::class, 'updateOrderStatus'])->name('orders.status');
-        Route::post('/orders/{order}/confirm-delivery', [DashboardController::class, 'confirmDelivery'])->name('orders.confirm-delivery');
-        Route::post('/orders/{order}/verify-payment', [DashboardController::class, 'verifyOrderPayment'])->name('orders.verify-payment');
+        Route::get('/orders/{order_id}', [DashboardController::class, 'showOrder'])->name('orders.show');
+        Route::put('/orders/{order_id}/status', [DashboardController::class, 'updateOrderStatus'])->name('orders.status');
+        Route::post('/orders/{order_id}/confirm-delivery', [DashboardController::class, 'confirmDelivery'])->name('orders.confirm-delivery');
+        Route::post('/orders/{order_id}/verify-payment', [DashboardController::class, 'verifyOrderPayment'])->name('orders.verify-payment');
 
         // ── Users ─────────────────────────────────────────────────────────────
         Route::get('/users', [UserController::class, 'index'])->name('users');

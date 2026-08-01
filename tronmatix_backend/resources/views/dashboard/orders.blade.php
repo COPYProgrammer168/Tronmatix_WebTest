@@ -20,17 +20,20 @@
                 'cancelled' => ['label' => 'CANCELLED', 'icon' => '❌', 'color' => '#ef4444', 'dark' => '#fff'],
             ];
             $activeTab = $status ?? 'all';
-            $totalAll = $statusCounts->sum();
+            $totalAll = $statusCounts->sum() ?? 0;
+            $userFilter = $userFilter ?? null;
         @endphp
 
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
-            @foreach ($tabs as $key => $tab)
+<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
+@foreach ($tabs as $key => $tab)
                 @php
-                    $count = $key === 'all' ? $totalAll : $statusCounts[$key] ?? 0;
-                    $isActive = $activeTab === $key || ($key === 'all' && !$activeTab);
+                    $isAllTab = $key === 'all';
+                    $count = $isAllTab ? $totalAll : ($statusCounts[$key] ?? 0);
+                    $isActive = $activeTab === $key || ($isAllTab && !$activeTab);
+                    $userParam = $userFilter ? $userFilter->username : null;
                     $href = route(
                         'dashboard.orders',
-                        array_filter(['status' => $key === 'all' ? null : $key, 'search' => $search ?: null]),
+                        array_filter(['status' => $isAllTab ? null : $key, 'search' => $search ?: null, 'user' => $userParam]),
                     );
                 @endphp
                 <a href="{{ $href }}" {{ !$isActive ? 'class="order-status-tab-inactive"' : '' }}
@@ -55,11 +58,14 @@
                 </a>
             @endforeach
 
-            {{-- Search --}}
+{{-- Search --}}
             <form method="GET" action="{{ route('dashboard.orders') }}"
                 style="margin-left:auto; display:flex; gap:8px; align-items:center;">
                 @if ($activeTab && $activeTab !== 'all')
                     <input type="hidden" name="status" value="{{ $activeTab }}">
+                @endif
+                @if ($userFilter)
+                    <input type="hidden" name="user" value="{{ $userFilter->username }}">
                 @endif
                 <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('dashboard.orders.searchPlaceholder') }}"
                     class="orders-search-input"
@@ -69,13 +75,13 @@
                     onfocus="this.style.borderColor='#F97316'" onblur="this.style.borderColor=''" />
                 <button type="submit"
                     style="background:#F97316; color:#fff; border:none; border-radius:10px;
-            padding:8px 16px; font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
-            cursor:pointer; letter-spacing:1px;">SEARCH</button>
+                padding:8px 16px; font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                cursor:pointer; letter-spacing:1px;">SEARCH</button>
                 @if ($search)
-                    <a href="{{ route('dashboard.orders', $activeTab && $activeTab !== 'all' ? ['status' => $activeTab] : []) }}"
+                    <a href="{{ route('dashboard.orders', $activeTab && $activeTab !== 'all' ? ['status' => $activeTab, 'user' => $userParam] : ['user' => $userParam]) }}"
                         class="orders-clear-btn"
                         style="background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.5); border:1.5px solid rgba(255,255,255,0.1);
-                  border-radius:10px; padding:8px 12px; font-size: var(--title-size); text-decoration:none;">✕</a>
+                border-radius:10px; padding:8px 12px; font-size: var(--title-size); text-decoration:none;">✕</a>
                 @endif
             </form>
         </div>
@@ -121,7 +127,7 @@
                             <th>{{ strtoupper(__('dashboard.table.orderId')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.customer')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.shippingTo')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.table.items')) }}</th>
+                            <th>ORDER</th>
                             <th>{{ strtoupper(__('dashboard.orders.subtotal')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.discount')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.total')) }}</th>
@@ -143,15 +149,12 @@
                                 if ($order->payment_method === 'cash' && $payStatus === 'pending') {
                                     $payStatus = 'cash';
                                 }
-                                $allItems = $order->items;
-                                $firstItem = $allItems->first();
-                                $extraCount = $allItems->count() - 1;
                             @endphp
 
                             <tr style="animation:rowIn .3s ease both; animation-delay:{{ $loop->index * 20 }}ms;">
                                 {{-- ORDER ID — sticky left, clickable --}}
                                 <td>
-                                    <a href="{{ route('dashboard.orders.show', $order) }}"
+                                    <a href="{{ route('dashboard.orders.show', $order->order_id) }}"
                                         style="color:#F97316; font-weight:700; font-family:monospace;
                                                font-size:var(--text-base); text-decoration:none; white-space:nowrap;"
                                         onmouseover="this.style.textDecoration='underline'"
@@ -187,46 +190,11 @@
                                     @endif
                                 </td>
 
-                                {{-- ITEMS — first item only + "+N more" badge --}}
+                                {{-- ORDER — show order_id with # prefix --}}
                                 <td>
-                                    @if ($firstItem)
-                                        @php
-                                            $thumb = $firstItem->image
-                                                ? (Str::startsWith($firstItem->image, ['http://', 'https://'])
-                                                    ? $firstItem->image
-                                                    : asset(ltrim($firstItem->image, '/')))
-                                                : null;
-                                        @endphp
-                                        <div style="display:flex; align-items:center; gap:7px;">
-                                            <div
-                                                style="width:28px; height:28px; border-radius:5px; overflow:hidden; flex-shrink:0;
-                                                        background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center;
-                                                        border:1px solid rgba(255,255,255,0.07);">
-                                                @if ($thumb)
-                                                    <img src="{{ $thumb }}" alt="{{ $firstItem->name }}"
-                                                        style="width:100%; height:100%; object-fit:contain;"
-                                                        onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
-                                                    <span style="display:none; font-size:11px;">📦</span>
-                                                @else
-                                                    <span style="font-size:11px;">📦</span>
-                                                @endif
-                                            </div>
-                                            <div style="min-width:0;">
-                                                <div
-                                                    style="font-size:var(--text-md); font-weight:600; color:var(--text);
-                                                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
-                                                    {{ $firstItem->name }}
-                                                    <span
-                                                        style="color:#F97316; font-weight:700;">×{{ $firstItem->qty }}</span>
-                                                </div>
-                                                @if ($extraCount > 0)
-                                                    <span class="items-more-badge">+{{ $extraCount }} more</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @else
-                                        <span style="color:rgba(255,255,255,0.2);">—</span>
-                                    @endif
+                                    <div style="font-size:var(--text-md); font-weight:600; color:var(--text);">
+                                        #{{ $order->order_id }}
+                                    </div>
                                 </td>
 
                                 {{-- SUBTOTAL --}}
@@ -401,18 +369,23 @@
                 transform: none;
             }
         }
-    </style>
+</style>
 
     {{-- ── Real-time Search ────────────────────────────────────────────────────── --}}
     <script>
         let searchTimeout;
+        const userFilter = {{ json_encode($userFilter) }};
         document.getElementById('orderSearchInput').addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const searchTerm = this.value;
             const status = new URLSearchParams(window.location.search).get('status') || 'all';
 
             searchTimeout = setTimeout(() => {
-                fetch(`{{ route('dashboard.orders') }}?search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(status)}`, {
+                let url = `{{ route('dashboard.orders') }}?search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(status)}`;
+                if (userFilter && userFilter.username) {
+                    url += `&user=${encodeURIComponent(userFilter.username)}`;
+                }
+                fetch(url, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
                         }
@@ -428,8 +401,10 @@
                         }
 
                         // Update URL for consistency without page reload
-                        const newUrl =
-                            `{{ route('dashboard.orders') }}?search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(status)}`;
+                        let newUrl = `{{ route('dashboard.orders') }}?search=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(status)}`;
+                        if (userFilter && userFilter.username) {
+                            newUrl += `&user=${encodeURIComponent(userFilter.username)}`;
+                        }
                         window.history.pushState({
                             path: newUrl
                         }, '', newUrl);

@@ -190,9 +190,32 @@ export default function ProductDetailPage() {
 
       {/* Main card */}
       <div
-        className="flex flex-col md:flex-row gap-8 mb-12 rounded-2xl p-6 shadow-sm"
+        className="flex flex-col md:flex-row gap-8 mb-12 rounded-2xl p-6 shadow-sm relative"
         style={{ background: cardBg }}
       >
+        {/* Bookmark/Favorite button */}
+        <button
+          onClick={() => toggleFavorite(product)}
+          title={
+            isFavorite(product.id)
+              ? "Remove from favorites"
+              : "Add to favorites"
+          }
+          className={`absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-lg border-2 transition-all hover:scale-110 active:scale-95 z-10
+            ${isFavorite(product.id) ? "border-primary" : "border-gray-300 hover:border-primary"}`}
+          style={{ background: dark ? "#111827" : "#fff" }}
+        >
+          <svg
+            className="w-6 h-6"
+            viewBox="0 0 24 24"
+            fill={isFavorite(product.id) ? "#F97316" : "none"}
+            stroke={isFavorite(product.id) ? "#F97316" : "#9ca3af"}
+            strokeWidth={2}
+          >
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+
         {/* Image gallery */}
         <div className="flex-1 flex flex-col gap-3">
           <div
@@ -553,77 +576,8 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* ── Specifications Table ──────────────────────────────── */}
-          {product.specs && Object.keys(product.specs).length > 0 && (
-            <div
-              className="mb-5 rounded-xl overflow-hidden"
-              style={{
-                border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)"}`,
-              }}
-            >
-              {/* Table header */}
-              <div
-                style={{
-                  padding: "12px 18px",
-                  fontWeight: 800,
-                  fontSize: 14,
-                  letterSpacing: 2,
-                  background: dark
-                    ? "linear-gradient(135deg, #F97316 0%, #ea580c 100%)"
-                    : "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
-                  color: "#fff",
-                  fontFamily: headingFont,
-                }}
-              >
-                {product.specs_title || t("product.specifications") || "SPECIFICATIONS"}
-              </div>
-
-              {/* Table rows */}
-              {Object.entries(product.specs).map(([key, value], i, arr) => (
-                <div
-                  key={key}
-                  className={`flex ${isKhmer ? "flex-col gap-0.5" : "flex-row"} px-4 py-2.5`}
-                  style={{
-                    background: i % 2 === 0
-                      ? dark ? "rgba(255,255,255,0.02)" : "rgba(15,23,42,0.02)"
-                      : "transparent",
-                    borderBottom: i < arr.length - 1
-                      ? `1px solid ${dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.04)"}`
-                      : "none",
-                  }}
-                >
-                  <span
-                    className={isKhmer ? "" : "w-1/2"}
-                    style={{
-                      fontFamily: bodyFont,
-                      fontSize: isKhmer ? 14 : 15,
-                      fontWeight: 600,
-                      color: dark ? "#9ca3af" : "#6b7280",
-                      letterSpacing: isKhmer ? 0 : 0.5,
-                      minWidth: isKhmer ? "auto" : 140,
-                      paddingRight: 16,
-                    }}
-                  >
-                    {key}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: bodyFont,
-                      fontSize: isKhmer ? 15 : 15,
-                      fontWeight: 500,
-                      color: dark ? "#f9fafb" : "#1f2937",
-                      wordBreak: "break-word",
-                      flex: 1,
-                    }}
-                  >
-                    {value}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
           <div className="flex flex-col gap-1 mb-5">
+
             <div className="flex items-center gap-2">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${inStock ? "bg-green-500 animate-stock-glow" : "bg-red-500"}`}
@@ -744,28 +698,6 @@ export default function ProductDetailPage() {
                 </a>
               </>
             )}
-
-            <button
-              onClick={() => toggleFavorite(product)}
-              title={
-                isFavorite(product.id)
-                  ? "Remove from favorites"
-                  : "Add to favorites"
-              }
-              className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-lg border-2 transition-all hover:scale-110 active:scale-95
-                ${isFavorite(product.id) ? "border-primary" : "border-gray-300 hover:border-primary"}`}
-              style={{ background: dark ? "#111827" : "#fff" }}
-            >
-              <svg
-                className="w-6 h-6"
-                viewBox="0 0 24 24"
-                fill={isFavorite(product.id) ? "#F97316" : "none"}
-                stroke={isFavorite(product.id) ? "#F97316" : "#9ca3af"}
-                strokeWidth={2}
-              >
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-              </svg>
-            </button>
           </div>
 
           {productDiscounted && qty > 1 && (
@@ -794,6 +726,79 @@ export default function ProductDetailPage() {
           )}
         </div>
       </div>
+
+      {/* ── Specifications Table ──────────────────────────────── */}
+      {product.specs && Object.keys(product.specs).length > 0 && (
+        <div
+          className="mb-12 rounded-xl overflow-hidden"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)"}`,
+          }}
+        >
+          {/* Table header */}
+          <div
+            style={{
+              padding: "12px 18px",
+              fontWeight: 800,
+              fontSize: 14,
+              letterSpacing: 2,
+              background: dark
+                ? "linear-gradient(135deg, #F97316 0%, #ea580c 100%)"
+                : "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+              color: "#fff",
+              fontFamily: headingFont,
+              gridColumn: '1 / span 2',
+            }}
+          >
+            {product.specs_title || t("product.specifications") || "SPECIFICATIONS"}
+          </div>
+
+          {/* Table rows */}
+          {Object.entries(product.specs).map(([key, value], i, arr) => (
+            <div
+              key={key}
+              className={`flex ${isKhmer ? "flex-col gap-0.5" : "flex-row"} px-4 py-2.5`}
+              style={{
+                background: Math.floor(i / 2) % 2 === 0
+                  ? dark ? "rgba(255,255,255,0.02)" : "rgba(15,23,42,0.02)"
+                  : "transparent",
+                borderBottom: i < (arr.length - (arr.length % 2 === 0 ? 2 : 1))
+                  ? `1px solid ${dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.04)"}`
+                  : "none",
+              }}
+            >
+              <span
+                className={isKhmer ? "" : "w-1/2"}
+                style={{
+                  fontFamily: bodyFont,
+                  fontSize: isKhmer ? 14 : 15,
+                  fontWeight: 600,
+                  color: dark ? "#9ca3af" : "#6b7280",
+                  letterSpacing: isKhmer ? 0 : 0.5,
+                  minWidth: isKhmer ? "auto" : 140,
+                  paddingRight: 16,
+                }}
+              >
+                {key}
+              </span>
+              <span
+                style={{
+                  fontFamily: bodyFont,
+                  fontSize: isKhmer ? 15 : 15,
+                  fontWeight: 500,
+                  color: dark ? "#f9fafb" : "#1f2937",
+                  wordBreak: "break-word",
+                  flex: 1,
+                }}
+              >
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Related products — horizontal scroll, show ALL, display product names ── */}
       {related.length > 0 && (

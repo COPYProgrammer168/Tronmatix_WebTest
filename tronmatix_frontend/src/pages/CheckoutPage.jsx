@@ -84,6 +84,7 @@ export default function CheckoutPage() {
   const [locationId,     setLocationId]     = useState(null)
   const [selectedProvince, setSelectedProvince] = useState(null)
   const [selectedProviderId, setSelectedProviderId] = useState(null)
+  const [deliveryPhoneVerified, setDeliveryPhoneVerified] = useState(false)
   const pendingOrderAfterLogin              = useRef(false)
 
   const isPickup = fulfillment === "pickup"
@@ -202,6 +203,7 @@ export default function CheckoutPage() {
         fulfillment_type: fulfillment,
         province_id: !isPickup ? (selectedProvince?.id || null) : null,
         delivery_provider_id: !isPickup ? (selectedProviderId || null) : null,
+        delivery_phone_verified: deliveryPhoneVerified,
       })
 
       const orderData = {
@@ -447,6 +449,8 @@ export default function CheckoutPage() {
           selectedProvince={selectedProvince}
           onProviderSelect={(prov) => setSelectedProviderId(prov.id)}
           selectedProviderId={selectedProviderId}
+          // NEW: phone verification callback
+          onPhoneVerified={(verified) => setDeliveryPhoneVerified(verified)}
         />
       )}
 

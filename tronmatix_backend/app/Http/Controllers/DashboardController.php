@@ -351,9 +351,18 @@ class DashboardController extends Controller
     {
         $status = $request->input('status');
         $search = trim($request->input('search', ''));
+        $userIdentifier = $request->input('user');
 
-        $query = Order::with(['user', 'items', 'location'])->latest(); // FIX [3]
+        $query = Order::with(['user', 'items', 'location'])->latest();
 
+        if ($userIdentifier) {
+            $user = User::where('username', $userIdentifier)
+                ->orWhere('email', $userIdentifier)
+                ->first();
+            if ($user) {
+                $query->where('user_id', $user->id);
+            }
+        }
         if ($status && $status !== 'all') {
             $query->where('status', $status);
         }
@@ -368,21 +377,37 @@ class DashboardController extends Controller
         $perPage = AdminSetting::int('dashboard_rows_per_page', 20);
         $orders = $query->paginate($perPage)->withQueryString();
 
-        $statusCounts = Order::selectRaw('status, COUNT(*) as total')
+        $baseQuery = Order::when($userIdentifier, function ($q) use ($userIdentifier) {
+            $user = User::where('username', $userIdentifier)
+                ->orWhere('email', $userIdentifier)
+                ->first();
+            if ($user) {
+                $q->where('user_id', $user->id);
+            }
+        });
+
+        $statusCounts = $baseQuery
+            ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')->pluck('total', 'status');
 
-        return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search'));
+        $userFilter = User::where('username', $userIdentifier)
+            ->orWhere('email', $userIdentifier)
+            ->first();
+
+        return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search', 'userFilter'));
     }
 
-    public function showOrder(Order $order)
+    public function showOrder($order_id)
     {
+        $order = Order::where('order_id', $order_id)->firstOrFail();
         $order->load(['user', 'items.product', 'location']); // FIX [3]
 
         return view('dashboard.orders-show', compact('order'));
     }
 
-    public function updateOrderStatus(Request $request, Order $order)
+    public function updateOrderStatus(Request $request, $order_id)
     {
+        $order = Order::where('order_id', $order_id)->firstOrFail();
         $request->validate([
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
         ]);
@@ -431,13 +456,14 @@ class DashboardController extends Controller
             Log::warning('[Bot2] User status notification failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('dashboard.orders.show', $order)->with('success', 'Order status updated to ' . strtoupper($newStatus) . '.');
+        return redirect()->route('dashboard.orders.show', $order->order_id)->with('success', 'Order status updated to ' . strtoupper($newStatus) . '.');
     }
 
-    public function confirmDelivery(Order $order)
+    public function confirmDelivery($order_id)
     {
+        $order = Order::where('order_id', $order_id)->firstOrFail();
         if (!in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
-            return redirect()->route('dashboard.orders.show', $order)
+            return redirect()->route('dashboard.orders.show', $order->order_id)
                 ->with('error', 'Order cannot be marked as delivered from its current status.');
         }
 
@@ -468,12 +494,13 @@ class DashboardController extends Controller
             Log::warning('[Bot2] User delivery notification failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('dashboard.orders.show', $order)
+        return redirect()->route('dashboard.orders.show', $order->order_id)
             ->with('success', "Order #{$order->order_id} marked as delivered ✅");
     }
 
-    public function verifyOrderPayment(Order $order)
+    public function verifyOrderPayment($order_id)
     {
+        $order = Order::where('order_id', $order_id)->firstOrFail();
         Log::info('Verify payment requested for order: ' . $order->order_id);
 
         // Update both payment status and order status
@@ -511,7 +538,7 @@ class DashboardController extends Controller
             Log::warning('Telegram customer receipt failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('dashboard.orders.show', $order)
+        return redirect()->route('dashboard.orders.show', $order->order_id)
             ->with('success', "Payment for Order #{$order->order_id} verified as paid ✅");
     }
 

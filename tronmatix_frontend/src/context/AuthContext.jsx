@@ -244,6 +244,47 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  // ── RESET PASSWORD (Laravel native, token from email link) ───────────────
+  const resetPassword = useCallback(async (token, email, password) => {
+    setLoading(true)
+    try {
+      const res = await api.post('/api/auth/reset-password', {
+        token,
+        email,
+        password,
+        password_confirmation: password,
+      })
+      return { success: true, message: res.data?.message || 'Password reset successfully.' }
+    } catch (e) {
+      const data = e.response?.data
+      let msg = 'Failed to reset password. Please try again.'
+      if (data?.message) msg = data.message
+      return { success: false, message: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // ── RESET PASSWORD VIA PHONE OTP (Firebase) ──────────────────────────────
+  const resetByPhone = useCallback(async (idToken, password) => {
+    setLoading(true)
+    try {
+      const res = await api.post('/api/auth/reset-by-phone', {
+        id_token: idToken,
+        password,
+        password_confirmation: password,
+      })
+      return { success: true, message: res.data?.message || 'Password reset successfully. You can now log in.' }
+    } catch (e) {
+      return {
+        success: false,
+        message: e.response?.data?.message || 'Failed to reset password. Please try again.',
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
     // ── HEARTBEAT ──────────────────────────────────────────────
   // Keep the session alive and mark user as online while dashboard is open
   const heartbeatIntervalRef = useRef(null)
@@ -275,7 +316,7 @@ export function AuthProvider({ children }) {
       user, token, loading, ready,
       login, staffLogin, devLogin, register, logout, refreshUser,
       startHeartbeat, stopHeartbeat,
-      forgotPassword, googleLogin,
+      forgotPassword, resetPassword, resetByPhone, googleLogin,
     }}>
       {children}
     </AuthContext.Provider>

@@ -143,7 +143,7 @@ class SettingsController extends Controller
                     'font'  => 'NEW ORDER #' . ($order->order_id ?? $order->id),
                     'title' => 'NEW ORDER #' . ($order->order_id ?? $order->id),
                     'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->created_at->diffForHumans(),
-                    'url'   => route('dashboard.orders.show', $order->id),
+                    'url'   => route('dashboard.orders.show', $order->order_id),
                 ];
             }
 
@@ -192,7 +192,7 @@ class SettingsController extends Controller
                     'font'  => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
                     'title' => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
                     'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' claims payment sent',
-                    'url'   => route('dashboard.orders.show', $order->id),
+                    'url'   => route('dashboard.orders.show', $order->order_id),
                 ];
             }
         }
@@ -212,7 +212,7 @@ class SettingsController extends Controller
                     'font'  => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
                     'title' => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
                     'body'  => '$' . number_format($order->total, 2) . ' paid via KHQR · ' . $order->updated_at->diffForHumans(),
-                    'url'   => route('dashboard.orders.show', $order->id),
+                    'url'   => route('dashboard.orders.show', $order->order_id),
                 ];
             }
 

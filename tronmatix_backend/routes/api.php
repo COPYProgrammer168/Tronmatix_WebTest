@@ -33,6 +33,7 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/auth/reset-by-phone', [AuthController::class, 'resetByPhone']);
 
 // Social auth — public (returns token + is_new_user flag)
 Route::post('/auth/google', [GoogleAuthController::class, 'handleCallback']);

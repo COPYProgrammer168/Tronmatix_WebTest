@@ -172,31 +172,87 @@
             <a href="{{ route('dashboard.password.email', ['mode' => $mode]) }}">Use email instead</a>
         </div>
 
-        <form method="POST" action="{{ route('dashboard.password.phone.request') }}" id="phoneForm">
+        <form method="POST" action="{{ route('dashboard.password.phone.verify.post') }}" id="phoneForm" onsubmit="return handleSubmit(event)">
             @csrf
             <input type="hidden" name="mode" value="{{ $mode }}" />
+            <input type="hidden" name="id_token" id="idTokenInput" value="" />
 
-            <div class="form-group">
-                <label class="form-label">Phone Number</label>
-                <div class="input-wrap">
-                    <span class="input-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-                        </svg>
-                    </span>
-                    <input type="tel" name="phone" class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}"
-                           value="{{ old('phone') }}" placeholder="+855 12 345 678" required autofocus />
+            {{-- Step 1: Phone number + Send code --}}
+            <div id="stepPhone">
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+                            </svg>
+                        </span>
+                        <input type="tel" id="phoneInput" name="phone" class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}"
+                               value="{{ old('phone') }}" placeholder="+855 12 345 678" required autofocus />
+                    </div>
+                    @error('phone')<div style="color:#EF4444;font-size:11px;margin-top:4px;">{{ $message }}</div>@enderror
+                    <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;" id="phoneHint">
+                        We'll send a 6-digit code to this number.
+                    </div>
                 </div>
-                @error('phone')<div style="color:#EF4444;font-size:11px;margin-top:4px;">{{ $message }}</div>@enderror
-                <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">
-                    We'll send a 6-digit code to this number (max 1 request per minute).
-                </div>
+
+                <div id="recaptchaContainer"></div>
+
+                <button type="button" class="btn-submit" id="sendBtn" onclick="sendCode()">
+                    <span class="spinner"></span>
+                    <span class="btn-text">SEND VERIFICATION CODE</span>
+                </button>
             </div>
 
-            <button type="submit" class="btn-submit" id="submitBtn">
-                <span class="spinner"></span>
-                <span class="btn-text">SEND VERIFICATION CODE</span>
-            </button>
+            {{-- Step 2: Code + new password (hidden until SMS sent) --}}
+            <div id="stepCode" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label">Verification Code</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="otpInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}"
+                               class="form-control {{ $errors->has('id_token') ? 'is-invalid' : '' }}"
+                               placeholder="123456" required />
+                    </div>
+                    <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;" id="verifyHint"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" name="password" class="form-control {{ $errors->has('password') ? 'is-invalid' : '' }}"
+                               placeholder="Min 8 chars, upper + number" required />
+                    </div>
+                    @error('password')<div style="color:#EF4444;font-size:11px;margin-top:4px;">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                            </svg>
+                        </span>
+                        <input type="password" name="password_confirmation" class="form-control"
+                               placeholder="Repeat new password" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">RESET PASSWORD</span>
+                </button>
+            </div>
         </form>
 
         <div class="auth-footer" style="margin-top:22px;">
@@ -207,12 +263,106 @@
     </div>
 </div>
 
+<!-- Firebase JS SDK for phone verification -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-    document.getElementById('phoneForm').addEventListener('submit', function () {
+    const firebaseConfig = {
+        apiKey: "{{ $firebaseApiKey }}",
+        authDomain: "{{ $firebaseAuthDomain }}",
+        projectId: "{{ $firebaseProjectId }}",
+        appId: "{{ $firebaseAppId }}",
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    let recaptchaVerifier = null;
+    let confirmationResult = null;
+
+    // ── Step 1: send the SMS code via Firebase ──────────────────────────────
+    function sendCode() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        if (!phone) return;
+
+        const btn = document.getElementById('sendBtn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        // Firebase needs the international format with country code.
+        //   +855 12 345 678  → as-is
+        //   012 345 678      → +855 12 345 678  (Cambodian local format)
+        //   12 345 678       → +855 12 345 678
+        const digits = phone.replace(/[^\d+]/g, '');
+        let formatted;
+        if (digits.startsWith('+')) {
+            formatted = digits;
+        } else if (digits.startsWith('0')) {
+            formatted = '+855' + digits.slice(1);   // 012... → +85512...
+        } else {
+            formatted = '+855' + digits;            // 12... → +85512...
+        }
+
+        if (!recaptchaVerifier) {
+            recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptchaContainer', {
+                size: 'invisible',
+                callback: function () {},
+            });
+        }
+
+        firebase.auth().signInWithPhoneNumber(formatted, recaptchaVerifier)
+            .then(function (confirmation) {
+                confirmationResult = confirmation;
+                document.getElementById('phoneInput').readOnly = true;
+                document.getElementById('stepPhone').style.display = 'none';
+                document.getElementById('stepCode').style.display = 'block';
+                document.getElementById('otpInput').focus();
+            })
+            .catch(function (err) {
+                console.error('signInWithPhoneNumber error', err);
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                const hint = document.getElementById('phoneHint');
+                hint.textContent = err.message || 'Failed to send verification code.';
+                hint.style.color = '#EF4444';
+            });
+    }
+
+    // ── Step 2: confirm the code, get an ID token, then POST ────────────────
+    function handleSubmit(e) {
+        const code = document.getElementById('otpInput').value.trim();
+        if (!/^\d{6}$/.test(code)) {
+            const hint = document.getElementById('verifyHint');
+            hint.textContent = 'Enter the 6-digit code.';
+            hint.style.color = '#EF4444';
+            return false;
+        }
+        if (!confirmationResult) {
+            const hint = document.getElementById('verifyHint');
+            hint.textContent = 'Please send a new code first.';
+            hint.style.color = '#EF4444';
+            return false;
+        }
+
         const btn = document.getElementById('submitBtn');
         btn.classList.add('loading');
         btn.disabled = true;
-    });
+
+        confirmationResult.confirm(code)
+            .then(function (result) { return result.user.getIdToken(); })
+            .then(function (idToken) {
+                document.getElementById('idTokenInput').value = idToken;
+                document.getElementById('phoneForm').submit();
+            })
+            .catch(function (err) {
+                console.error('confirm error', err);
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                const hint = document.getElementById('verifyHint');
+                hint.textContent = err.message || 'Invalid code. Please try again.';
+                hint.style.color = '#EF4444';
+            });
+
+        return false;
+    }
 </script>
 
 </body>

@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
+import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 import logo from '../assets/logo.png'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID     || ''
 
-export default function AuthModal({ mode, onClose, onSwitch }) {
-  const { login, register, forgotPassword, googleLogin, telegramLogin, loading } = useAuth()
+export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwitch }) {
+  const { login, register, forgotPassword, resetPassword, resetByPhone, googleLogin, telegramLogin, loading } = useAuth()
   const { dark } = useTheme()
   const { isKhmer } = useLang()
   const authFont     = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani, sans-serif'
@@ -23,9 +25,19 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
   const [pwStrength, setPwStrength] = useState({ score: 0, hints: [] })
   const [socialLoading, setSocialLoading] = useState(null) // 'google' | 'telegram'
 
+  // ── Forgot-password method toggle: email | phone (Firebase OTP) ──────────
+  const [forgotMethod, setForgotMethod] = useState('email')
+  const [phone, setPhone]               = useState('')
+  const [otpCode, setOtpCode]           = useState('')
+  const [phoneStep, setPhoneStep]       = useState('phone') // 'phone' | 'code'
+  const [phoneBusy, setPhoneBusy]       = useState(false)
+  const confirmationRef                 = useRef(null)
+  const verifierRef                     = useRef(null)
+
   const isLogin    = mode === 'login'
   const isRegister = mode === 'register'
   const isForgot   = mode === 'forgot'
+  const isReset    = mode === 'reset-password'
   const showSocial = isLogin
 
   const c = {
@@ -107,6 +119,8 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     setError('')
     setSuccess('')
     setPwStrength({ score: 0, hints: [] })
+    setForgotMethod('email')
+    resetPhoneFlow()
     onSwitch(newMode)
   }
 
@@ -178,7 +192,25 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
       confirm:         form.confirm,
     }
 
+    if (isReset) {
+      if (!form.password)             { setError('Please enter a new password.'); return }
+      if (form.password.length < 8)   { setError('Password must be at least 8 characters.'); return }
+      if (form.password !== form.confirm) { setError('Passwords do not match.'); return }
+      const res = await resetPassword(resetToken, resetEmail, form.password)
+      if (res.success) {
+        setSuccess(res.message || 'Password reset successfully!')
+        setTimeout(() => handleSwitch('login'), 1500)
+      } else {
+        setError(res.message)
+      }
+      return
+    }
+
     if (isForgot) {
+      if (forgotMethod === 'phone') {
+        await handlePhoneReset()
+        return
+      }
       if (!f.email)             { setError('Please enter your email address.'); return }
       if (!validEmail(f.email)) { setError('Please enter a valid email address.'); return }
       const res = await forgotPassword(f.email)
@@ -208,6 +240,102 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
     } else {
       setError(res.message)
       recordFailure()
+    }
+  }
+
+  // ── Phone-OTP forgot-password handlers (Firebase) ──────────────────────────
+  const makeRecaptchaVerifier = () => {
+    if (verifierRef.current) return verifierRef.current
+    if (!window.tronmatixRecaptchaContainer) {
+      const div = document.createElement('div')
+      div.id = 'authmodal-recaptcha'
+      document.body.appendChild(div)
+      window.tronmatixRecaptchaContainer = div
+    }
+    verifierRef.current = new RecaptchaVerifier(auth, 'authmodal-recaptcha', { size: 'invisible' })
+    return verifierRef.current
+  }
+
+  const handleSendOtp = async () => {
+    setError('')
+    setSuccess('')
+    const p = phone.trim()
+    if (!/^\+?[0-9\s\-]{7,20}$/.test(p)) {
+      setError(isKhmer ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ' : 'Please enter a valid phone number.')
+      return
+    }
+    setPhoneBusy(true)
+    try {
+      const verifier = makeRecaptchaVerifier()
+      // Firebase needs international format with country code.
+      //   012 345 678 → +855 12 345 678 (Cambodian local format)
+      const digits = p.replace(/[^\d+]/g, '')
+      let formatted
+      if (digits.startsWith('+')) {
+        formatted = digits
+      } else if (digits.startsWith('0')) {
+        formatted = '+855' + digits.slice(1)
+      } else {
+        formatted = '+855' + digits
+      }
+      const confirmation = await signInWithPhoneNumber(auth, formatted, verifier)
+      confirmationRef.current = confirmation
+      setPhoneStep('code')
+    } catch (e) {
+      console.error('sendOtp error', e)
+      setError(e?.message || (isKhmer ? 'មិនអាចផ្ញើលេខកូដបានទេ' : 'Failed to send verification code.'))
+    } finally {
+      setPhoneBusy(false)
+    }
+  }
+
+  const handlePhoneReset = async () => {
+    setError('')
+    setSuccess('')
+    if (!confirmationRef.current) {
+      setError(isKhmer ? 'សូមផ្ញើលេខកូដមុន' : 'Please send a code first.')
+      return
+    }
+    if (!/^\d{6}$/.test(otpCode.trim())) {
+      setError(isKhmer ? 'សូមបញ្ចូលកូដ ៦ ខ្ទង់' : 'Enter the 6-digit code.')
+      return
+    }
+    if (!validPassword(form.password)) {
+      setError(isKhmer ? 'ពាក្យសម្ងាត់ត្រូវមាន ៨ តួ អក្សរធំ លេខ និងនិមិត្តសញ្ញា' : 'Password must be at least 8 chars with uppercase, number, and symbol.')
+      return
+    }
+    if (form.password !== form.confirm) {
+      setError(isKhmer ? 'ពាក្យសម្ងាត់មិនដូចគ្នា' : 'Passwords do not match.')
+      return
+    }
+    setPhoneBusy(true)
+    try {
+      const result = await confirmationRef.current.confirm(otpCode.trim())
+      const idToken = await result.user.getIdToken()
+      const res = await resetByPhone(idToken, form.password)
+      if (res.success) {
+        setSuccess(isKhmer ? 'បានកំណត់ពាក្យសម្ងាត់ថ្មី! អ្នកអាចចូលបាន។' : res.message || 'Password reset! You can now log in.')
+        setTimeout(() => handleSwitch('login'), 1500)
+      } else {
+        setError(res.message)
+      }
+    } catch (e) {
+      console.error('phoneReset error', e)
+      setError(e?.message || (isKhmer ? 'កូដមិនត្រឹមត្រូវ' : 'Invalid code. Please try again.'))
+    } finally {
+      setPhoneBusy(false)
+    }
+  }
+
+  const resetPhoneFlow = () => {
+    setPhone('')
+    setOtpCode('')
+    setPhoneStep('phone')
+    confirmationRef.current = null
+    verifierRef.current = null
+    if (window.tronmatixRecaptchaContainer) {
+      window.tronmatixRecaptchaContainer.remove?.()
+      delete window.tronmatixRecaptchaContainer
     }
   }
 
@@ -266,7 +394,20 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           </div>
         )}
 
-        {/* Forgot header */}
+         {/* Reset-password header (from emailed link) */}
+         {isReset && (
+           <div className="mb-6 text-center">
+             <div className="text-4xl mb-2">🔑</div>
+             <h2 className="font-black" style={{ fontFamily: authFont, fontSize: isKhmer ? 20 : 24, color: c.text, letterSpacing: isKhmer ? 0 : 2 }}>
+               {isKhmer ? 'កំណត់ពាក្យសម្ងាត់ថ្មី' : 'SET NEW PASSWORD'}
+             </h2>
+             <p className="mt-1" style={{ fontSize: 14, color: c.textMuted, fontFamily: authBodyFont }}>
+               {isKhmer ? 'កំណត់ពាក្យសម្ងាត់ថ្មីសម្រាប់ ' + resetEmail : 'Set a new password for ' + resetEmail}
+             </p>
+           </div>
+         )}
+
+         {/* Forgot header */}
         {isForgot && (
           <div className="mb-6 text-center">
             <div className="text-4xl mb-2">🔐</div>
@@ -274,7 +415,9 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
               {isKhmer ? 'ភ្លេចពាក្យសម្ងាត់' : 'FORGOT PASSWORD'}
             </h2>
             <p className="mt-1" style={{ fontSize: 14, color: c.textMuted, fontFamily: authBodyFont }}>
-              {isKhmer ? 'បញ្ចូលអ៊ីមែលរបស់អ្នក ហើយយើងនឹងផ្ញើតំណកំណត់ពាក្យសម្ងាត់ឡើងវិញ។' : "Enter your email and we'll send you a reset link."}
+              {forgotMethod === 'phone'
+                ? (isKhmer ? 'បញ្ចូលលេខទូរស័ព្ទរបស់អ្នក ដើម្បីទទួលលេខកូដ' : "Enter your phone number to receive a reset code.")
+                : (isKhmer ? 'បញ្ចូលអ៊ីមែលរបស់អ្នក ហើយយើងនឹងផ្ញើតំណកំណត់ពាក្យសម្ងាត់ឡើងវិញ។' : "Enter your email and we'll send you a reset link.")}
             </p>
           </div>
         )}
@@ -370,13 +513,73 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
             </>
           )}
 
-          {isForgot && (
+          {/* Reset-password fields */}
+         {isReset && (
+           <>
+             <div style={{ marginBottom: 16, fontSize: 13, color: c.textMuted, textAlign: 'center' }}>
+               {isKhmer ? 'កំណត់ពាក្យសម្ងាត់ថ្មីសម្រាប់' : 'Resetting password for'}: <strong style={{ color: c.text }}>{resetEmail}</strong>
+             </div>
+             <input name="password" type="password" placeholder={isKhmer ? 'ពាក្យសម្ងាត់ថ្មី' : 'New password'}
+               value={form.password} onChange={handle}
+               autoComplete="new-password"
+               style={inputStyle} {...focusHandlers} />
+             <input name="confirm" type="password" placeholder={isKhmer ? 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី' : 'Confirm new password'}
+               value={form.confirm} onChange={handle}
+               autoComplete="new-password"
+               style={inputStyle} {...focusHandlers} />
+           </>
+         )}
+
+         {isForgot && forgotMethod === 'email' && (
             <input name="email" type="email" placeholder={isKhmer ? 'អ៊ីមែលរបស់អ្នក' : 'Your email address'}
               value={form.email} onChange={handle}
               autoComplete="email"
               style={inputStyle} {...focusHandlers} />
           )}
+
+          {isForgot && forgotMethod === 'phone' && phoneStep === 'phone' && (
+            <div>
+              <input name="phone" type="tel" placeholder={isKhmer ? 'លេខទូរស័ព្ទរបស់អ្នក' : 'Your phone number'}
+                value={phone} onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
+                style={inputStyle} {...focusHandlers} />
+              <button type="button" onClick={handleSendOtp} disabled={phoneBusy}
+                className="w-full mt-2 rounded-full py-3 font-bold transition-all shadow disabled:opacity-50"
+                style={{ fontFamily: authFont, fontSize: 15, background: '#0088cc', border: 'none', color: '#fff' }}>
+                {phoneBusy ? (isKhmer ? 'កំពុងផ្ញើ...' : 'SENDING…') : (isKhmer ? '📨 ផ្ញើលេខកូដ' : '📨 SEND CODE')}
+              </button>
+            </div>
+          )}
+
+          {isForgot && forgotMethod === 'phone' && phoneStep === 'code' && (
+            <>
+              <input name="otp" type="text" inputMode="numeric" maxLength={6} placeholder={isKhmer ? 'លេខកូដ ៦ ខ្ទង់' : '6-digit code'}
+                value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
+                style={inputStyle} {...focusHandlers} />
+              <input name="password" type="password" placeholder={isKhmer ? 'ពាក្យសម្ងាត់ថ្មី' : 'New password'}
+                value={form.password} onChange={handle}
+                autoComplete="new-password"
+                style={inputStyle} {...focusHandlers} />
+              <input name="confirm" type="password" placeholder={isKhmer ? 'បញ្ជាក់ពាក្យសម្ងាត់' : 'Confirm new password'}
+                value={form.confirm} onChange={handle}
+                autoComplete="new-password"
+                style={inputStyle} {...focusHandlers} />
+            </>
+          )}
         </div>
+
+        {/* Forgot method toggle */}
+        {isForgot && (
+          <div className="flex justify-center mt-3">
+            <button type="button" onClick={() => { setForgotMethod(forgotMethod === 'email' ? 'phone' : 'email'); setError(''); setSuccess('') }}
+              className="font-semibold hover:underline"
+              style={{ fontSize: 13, color: '#0088cc' }}>
+              {forgotMethod === 'email'
+                ? (isKhmer ? '📱 ប្រើលេខទូរស័ព្ទជំនួស' : '📱 Use phone instead')
+                : (isKhmer ? '✉️ ប្រើអ៊ីមែលជំនួស' : '✉️ Use email instead')}
+            </button>
+          </div>
+        )}
 
         {/* Forgot link */}
         {isLogin && (
@@ -405,14 +608,18 @@ export default function AuthModal({ mode, onClose, onSwitch }) {
           onMouseEnter={e => { e.currentTarget.style.background = '#F97316'; e.currentTarget.style.borderColor = '#F97316'; e.currentTarget.style.color = '#fff' }}
           onMouseLeave={e => { e.currentTarget.style.background = c.btnBg;   e.currentTarget.style.borderColor = c.btnBorder; e.currentTarget.style.color = c.btnText }}
         >
-          {loading ? '…' : isForgot
-            ? (isKhmer ? 'ផ្ញើតំណកំណត់ឡើងវិញ' : 'Send Reset Link')
-            : isLogin
-              ? (isKhmer ? 'ចូលគណនី' : 'Login')
-              : (isKhmer ? 'ចុះឈ្មោះ' : 'Register')}
+          {loading || phoneBusy ? '…' : isReset
+            ? (isKhmer ? 'កំណត់ពាក្យសម្ងាត់ថ្មី' : 'Reset Password')
+            : isForgot
+              ? (forgotMethod === 'phone'
+                  ? (isKhmer ? 'កំណត់ពាក្យសម្ងាត់ឡើងវិញ' : 'Reset Password')
+                  : (isKhmer ? 'ផ្ញើតំណកំណត់ឡើងវិញ' : 'Send Reset Link'))
+              : isLogin
+                ? (isKhmer ? 'ចូលគណនី' : 'Login')
+                : (isKhmer ? 'ចុះឈ្មោះ' : 'Register')}
         </button>
 
-        {isForgot && (
+        {(isForgot || isReset) && (
           <button onClick={() => handleSwitch('login')}
             className="w-full mt-3 font-semibold transition-colors"
             style={{ fontSize: 14, color: c.textMuted }}

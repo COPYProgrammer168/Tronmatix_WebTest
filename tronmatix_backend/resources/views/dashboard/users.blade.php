@@ -567,8 +567,8 @@ tbody tr:hover td { background: var(--dark-700); }
         document.getElementById('ui-vip-bar').style.width = pct + '%';
         document.getElementById('ui-vip-pct').textContent = pct + '% · $' + vipGoal + ' goal';
 
-        // View orders link
-        document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${id}`;
+// View orders link
+        document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${username}`;
     }
 
     function closeUserInfo() {

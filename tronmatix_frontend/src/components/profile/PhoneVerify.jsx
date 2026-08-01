@@ -66,7 +66,18 @@ export default function PhoneVerify({ user, dark, notify, onVerified }) {
     setBusy(true)
     try {
       const verifier = makeVerifier()
-      const formatted = phone.trim().startsWith('+') ? phone.trim() : `+${phone.trim()}`
+      // Firebase needs international format with country code.
+      //   012 345 678 → +855 12 345 678 (Cambodian local format)
+      const p = phone.trim()
+      const digits = p.replace(/[^\d+]/g, '')
+      let formatted
+      if (digits.startsWith('+')) {
+        formatted = digits
+      } else if (digits.startsWith('0')) {
+        formatted = '+855' + digits.slice(1)
+      } else {
+        formatted = '+855' + digits
+      }
       const confirmation = await signInWithPhoneNumber(auth, formatted, verifier)
       confirmationRef.current = confirmation
       setStep('code')

@@ -12,13 +12,26 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['user', 'items', 'location', 'discount'])  // ← discount eager-loaded for badge display
+        $userId = $request->input('user');
+
+        $orders = Order::with(['user', 'items', 'location', 'discount'])
+            ->when($userId, fn($q) => $q->where('user_id', $userId))
             ->latest()
             ->paginate(20);
 
-        return view('dashboard.orders', compact('orders'));
+        $statusCounts = Order::where(function ($q) use ($userId) {
+            if ($userId) $q->where('user_id', $userId);
+        })->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $totalUsers = Order::when($userId, fn($q) => $q->where('user_id', $userId))
+            ->distinct()
+            ->count('user_id');
+
+        return view('dashboard.orders', compact('orders', 'statusCounts', 'totalUsers', 'userId'));
     }
 
     public function show(Order $order)
@@ -28,8 +41,9 @@ class OrderController extends Controller
         return view('dashboard.orders-show', compact('order'));
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, $order_id)
     {
+        $order = Order::where('order_id', $order_id)->firstOrFail();
         $request->validate([
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
         ]);
@@ -55,7 +69,7 @@ class OrderController extends Controller
         }
 
         return redirect()
-            ->route('dashboard.orders.show', $order)
+            ->route('dashboard.orders.show', $order->order_id)
             ->with('success', 'Order status updated to ' . strtoupper($request->status));
     }
 }

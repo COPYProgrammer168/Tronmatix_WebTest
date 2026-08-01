@@ -192,7 +192,7 @@
                     @forelse($recent_orders as $order)
                     <tr>
                         <td>
-                            <a href="{{ route('dashboard.orders.show', $order) }}"
+                            <a href="{{ route('dashboard.orders.show', $order->order_id) }}"
                                style="color:#F97316; font-weight:700; font-family:monospace; font-size: var(--title-size); text-decoration:none;">
                                 {{ $order->order_id }}
                             </a>

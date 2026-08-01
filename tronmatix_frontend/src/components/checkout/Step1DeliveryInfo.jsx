@@ -1,7 +1,9 @@
 // src/components/checkout/Step1DeliveryInfo.jsx
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { useLang } from "../../context/LanguageContext"
+import { signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth"
+import { auth } from "../../lib/firebase"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
 import ProvinceSelect from "./ProvinceSelect"
 import DeliveryProviderSelector from "./DeliveryProviderSelector"
@@ -14,11 +16,22 @@ export default function Step1DeliveryInfo({
   isPickup,
   // NEW: province / provider props
   onProvinceSelect, selectedProvince, onProviderSelect, selectedProviderId,
+  // NEW: phone verification callback
+  onPhoneVerified,
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
   const step1Font = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif"
   const [showMapPicker, setShowMapPicker] = useState(false)
+
+  // ── Standalone phone verification (Firebase OTP) — not tied to account ──
+  const [phoneStep, setPhoneStep]         = useState("phone")
+  const [phoneBusy, setPhoneBusy]         = useState(false)
+  const [phoneError, setPhoneError]       = useState("")
+  const [otpCode, setOtpCode]             = useState("")
+  const [phoneVerified, setPhoneVerified] = useState(false)
+  const confirmationRef                   = useRef(null)
+  const verifierRef                       = useRef(null)
 
   const canProceed = isPickup
     ? (location.name && location.phone)
@@ -71,6 +84,87 @@ export default function Step1DeliveryInfo({
     }
   }
 
+  // ── Firebase phone OTP helpers (reuses AuthModal / PhoneVerify pattern) ──
+  const makeVerifier = () => {
+    if (verifierRef.current) return verifierRef.current
+    if (!window.tronmatixRecaptchaContainer) {
+      const div = document.createElement("div")
+      div.id = "checkout-recaptcha"
+      document.body.appendChild(div)
+      window.tronmatixRecaptchaContainer = div
+    }
+    verifierRef.current = new RecaptchaVerifier(auth, "checkout-recaptcha", { size: "invisible" })
+    return verifierRef.current
+  }
+
+  const handleSendCode = async () => {
+    setPhoneError("")
+    const raw = location.phone.trim()
+    if (!/^\+?[0-9\s\-]{7,20}$/.test(raw)) {
+      setPhoneError(isKhmer ? "សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ" : "Please enter a valid phone number.")
+      return
+    }
+    setPhoneBusy(true)
+    try {
+      const verifier = makeVerifier()
+      const digits = raw.replace(/[^\d+]/g, "")
+      let formatted
+      if (digits.startsWith("+")) {
+        formatted = digits
+      } else if (digits.startsWith("0")) {
+        formatted = "+855" + digits.slice(1)
+      } else {
+        formatted = "+855" + digits
+      }
+      const confirmation = await signInWithPhoneNumber(auth, formatted, verifier)
+      confirmationRef.current = confirmation
+      setPhoneStep("code")
+    } catch (e) {
+      console.error("sendCode error", e)
+      setPhoneError(e?.message || (isKhmer ? "មិនអាចផ្ញើលេខកូដបានទេ" : "Failed to send verification code."))
+    } finally {
+      setPhoneBusy(false)
+    }
+  }
+
+  const handleVerifyCode = async () => {
+    setPhoneError("")
+    if (!confirmationRef.current) {
+      setPhoneError(isKhmer ? "សូមផ្ញើលេខកូដមុន" : "Please send a code first.")
+      return
+    }
+    if (!/^\d{6}$/.test(otpCode.trim())) {
+      setPhoneError(isKhmer ? "សូមបញ្ចូលកូដ ៦ ខ្ទង់" : "Enter the 6-digit code.")
+      return
+    }
+    setPhoneBusy(true)
+    try {
+      await confirmationRef.current.confirm(otpCode.trim())
+      setPhoneVerified(true)
+      setPhoneStep("phone")
+      onPhoneVerified?.(true)
+    } catch (e) {
+      console.error("verifyCode error", e)
+      setPhoneError(e?.message || (isKhmer ? "កូដមិនត្រឹមត្រូវ" : "Invalid code. Please try again."))
+    } finally {
+      setPhoneBusy(false)
+    }
+  }
+
+  const resetPhoneFlow = () => {
+    setPhoneStep("phone")
+    setOtpCode("")
+    setPhoneError("")
+    setPhoneVerified(false)
+    confirmationRef.current = null
+    verifierRef.current = null
+    if (window.tronmatixRecaptchaContainer) {
+      window.tronmatixRecaptchaContainer.remove?.()
+      delete window.tronmatixRecaptchaContainer
+    }
+    onPhoneVerified?.(false)
+  }
+
   return (
     <div className="space-y-4">
       {dark && (
@@ -111,16 +205,76 @@ export default function Step1DeliveryInfo({
 
       {/* Name + Phone */}
       <div className="grid grid-cols-2 gap-4">
-        {[["name", "Full Name *", "Your name"], ["phone", "Phone *", "Phone number"]].map(([n, l, p]) => (
-          <div key={n}>
-            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>{l}</label>
+        <div>
+          <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>Full Name *</label>
+          <input
+            name="name" value={location.name} onChange={onChange} placeholder="Your name"
+            className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
+            style={inputStyle} {...focusHandlers}
+          />
+        </div>
+        <div>
+          <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>Phone *</label>
+          <div className="flex gap-2">
             <input
-              name={n} value={location[n]} onChange={onChange} placeholder={p}
-              className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
-              style={inputStyle} {...focusHandlers}
+              name="phone" value={location.phone} onChange={onChange} placeholder="Phone number"
+              className="checkout-input flex-1 rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
+              style={{ ...inputStyle, opacity: phoneVerified ? 0.7 : 1 }}
+              readOnly={phoneVerified}
+              {...focusHandlers}
             />
           </div>
-        ))}
+
+          {/* OTP input */}
+          {phoneStep === "code" && !phoneVerified && (
+            <div className="mt-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/[^\d]/g, ""))}
+                placeholder="123456"
+                className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none"
+                style={{ ...inputStyle, textAlign: "center", letterSpacing: 4, fontSize: 16 }}
+              />
+              {phoneError && <p style={{ fontSize: 12, color: "#EF4444", marginTop: 4 }}>{phoneError}</p>}
+              <div className="flex gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={handleVerifyCode}
+                  disabled={phoneBusy}
+                  className="flex-1 rounded-lg px-3 py-2 font-bold"
+                  style={{ fontSize: 13, background: "#0088cc", color: "#fff", border: "none" }}
+                >
+                  {phoneBusy ? "..." : (isKhmer ? "ផ្ទៀងផ្ទាត់" : "VERIFY")}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetPhoneFlow}
+                  className="rounded-lg px-3 py-2 text-xs"
+                  style={{ background: "none", border: "none", color: c.textSub, textDecoration: "underline", cursor: "pointer" }}
+                >
+                  {isKhmer ? "ប្តូរលេខ" : "Change"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Verified badge */}
+          {phoneVerified && (
+            <div className="flex items-center gap-2 mt-1.5" style={{ color: "#22c55e", fontSize: 12, fontWeight: 700 }}>
+              <span>✓</span> {isKhmer ? "បានផ្ទៀងផ្ទាត់" : "Phone Verified"}
+              <button
+                type="button"
+                onClick={resetPhoneFlow}
+                style={{ background: "none", border: "none", color: c.textSub, cursor: "pointer", fontSize: 11, textDecoration: "underline" }}
+              >
+                {isKhmer ? "ផ្លាស់" : "Change"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Address fields — hidden for pickup */}

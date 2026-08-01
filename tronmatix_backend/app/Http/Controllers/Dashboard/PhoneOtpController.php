@@ -4,117 +4,72 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
-use App\Models\PasswordOtp;
 use App\Models\Staff;
-use App\Services\SmsSender;
+use App\Services\FirebaseAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class PhoneOtpController extends Controller
 {
-    public function __construct(
-        private readonly SmsSender $sms
-    ) {}
-
     /**
      * GET /dashboard/password/phone
-     * Show the phone-number form (request an OTP).
+     * Show the phone-number form. SMS delivery is handled by the Firebase
+     * client SDK (signInWithPhoneNumber) in the browser — no server SMS.
      */
     public function showPhoneForm(Request $request)
     {
         $mode = $request->input('mode', 'staff'); // admin | staff
 
-        return view('dashboard.auth.phone-otp', compact('mode'));
+        return view('dashboard.auth.phone-otp', compact('mode') + $this->firebaseConfig());
     }
 
     /**
-     * POST /dashboard/password/phone  (throttled 1/min)
-     * Generate a 6-digit OTP and SMS it to the account's phone (if it exists).
+     * Firebase web-app config used by the client SDK in the Blade views.
      */
-    public function requestOtp(Request $request)
+    private function firebaseConfig(): array
     {
-        $data = $request->validate([
-            'phone' => ['required', 'string', 'max:30'],
-            'mode'  => ['required', 'in:admin,staff'],
-        ]);
-
-        $account = $this->findByPhone($data['mode'], $data['phone']);
-
-        // Anti-enumeration: return the same message whether or not the phone
-        // exists; only send an SMS when there is a real account.
-        if ($account) {
-            $otp = Str::padLeft((string) random_int(0, 999999), 6, '0');
-
-            PasswordOtp::create([
-                'phone'      => $data['phone'],
-                'mode'       => $data['mode'],
-                'otp'        => $otp,
-                'expires_at' => now()->addMinutes(5),
-            ]);
-
-            $this->sms->send(
-                $data['phone'],
-                'Your Tronmatix password reset code is ' . $otp . '. It expires in 5 minutes.'
-            );
-        }
-
-        return redirect()
-            ->route('dashboard.password.phone.verify', ['mode' => $data['mode']])
-            ->withInput($request->only('phone', 'mode'))
-            ->with('status', 'If that phone number belongs to an account, a 6-digit verification code has been sent.');
-    }
-
-    /**
-     * GET /dashboard/password/phone/verify
-     * Show the OTP + new-password form.
-     */
-    public function showVerifyForm(Request $request)
-    {
-        $mode  = $request->input('mode', 'staff');
-        $phone = $request->old('phone');
-
-        return view('dashboard.auth.phone-verify', compact('mode', 'phone'));
+        return [
+            'firebaseApiKey'            => config('firebase.api_key', env('FIREBASE_API_KEY')),
+            'firebaseAuthDomain'        => config('firebase.auth_domain', env('FIREBASE_AUTH_DOMAIN')),
+            'firebaseProjectId'         => config('firebase.project_id', env('FIREBASE_PROJECT_ID')),
+            'firebaseAppId'             => config('firebase.app_id', env('FIREBASE_APP_ID')),
+        ];
     }
 
     /**
      * POST /dashboard/password/phone/verify  (throttled 5/min)
-     * Validate the OTP and set the new password.
+     * Verify the Firebase ID token (issued after the client confirmed the SMS
+     * code), then reset the password for the matching admin/staff account.
      */
-    public function verifyOtpAndReset(Request $request)
+    public function verifyOtpAndReset(Request $request, FirebaseAuthService $firebase)
     {
         $data = $request->validate([
             'phone'                 => ['required', 'string', 'max:30'],
             'mode'                  => ['required', 'in:admin,staff'],
-            'otp'                   => ['required', 'digits:6'],
+            'id_token'              => ['required', 'string'],
             'password'              => ['required', 'confirmed', PasswordRule::min(8)->mixedCase()->numbers()],
             'password_confirmation' => ['required'],
         ]);
 
-        $otp = PasswordOtp::where('phone', $data['phone'])
-            ->where('mode', $data['mode'])
-            ->latest()
-            ->first();
+        $claims = $firebase->verifyIdToken($data['id_token']);
 
-        if (! $otp || ! $otp->isValid() || $otp->otp !== $data['otp']) {
+        if (! $claims || empty($claims['phone_number'])) {
             return back()
                 ->withInput($request->only('phone', 'mode'))
-                ->withErrors(['otp' => 'Invalid or expired verification code. Please request a new one.']);
+                ->withErrors(['id_token' => 'Verification failed. Please request a new code.']);
         }
 
-        $account = $this->findByPhone($data['mode'], $data['phone']);
+        // Confirm the verified phone matches the account we look up.
+        $account = $this->findByPhone($data['mode'], $claims['phone_number']);
 
         if (! $account) {
             return back()
                 ->withInput($request->only('phone', 'mode'))
-                ->withErrors(['otp' => 'No account found with that phone number.']);
+                ->withErrors(['phone' => 'No account found with that phone number.']);
         }
 
         $account->forceFill(['password' => Hash::make($data['password'])])->save();
-
-        // Burn the OTP so it can never be replayed.
-        $otp->use();
 
         return redirect()->route('dashboard.login')
             ->with('success', 'Your password has been reset. You can now log in.');

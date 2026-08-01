@@ -96,6 +96,7 @@ class OrderController extends Controller
             'fulfillment_type'       => ['nullable', 'in:delivery,pickup'],
             'province_id'            => ['nullable', 'integer', 'exists:provinces,id'],
             'delivery_provider_id'   => ['nullable', 'integer', 'exists:delivery_providers,id'],
+            'delivery_phone_verified'=> ['nullable', 'boolean'],
         ]);
 
         $user = $request->user();
@@ -222,6 +223,8 @@ class OrderController extends Controller
                     $shippingSnapshot['lng']         = $validated['delivery_lng'] ?? null;
                     $shippingSnapshot['map_address'] = $validated['delivery_map_address'] ?? null;
                 }
+
+                $shippingSnapshot['delivery_phone_verified'] = $validated['delivery_phone_verified'] ?? false;
 
                 $order = Order::create([
                     'user_id'            => $user->id,

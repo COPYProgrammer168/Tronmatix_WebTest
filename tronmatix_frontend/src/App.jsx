@@ -54,6 +54,8 @@ function PageSpinner() {
 
 function AppContent() {
   const [authMode, setAuthMode] = useState(null);
+  const [resetToken, setResetToken] = useState(null);
+  const [resetEmail, setResetEmail] = useState(null);
   const { dark }    = useTheme();
   const { isKhmer } = useLang();
   const location    = useLocation();
@@ -63,6 +65,18 @@ function AppContent() {
     location.pathname.startsWith("/staff") ||
     location.pathname.startsWith("/dev")   ||
     location.pathname.startsWith("/admin");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get("token");
+    const email  = params.get("email");
+    if (token && email) {
+      setResetToken(token);
+      setResetEmail(email);
+      setAuthMode("reset-password");
+      window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+    }
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("lang-km", isKhmer);
@@ -91,7 +105,13 @@ function AppContent() {
         <Suspense fallback={null}>
           <AuthModal
             mode={authMode}
-            onClose={() => setAuthMode(null)}
+            resetToken={resetToken}
+            resetEmail={resetEmail}
+            onClose={() => {
+              setAuthMode(null);
+              setResetToken(null);
+              setResetEmail(null);
+            }}
             onSwitch={(m) => setAuthMode(m)}
           />
         </Suspense>

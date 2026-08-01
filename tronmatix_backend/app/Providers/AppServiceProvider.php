@@ -32,7 +32,22 @@ class AppServiceProvider extends ServiceProvider
         // link from route('password.reset') — the CUSTOMER (Fortify) page —
         // which doesn't work for admin/staff brokers. Point admin/staff reset
         // emails at the dashboard reset page instead.
+        //
+        // IMPORTANT: only apply this for admin/staff. Customers use the
+        // default Fortify customer reset page (route('password.reset')) with
+        // the `users` broker — overriding their URL to the dashboard page
+        // breaks their reset (their token would be checked against the
+        // admins/staff broker and never match).
         ResetPassword::createUrlUsing(function ($notifiable, string $token) {
+            // Customer → React frontend reset page (query-param driven).
+            if ($notifiable instanceof \App\Models\User) {
+                $frontendUrls = explode(',', env('FRONTEND_URL', 'http://localhost:5173'));
+                $frontendUrl  = rtrim($frontendUrls[0], '/');
+
+                return $frontendUrl . '/?token=' . $token . '&email=' . urlencode($notifiable->getEmailForPasswordReset());
+            }
+
+            // Admin / staff → dashboard reset page.
             return url(route('dashboard.password.reset', [
                 'token' => $token,
                 'email' => $notifiable->getEmailForPasswordReset(),

@@ -45,7 +45,8 @@ class AdminAuthController extends Controller
                 ->with('error', "Too many login attempts. Please try again in {$seconds} seconds.");
         }
 
-        $field    = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        // Login is email-only (no username login).
+        $field    = 'email';
         $remember = $request->boolean('remember');
         $mode     = $request->input('mode', 'admin'); // Default to admin if not provided
 

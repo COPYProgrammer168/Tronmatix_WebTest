@@ -88,6 +88,9 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">{{ strtoupper(__('dashboard.orders.orderInfo')) }}</span>
+                <span style="font-size: var(--title-size); font-weight:800; letter-spacing:1px; color:#F97316;">
+                    #{{ $order->order_id }}
+                </span>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                     {{-- Fulfillment type badge & Payment status --}}
                     @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
@@ -118,7 +121,7 @@
             <div class="card-body">
                 <div class="order-info-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
                     @foreach([
-                        'Order ID'       => $order->order_id,
+                        'Order'        => '#' . $order->order_id,
                         'Customer'       => $order->user?->username ?? 'Guest',
                         'Payment Method' => strtoupper($order->payment_method),
                         'Date'           => $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i').' (ICT)',

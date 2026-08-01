@@ -5,6 +5,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\FirebaseAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -336,6 +337,44 @@ class AuthController extends Controller
                 ? 'Invalid or expired reset link. Please request a new one.'
                 : 'Failed to reset password. Please try again.',
         ], 422);
+    }
+
+    // ── Reset password via Firebase phone OTP ────────────────────────────────
+    // The client completes Firebase signInWithPhoneNumber, then sends the
+    // resulting ID token here. We verify it, look up the user by the verified
+    // phone number, and reset the password directly (phone proves ownership).
+    public function resetByPhone(Request $request, FirebaseAuthService $firebase)
+    {
+        $request->validate([
+            'id_token'              => ['required', 'string'],
+            'password'              => $this->passwordRules(),
+            'password_confirmation' => ['required'],
+        ]);
+
+        $claims = $firebase->verifyIdToken($request->input('id_token'));
+
+        if (! $claims || empty($claims['phone_number'])) {
+            return response()->json([
+                'message' => 'Verification failed. Please request a new code.',
+            ], 422);
+        }
+
+        $user = User::where('phone', $claims['phone_number'])->first();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'No account found with that phone number.',
+            ], 422);
+        }
+
+        $user->forceFill(['password' => Hash::make($request->input('password'))])->save();
+
+        // Full session invalidation — revoke all tokens on password reset.
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Password reset successfully. You can now log in.',
+        ]);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

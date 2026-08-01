@@ -1,12 +1,9 @@
 <?php
 
 // config/firebase.php
-// Minimal Firebase config for the core kreait/firebase-php Factory.
-//
-// Credentials can be supplied two ways:
-//   1. FIREBASE_CREDENTIALS_FILE — path to a service-account JSON file
-//   2. FIREBASE_CREDENTIALS      — the service-account JSON as a string
-// FIREBASE_PROJECT_ID is used as a fallback for the project id.
+// Firebase config for the core kreait/firebase-php Factory (server-side ID-token
+// verification) plus the web-app keys the Blade dashboard uses to load the
+// Firebase JS SDK for phone verification.
 
 return [
 
@@ -17,5 +14,10 @@ return [
 
     // Service-account JSON supplied inline as a string (env var).
     'credentials' => env('FIREBASE_CREDENTIALS'),
+
+    // Web-app config (used by the client SDK in Blade views)
+    'api_key'     => env('FIREBASE_API_KEY'),
+    'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
+    'app_id'      => env('FIREBASE_APP_ID'),
 
 ];
