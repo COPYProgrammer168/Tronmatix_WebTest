@@ -382,14 +382,15 @@ class AuthController extends Controller
     private function userPayload($user): array
     {
         return [
-            'id'        => $user->id,
-            'username'  => $user->username,
-            'email'     => $user->email,
-            'name'      => $user->name,
-            'phone'     => $user->phone ?? null,
-            'avatar'    => $user->avatar ?? null,
-            'role'      => $user->role ?? 'customer',
-            'is_banned' => $user->is_banned ?? false,
+            'id'                => $user->id,
+            'username'          => $user->username,
+            'email'             => $user->email,
+            'name'              => $user->name,
+            'phone'             => $user->phone ?? null,
+            'phone_verified_at' => $user->phone_verified_at,
+            'avatar'            => $user->avatar ?? null,
+            'role'              => $user->role ?? 'customer',
+            'is_banned'         => $user->is_banned ?? false,
         ];
     }
 

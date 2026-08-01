@@ -12,6 +12,7 @@
     "@emailjs/browser": "^4.4.1",
     "axios": "^1.13.6",
     "bakong-khqr": "^1.0.7",
+    "firebase": "^12.17.0",
     "leaflet": "1.9.4",
     "leaflet-routing-machine": "^3.2.12",
     "qrcode.react": "^4.2.0",

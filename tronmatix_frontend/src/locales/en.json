@@ -164,6 +164,23 @@
     "updateSuccess": "Profile updated!",
     "updateFailed": "Failed to update profile"
   },
+  "phoneVerify": {
+    "title": "VERIFY YOUR PHONE",
+    "subtitle": "One-time verification — secures your account",
+    "pending": "NOT VERIFIED",
+    "desc": "Verify your phone number to enable account recovery and important notifications.",
+    "phoneLabel": "PHONE NUMBER",
+    "sendCode": "SEND CODE",
+    "recaptchaHint": "Protected by reCAPTCHA. Carrier SMS rates may apply.",
+    "codeDesc": "Enter the 6-digit code sent to your phone.",
+    "verify": "VERIFY",
+    "changeNumber": "Change phone number",
+    "verified": "PHONE VERIFIED",
+    "invalidPhone": "Please enter a valid phone number.",
+    "sendFailed": "Failed to send verification code.",
+    "invalidCode": "Invalid code. Please try again.",
+    "startAgain": "Please start again."
+  },
   "product": {
     "addToCart": "ADD TO CART",
     "adding": "ADDING...",

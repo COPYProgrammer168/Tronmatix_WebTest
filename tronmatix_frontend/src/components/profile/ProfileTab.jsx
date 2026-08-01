@@ -4,6 +4,7 @@ import axiosClient from '../../lib/axios'
 import { useLang } from '../../context/LanguageContext'
 import AvatarUpload from './AvatarUpload'
 import TelegramConnect from './TelegramConnect'
+import PhoneVerify from './PhoneVerify'
 
 // NOTE: khFont/khBodyFont/isKhmer/dark defined inside component below
 // inputStyle is now a factory called inside the component with dark context
@@ -183,6 +184,19 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           </button>
         )}
       </div>
+
+      {/* ── Phone Verification (one-time Firebase) ─────────────────────── */}
+      {!localUser?.phone_verified_at && (
+        <PhoneVerify
+          user={localUser}
+          dark={dark ?? false}
+          notify={notify}
+          onVerified={() => {
+            setLocalUser(prev => ({ ...prev, phone_verified_at: new Date().toISOString() }))
+            onSaved?.()
+          }}
+        />
+      )}
 
       {/* ── Telegram Connect Section ───────────────────────────────────── */}
       <TelegramConnect

@@ -21,3 +21,16 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://tronmatix-backend.onrender.com
+      # Firebase (one-time phone verification) — inlined by Vite at build time
+      - key: VITE_FIREBASE_API_KEY
+        value: AIzaSyCm_b7K1fCN9EbLJGb-kcIi53AtGIi2QCs
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: tronmatixotp.firebaseapp.com
+      - key: VITE_FIREBASE_PROJECT_ID
+        value: tronmatixotp
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        value: tronmatixotp.firebasestorage.app
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        value: "49743803686"
+      - key: VITE_FIREBASE_APP_ID
+        value: "1:49743803686:web:d50623f738839f5c6ebde7"

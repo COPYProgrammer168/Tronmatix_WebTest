@@ -137,14 +137,15 @@ class GoogleAuthController extends Controller
     private function userPayload(User $user): array
     {
         return [
-            'id'        => $user->id,
-            'username'  => $user->username,
-            'email'     => $user->email,
-            'name'      => $user->name,
-            'phone'     => $user->phone,
-            'avatar'    => $user->avatar,
-            'role'      => $user->role ?? 'customer',
-            'is_banned' => $user->is_banned ?? false,
+            'id'                => $user->id,
+            'username'          => $user->username,
+            'email'             => $user->email,
+            'name'              => $user->name,
+            'phone'             => $user->phone,
+            'phone_verified_at' => $user->phone_verified_at,
+            'avatar'            => $user->avatar,
+            'role'              => $user->role ?? 'customer',
+            'is_banned'         => $user->is_banned ?? false,
         ];
     }
 }

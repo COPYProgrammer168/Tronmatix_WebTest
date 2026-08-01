@@ -9,6 +9,7 @@ use App\Models\AdminSetting;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\UserLocation;
+use App\Services\FirebaseAuthService;
 use App\Services\ImageStorageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,6 +49,47 @@ class UserProfileController extends Controller
         if (!empty($toUpdate)) {
             $user->update($toUpdate);
         }
+
+        return response()->json(['success' => true, 'data' => $this->userPayload($user->fresh())]);
+    }
+
+    // ── POST /api/verify-phone ───────────────────────────────────────────────
+    // One-time Firebase phone verification. The client sends a Firebase ID token
+    // (from signInWithPhoneNumber); we verify it server-side and stamp
+    // phone_verified_at. Idempotent — no-op if already verified.
+
+    public function verifyPhone(Request $request, FirebaseAuthService $firebase): JsonResponse
+    {
+        $request->validate(['id_token' => ['required', 'string']]);
+
+        /** @var User|null $user */
+        $user = $request->user();
+
+        // Staff tokens resolve to a Staff row — only customers verify phone.
+        if (! $user instanceof User) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        // Idempotent — skip if already verified.
+        if ($user->phone_verified_at) {
+            return response()->json(['success' => true, 'data' => $this->userPayload($user)]);
+        }
+
+        $claims = $firebase->verifyIdToken($request->input('id_token'));
+
+        if (! $claims || empty($claims['phone_number'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid verification code.',
+            ], 422);
+        }
+
+        // Sync the normalized phone (Firebase returns +<cc><number>) and stamp
+        // the verified timestamp. firebase project id must match the app's.
+        $user->update([
+            'phone'             => (string) $claims['phone_number'],
+            'phone_verified_at' => now(),
+        ]);
 
         return response()->json(['success' => true, 'data' => $this->userPayload($user->fresh())]);
     }
@@ -238,15 +280,16 @@ class UserProfileController extends Controller
     private function userPayload(User $user): array
     {
         return [
-            'id'         => $user->id,
-            'username'   => $user->username,
-            'name'       => $user->name,
-            'email'      => $user->email,
-            'phone'      => $user->phone,
-            'avatar'     => $user->avatar,
-            'role'       => $user->role ?? 'customer',
-            'is_banned'  => $user->is_banned ?? false,
-            'created_at' => $user->created_at,
+            'id'                => $user->id,
+            'username'          => $user->username,
+            'name'              => $user->name,
+            'email'             => $user->email,
+            'phone'             => $user->phone,
+            'phone_verified_at' => $user->phone_verified_at,
+            'avatar'            => $user->avatar,
+            'role'              => $user->role ?? 'customer',
+            'is_banned'         => $user->is_banned ?? false,
+            'created_at'        => $user->created_at,
         ];
     }
 }
