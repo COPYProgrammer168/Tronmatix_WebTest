@@ -32,9 +32,12 @@ php artisan view:cache   || echo "⚠️ view:cache failed"
 echo ">>> Running migrations..."
 php artisan migrate --force || echo "⚠️ migrate failed — check DB"
 
-# ── Seed delivery zones, provinces & marquees (idempotent — deletes + re-inserts) ─
-echo ">>> Seeding Database..."
-php artisan db:seed --force || echo "⚠️ DatabaseSeeder failed"
+# ── Seed data is NOT run in Docker/Render ─────────────────────────────────────
+# DatabaseSeeder truncates + re-seeds core tables (users, admins, staff, orders),
+# which is destructive on the persistent Render DB and breaks deploys. Run
+# seeders manually on your local machine instead (php artisan db:seed --force).
+# echo ">>> Seeding Database..."
+php artisan db:seed || echo "⚠️ DatabaseSeeder failed"
 
 # echo ">>> Seeding provinces..."
 # php artisan db:seed --class=ProvinceSeeder --force || echo "⚠️ ProvinceSeeder failed"
