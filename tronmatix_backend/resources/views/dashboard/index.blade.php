@@ -548,8 +548,13 @@ setInterval(async () => {
     color: rgba(15,23,42,0.45);
     background: rgba(15,23,42,0.06);
 }
-[data-theme="light"] td[style*="color:rgba(255,255,255,0.4)"] {
+[data-theme="light"] td[style*="color:rgba(255,255,255,0.4)"],
+[data-theme="light"] td[style*="var(--date-cell-color"] {
     color: rgba(15,23,42,0.45) !important;
+}
+/* The date cell uses a CSS variable fallback — force it dark in light mode. */
+[data-theme="light"] {
+    --date-cell-color: rgba(15,23,42,0.45);
 }
 [data-theme="light"] .stat-card .stat-label {
     color: rgba(15,23,42,0.55) !important;

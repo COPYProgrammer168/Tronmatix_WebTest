@@ -95,7 +95,7 @@ class OrderSeeder extends Seeder
         $orderCount = 200;
 
         for ($i = 0; $i < $orderCount; $i++) {
-            if (rand(0, 100) < 15) {
+            if (rand(0, 100) < 10) {
                 // Current month — within the last N days of this month.
                 $orderDate = Carbon::now()
                     ->subDays(rand(0, min(now()->day - 1, 28)))
