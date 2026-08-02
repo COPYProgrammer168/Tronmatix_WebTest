@@ -46,11 +46,11 @@ export default function OrderCard({
         >
           <div>
             <div className="font-black" style={{ fontSize: 16, color: textMain }}>#{orderId}</div>
-            <div style={{ fontSize: 13, color: textSub }}>
+            <div style={{ fontSize: isKhmer ? 13 : 14, color: textSub }}>
               {new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", {
                 day: "2-digit", month: "short", year: "numeric",
               })}{" "}
-              <span style={{ fontSize: 11 }}>
+              <span style={{ fontSize: isKhmer ? 11 : 12 }}>
                 {new Date(order.created_at || Date.now()).toLocaleTimeString("en-GB", {
                   hour: "2-digit", minute: "2-digit",
                 })}
@@ -74,15 +74,15 @@ export default function OrderCard({
               ${Number(order.total).toFixed(2)}
             </div>
             {/* Handle both API field name (discount_amount) and local snapshot (_discountAmount) */}
-            {Number(order.discount_amount || order._discountAmount || 0) > 0 && (
-              <div className="text-green-500 font-bold" style={{ fontSize: 12 }}>
+             {Number(order.discount_amount || order._discountAmount || 0) > 0 && (
+               <div className="text-green-500 font-bold" style={{ fontSize: isKhmer ? 12 : 13 }}>
                 🏷 {order.discount_code || order._discountCode
                   ? `${order.discount_code || order._discountCode} · `
                   : ''}
                 −${Number(order.discount_amount || order._discountAmount).toFixed(2)} saved
               </div>
             )}
-            <div style={{ fontSize: 13, color: textSub }}>
+            <div style={{ fontSize: isKhmer ? 13 : 14, color: textSub }}>
               {order.payment_method === "cash"
                 ? (isPickup ? "💵 Pay at Store" : "💵 Cash")
                 : "📱 BAKONG"}
@@ -94,7 +94,7 @@ export default function OrderCard({
             <button
               onClick={(e) => { e.stopPropagation(); onShowQR(order); }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold border-2 border-blue-300 text-blue-500 hover:bg-blue-500 hover:text-white hover:scale-105 active:scale-95 transition-all shadow-sm"
-              style={{ fontSize: 12 }}
+              style={{ fontSize: isKhmer ? 12 : 13 }}
             >
               📱 {isKhmer ? t("orders.showQR") : "Show QR"}
             </button>
@@ -106,7 +106,7 @@ export default function OrderCard({
               onClick={(e) => { e.stopPropagation(); onCancel(order); }}
               disabled={cancelling === order.id}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold border-2 border-orange-300 text-orange-500 hover:bg-orange-500 hover:text-white hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
-              style={{ fontSize: 12 }}
+              style={{ fontSize: isKhmer ? 12 : 13 }}
             >
               {cancelling === order.id ? (
                 <><span className="w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full animate-spin inline-block" /> {isKhmer ? t("orders.cancelling") : "Cancelling…"}</>
@@ -120,7 +120,7 @@ export default function OrderCard({
               onClick={(e) => { e.stopPropagation(); onDelete(order); }}
               disabled={deleting === order.id}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
-              style={{ fontSize: 12 }}
+              style={{ fontSize: isKhmer ? 12 : 13 }}
             >
               {deleting === order.id ? (
                 <><span className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin inline-block" /> {isKhmer ? t("orders.deleting") : "Deleting…"}</>
@@ -132,7 +132,7 @@ export default function OrderCard({
           <button
             onClick={(e) => { e.stopPropagation(); onPrint(order); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold border-2 transition-all"
-            style={{ fontSize: 12, borderColor: border, color: textSub }}
+            style={{ fontSize: isKhmer ? 12 : 13, borderColor: border, color: textSub }}
           >
             🖨 {isKhmer ? t("orders.receipt") : "Receipt"}
           </button>

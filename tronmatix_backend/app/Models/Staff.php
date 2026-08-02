@@ -93,4 +93,9 @@ class Staff extends Authenticatable
             : substr($this->name ?? 'ST', 0, 2)
         );
     }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPassword($token));
+    }
 }

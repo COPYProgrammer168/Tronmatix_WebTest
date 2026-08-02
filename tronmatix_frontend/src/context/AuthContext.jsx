@@ -238,7 +238,12 @@ export function AuthProvider({ children }) {
       let msg = 'Failed to send reset email. Please try again.'
       if (data?.errors?.email) msg = data.errors.email[0]
       else if (data?.message)  msg = data.message
-      return { success: false, message: msg }
+      return {
+        success: false,
+        message: msg,
+        cooldownSeconds: data?.cooldown_seconds,
+        banSeconds: data?.ban_seconds,
+      }
     } finally {
       setLoading(false)
     }

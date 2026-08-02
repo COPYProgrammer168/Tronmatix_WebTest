@@ -100,6 +100,8 @@ return [
         'twilio_sid'   => env('TWILIO_SID'),
         'twilio_token' => env('TWILIO_TOKEN'),
         'twilio_from'  => env('TWILIO_FROM'),
+        // Country code used by PhoneHelper to normalize local numbers to E.164.
+        'country_code' => env('SMS_COUNTRY_CODE', '855'),
     ],
 
 ];

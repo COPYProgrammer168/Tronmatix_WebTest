@@ -655,7 +655,7 @@
         @if($_canEdit)
         <div class="card">
             <div class="card-header">
-                <span class="card-title">UPDATE STATUS</span>
+                <span class="card-title km-english">UPDATE STATUS</span>
             </div>
             <div class="card-body">
                 @php
@@ -699,7 +699,7 @@
                     onmouseover="if(!this.disabled){ this.style.borderColor='var(--meta-color)'; this.style.color='var(--meta-color)'; this.style.background='rgba(255,255,255,0.06)'; }"
                     onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.45)'; this.style.background='rgba(255,255,255,0.03)'; }">
                         <span style="font-size: var(--label-status);">{{ $meta['icon'] }}</span>
-                        {{ $meta['label'] }}
+                        <span class="km-english">{{ $meta['label'] }}</span>
                         @if($isCurrentStatus)
                             <span style="margin-left:auto; width:7px; height:7px; border-radius:50%;
                                 background:{{ $meta['color'] }}; box-shadow:0 0 6px {{ $meta['color'] }};"></span>
@@ -943,7 +943,7 @@
                 animation:popIn .45s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $meta['icon'] }}</div>
             <div style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
-                SET TO {{ $meta['label'] }}
+                <span class="km-english">SET TO</span> {{ $meta['label'] }}
             </div>
             <div style="color:rgba(255,255,255,0.4); font-size: var(--title-size); margin-top:6px;">
                 Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong>
@@ -952,12 +952,12 @@
 
         <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; font-size: var(--title-size); margin-bottom:8px;">
-                <span style="color:rgba(255,255,255,0.4);">Current status</span>
+                <span style="color:rgba(255,255,255,0.4);"><span class="km-english">Current status</span></span>
                 <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">{{ strtoupper($order->status) }}</span>
             </div>
             <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
-                <span style="color:rgba(255,255,255,0.4);">New status</span>
-                <span style="font-weight:800; color:{{ $meta['color'] }}; font-size: var(--title-size);">{{ $meta['icon'] }} {{ $meta['label'] }}</span>
+                <span style="color:rgba(255,255,255,0.4);"><span class="km-english">New status</span></span>
+                <span style="font-weight:800; color:{{ $meta['color'] }}; font-size: var(--title-size);">{{ $meta['icon'] }} <span class="km-english">{{ $meta['label'] }}</span></span>
             </div>
             <div style="margin-top:10px; font-size: var(--title-size); color:rgba(255,255,255,0.4); border-top:1px solid rgba(255,255,255,0.07); padding-top:10px;">
                 {{ $meta['msg'] }}
@@ -971,12 +971,12 @@
         @endif
 
         <div style="display:flex; gap:10px;">
-            <button onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel">CANCEL</button>
+                <button onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel km-english">CANCEL</button>
             <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
                 @csrf @method('PUT')
                 <input type="hidden" name="status" value="{{ $key }}">
                 <button type="submit" class="popup-btn-confirm" style="background:{{ $meta['gradient'] }}; width:100%;">
-                    {{ $meta['icon'] }} CONFIRM
+                    {{ $meta['icon'] }} <span class="km-english">CONFIRM</span>
                 </button>
             </form>
         </div>
@@ -1003,7 +1003,7 @@
     <div class="tr-divider"></div>
 
     <div class="tr-row"><span>Order</span><span>#{{ $order->order_id }}</span></div>
-    <div class="tr-row"><span>Date</span><span>{{ $order->created_at->setTimezone('+07:00')->format('d M Y H:i') }}</span></div>
+    <div class="tr-row"><span>Date</span><span>{{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i') }} (ICT)</span></div>
     <div class="tr-row"><span>Payment</span><span>{{ strtoupper($order->payment_method) }}</span></div>
     <div class="tr-row"><span>Type</span><span>{{ $order->isPickup() ? '🏪 PICKUP' : '🚚 DELIVERY' }}</span></div>
     <div style="font-weight:700;">{{ $item->name }}</div>

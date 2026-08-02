@@ -14,11 +14,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        
-        $middleware->use([
-            \Illuminate\Http\Middleware\HandleCors::class,
-        ]);
-        
+
+        // Trust ALL proxies (Render's edge network). Lets Laravel read the real
+        // client IP from X-Forwarded-For instead of ::1.
+        $middleware->trustProxies(at: '*');
+
+        // IMPORTANT: do NOT use $middleware->use() here — it REPLACES the entire
+        // default global middleware stack (including TrustProxies, TrimStrings,
+        // ConvertEmptyStringsToNull). HandleCors is already in the default
+        // global stack, so nothing needs to be added manually.
+
         // Exclude all /api/* routes from CSRF verification (protected by Bearer token instead)
         $middleware->validateCsrfTokens(except: [
             'api/*',

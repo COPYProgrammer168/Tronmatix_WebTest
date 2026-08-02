@@ -299,11 +299,68 @@ class AuthController extends Controller
     // ── Forgot password ───────────────────────────────────────────────────────
     public function forgotPassword(Request $request)
     {
-        // Always return the same message regardless of whether email exists
-        // — prevents email enumeration attacks
         $request->validate(['email' => 'required|email:rfc|max:254']);
 
-        Password::sendResetLink($request->only('email'));
+        $email = Str::lower(trim($request->input('email')));
+        $ip    = $request->ip();
+
+        $ipMaxAttempts = (int) config('security.forgot_password.ip_max_attempts', 10);
+        $ipLockoutSecs = (int) config('security.forgot_password.ip_lockout_minutes', 60) * 60;
+        $cooldownSecs  = (int) config('security.forgot_password.email_cooldown_minutes', 60) * 60;
+
+        $ipKey    = 'forgot:ip:' . $ip;
+        $emailKey = 'forgot:email:users:' . $email;
+
+        // 1) Resubmission cooldown — SAME email already submitted successfully.
+        if (RateLimiter::tooManyAttempts($emailKey, 1)) {
+            $seconds = RateLimiter::availableIn($emailKey);
+            $minutes = (int) ceil($seconds / 60);
+
+            return response()->json([
+                'message'   => "You have already submitted this email. Please wait {$minutes} minute(s).",
+                'cooldown_seconds' => $seconds,
+            ], 429);
+        }
+
+        // 2) Per-IP attempt threshold / temporary ban.
+        if (RateLimiter::tooManyAttempts($ipKey, $ipMaxAttempts)) {
+            $seconds = RateLimiter::availableIn($ipKey);
+            $minutes = (int) ceil($seconds / 60);
+
+            return response()->json([
+                'message'   => "Too many attempts from this address. Please try again in {$minutes} minute(s).",
+                'ban_seconds' => $seconds,
+            ], 429);
+        }
+
+        // 3) Explicit account-existence check — the reset link only makes sense
+        //    for registered customer accounts.
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            RateLimiter::hit($ipKey, $ipLockoutSecs);
+
+            return response()->json([
+                'message' => 'No account found with this email.',
+                'errors'  => ['email' => ['No account found with this email.']],
+            ], 422);
+        }
+
+        // 4) Account exists — send the reset link.
+        $status = Password::sendResetLink(['email' => $email]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            RateLimiter::hit($ipKey, $ipLockoutSecs);
+
+            return response()->json([
+                'message' => 'No account found with this email.',
+                'errors'  => ['email' => ['No account found with this email.']],
+            ], 422);
+        }
+
+        // Success: reset IP counter, start email cooldown.
+        RateLimiter::clear($ipKey);
+        RateLimiter::hit($emailKey, $cooldownSecs);
 
         return response()->json([
             'message' => 'If that email is registered, a reset link has been sent.',
@@ -359,7 +416,14 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('phone', $claims['phone_number'])->first();
+        // Firebase returns the phone in E.164 ("+855..."); stored phones may be
+        // local format ("067 114 814"). Normalize both sides so the match works.
+        $canonical = \App\Support\PhoneHelper::normalize($claims['phone_number']);
+        $e164      = \App\Support\PhoneHelper::toE164($claims['phone_number']);
+
+        $user = User::where('phone', $canonical)
+            ->orWhere('phone', $e164)
+            ->first();
 
         if (! $user) {
             return response()->json([

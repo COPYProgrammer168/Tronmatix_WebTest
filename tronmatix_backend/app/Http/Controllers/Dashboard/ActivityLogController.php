@@ -91,6 +91,8 @@ class ActivityLogController extends Controller
                 'order_status_update', 'order_cancelled',
                 'login_success', 'login_failed',
                 'payment_verified', 'delivery_confirmed',
+                'discount_expired',
+                'password_reset_requested', 'password_reset_failed',
             ])
             ->where('created_at', '>=', now()->subHours(24))
             ->orderBy('created_at', 'desc')

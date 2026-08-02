@@ -42,7 +42,7 @@ export default function OrderFilters({ filter, setFilter, orders }) {
             onClick={() => setFilter(f)}
             className="px-4 py-2 rounded-full font-bold whitespace-nowrap transition-all flex items-center gap-1.5"
             style={{
-              fontSize: 13, fontFamily: filterFont,
+              fontSize: isKhmer ? 13 : 14, fontFamily: filterFont,
               background: active ? "#F97316" : filterBg,
               color: active ? "#fff" : textSub,
             }}

@@ -68,7 +68,7 @@
                 <select name="entity_type" class="input" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:var(--text-base);">
                     <option value="">{{ __('dashboard.activityLog.allEntities') ?? 'All Entities' }}</option>
                     @foreach($entityTypes as $et)
-                        <option value="{{ $et }}" {{ request('entity_type') === $et ? 'selected' : '' }}>{{ $et }}</option>
+                        <option value="{{ $et }}" {{ request('entity_type') === $et ? 'selected' : '' }}>{{ class_basename($et) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -161,6 +161,15 @@
                     $accentColor = '#ef4444';
                     $title = "Order #{$alert->entity_name}";
                     $desc = "Order was <strong style='color:#ef4444'>cancelled</strong>";
+                } elseif ($alert->action === 'discount_expired') {
+                    $icon = '⏰';
+                    $bgColor = 'rgba(245,158,11,0.08)';
+                    $borderColor = 'rgba(245,158,11,0.25)';
+                    $accentColor = '#f59e0b';
+                    $title = $alert->entity_name ? 'Discount #' . $alert->entity_id : 'Discount';
+                    $dv = $alertDetails['value'] ?? '';
+                    $dt = ($alertDetails['type'] ?? 'percentage') === 'percentage' ? '%' : '$';
+                    $desc = "Discount <strong style='color:#f59e0b'>auto-expired</strong>" . ($dv !== '' ? " ({$dv}{$dt} OFF)" : '');
                 } elseif ($alert->action === 'login_success') {
                     $guard = $alertDetails['guard'] ?? '';
                     $icon = '✅';
@@ -177,6 +186,20 @@
                     $accentColor = '#ef4444';
                     $title = $alert->entity_name ?: 'Unknown';
                     $desc = "<strong style='color:#ef4444'>Failed login</strong> attempt" . (!empty($alertDetails['reason']) ? " ({$alertDetails['reason']})" : '');
+                } elseif ($alert->action === 'password_reset_requested') {
+                    $icon = '🔑';
+                    $bgColor = 'rgba(59,130,246,0.08)';
+                    $borderColor = 'rgba(59,130,246,0.25)';
+                    $accentColor = '#3b82f6';
+                    $title = $alert->entity_name ?: 'Password reset';
+                    $desc = "<strong style='color:#3b82f6'>Password reset link</strong> requested for <span style='color:var(--text-primary);font-weight:{{ $_fw6 }};'>{$alert->entity_name}</span>";
+                } elseif ($alert->action === 'password_reset_failed') {
+                    $icon = '🔒';
+                    $bgColor = 'rgba(239,68,68,0.08)';
+                    $borderColor = 'rgba(239,68,68,0.25)';
+                    $accentColor = '#ef4444';
+                    $title = $alert->entity_name ?: 'Password reset';
+                    $desc = "<strong style='color:#ef4444'>Password reset failed</strong> for <span style='color:var(--text-primary);font-weight:{{ $_fw6 }};'>{$alert->entity_name}</span>";
                 } elseif ($alert->action === 'payment_verified') {
                     $icon = '💳';
                     $bgColor = 'rgba(16,185,129,0.08)';
@@ -235,6 +258,8 @@
                             'login_success'        => '#10b981',
                             'login_failed'         => '#ef4444',
                             'login_rate_limited'   => '#f59e0b',
+                            'password_reset_requested' => '#3b82f6',
+                            'password_reset_failed'    => '#ef4444',
                             'product_create'       => '#3b82f6',
                             'product_update'       => '#6366f1',
                             'product_delete'       => '#ef4444',
@@ -256,6 +281,7 @@
                             'discount_created'     => '#3b82f6',
                             'discount_updated'     => '#6366f1',
                             'discount_deleted'     => '#ef4444',
+                            'discount_expired'     => '#f59e0b',
                             'settings_updated'     => '#6366f1',
                             'marquee_created'      => '#3b82f6',
                             'marquee_updated'      => '#6366f1',
@@ -293,7 +319,7 @@
                         </td>
                         <td style="padding:10px 16px; white-space:nowrap;">
                             @if($log->entity_type)
-                                <span style="font-weight:{{ $_fw6 }}; color:var(--text-primary);">{{ $log->entity_type }}</span>
+                                <span style="font-weight:{{ $_fw6 }}; color:var(--text-primary);">{{ class_basename($log->entity_type) }}</span>
                                 @if($log->entity_name)
                                     <div style="font-size:var(--text-xs); color:var(--text-muted);">{{ $log->entity_name }}</div>
                                 @endif
@@ -329,6 +355,17 @@
                                     $reason = $log->details['reason'] ?? 'invalid_credentials';
                                     $detailText = 'Failed: ' . ucwords(str_replace('_', ' ', $reason));
                                     $detailColor = '#ef4444';
+                                } elseif ($log->action === 'password_reset_requested') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '🔑';
+                                    $detailText = 'Password reset link sent';
+                                    $detailColor = '#3b82f6';
+                                } elseif ($log->action === 'password_reset_failed') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '🔒';
+                                    $reason = $log->details['reason'] ?? 'account_not_found';
+                                    $detailText = 'Reset failed: ' . ucwords(str_replace('_', ' ', $reason));
+                                    $detailColor = '#ef4444';
                                 } elseif ($log->action === 'payment_verified') {
                                     $showDetailAlert = true;
                                     $detailIcon = '💳';
@@ -340,22 +377,56 @@
                                     $by = $log->details['confirmed_by'] ?? '';
                                     $detailText = 'Delivered' . ($by ? " by {$by}" : '');
                                     $detailColor = '#10b981';
+                                } elseif ($log->action === 'discount_created') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '🏷️';
+                                    $dv = $log->details['value'] ?? '';
+                                    $dt = ($log->details['type'] ?? 'percentage') === 'percentage' ? '%' : '$';
+                                    $detailText = 'Discount created' . ($dv !== '' ? ": {$dv}{$dt} OFF" : '');
+                                    $detailColor = '#3b82f6';
+                                } elseif ($log->action === 'discount_updated') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '✏️';
+                                    $hadBadge = ! empty($log->details['badge_config']);
+                                    $dv = $log->details['value'] ?? '';
+                                    $dt = ($log->details['type'] ?? 'percentage') === 'percentage' ? '%' : '$';
+                                    $detailText = $hadBadge
+                                        ? 'Badge updated'
+                                        : 'Discount updated' . ($dv !== '' ? ": {$dv}{$dt} OFF" : '');
+                                    $detailColor = '#6366f1';
+                                } elseif ($log->action === 'discount_deleted') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '🗑️';
+                                    $detailText = 'Discount deleted';
+                                    $detailColor = '#ef4444';
+                                } elseif ($log->action === 'discount_expired') {
+                                    $showDetailAlert = true;
+                                    $detailIcon = '⏰';
+                                    $dv = $log->details['value'] ?? '';
+                                    $dt = ($log->details['type'] ?? 'percentage') === 'percentage' ? '%' : '$';
+                                    $detailText = 'Auto-expired' . ($dv !== '' ? ": {$dv}{$dt} OFF" : '');
+                                    $detailColor = '#f59e0b';
                                 }
                             @endphp
                             @if($showDetailAlert)
-                                <div style="font-size:var(--text-xs); color:{{ $detailColor }}; font-weight:{{ $_fw6 }}; display:flex; align-items:center; gap:4px;">
+                                <div style="font-size:var(--text-sm); color:{{ $detailColor }}; font-weight:{{ $_fw6 }}; display:flex; align-items:center; gap:4px;">
                                     <span>{{ $detailIcon }}</span>
                                     <span>{{ $detailText }}</span>
                                 </div>
                             @elseif($detailsJson && $detailsJson !== '[]')
-                                <div style="font-size:var(--text-xs); color:var(--text-muted); word-break:break-all; max-height:60px; overflow:hidden; text-overflow:ellipsis;">
-                                    {{ $detailsJson }}
-                                </div>
+                                <button type="button"
+                                    onclick="openLogDetailsModal(this)"
+                                    data-action-label="{{ $actionLabel }}"
+                                    data-entity-name="{{ $log->entity_name }}"
+                                    data-details="{{ $detailsJson }}"
+                                    style="font-size:var(--text-sm); color:#F97316; font-weight:{{ $_fw6 }}; background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; font-family:inherit;">
+                                    View details →
+                                </button>
                             @else
                                 <span style="color:var(--text-muted);">—</span>
                             @endif
                         </td>
-                        <td style="padding:10px 16px; white-space:nowrap; color:var(--text-muted); font-size:var(--text-xs);">
+                        <td style="padding:10px 16px; white-space:nowrap; color:var(--text-muted); font-size:var(--text-sm); font-weight:{{ $_fw6 }};">
                             {{ $log->ip_address ?: '—' }}
                         </td>
                     </tr>
@@ -402,5 +473,112 @@
 </div>
 
 @endif
+
+{{-- ── Shared "View details" modal (rendered once, populated by JS) ──────────── --}}
+<div id="logDetailsModal"
+     style="position:fixed; inset:0; background:var(--overlay); display:none; z-index:100; align-items:center; justify-content:center; padding:20px;"
+     onclick="if(event.target===this) closeLogDetailsModal()">
+    <div id="logDetailsCard" style="background:var(--modal-bg); border:1px solid var(--border-input); border-radius:14px; width:100%; max-width:480px; max-height:80vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,0.45);">
+        {{-- Header --}}
+        <div style="display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--border);">
+            <div style="width:34px; height:34px; border-radius:9px; background:var(--active-bg); border:1px solid rgba(249,115,22,0.3); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">📋</div>
+            <div style="flex:1; min-width:0;">
+                <div id="logDetailsTitle" style="font-size:var(--text-base); font-weight:{{ $_fw7 }}; color:var(--text-main); letter-spacing:0.5px;">Details</div>
+                <div id="logDetailsSubtitle" style="font-size:var(--text-xs); color:var(--text-muted); margin-top:1px;">—</div>
+            </div>
+            <button type="button" id="logDetailsCloseBtn" onclick="closeLogDetailsModal()"
+                style="width:30px; height:30px; border-radius:8px; background:var(--hover-bg); border:1px solid var(--border); color:var(--text-muted); cursor:pointer; font-size:15px; line-height:1; flex-shrink:0;"
+                onmouseover="this.style.background='rgba(249,115,22,0.15)'" onmouseout="this.style.background='var(--hover-bg)'">✕</button>
+        </div>
+        {{-- Body: two-column table filled by JS --}}
+        <div style="padding:14px 18px; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:var(--text-sm);">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:6px 10px; color:var(--text-muted); font-weight:700; letter-spacing:0.5px; border-bottom:1px solid var(--border); font-size:var(--text-sm);">FIELD</th>
+                        <th style="text-align:left; padding:6px 10px; color:var(--text-muted); font-weight:700; letter-spacing:0.5px; border-bottom:1px solid var(--border); font-size:var(--text-sm);">VALUE</th>
+                    </tr>
+                </thead>
+                <tbody id="logDetailsBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function humanizeKey(str) {
+        return String(str)
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    var logTheme = {
+        muted: 'var(--text-muted)',
+        xfaint: 'var(--text-xfaint)',
+        border: 'var(--border)',
+        rowStripe: 'var(--hover-bg)',
+        valueColor: 'var(--text-main)'
+    };
+
+    function formatDetailValue(v) {
+        if (v === null || v === undefined) return '<span style="color:' + logTheme.muted + ';">—</span>';
+        if (typeof v === 'boolean') return v ? '<span style="color:#22c55e;">true</span>' : '<span style="color:#ef4444;">false</span>';
+        if (typeof v === 'object') return '<code style="color:#a78bfa; font-size:var(--text-sm); font-weight:600;">' + JSON.stringify(v) + '</code>';
+        return String(v);
+    }
+
+    function openLogDetailsModal(btn) {
+        var title = btn.dataset.actionLabel || 'Details';
+        var entityName = btn.dataset.entityName || '—';
+        var raw = btn.dataset.details || '{}';
+        var details;
+        try { details = JSON.parse(raw); } catch (e) { details = {}; }
+
+        document.getElementById('logDetailsTitle').textContent = title;
+        document.getElementById('logDetailsSubtitle').textContent = entityName;
+
+        var body = document.getElementById('logDetailsBody');
+        body.innerHTML = '';
+
+        var keys = Object.keys(details);
+        if (keys.length === 0) {
+            body.innerHTML = '<tr><td colspan="2" style="padding:14px 10px; color:' + logTheme.muted + '; font-weight:600; font-size:var(--text-sm);">No details.</td></tr>';
+        } else {
+            keys.forEach(function (k, i) {
+                var v = details[k];
+                var rowBg = (i % 2 === 0) ? logTheme.rowStripe : 'transparent';
+
+                // Detect old→new diff shape: value is an object with 'old' and 'new'
+                var isDiff = v !== null && typeof v === 'object' && !Array.isArray(v) &&
+                             ('old' in v || 'new' in v);
+
+                var labelCell = '<td style="padding:6px 10px; color:var(--text-muted); font-weight:600; white-space:nowrap;">' + humanizeKey(k) + '</td>';
+
+                var valueCell;
+                if (isDiff) {
+                    var oldV = formatDetailValue(v.old);
+                    var newV = formatDetailValue(v.new);
+                    valueCell = '<td style="padding:6px 10px; color:' + logTheme.valueColor + '; font-weight:600; word-break:break-word;">' +
+                        oldV + ' <span style="color:' + logTheme.muted + ';">→</span> ' + newV + '</td>';
+                } else {
+                    valueCell = '<td style="padding:6px 10px; color:' + logTheme.valueColor + '; font-weight:600; word-break:break-word;">' + formatDetailValue(v) + '</td>';
+                }
+
+                body.insertAdjacentHTML('beforeend', '<tr style="background:' + rowBg + ';">' + labelCell + valueCell + '</tr>');
+            });
+        }
+
+        document.getElementById('logDetailsModal').style.display = 'flex';
+    }
+
+    function closeLogDetailsModal() {
+        document.getElementById('logDetailsModal').style.display = 'none';
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLogDetailsModal();
+    });
+</script>
 
 @endsection

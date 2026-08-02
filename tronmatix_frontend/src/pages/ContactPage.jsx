@@ -89,7 +89,7 @@ function TikTokIcon() {
 }
 
 /* ── Info Card ──────────────────────────────────────────────────────────────── */
-function InfoCard({ icon, label, children, dark }) {
+function InfoCard({ icon, label, children, dark, isKhmer = false }) {
   return (
     <div
       className="flex flex-col gap-3 p-4 rounded-xl h-full"
@@ -107,7 +107,7 @@ function InfoCard({ icon, label, children, dark }) {
         </div>
         <span
           className="font-black tracking-widest"
-          style={{ fontSize: 14, color: "#F97316", letterSpacing: 2 }}
+          style={{ fontSize: isKhmer ? 14 : 15, color: "#F97316", letterSpacing: 2 }}
         >
           {label}
         </span>
@@ -451,16 +451,16 @@ export default function ContactPage() {
                     {icon}
                   </div>
                   <div>
-                    <div
-                      className="font-black mb-1"
-                      style={{
-                        fontSize: 14,
-                        color: "#F97316",
-                        letterSpacing: 2,
-                      }}
-                    >
-                      {label}
-                    </div>
+                     <div
+                       className="font-black mb-1"
+                       style={{
+                         fontSize: isKhmer ? 14 : 15,
+                         color: "#F97316",
+                         letterSpacing: 2,
+                       }}
+                     >
+                       {label}
+                     </div>
                     {content}
                   </div>
                 </div>
@@ -501,6 +501,7 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <InfoCard
                 dark={dark}
+                isKhmer={isKhmer}
                 label="ADDRESS"
                 icon={<MapPinIcon size={20} />}
               >
@@ -523,6 +524,7 @@ export default function ContactPage() {
 
               <InfoCard
                 dark={dark}
+                isKhmer={isKhmer}
                 label="PHONE NUMBER"
                 icon={<PhoneIcon size={20} />}
               >
@@ -544,6 +546,7 @@ export default function ContactPage() {
 
               <InfoCard
                 dark={dark}
+                isKhmer={isKhmer}
                 label="WORKING HOURS"
                 icon={<ClockIcon size={20} />}
               >
@@ -631,16 +634,16 @@ export default function ContactPage() {
                       {icon}
                     </span>
                     <div>
-                      <div
-                        className="font-black"
-                        style={{
-                          fontSize: 13,
-                          color: "#F97316",
-                          letterSpacing: 1.5,
-                        }}
-                      >
-                        {label.toUpperCase()}
-                      </div>
+                       <div
+                         className="font-black"
+                         style={{
+                           fontSize: isKhmer ? 13 : 14,
+                           color: "#F97316",
+                           letterSpacing: 1.5,
+                         }}
+                       >
+                         {label.toUpperCase()}
+                       </div>
                       <div
                         className="font-semibold"
                         style={{

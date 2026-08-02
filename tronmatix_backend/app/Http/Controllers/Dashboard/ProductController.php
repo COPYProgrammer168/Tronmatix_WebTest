@@ -98,7 +98,7 @@ class ProductController extends Controller
         return redirect()->route('dashboard.products')->with('success', 'Product updated.');
     }
 
-    public function destroy(Product $product)
+    public function destroy(Product $product, Request $request)
     {
         $this->storage->deleteMany($product->all_images);
         $productName = $product->name;

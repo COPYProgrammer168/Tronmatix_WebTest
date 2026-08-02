@@ -482,9 +482,9 @@
                                     <div
                                         style="display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px;
                             font-size: var(--title-size); font-weight:900; letter-spacing:1px;
-                            background:{{ $bc2['bg'] ?? 'rgba(249,115,22,0.18)' }};
-                            border:1.5px solid {{ $bc2['border'] ?? 'rgba(249,115,22,0.55)' }};
-                            color:{{ $bc2['color'] ?? '#F97316' }};">
+                            background:{{ $bc2['bg'] ?? '#F97316' }};
+                            border:1.5px solid {{ $bc2['border'] ?? '#F97316' }};
+                            color:{{ $bc2['color'] ?? '#fff' }};">
                                         {{ $bc2['icon'] ?? '🏷️' }} {{ $bc2['text'] }}
                                     </div>
                                 @else
@@ -898,7 +898,7 @@
                     <label
                         style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">{{ strtoupper(__('dashboard.form.textColor')) }}</label>
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                        @php $bcp = [['l' => 'Orange', 'bg' => 'rgba(249,115,22,0.18)', 'bd' => 'rgba(249,115,22,0.55)', 'c' => '#F97316'], ['l' => 'Red', 'bg' => 'rgba(239,68,68,0.18)', 'bd' => 'rgba(239,68,68,0.55)', 'c' => '#ef4444'], ['l' => 'Green', 'bg' => 'rgba(34,197,94,0.18)', 'bd' => 'rgba(34,197,94,0.55)', 'c' => '#22c55e'], ['l' => 'Blue', 'bg' => 'rgba(59,130,246,0.18)', 'bd' => 'rgba(59,130,246,0.55)', 'c' => '#3b82f6'], ['l' => 'Purple', 'bg' => 'rgba(167,139,250,0.18)', 'bd' => 'rgba(167,139,250,0.55)', 'c' => '#a78bfa'], ['l' => 'Yellow', 'bg' => 'rgba(234,179,8,0.18)', 'bd' => 'rgba(234,179,8,0.55)', 'c' => '#eab308'], ['l' => 'Solid', 'bg' => '#F97316', 'bd' => '#F97316', 'c' => '#fff']]; @endphp
+                        @php $bcp = [['l' => 'Orange', 'bg' => '#F97316', 'bd' => '#F97316', 'c' => '#fff'], ['l' => 'Red', 'bg' => '#ef4444', 'bd' => '#ef4444', 'c' => '#fff'], ['l' => 'Green', 'bg' => '#22c55e', 'bd' => '#22c55e', 'c' => '#fff'], ['l' => 'Blue', 'bg' => '#3b82f6', 'bd' => '#3b82f6', 'c' => '#fff'], ['l' => 'Purple', 'bg' => '#a78bfa', 'bd' => '#a78bfa', 'c' => '#1e1b4b'], ['l' => 'Yellow', 'bg' => '#eab308', 'bd' => '#eab308', 'c' => '#1f2937'], ['l' => 'Dark', 'bg' => '#111827', 'bd' => '#111827', 'c' => '#fff']]; @endphp
                         @foreach ($bcp as $i => $p)
                             <button type="button" data-bbg="{{ $p['bg'] }}" data-bbd="{{ $p['bd'] }}"
                                 data-bc="{{ $p['c'] }}" onclick="selectBColor(this)"
@@ -1255,9 +1255,9 @@
 
             // ── Badge Modal ───────────────────────────────────────────────────────────────
             let _bIco = '🏷️',
-                _bBg = 'rgba(249,115,22,0.18)',
-                _bBd = 'rgba(249,115,22,0.55)',
-                _bC = '#F97316'
+                _bBg = '#F97316',
+                _bBd = '#F97316',
+                _bC = '#fff'
             let _bDiscountId = null,
                 _bDiscountType = null,
                 _bDiscountVal = null
@@ -1270,18 +1270,18 @@
                 if (existingBadge && existingBadge.text) {
                     document.getElementById('bText').value = existingBadge.text || ''
                     _bIco = existingBadge.icon || '🏷️';
-                    _bBg = existingBadge.bg || 'rgba(249,115,22,0.18)'
-                    _bBd = existingBadge.border || 'rgba(249,115,22,0.55)';
-                    _bC = existingBadge.color || '#F97316'
+                    _bBg = existingBadge.bg || '#F97316'
+                    _bBd = existingBadge.border || '#F97316';
+                    _bC = existingBadge.color || '#fff'
                     document.getElementById('badgeModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.editBadge")) }}'
                     document.getElementById('badgeModalSubtitle').textContent = `Discount #${discountId}`
                     document.getElementById('badgeClearBtn').style.display = 'block'
                 } else {
                     document.getElementById('bText').value = ''
                     _bIco = '🏷️';
-                    _bBg = 'rgba(249,115,22,0.18)';
-                    _bBd = 'rgba(249,115,22,0.55)';
-                    _bC = '#F97316'
+                    _bBg = '#F97316';
+                    _bBd = '#F97316';
+                    _bC = '#fff'
                     document.getElementById('badgeModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.addBadgeLabel")) }}'
                     document.getElementById('badgeModalSubtitle').textContent = `Discount #${discountId}`
                     document.getElementById('badgeClearBtn').style.display = 'none'

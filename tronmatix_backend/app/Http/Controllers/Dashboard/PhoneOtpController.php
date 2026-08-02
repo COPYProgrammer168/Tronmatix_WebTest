@@ -79,8 +79,19 @@ class PhoneOtpController extends Controller
 
     private function findByPhone(string $mode, string $phone): Admin|Staff|null
     {
-        return $mode === 'admin'
-            ? Admin::where('phone', $phone)->first()
-            : Staff::where('phone', $phone)->first();
+        // Firebase claims give E.164 ("+855..."); stored phones may be local
+        // format ("067 114 814"). Normalize both sides so the match works.
+        $canonical = \App\Support\PhoneHelper::normalize($phone);
+        $e164      = \App\Support\PhoneHelper::toE164($phone);
+
+        if ($canonical === null) {
+            return null;
+        }
+
+        $query = $mode === 'admin' ? Admin::query() : Staff::query();
+
+        return $query->where('phone', $canonical)
+            ->orWhere('phone', $e164)
+            ->first();
     }
 }

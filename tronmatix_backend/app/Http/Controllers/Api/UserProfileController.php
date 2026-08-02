@@ -43,7 +43,7 @@ class UserProfileController extends Controller
 
         $toUpdate = array_filter([
             'username' => $validated['username'] ?? null,
-            'phone'    => $validated['phone'] ?? null,
+            'phone'    => \App\Support\PhoneHelper::toE164($validated['phone'] ?? null),
         ], fn($v) => $v !== null);
 
         if (!empty($toUpdate)) {
@@ -110,7 +110,7 @@ class UserProfileController extends Controller
 
         $user->update(array_filter([
             'username' => $validated['username'],
-            'phone'    => $validated['phone'] ?? null,
+            'phone'    => \App\Support\PhoneHelper::toE164($validated['phone'] ?? null),
             'name'     => $validated['username'], // sync name too
         ], fn($v) => $v !== null));
 

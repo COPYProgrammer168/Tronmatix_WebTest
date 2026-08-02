@@ -2,7 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\ResetPassword as BaseResetPassword;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -51,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             return url(route('dashboard.password.reset', [
                 'token' => $token,
                 'email' => $notifiable->getEmailForPasswordReset(),
-                'mode'  => $notifiable instanceof \App\Models\Staff ? 'staff' : 'admins',
+                'mode'  => $notifiable instanceof \App\Models\Staff ? 'staff' : 'admin',
             ]));
         });
     }

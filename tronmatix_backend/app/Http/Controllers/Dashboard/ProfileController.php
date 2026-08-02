@@ -47,6 +47,12 @@ class ProfileController extends Controller
             unset($data['avatar']);
         }
 
+        // Normalize phone to E.164 so lookups (e.g. phone-based password reset)
+        // match regardless of the format the admin entered.
+        if (!empty($data['phone'])) {
+            $data['phone'] = \App\Support\PhoneHelper::toE164($data['phone']);
+        }
+
         $user->update(array_filter($data, fn($v) => $v !== null));
 
         return redirect()->route('dashboard.profile')

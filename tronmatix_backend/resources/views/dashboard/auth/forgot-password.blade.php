@@ -187,6 +187,23 @@
             </div>
         @endif
 
+        @php($cooldownSeconds = max((int) session('cooldown_seconds', 0), (int) session('ban_seconds', 0)))
+        @if($cooldownSeconds > 0)
+            <div class="alert alert-error">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div>
+                    @if(session('cooldown_seconds'))
+                        You have already submitted this email. Please wait
+                    @else
+                        Too many attempts from this address. Please wait
+                    @endif
+                    <strong><span id="cooldownTimer" data-seconds="{{ $cooldownSeconds }}">0:00</span></strong>.
+                </div>
+            </div>
+        @endif
+
         <div class="toggle-row" style="margin-top: 0;">
             🔑 Reset by email &nbsp;·&nbsp;
             <a href="{{ route('dashboard.password.phone', ['mode' => $mode]) }}">Use phone instead</a>
@@ -231,6 +248,34 @@
         btn.classList.add('loading');
         btn.disabled = true;
     });
+
+    // Live cooldown / ban countdown — disables the submit button until 0:00.
+    (function () {
+        const timer = document.getElementById('cooldownTimer');
+        if (!timer) return;
+
+        const btn = document.getElementById('submitBtn');
+        let remaining = parseInt(timer.dataset.seconds, 10) || 0;
+
+        const fmt = s => {
+            const m = Math.floor(s / 60);
+            const ss = s % 60;
+            return m + ':' + String(ss).padStart(2, '0');
+        };
+
+        timer.textContent = fmt(remaining);
+        if (remaining > 0) {
+            if (btn) btn.disabled = true;
+            const tick = setInterval(() => {
+                remaining = Math.max(remaining - 1, 0);
+                timer.textContent = fmt(remaining);
+                if (remaining === 0) {
+                    clearInterval(tick);
+                    if (btn) btn.disabled = false;
+                }
+            }, 1000);
+        }
+    })();
 </script>
 
 </body>

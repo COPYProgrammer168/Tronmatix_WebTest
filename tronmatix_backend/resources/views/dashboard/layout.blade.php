@@ -125,6 +125,10 @@
 
         }
 
+        :lang(km) .km-english {
+            font-weight: 600 !important;
+        }
+
         /* Buttons need auto height so Khmer text doesn't clip */
         :lang(km) .btn {
             height: auto;
@@ -1913,6 +1917,56 @@
                     window.location.href = '/lang/' + lang;
                 });
         }
+    </script>
+
+    <script>
+        (function() {
+            if (document.documentElement.lang !== 'km') return;
+
+            const ENGLISH_RE = /[A-Za-z]/;
+
+            function wrapEnglish(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const text = node.textContent;
+                    if (!text || !ENGLISH_RE.test(text)) return;
+
+                    const frag = document.createDocumentFragment();
+                    let current = '';
+                    for (const ch of text) {
+                        if (ENGLISH_RE.test(ch)) {
+                            current += ch;
+                        } else {
+                            if (current) {
+                                const span = document.createElement('span');
+                                span.className = 'km-english';
+                                span.textContent = current;
+                                frag.appendChild(span);
+                                current = '';
+                            }
+                            frag.appendChild(document.createTextNode(ch));
+                        }
+                    }
+                    if (current) {
+                        const span = document.createElement('span');
+                        span.className = 'km-english';
+                        span.textContent = current;
+                        frag.appendChild(span);
+                    }
+                    if (frag.childNodes.length > 0) {
+                        node.parentNode.replaceChild(frag, node);
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'CODE') return;
+                    Array.from(node.childNodes).forEach(wrapEnglish);
+                }
+            }
+
+            document.body.querySelectorAll('.km-english').forEach(function(el) {
+                el.classList.remove('km-english');
+            });
+
+            wrapEnglish(document.body);
+        })();
     </script>
 
     <style>

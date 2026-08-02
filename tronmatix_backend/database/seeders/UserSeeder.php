@@ -57,7 +57,7 @@ class UserSeeder extends Seeder
         $lastNames = ['Chea', 'Ly', 'Kim', 'Peng', 'Noun', 'Sann', 'Hok', 'Tep', 'Sao', 'Meas', 'Oum', 'Yim', 'Nuon', 'Keo', 'Chhoeun', 'Chan', 'Seng', 'Kuy', 'Hour', 'Chhim', 'Bun', 'In', 'Yin', 'Lim', 'Kong'];
         $domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com'];
 
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $firstName = $firstNames[array_rand($firstNames)];
             $lastName = $lastNames[array_rand($lastNames)];
             $name = $firstName . ' ' . $lastName;

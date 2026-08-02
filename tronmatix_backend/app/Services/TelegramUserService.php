@@ -376,6 +376,6 @@ class TelegramUserService
 
     private function ts(): string
     {
-        return now()->format('d M Y, H:i');
+        return now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
     }
 }

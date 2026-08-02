@@ -214,7 +214,7 @@ class DashboardController extends Controller
 
         $top_products = Product::withCount('orderItems')->orderByDesc('order_items_count')->take(5)->get();
         $low_stock    = Product::lowStock()->orderBy('stock')->take(5)->get();
-        $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(15)->get();
+        $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(14)->get();
 
         $top_discount_codes = Discount::select(
             'discounts.*',
@@ -693,7 +693,11 @@ class DashboardController extends Controller
     {
         // clear_badge=1 means the admin clicked "CLEAR BADGE"
         if ($request->boolean('clear_badge')) {
-            $discount->update(['badge_config' => null]);
+            $discount->update([
+                'badge_config' => null,
+                // Reset kind to 'code' when badge is cleared
+                'kind'         => 'code',
+            ]);
             return response()->json(['success' => true, 'message' => 'Badge cleared.']);
         }
 

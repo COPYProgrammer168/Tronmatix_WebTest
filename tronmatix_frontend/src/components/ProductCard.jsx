@@ -29,7 +29,7 @@ function PlaceholderImg({ name, dark }) {
       </svg>
       <span
         style={{
-          fontSize: 10,
+          fontSize: isKhmer ? 10 : 11,
           textAlign: "center",
           padding: "0 8px",
           lineHeight: 1.3,
@@ -38,6 +38,24 @@ function PlaceholderImg({ name, dark }) {
         {name}
       </span>
     </div>
+  );
+}
+
+function PriceTagIcon({ size = 12 }) {
+  return (
+    <svg
+      className="flex-shrink-0"
+      style={{ width: size, height: size }}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z" />
+      <line x1="7" x2="7.01" y1="7" y2="7" />
+    </svg>
   );
 }
 
@@ -242,25 +260,41 @@ export default function ProductCard({ product }) {
 
       {/* ── Top-left badges ── */}
       <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        {/* Admin product badge */}
+        {/* Admin product badge — ticket tag */}
         {badge && (
           <div
-            className="flex items-center gap-1 font-black rounded-full shadow-lg"
+            className="flex items-center gap-1 font-black shadow-lg"
             style={{
+              position: "relative",
               fontSize: 11,
               letterSpacing: 0.5,
-              padding: "4px 10px",
-              background: badge.bg || "rgba(249,115,22,0.18)",
-              border: `1.5px solid ${badge.border || "rgba(249,115,22,0.55)"}`,
-              color: badge.color || "#F97316",
+              padding: "4px 10px 4px 18px",
+              background: badge.bg || "#F97316",
+              border: badge.border ? `1.5px solid ${badge.border}` : "none",
+              color: badge.color || "#fff",
               boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+              clipPath: "polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)",
             }}
           >
-            {badge.icon || "🏷️"} {badge.text}
+            <span
+              style={{
+                position: "absolute",
+                left: 6,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 4,
+                height: 4,
+                borderRadius: "50%",
+                background: dark ? "#1f2937" : "#fff",
+                opacity: 0.9,
+                zIndex: 1,
+              }}
+            />
+            {badge.icon || <PriceTagIcon />} {badge.text}
           </div>
         )}
 
-        {/* Featured / Hot item flags */}
+        {/* Featured / Hot item flags — plain rounded pills */}
         {(product.is_featured || product.is_hot) && (
           <div className="flex flex-col gap-1">
             {product.is_featured && (
@@ -269,9 +303,9 @@ export default function ProductCard({ product }) {
                   fontSize: 10,
                   letterSpacing: 0.5,
                   padding: "2px 8px",
-                  background: "rgba(234,179,8,0.18)",
-                  border: "1.5px solid rgba(234,179,8,0.55)",
-                  color: "#eab308",
+                  background: "#eab308",
+                  border: "none",
+                  color: "#fff",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
                   lineHeight: 1.2,
                 }}>
@@ -285,7 +319,7 @@ export default function ProductCard({ product }) {
                   letterSpacing: 0.5,
                   padding: "2px 8px",
                   background: "#EE8100",
-                  border: "1.5px solid #EE8100",
+                  border: "none",
                   color: "white",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
                   lineHeight: 1.2,
@@ -296,27 +330,25 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* One badge per discount that applies to this product */}
+        {/* One badge per discount that applies to this product — ticket tag */}
         {itemDiscounts.map((d, idx) => {
           const bc = d.badge_config;
           const bgStyle = bc
             ? {
-              background: bc.bg || "rgba(249,115,22,0.18)",
-              border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
+              background: bc.bg || "#F97316",
+              border: bc.border ? `1.5px solid ${bc.border}` : "none",
             }
             : d.source === "public"
               ? {
-                background:
-                  "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+                background: "#7c3aed",
                 border: "none",
               }
               : {
-                background:
-                  "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+                background: "#F97316",
                 border: "none",
               };
           const badgeColor = bc ? bc.color || "#F97316" : "#fff";
-          const badgeIcon = bc ? bc.icon || "🏷" : "🏷";
+          const badgeIcon = bc ? bc.icon || null : null;
           const badgeText = bc
             ? bc.text
             : d.type === "percentage"
@@ -331,17 +363,33 @@ export default function ProductCard({ product }) {
           return (
             <div key={idx}>
               <div
-                className="flex items-center gap-1 font-black rounded-full shadow-lg"
+                className="flex items-center gap-1 font-black shadow-lg"
                 style={{
+                  position: "relative",
                   fontSize: 11,
                   letterSpacing: 0.5,
-                  padding: "4px 10px",
+                  padding: "4px 10px 4px 18px",
                   color: badgeColor,
                   ...bgStyle,
                   ...shadowStyle,
+                  clipPath: "polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)",
                 }}
               >
-                {badgeIcon} {badgeText}
+                <span
+                  style={{
+                    position: "absolute",
+                    left: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 4,
+                    height: 4,
+                    borderRadius: "50%",
+                    background: dark ? "#1f2937" : "#fff",
+                    opacity: 0.9,
+                    zIndex: 1,
+                  }}
+                />
+                {badgeIcon || <PriceTagIcon />} {badgeText}
                 {d.source === "code" && !bc && (
                   <span style={{ fontSize: 9, opacity: 0.8, marginLeft: 2 }}>
                     ({d.code})
@@ -349,7 +397,7 @@ export default function ProductCard({ product }) {
                 )}
               </div>
               {/* Savings sub-badge — only show when no custom badge text is set */}
-              {!bc && d.type === "percentage" && product.price && (
+              {/* {!bc && d.type === "percentage" && product.price && (
                 <div
                   className="flex items-center gap-1 rounded-full font-bold"
                   style={{
@@ -363,7 +411,7 @@ export default function ProductCard({ product }) {
                 >
                   save ${((product.price * d.value) / 100).toFixed(2)}
                 </div>
-              )}
+              )} */}
             </div>
           );
         })}
@@ -487,7 +535,7 @@ export default function ProductCard({ product }) {
                 >
                   {displayPrice(product.price)}
                 </span>
-                <span
+                {/* <span
                   className="font-black rounded-full px-1.5 py-0.5"
                   style={{
                     fontSize: 14,
@@ -500,7 +548,7 @@ export default function ProductCard({ product }) {
                   {bestDiscount.type === "percentage"
                     ? `${bestDiscount.value}%`
                     : `${Number(bestDiscount.value).toFixed(2)}`}
-                </span>
+                </span> */}
               </div>
             </>
           ) : (

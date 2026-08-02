@@ -4,6 +4,7 @@ import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
 import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth'
 import { auth } from '../lib/firebase'
+import { toE164Phone, phoneValidationMessage } from '../lib/phone'
 import logo from '../assets/logo.png'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID     || ''
@@ -31,6 +32,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
   const [otpCode, setOtpCode]           = useState('')
   const [phoneStep, setPhoneStep]       = useState('phone') // 'phone' | 'code'
   const [phoneBusy, setPhoneBusy]       = useState(false)
+  const [cooldownSecs, setCooldownSecs] = useState(0) // email-resubmit / ban countdown
   const confirmationRef                 = useRef(null)
   const verifierRef                     = useRef(null)
 
@@ -214,8 +216,13 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
       if (!f.email)             { setError('Please enter your email address.'); return }
       if (!validEmail(f.email)) { setError('Please enter a valid email address.'); return }
       const res = await forgotPassword(f.email)
-      if (res.success) setSuccess(res.message)
-      else { setError(res.message); recordFailure() }
+      if (res.success) { setSuccess(res.message); setCooldownSecs(0) }
+      else {
+        setError(res.message)
+        recordFailure()
+        const secs = res.banSeconds || res.cooldownSeconds || 0
+        if (secs > 0) { setCooldownSecs(secs); startCooldown(secs) }
+      }
       return
     }
 
@@ -243,6 +250,23 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
     }
   }
 
+  // ── Cooldown / ban countdown for email forgot-password ─────────────────────
+  const startCooldown = (seconds) => {
+    setCooldownSecs(seconds)
+    const tick = setInterval(() => {
+      setCooldownSecs(prev => {
+        if (prev <= 1) { clearInterval(tick); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  const fmtCooldown = (s) => {
+    const m = Math.floor(s / 60)
+    const ss = s % 60
+    return `${m}:${String(ss).padStart(2, '0')}`
+  }
+
   // ── Phone-OTP forgot-password handlers (Firebase) ──────────────────────────
   const makeRecaptchaVerifier = () => {
     if (verifierRef.current) return verifierRef.current
@@ -259,26 +283,19 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
   const handleSendOtp = async () => {
     setError('')
     setSuccess('')
-    const p = phone.trim()
-    if (!/^\+?[0-9\s\-]{7,20}$/.test(p)) {
-      setError(isKhmer ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ' : 'Please enter a valid phone number.')
+    // Show the raw input as-is in the field; only normalize here on submit.
+    const raw = phone.trim()
+    const e164 = toE164Phone(raw)
+    const invalidMsg = phoneValidationMessage(raw, isKhmer)
+    if (invalidMsg || !e164) {
+      setError(invalidMsg || (isKhmer ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ' : 'Please enter a valid phone number.'))
       return
     }
     setPhoneBusy(true)
     try {
       const verifier = makeRecaptchaVerifier()
-      // Firebase needs international format with country code.
-      //   012 345 678 → +855 12 345 678 (Cambodian local format)
-      const digits = p.replace(/[^\d+]/g, '')
-      let formatted
-      if (digits.startsWith('+')) {
-        formatted = digits
-      } else if (digits.startsWith('0')) {
-        formatted = '+855' + digits.slice(1)
-      } else {
-        formatted = '+855' + digits
-      }
-      const confirmation = await signInWithPhoneNumber(auth, formatted, verifier)
+      // Strict E.164: +855XXXXXXXXX (no spaces)
+      const confirmation = await signInWithPhoneNumber(auth, e164, verifier)
       confirmationRef.current = confirmation
       setPhoneStep('code')
     } catch (e) {
@@ -374,7 +391,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
         </div>
 
         {/* Tabs */}
-        {!isForgot && (
+        {!isForgot && !isReset && (
           <div className="flex rounded-full p-1 mb-6" style={{ background: c.tabBg }}>
             {[
               ['login',    isKhmer ? 'ចូល'       : 'LOGIN'],
@@ -593,13 +610,22 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
         )}
 
         {/* Messages */}
-        {error   && <p className="text-red-500 mt-3 text-center"                style={{ fontSize: 15 }}>{error}</p>}
+        {error   && (
+          <p className="text-red-500 mt-3 text-center" style={{ fontSize: 15 }}>
+            {error}
+            {cooldownSecs > 0 && (
+              <span className="block mt-1" style={{ fontWeight: 800, color: '#F97316', fontSize: 18 }}>
+                ⏳ {fmtCooldown(cooldownSecs)}
+              </span>
+            )}
+          </p>
+        )}
         {success && <p className="text-green-500 mt-3 text-center font-semibold" style={{ fontSize: 15 }}>{success}</p>}
 
         {/* Submit */}
         <button
           onClick={submit}
-          disabled={loading || cooldown}
+          disabled={loading || cooldown || cooldownSecs > 0}
           className="w-full mt-5 rounded-full py-3 font-bold transition-all shadow disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             fontFamily: authFont, fontSize: 18,

@@ -34,8 +34,8 @@ function Stars({ rating = 0 }) {
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
       ))}
-      {rating > 0 && (
-        <span style={{ fontSize: 13, color: "#aaa", marginLeft: 4 }}>
+        {rating > 0 && (
+        <span style={{ fontSize: isKhmer ? 13 : 14, color: "#aaa", marginLeft: 4 }}>
           ({Number(rating).toFixed(1)})
         </span>
       )}
@@ -166,7 +166,7 @@ export default function ProductDetailPage() {
       {/* Breadcrumb */}
       <div
         className="flex items-center gap-2 flex-wrap mb-6"
-        style={{ fontSize: 13, color: subCol }}
+        style={{ fontSize: isKhmer ? 13 : 14, color: subCol }}
       >
         <a href="/" className="hover:text-primary">
           Home
@@ -249,90 +249,7 @@ export default function ProductDetailPage() {
                     d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 19.5h18M3 4.5h18"
                   />
                 </svg>
-                <span style={{ fontSize: 13 }}>No image</span>
-              </div>
-            )}
-
-            {/* Discount badges */}
-            {productDiscounted && (
-              <div
-                className="absolute top-3 left-3 flex flex-col gap-1.5"
-                style={{ zIndex: 2 }}
-              >
-                {itemDiscounts.map((d, idx) => {
-                  const bc = d.badge_config;
-                  const bgStyle = bc
-                    ? {
-                      background: bc.bg || "rgba(249,115,22,0.18)",
-                      border: `1.5px solid ${bc.border || "rgba(249,115,22,0.55)"}`,
-                    }
-                    : d.source === "public"
-                      ? {
-                        background:
-                          "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
-                        border: "none",
-                      }
-                      : {
-                        background:
-                          "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
-                        border: "none",
-                      };
-                  const badgeColor = bc ? bc.color || "#F97316" : "#fff";
-                  const badgeIcon = bc ? bc.icon || "🏷" : "🏷";
-                  const badgeText = bc
-                    ? bc.text
-                    : d.type === "percentage"
-                      ? `${d.value}% OFF`
-                      : `-$${Number(d.value).toFixed(2)}`;
-                  const shadowStyle = bc
-                    ? {}
-                    : d.source === "public"
-                      ? { boxShadow: "0 3px 12px rgba(124,58,237,0.55)" }
-                      : { boxShadow: "0 3px 12px rgba(249,115,22,0.55)" };
-                  return (
-                    <div key={idx}>
-                      <div
-                        className="flex items-center gap-1.5 font-black rounded-full shadow-lg"
-                        style={{
-                          fontSize: 13,
-                          letterSpacing: 0.5,
-                          padding: "5px 14px",
-                          color: badgeColor,
-                          ...bgStyle,
-                          ...shadowStyle,
-                        }}
-                      >
-                        {badgeIcon} {badgeText}
-                        {d.source === "code" && !bc && (
-                          <span style={{ fontSize: 10, opacity: 0.8 }}>
-                            {" "}
-                            ({d.code})
-                          </span>
-                        )}
-                      </div>
-                      {!bc && (
-                        <div
-                          className="font-black rounded-full mt-1"
-                          style={{
-                            fontSize: 11,
-                            padding: "3px 12px",
-                            background: "rgba(34,197,94,0.18)",
-                            color: "#22c55e",
-                            border: "1px solid rgba(34,197,94,0.4)",
-                            width: "fit-content",
-                          }}
-                        >
-                          save $
-                          {(d.type === "percentage"
-                            ? (product.price * d.value) / 100
-                            : Math.min(d.value, product.price)
-                          ).toFixed(2)}{" "}
-                          each
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                <span style={{ fontSize: isKhmer ? 13 : 14 }}>No image</span>
               </div>
             )}
 
@@ -730,77 +647,152 @@ export default function ProductDetailPage() {
       {/* ── Specifications Table ──────────────────────────────── */}
       {product.specs && Object.keys(product.specs).length > 0 && (
         <div
-          className="mb-12 rounded-xl overflow-hidden"
+          className="mb-5 rounded-xl overflow-hidden"
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
             border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)"}`,
           }}
         >
-          {/* Table header */}
+          {/* Desktop-only subtle hover tint for rows (no hover on touch) */}
+          <style>{`
+            .specs-row { position: relative; }
+            .specs-row::after {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background: transparent;
+              transition: background-color 0.2s ease;
+              pointer-events: none;
+            }
+            @media (hover: hover) and (pointer: fine) {
+              .specs-row:hover::after { background: rgba(249, 115, 22, 0.07); }
+            }
+          `}</style>
+
+          {/* Table header — icon + title, left-aligned, subtle bottom accent */}
           <div
+            className="specs-header"
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
               padding: "12px 18px",
-              fontWeight: 800,
-              fontSize: 14,
-              letterSpacing: 2,
-              background: dark
-                ? "linear-gradient(135deg, #F97316 0%, #ea580c 100%)"
-                : "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+              fontSize: isKhmer ? 20 : 21,
+              letterSpacing: isKhmer ? 0 : 1.5,
+              background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
               color: "#fff",
-              fontFamily: headingFont,
-              gridColumn: '1 / span 2',
+              fontFamily: "HurstBagod, 'KantumruyPro', 'Khmer OS', sans-serif",
+              borderBottom: "3px solid #c2410c",
             }}
           >
-            {product.specs_title || t("product.specifications") || "SPECIFICATIONS"}
+            {/* list/spec icon (inline SVG — lucide-react not installed) */}
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="8" x2="21" y1="6" y2="6" />
+              <line x1="8" x2="21" y1="12" y2="12" />
+              <line x1="8" x2="21" y1="18" y2="18" />
+              <line x1="3" x2="3.01" y1="6" y2="6" />
+              <line x1="3" x2="3.01" y1="12" y2="12" />
+              <line x1="3" x2="3.01" y1="18" y2="18" />
+            </svg>
+            <span style={{ lineHeight: 1.2 }}>
+              {product.specs_title || t("product.specifications") || "SPECIFICATIONS"}
+            </span>
           </div>
 
-          {/* Table rows */}
-          {Object.entries(product.specs).map(([key, value], i, arr) => (
-            <div
-              key={key}
-              className={`flex ${isKhmer ? "flex-col gap-0.5" : "flex-row"} px-4 py-2.5`}
-              style={{
-                background: Math.floor(i / 2) % 2 === 0
-                  ? dark ? "rgba(255,255,255,0.02)" : "rgba(15,23,42,0.02)"
-                  : "transparent",
-                borderBottom: i < (arr.length - (arr.length % 2 === 0 ? 2 : 1))
-                  ? `1px solid ${dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.04)"}`
-                  : "none",
-              }}
-            >
-              <span
-                className={isKhmer ? "" : "w-1/2"}
-                style={{
-                  fontFamily: bodyFont,
-                  fontSize: isKhmer ? 14 : 15,
-                  fontWeight: 600,
-                  color: dark ? "#9ca3af" : "#6b7280",
-                  letterSpacing: isKhmer ? 0 : 0.5,
-                  minWidth: isKhmer ? "auto" : 140,
-                  paddingRight: 16,
-                }}
-              >
-                {key}
-              </span>
-              <span
-                style={{
-                  fontFamily: bodyFont,
-                  fontSize: isKhmer ? 15 : 15,
-                  fontWeight: 500,
-                  color: dark ? "#f9fafb" : "#1f2937",
-                  wordBreak: "break-word",
-                  flex: 1,
-                }}
-              >
-                {value}
-              </span>
-            </div>
-          ))}
+          {/* Table rows — split down the middle into 2 columns (desktop) */}
+          {(() => {
+            const entries = Object.entries(product.specs);
+            const mid = Math.ceil(entries.length / 2);
+            const columns = [entries.slice(0, mid), entries.slice(mid)];
+            return (
+              <div className="relative grid md:grid-cols-2">
+                {columns.map((col, cIdx) => (
+                  <div
+                    key={cIdx}
+                  >
+                    {col.map(([key, value], i, arr) => (
+                      <div
+                        key={key}
+                        className="specs-row grid items-center gap-3"
+                        style={{
+                          gridTemplateColumns: 'auto minmax(140px, 220px) 1fr',
+                          padding: "14px 18px",
+                          background: i % 2 === 0
+                            ? dark ? "rgba(255,255,255,0.02)" : "rgba(15,23,42,0.02)"
+                            : "transparent",
+                          borderBottom: i < arr.length - 1
+                            ? `1px solid ${dark ? "rgba(255,255,255,0.05)" : "rgba(15,23,42,0.05)"}`
+                            : "none",
+                        }}
+                      >
+                        {/* Dot bullet — orange accent */}
+                        <span
+                          className="flex-shrink-0"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            background: "#F97316",
+                            position: "relative",
+                            zIndex: 1,
+                          }}
+                        />
+                        {/* Label */}
+                        <span
+                          style={{
+                            fontFamily: bodyFont,
+                            fontSize: isKhmer ? 14 : 15,
+                            fontWeight: 700,
+                            color: dark ? "#9ca3af" : "#6b7280",
+                            letterSpacing: isKhmer ? 0 : 0.5,
+                            textTransform: 'uppercase',
+                            position: "relative",
+                            zIndex: 1,
+                          }}
+                        >
+                          {key}
+                        </span>
+                        {/* Value */}
+                        <span
+                          style={{
+                            fontFamily: bodyFont,
+                            fontSize: isKhmer ? 15 : 15,
+                            fontWeight: 600,
+                            color: dark ? "#f9fafb" : "#1f2937",
+                            wordBreak: "break-word",
+                            position: "relative",
+                            zIndex: 1,
+                          }}
+                        >
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                {/* Full-height vertical divider at the true center (desktop only) */}
+                <div
+                  className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px"
+                  style={{
+                    background: dark
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(15,23,42,0.06)",
+                  }}
+                />
+              </div>
+            );
+          })()}
         </div>
       )}
 
-      {/* ── Related products — horizontal scroll, show ALL, display product names ── */}
+      {/* ── Related products — show ALL, display product names ── */}
       {related.length > 0 && (
         <div>
           <div className="flex items-center gap-4 mb-4">

@@ -541,7 +541,7 @@ export default function HomePage() {
                 className="text-primary font-bold hover:underline whitespace-nowrap"
                 style={{
                   fontFamily: bodyFont,
-                  fontSize: "clamp(12px, 1.5vw, 15px)",
+                  fontSize: isKhmer ? "clamp(12px, 1.5vw, 15px)" : "clamp(14px, 1.5vw, 16px)",
                 }}
               >
                 {isKhmer ? "មើលផលិតផលថ្មី" : "View All New Product"} →
@@ -588,24 +588,43 @@ export default function HomePage() {
         return (
           <div key={cat} className="max-w-[1280px] mx-auto px-4 mb-10">
             {/* Row header */}
-            <div className="flex items-center mb-4">
+            <div className="relative w-full mb-4" style={{ height: 48 }}>
               <div
-                className="flex-1 h-12 rounded-l"
-                style={{ background: headerL }}
-              />
-              <Link
-                to={`/category/${catSlug}`}
-                className="bg-primary text-white font-bold px-10 py-3 hover:bg-orange-600 transition-colors"
+                className="h-12 rounded-l"
                 style={{
-                  fontFamily: headingFont,
-                  fontSize: 18,
-                  letterSpacing: isKhmer ? 0 : 2,
-                  clipPath:
-                    "polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)",
+                  width: "calc(100% - 5px)",
+                  background: headerL,
+                  clipPath: "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)",
                 }}
-              >
-                {cat}
-              </Link>
+              />
+
+              <div className="absolute right-0 h-12" style={{ top: -8 }}>
+                <Link
+                  to={`/category/${catSlug}`}
+                  className="relative h-full flex items-center bg-primary text-white font-bold px-10 uppercase hover:bg-orange-600 transition-colors"
+                  style={{
+                    fontFamily: headingFont,
+                    fontSize: 22,
+                    letterSpacing: isKhmer ? 0 : 2,
+                    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+                  }}
+                >
+                  {cat}
+                </Link>
+
+                {/* Folded corner - tucked at top-left of the ribbon */}
+                <div
+                  className="absolute"
+                  style={{
+                    left: 0,
+                    bottom: "calc(100% - 8px)",
+                    width: 0,
+                    height: 0,
+                    borderLeft: "10px solid transparent",
+                    borderBottom: `8px solid ${dark ? "#1f2937" : "#7a5a00"}`,
+                  }}
+                />
+              </div>
             </div>
 
             {/* Error state */}

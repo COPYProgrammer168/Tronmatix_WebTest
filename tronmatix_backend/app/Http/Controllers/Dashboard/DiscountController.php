@@ -47,7 +47,21 @@ class DiscountController extends Controller
         $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
 
-        Discount::create($data);
+        $discount = Discount::create($data);
+
+        \App\Services\ActivityLogger::log([
+            'action'      => 'discount_created',
+            'entity_type' => get_class($discount),
+            'entity_id'   => $discount->id,
+            'entity_name' => $discount->code,
+            'details'     => [
+                'code'         => $discount->code,
+                'type'         => $discount->type,
+                'value'        => $discount->value,
+                'kind'         => $discount->kind ?? 'code',
+                'badge_config' => $discount->badge_config,
+            ],
+        ], $request);
 
         return redirect()
             ->route('dashboard.discounts')
@@ -67,7 +81,23 @@ class DiscountController extends Controller
         $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
 
+        $badgeBefore = $discount->badge_config;
         $discount->update($data);
+
+        \App\Services\ActivityLogger::log([
+            'action'      => 'discount_updated',
+            'entity_type' => get_class($discount),
+            'entity_id'   => $discount->id,
+            'entity_name' => $discount->code,
+            'details'     => [
+                'code'         => $discount->code,
+                'type'         => $discount->type,
+                'value'        => $discount->value,
+                'kind'         => $discount->kind ?? 'code',
+                // Flag a badge change specifically so the UI can say "Badge updated"
+                'badge_config' => ! empty($badgeBefore) || ! empty($discount->badge_config),
+            ],
+        ], $request);
 
         return redirect()
             ->route('dashboard.discounts')
@@ -75,9 +105,23 @@ class DiscountController extends Controller
     }
 
     // ── DELETE /dashboard/discounts/{discount} ────────────────────────────────
-    public function destroy(Discount $discount)
+    public function destroy(Discount $discount, Request $request)
     {
+        $snapshot = [
+            'code'  => $discount->code,
+            'type'  => $discount->type,
+            'value' => $discount->value,
+        ];
+
         $discount->delete();
+
+        \App\Services\ActivityLogger::log([
+            'action'      => 'discount_deleted',
+            'entity_type' => \App\Models\Discount::class,
+            'entity_id'   => $discount->id,
+            'entity_name' => $snapshot['code'],
+            'details'     => $snapshot,
+        ], $request);
 
         return redirect()
             ->route('dashboard.discounts')
@@ -116,9 +160,9 @@ class DiscountController extends Controller
         $badgeConfig = [
             'text'   => $request->input('badge_config.text'),
             'icon'   => $request->input('badge_config.icon', '🏷️'),
-            'bg'     => $request->input('badge_config.bg', 'rgba(249,115,22,0.18)'),
-            'border' => $request->input('badge_config.border', 'rgba(249,115,22,0.55)'),
-            'color'  => $request->input('badge_config.color', '#F97316'),
+            'bg'     => $request->input('badge_config.bg', '#F97316'),
+            'border' => $request->input('badge_config.border', '#F97316'),
+            'color'  => $request->input('badge_config.color', '#fff'),
         ];
 
         $discount->update([

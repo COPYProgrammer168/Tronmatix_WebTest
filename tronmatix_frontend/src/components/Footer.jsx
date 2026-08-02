@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { useTheme } from "../context/ThemeContext";
 import { useLang } from "../context/LanguageContext";
 import { useCart } from "../context/CartContext";
+import { useBottomNavVisible } from "../hooks/useBottomNavVisible";
+import { useMobileMenu } from "../context/MobileMenuContext";
 
 const socials = [
   {
@@ -59,29 +61,38 @@ function PhoneIcon({ className, ...props }) {
 function ScrollToTopBtn() {
   const { cartOpen } = useCart();
   const [visible, setVisible] = useState(false);
+  const { isVisible: bottomNavVisible } = useBottomNavVisible();
+  const { isMobileMenuOpen, isLoginModalOpen } = useMobileMenu();
 
+  // Scroll-based visibility only applies on MOBILE (max-md). On desktop the
+  // button is always rendered and visible on page load.
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
+    const onScroll = () => setVisible(window.scrollY > 150);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const show = visible && !cartOpen;
+  // Visibility — hidden when at the top of the page on ALL breakpoints so the
+  // button disappears after it scrolls you back to the top. Also hidden while
+  // the login/register modal is open (on both mobile and desktop).
+  const show = visible && !cartOpen && !isMobileMenuOpen && !isLoginModalOpen;
+
+  // Position: bottom-20 only when BottomNav (mobile-only) is visible; desktop
+  // always sits at the normal bottom-6 offset.
+  const bottomClass = bottomNavVisible ? "bottom-20" : "bottom-6";
 
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Scroll to top"
-      className={`fixed bottom-6 right-[80px] z-[300] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-90 ${show
-        ? "opacity-100 translate-y-0"
-        : "opacity-0 translate-y-4 pointer-events-none"
-        }`}
+      className={`fixed ${bottomClass} md:bottom-5 right-[80px] z-[300] w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-90
+        ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
       style={{ background: "#F97316" }}
     >
       <svg
-        width="20"
-        height="20"
+        width="24"
+        height="24"
         viewBox="0 0 24 24"
         fill="none"
         stroke="white"
@@ -99,6 +110,11 @@ function ScrollToTopBtn() {
 export default function Footer() {
   const { dark } = useTheme();
   const { isKhmer } = useLang();
+  const location = useLocation();
+  // BottomNav shows on the homepage + contact page — only pad the footer
+  // bottom there (mobile). On category/product/cart pages there's no BottomNav,
+  // so no extra clearance space is needed.
+  const showBottomNav = ["/", "/contact"].includes(location.pathname);
 
   const bg = dark ? "#0f172a" : "#f3f4f6";
   const border = dark ? "#1f2937" : "#e5e7eb";
@@ -122,6 +138,7 @@ export default function Footer() {
 
   return (
     <footer
+      className={showBottomNav ? "pb-16 md:pb-0" : ""}
       style={{
         background: bg,
         borderTop: `1px solid ${border}`,
@@ -278,12 +295,12 @@ export default function Footer() {
           {/* ─── Col 6: SOCIAL ─── */}
           <div>
             <div
-              className="font-bold mb-3"
+              className="font-bold mb-3 text-center md:text-left"
               style={{ fontSize: fs, color: heading, fontFamily: headFont, letterSpacing: 1, }}
             >
-              {isKhmer ? "បណ្ដាញសង្គម" : "SOCIAL"}
+              {isKhmer ? "បណ្តាញសង្គម" : "SOCIAL"}
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap justify-center md:justify-start">
               {socials.map((s, i) => (
                 <a
                   key={i}

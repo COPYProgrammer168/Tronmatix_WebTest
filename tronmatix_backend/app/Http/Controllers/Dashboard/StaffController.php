@@ -108,7 +108,7 @@ class StaffController extends Controller
             'name'       => $data['name'],
             'username'   => $data['username'],
             'email'      => $data['email'],
-            'phone'      => $data['phone'] ?? null,
+            'phone'      => \App\Support\PhoneHelper::toE164($data['phone'] ?? null),
             'role'       => $data['role'],
             'expires_at' => now()->addDays(7),
         ]);

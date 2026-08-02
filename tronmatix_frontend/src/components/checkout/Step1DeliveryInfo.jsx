@@ -4,6 +4,7 @@ import { useTheme } from "../../context/ThemeContext"
 import { useLang } from "../../context/LanguageContext"
 import { signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth"
 import { auth } from "../../lib/firebase"
+import { toE164Phone, phoneValidationMessage } from "../../lib/phone"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
 import ProvinceSelect from "./ProvinceSelect"
 import DeliveryProviderSelector from "./DeliveryProviderSelector"
@@ -99,24 +100,19 @@ export default function Step1DeliveryInfo({
 
   const handleSendCode = async () => {
     setPhoneError("")
+    // Show the raw input as-is in the field; only normalize here on submit.
     const raw = location.phone.trim()
-    if (!/^\+?[0-9\s\-]{7,20}$/.test(raw)) {
-      setPhoneError(isKhmer ? "សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ" : "Please enter a valid phone number.")
+    const e164 = toE164Phone(raw)
+    const invalidMsg = phoneValidationMessage(raw, isKhmer)
+    if (invalidMsg || !e164) {
+      setPhoneError(invalidMsg || (isKhmer ? "សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ" : "Please enter a valid phone number."))
       return
     }
     setPhoneBusy(true)
     try {
       const verifier = makeVerifier()
-      const digits = raw.replace(/[^\d+]/g, "")
-      let formatted
-      if (digits.startsWith("+")) {
-        formatted = digits
-      } else if (digits.startsWith("0")) {
-        formatted = "+855" + digits.slice(1)
-      } else {
-        formatted = "+855" + digits
-      }
-      const confirmation = await signInWithPhoneNumber(auth, formatted, verifier)
+      // Strict E.164: +855XXXXXXXXX (no spaces)
+      const confirmation = await signInWithPhoneNumber(auth, e164, verifier)
       confirmationRef.current = confirmation
       setPhoneStep("code")
     } catch (e) {

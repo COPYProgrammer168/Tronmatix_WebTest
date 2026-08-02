@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         DB::table('order_items')->truncate();
         DB::table('orders')->truncate();
         // DB::table('discounts')->truncate();
-        DB::table('delivery_schedules')->truncate();
+        // DB::table('delivery_schedules')->truncate();
         DB::table('user_locations')->truncate();
         // DB::table('products')->truncate();
         // DB::table('banners')->truncate();
@@ -38,12 +38,11 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,          // 50 customers with lat/lng locations
             UserLocationSeeder::class,      // after UserSeeder
             DiscountSeeder::class,          // Populate discounts first
-            DeliveryZoneSeeder::class,
-            DeliveryProviderSeeder::class,
-            ProvinceSeeder::class,
+            // DeliveryZoneSeeder::class,
+            // ProvinceSeeder::class,
             OrderSeeder::class,             // 120+ orders with map coordinates
             DeliveryScheduleSeeder::class,
-            MarqueeSeeder::class,           // Telegram connect marquee messages
+            // MarqueeSeeder::class,           // Telegram connect marquee messages
         ]);
     }
 }

@@ -93,7 +93,7 @@ class TelegramService
             : null,
             "✅ *Total: \${$order->total}*",
             '',
-            '🕐 ' . $order->created_at->format('d M Y, H:i'),
+            '🕐 ' . $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
         ], fn($line) => $line !== null);
 
         $this->send(implode("\n", $lines));
@@ -114,7 +114,7 @@ class TelegramService
             '',
             "📦 Order `#{$order->order_id}` has been {$verb}.",
             '👤 Customer: ' . ($order->user?->username ?? 'Guest'),
-            '🕐 Confirmed: ' . now()->format('d M Y, H:i'),
+            '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
         ]);
 
         $this->send($message);
@@ -182,7 +182,7 @@ class TelegramService
             "✅ *Total Paid: \${$order->total} USD*",
             "🔑 APV: `{$apv}`",
             '',
-            '🕐 ' . now()->format('d M Y, H:i'),
+            '🕐 ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
         ], fn($l) => $l !== null);
 
         $this->send(implode("\n", $lines));

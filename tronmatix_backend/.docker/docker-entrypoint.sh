@@ -33,8 +33,8 @@ echo ">>> Running migrations..."
 php artisan migrate --force || echo "⚠️ migrate failed — check DB"
 
 # ── Seed delivery zones, provinces & marquees (idempotent — deletes + re-inserts) ─
-# echo ">>> Seeding delivery zones..."
-# php artisan db:seed --class=DeliveryZoneSeeder --force || echo "⚠️ DeliveryZoneSeeder failed"
+echo ">>> Seeding Database..."
+php artisan db:seed --force || echo "⚠️ DatabaseSeeder failed"
 
 # echo ">>> Seeding provinces..."
 # php artisan db:seed --class=ProvinceSeeder --force || echo "⚠️ ProvinceSeeder failed"

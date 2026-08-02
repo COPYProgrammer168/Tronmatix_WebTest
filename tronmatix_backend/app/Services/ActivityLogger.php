@@ -185,12 +185,38 @@ class ActivityLogger
     public static function loginSuccess($user, $request = null): void
     {
         static::log([
-            'action'      => 'login_success',
-            'entity_type' => get_class($user),
-            'entity_id'   => $user->id,
-            'entity_name' => $user->name ?? $user->email,
-            'details'     => ['guard' => $request->guard ?? 'unknown'],
+            'action'        => 'login_success',
+            'entity_type'   => get_class($user),
+            'entity_id'     => $user->id,
+            'entity_name'   => $user->name ?? $user->email,
+            // Resolve the real guard from the user class — never rely on a
+            // hand-set $request->guard, which no login path currently provides.
+            'actor_override' => [self::guardLabelFor($user), $user->name ?? $user->email ?? 'User'],
+            'details'       => [
+                'guard' => self::guardNameFor($user),
+                'role'  => $user->role ?? null,
+            ],
         ], $request);
+    }
+
+    /**
+     * Map a user model to its canonical guard name ('admin' | 'staff' | 'web').
+     */
+    private static function guardNameFor($user): string
+    {
+        if ($user instanceof \App\Models\Admin) return 'admin';
+        if ($user instanceof \App\Models\Staff) return 'staff';
+        return 'web';
+    }
+
+    /**
+     * Human-friendly actor label for a user model ('Admin' | 'Staff' | 'User').
+     */
+    private static function guardLabelFor($user): string
+    {
+        if ($user instanceof \App\Models\Admin) return 'Admin';
+        if ($user instanceof \App\Models\Staff) return 'Staff';
+        return 'User';
     }
 
     public static function loginFailed(string $email, $request = null, ?string $reason = null): void
@@ -213,6 +239,32 @@ class ActivityLogger
             'entity_type' => 'Auth',
             'entity_name' => $identifier,
             'details'     => ['reason' => 'too_many_attempts'],
+        ], $request);
+    }
+
+    /**
+     * Password-reset link requested for an admin/staff account (email sent).
+     */
+    public static function passwordResetRequested(string $email, string $mode, $request = null): void
+    {
+        static::log([
+            'action'      => 'password_reset_requested',
+            'entity_type' => $mode === 'admin' ? 'Admin' : 'Staff',
+            'entity_name' => $email,
+            'details'     => ['mode' => $mode, 'status' => 'link_sent'],
+        ], $request);
+    }
+
+    /**
+     * Password-reset attempt failed (account not found / no match).
+     */
+    public static function passwordResetFailed(string $email, string $mode, ?string $reason = null, $request = null): void
+    {
+        static::log([
+            'action'      => 'password_reset_failed',
+            'entity_type' => $mode === 'admin' ? 'Admin' : 'Staff',
+            'entity_name' => $email,
+            'details'     => ['mode' => $mode, 'reason' => $reason ?? 'account_not_found'],
         ], $request);
     }
 }

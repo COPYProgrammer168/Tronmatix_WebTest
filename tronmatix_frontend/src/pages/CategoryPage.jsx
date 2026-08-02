@@ -93,16 +93,28 @@ export function CategoryPage() {
   }, [category, sub, searchParams])
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 py-6" style={{ background: bg, minHeight: '60vh' }}>
+    <div
+      className="max-w-[1280px] mx-auto px-4 py-6"
+      style={{ background: bg, minHeight: "60vh" }}
+    >
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-4" style={{ fontSize: 14, color: textSub }}>
-        <Link to="/" className="hover:text-primary">{t('nav.home')}</Link>
+      <div
+        className="flex items-center gap-2 mb-4"
+        style={{ fontSize: 14, color: textSub }}
+      >
+        <Link to="/" className="hover:text-primary">
+          {t("nav.home")}
+        </Link>
         <span>›</span>
         {isSearch ? (
-          <span className="text-primary font-bold">{t('common.searchResults')}</span>
+          <span className="text-primary font-bold">
+            {t("common.searchResults")}
+          </span>
         ) : sub ? (
           <>
-            <Link to={parentPath} className="hover:text-primary">{parentLabel}</Link>
+            <Link to={parentPath} className="hover:text-primary">
+              {parentLabel}
+            </Link>
             <span>›</span>
             <span className="text-primary font-bold">{label}</span>
           </>
@@ -111,14 +123,50 @@ export function CategoryPage() {
         )}
       </div>
 
-      {/* Header banner */}
-      <div className="flex items-center mb-6">
-        <div className="flex-1 h-12 rounded-l" style={{ background: dark ? '#374151' : '#000' }} />
-        <div className="bg-primary text-white font-bold px-10 py-3 uppercase"
-          style={{ fontFamily: isKhmer ? 'Kh-Koulen, sans-serif' : 'HurstBagod, Rajdhani, sans-serif', fontSize: 20, letterSpacing: isKhmer ? 0 : 2 }}>
-          {isSearch
-            ? (qParam ? `🔍 ${qParam.toUpperCase()}` : `🔍 ${t('common.search')}`)
-            : (label || t('common.allProducts'))}
+      {/* Header banner - ribbon flag style */}
+      <div className="relative w-full mb-6" style={{ height: 48 }}>
+        <div
+          className="h-12 rounded-l"
+          style={{
+            width: "calc(100% - 5px)",
+            background: dark ? "#374151" : "#2d2d2e",
+            clipPath: "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)",
+          }}
+        />
+
+        <div className="absolute right-0 h-12" style={{ top: -8 }}>
+          <div
+            className="relative h-full flex items-center bg-primary text-white font-bold px-10 uppercase"
+            style={{
+              fontFamily: isKhmer
+                ? "Kh-Koulen, sans-serif"
+                : "HurstBagod, Rajdhani, sans-serif",
+              fontSize: 22,
+              letterSpacing: isKhmer ? 0 : 2,
+              clipPath:
+                "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+            }}
+          >
+            {isSearch
+              ? qParam
+                ? `🔍 ${qParam.toUpperCase()}`
+                : `🔍 ${t("common.search")}`
+              : label || t("common.allProducts")}
+          </div>
+
+          {/* Folded corner - now at top-left of the ribbon */}
+          {/* Folded corner - tucked at top-left of the ribbon */}
+          <div
+            className="absolute"
+            style={{
+              left: 0,
+              bottom: "calc(100% - 8px)",
+              width: 0,
+              height: 0,
+              borderLeft: "10px solid transparent",
+              borderBottom: `8px solid ${dark ? "#1f2937" : "#7a5a00"}`,
+            }}
+          />
         </div>
       </div>
 
@@ -128,35 +176,61 @@ export function CategoryPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4" style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif', fontSize: 15, color: textSub }}>
+          <p
+            className="mb-4"
+            style={{
+              fontFamily: isKhmer
+                ? "Kdam Thmor Pro, sans-serif"
+                : "Rajdhani, sans-serif",
+              fontSize: 15,
+              color: textSub,
+            }}
+          >
             {isSearch && products.length === 0
-              ? `${t('common.searchNo')} "${qParam}"`
+              ? `${t("common.searchNo")} "${qParam}"`
               : products.length === 1
-                ? t('common.showingProducts', { count: products.length })
-                : t('common.showingProductsPlural', { count: products.length })}
+                ? t("common.showingProducts", { count: products.length })
+                : t("common.showingProductsPlural", { count: products.length })}
           </p>
 
           {isSearch && products.length === 0 && (
-            <div className="flex flex-col items-center py-20 gap-4" style={{ color: textSub }}>
+            <div
+              className="flex flex-col items-center py-20 gap-4"
+              style={{ color: textSub }}
+            >
               <div style={{ fontSize: 48 }}>🔍</div>
-              <p style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif', fontSize: 18 }}>
-                {t('common.searchNo')} <strong style={{ color: text }}>"{qParam}"</strong>
+              <p
+                style={{
+                  fontFamily: isKhmer
+                    ? "Kdam Thmor Pro, sans-serif"
+                    : "Rajdhani, sans-serif",
+                  fontSize: 18,
+                }}
+              >
+                {t("common.searchNo")}{" "}
+                <strong style={{ color: text }}>"{qParam}"</strong>
               </p>
-              <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>
-                {t('common.backToHome')}
+              <Link
+                to="/"
+                className="text-primary font-bold hover:underline"
+                style={{ fontSize: 15 }}
+              >
+                {t("common.backToHome")}
               </Link>
             </div>
           )}
 
           {products.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {products.map((p, i) => <ProductCard key={p.id || i} product={p} />)}
+              {products.map((p, i) => (
+                <ProductCard key={p.id || i} product={p} />
+              ))}
             </div>
           )}
         </>
       )}
     </div>
-  )
+  );
 }
 
 export default CategoryPage

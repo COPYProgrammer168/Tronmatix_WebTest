@@ -6,6 +6,8 @@ import { useCart } from '../context/CartContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { useTheme } from '../context/ThemeContext'
 import { useLang } from '../context/LanguageContext'
+import { useMobileMenu } from '../context/MobileMenuContext'
+import LogoutConfirmModal from './LogoutConfirmModal'
 import logo from '../assets/logo.png'
 
 const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
@@ -254,13 +256,14 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
 export default function Navbar({ onAuthOpen }) {
   const [openDrop, setOpenDrop] = useState(null)
   const [openSub, setOpenSub] = useState(null)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const { isMobileMenuOpen: mobileOpen, setIsMobileMenuOpen } = useMobileMenu()
   const [mobileSub, setMobileSub] = useState(null)
   const [mobileSubItem, setMobileSubItem] = useState(null)
   const [search, setSearch] = useState('')
   const [userMenu, setUserMenu] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [hoveredNav, setHoveredNav] = useState(null)
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const { user, logout, ready } = useAuth()
   const { items, setCartOpen } = useCart()
   const { favorites } = useFavorites()
@@ -321,7 +324,7 @@ export default function Navbar({ onAuthOpen }) {
   }, [mobileOpen])
 
   useEffect(() => {
-    setMobileOpen(false)
+    setIsMobileMenuOpen(false)
     setMobileSub(null)
     document.body.style.overflow = ''
   }, [location.pathname])
@@ -335,7 +338,7 @@ export default function Navbar({ onAuthOpen }) {
   const handleSearch = e => {
     e.preventDefault()
     const q = search.trim().toLowerCase()
-    if (q) { navigate(`/category/search?q=${encodeURIComponent(q)}`); setSearch(''); setMobileOpen(false) }
+    if (q) { navigate(`/category/search?q=${encodeURIComponent(q)}`); setSearch(''); setIsMobileMenuOpen(false) }
   }
 
   const isActive = (item) => {
@@ -413,7 +416,7 @@ export default function Navbar({ onAuthOpen }) {
           ))}
           <hr style={{ borderColor: ddBorder, margin: '4px 0' }} />
           <button
-            onClick={() => { logout(); setUserMenu(false) }}
+            onClick={() => { setUserMenu(false); setLogoutOpen(true) }}
             className="w-full text-left px-4 py-2 text-red-500 transition-colors"
             style={{ fontFamily: navFont, fontSize: 15 }}
             onMouseEnter={e => e.currentTarget.style.background = ddHover}
@@ -427,7 +430,7 @@ export default function Navbar({ onAuthOpen }) {
 
   return (
     <>
-      <header ref={headerRef} className="sticky top-0 z-50 transition-all duration-300" style={{
+      <header ref={headerRef} className="w-full sticky top-0 z-50 transition-all duration-300" style={{
         background: dark ? 'rgba(17, 24, 39, 0.75)' : 'rgba(255, 255, 255, 0.75)',
         backdropFilter: 'blur(12px) saturate(180%)',
         WebkitBackdropFilter: 'blur(12px) saturate(180%)',
@@ -437,12 +440,12 @@ export default function Navbar({ onAuthOpen }) {
 
         {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
         <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-          <div className="max-w-[1500px] mx-auto px-4 flex items-center gap-1" style={{ height: 70 }}>
+          <div className="w-full max-w-[1500px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
             <Link to="/" className="flex-shrink-0">
               <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
             </Link>
 
-            <div className="flex flex-col gap-0.5 ml-2">
+            <div className="flex flex-col gap-0.5 ml-2 flex-shrink-0">
               <a href="tel:0967333725" className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="#F97316" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -554,7 +557,7 @@ export default function Navbar({ onAuthOpen }) {
                     ))}
                     <hr style={{ borderColor: ddBorder, margin: '2px 0' }} />
                     <button
-                      onClick={() => { logout(); setUserMenu(false) }}
+                      onClick={() => { setUserMenu(false); setLogoutOpen(true) }}
                       className="w-full text-left px-3 py-2 text-red-500 font-semibold"
                       style={{ fontFamily: navFont, fontSize: 14 }}
                       onMouseEnter={e => e.currentTarget.style.background = ddHover}
@@ -579,7 +582,7 @@ export default function Navbar({ onAuthOpen }) {
               <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                 onMouseLeave={e => e.currentTarget.style.color = textColor}
-                onClick={() => setMobileOpen(true)}>
+                onClick={() => setIsMobileMenuOpen(true)}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -670,7 +673,7 @@ export default function Navbar({ onAuthOpen }) {
                 <button className="xl:hidden p-2" style={{ color: textColor, transition: 'color 0.15s' }}
                   onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                   onMouseLeave={e => e.currentTarget.style.color = textColor}
-                  onClick={() => setMobileOpen(true)}>
+                  onClick={() => setIsMobileMenuOpen(true)}>
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
@@ -736,7 +739,7 @@ export default function Navbar({ onAuthOpen }) {
                 WebkitBackdropFilter: 'blur(4px)',
                 zIndex: 80,
               }}
-              onClick={() => setMobileOpen(false)}
+              onClick={() => setIsMobileMenuOpen(false)}
             />
           )}
           <div ref={drawerRef}
@@ -807,12 +810,12 @@ export default function Navbar({ onAuthOpen }) {
                     </>
                   ) : (
                     <div className="flex gap-2 flex-wrap">
-                      <button onClick={() => { onAuthOpen('login'); setMobileOpen(false) }}
+                      <button onClick={() => { onAuthOpen('login'); setIsMobileMenuOpen(false) }}
                         className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
                         style={{ fontFamily: navFont, fontSize: 13 }}>
                         {t('nav.login').toUpperCase()}
                       </button>
-                      <button onClick={() => { onAuthOpen('register'); setMobileOpen(false) }}
+                      <button onClick={() => { onAuthOpen('register'); setIsMobileMenuOpen(false) }}
                         className="border-2 border-primary px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
                         style={{ fontFamily: navFont, fontSize: 13, color: '#F97316' }}>
                         {t('nav.register').toUpperCase()}
@@ -826,7 +829,7 @@ export default function Navbar({ onAuthOpen }) {
                   <ThemeToggle />
                   <LanguageToggle />
                   <button
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className="w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0"
                     style={{ background: dark ? '#374151' : '#f3f4f6', color: textColor, fontSize: 18 }}>
                     ✕
@@ -872,7 +875,7 @@ export default function Navbar({ onAuthOpen }) {
                           ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
                           : item.path;
                         navigate(dest);
-                        setMobileOpen(false);
+                        setIsMobileMenuOpen(false);
                       }
                     }}>
                     <span
@@ -896,7 +899,7 @@ export default function Navbar({ onAuthOpen }) {
                           to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
                           className="block px-8 py-2 font-bold text-primary border-b mb-1"
                           style={{ fontSize: 14, borderColor: drawerBorder }}
-                          onClick={() => setMobileOpen(false)}>
+                          onClick={() => setIsMobileMenuOpen(false)}>
                           ALL {item.label}
                         </Link>
                         {/* State for all sub-category expansions */}
@@ -913,7 +916,7 @@ export default function Navbar({ onAuthOpen }) {
                                 <Link to={path}
                                   className="block px-8 py-2 font-bold flex-1"
                                   style={{ fontSize: 14, color: '#F97316', transition: 'color 0.15s' }}
-                                  onClick={() => setMobileOpen(false)}>{label}</Link>
+                                  onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
                                 {isObj && brands.length > 0 && (
                                   <button
                                     className="px-4 py-2"
@@ -947,7 +950,7 @@ export default function Navbar({ onAuthOpen }) {
                                       style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
                                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                                       onMouseLeave={e => e.currentTarget.style.color = subTextColor}
-                                      onClick={() => setMobileOpen(false)}>- {brand}</Link>
+                                      onClick={() => setIsMobileMenuOpen(false)}>- {brand}</Link>
                                   ))}
                                 </div>
                               )}
@@ -973,7 +976,7 @@ export default function Navbar({ onAuthOpen }) {
                     { to: '/orders', labelKey: 'nav.myOrders', icon: '📦' },
                     { to: '/favorites', label: 'Bookmark', icon: '🔖' },
                   ].map(({ to, labelKey, label, icon }) => (
-                    <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                    <Link key={to} to={to} onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
                       style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.background = ddHover}
@@ -982,7 +985,7 @@ export default function Navbar({ onAuthOpen }) {
                     </Link>
                   ))}
                 </div>
-                <button onClick={() => { logout(); setMobileOpen(false) }}
+                <button onClick={() => { setIsMobileMenuOpen(false); setLogoutOpen(true) }}
                   className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg"
                   style={{ fontFamily: navFont, fontSize: 15 }}>
                   🚪 {t('nav.logout')}
@@ -1000,6 +1003,12 @@ export default function Navbar({ onAuthOpen }) {
         to   { transform: translateX(0) }
       }
     `}</style>
+
+      <LogoutConfirmModal
+        open={logoutOpen}
+        onCancel={() => setLogoutOpen(false)}
+        onConfirm={() => { setLogoutOpen(false); logout() }}
+      />
     </>
   )
 }

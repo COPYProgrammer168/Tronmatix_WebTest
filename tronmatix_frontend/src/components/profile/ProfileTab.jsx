@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import axiosClient from '../../lib/axios'
 import { useLang } from '../../context/LanguageContext'
+import { useAuth } from '../../context/AuthContext'
 import AvatarUpload from './AvatarUpload'
 import TelegramConnect from './TelegramConnect'
 
@@ -41,6 +42,7 @@ const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, m
 
 export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify, dark }) {
   const { t, isKhmer } = useLang()
+  const { refreshUser } = useAuth()
   const khFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
   const khBodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
   // Bind context-aware helpers
@@ -188,8 +190,10 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       <TelegramConnect
         user={localUser}
         dark={dark ?? false}
-        onUpdate={(data) => {
+        onUpdate={async (data) => {
           setLocalUser(prev => ({ ...prev, ...data }))
+          // Sync the auth-context user so TelegramConnectMarquee hides immediately
+          await refreshUser?.()
           onSaved?.()
         }}
         notify={notify}

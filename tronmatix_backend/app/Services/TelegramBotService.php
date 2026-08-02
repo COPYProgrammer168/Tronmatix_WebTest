@@ -233,7 +233,7 @@ class TelegramBotService
             $id = $this->e($order->order_id ?? (string) $order->id);
             $total = $this->e((string) $order->total);
             $status = $this->e(ucfirst($order->status));
-            $date = $this->e($order->created_at->format('d M Y'));
+            $date = $this->e($order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y'));
 
             $lines[] = "{$emoji} <code>#{$id}</code> — \${$total}";
             $lines[] = "   Status: <b>{$status}</b>";
@@ -273,7 +273,7 @@ class TelegramBotService
         $id = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
         $method = $this->e(strtoupper($order->payment_method ?? ''));
-        $placed = $this->e($order->created_at->format('d M Y, H:i'));
+        $placed = $this->e($order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'));
         $status = $this->e(ucfirst($order->status));
         $itemLines = $order->items->map(fn($i) => '  • ' . $this->e($i->name) . '  ×' . $i->qty)->join("\n");
 
@@ -305,7 +305,7 @@ class TelegramBotService
             return;
 
         $role = $this->e(ucfirst($user->role ?? 'customer'));
-        $since = $this->e($user->created_at->format('d M Y'));
+        $since = $this->e($user->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y'));
         $uname = $this->e($user->username ?? 'N/A');
         $email = $this->e($user->email ?? '');
 
@@ -812,6 +812,6 @@ class TelegramBotService
 
     private function ts(): string
     {
-        return now()->format('d M Y, H:i');
+        return now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
     }
 }

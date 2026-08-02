@@ -24,7 +24,7 @@
             'desc' => __('dashboard.staff.fullSystemOwner'),
         ],
         'admin' => [
-            'label' => __('dashboard.staff.inviteAdmin'),
+            'label' => __('dashboard.staff.admin'),
             'color' => '#fb923c',
             'icon' => '🛡️',
             'desc' => __('dashboard.staff.fullAccess'),
@@ -260,7 +260,7 @@
             <button class="tab-btn {{ $activeTab === 'admins' ? 'tab-active' : '' }}" onclick="switchTab('admins')"
                 style="padding:9px 24px;border-radius:9px;border:none;cursor:pointer;font-family:Rajdhani, var(--font-kh), sans-serif;
                    font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1.5px;transition:all .2s;">
-                🛡️ {{ strtoupper(__('dashboard.staff.inviteAdmin')) }}S ({{ $admins->count() }})
+                🛡️ {{ strtoupper(__('dashboard.staff.admin')) }} ({{ $admins->count() }})
             </button>
         @endif
     </div>
@@ -1171,7 +1171,7 @@
             });
             // Update invite button label
             document.getElementById('invite-btn-label').textContent = tab === 'admins'
-              ? '{{ strtoupper(__("dashboard.staff.inviteAdmin")) }}'
+              ? '{{ strtoupper(__("dashboard.staff.admin")) }}'
               : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
             // Update invite form action & role sections
             const form = document.getElementById('invite-form');
@@ -1187,7 +1187,7 @@
             const hintSec = document.getElementById('staff-invite-hint');
             if (hintSec) hintSec.style.display = tab === 'staff' ? '' : 'none';
             document.getElementById('invite-modal-title').textContent = tab === 'admins'
-              ? '{{ strtoupper(__("dashboard.staff.inviteAdmin")) }}'
+              ? '{{ strtoupper(__("dashboard.staff.admin")) }}'
               : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
             document.getElementById('invite-target').value = tab;
         }

@@ -64,7 +64,7 @@ export function StatusBadge({ status, fulfillmentType }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border ${c.bg} ${c.text} ${c.border}`}
-      style={{ fontSize: 12 }}
+      style={{ fontSize: isKhmer ? 12 : 13 }}
     >
       <span className={`w-2 h-2 rounded-full ${c.dot}`} />
       {label}
@@ -76,14 +76,14 @@ export function PaymentStatusBadge({ paymentMethod, paymentStatus, fulfillmentTy
   const isPickup = fulfillmentType === "pickup";
   if (paymentMethod === "cash")
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-gray-50 text-gray-500 border-gray-200" style={{ fontSize: 12 }}>
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-gray-50 text-gray-500 border-gray-200" style={{ fontSize: isKhmer ? 12 : 13 }}>
         {isPickup ? "💵 PAY AT STORE" : "💵 COD"}
       </span>
     );
   if (paymentStatus === "paid" || paymentStatus === "success")
     return (
       <>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-green-50 text-green-600 border-green-200" style={{ fontSize: 12, animation: 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)' }}>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-green-50 text-green-600 border-green-200" style={{ fontSize: isKhmer ? 12 : 13, animation: 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)' }}>
           ✅ PAID
         </span>
         <style>{`
@@ -95,6 +95,6 @@ export function PaymentStatusBadge({ paymentMethod, paymentStatus, fulfillmentTy
       </>
     );
   if (paymentStatus === "failed")
-    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-red-50 text-red-500 border-red-200" style={{ fontSize: 12 }}>❌ FAILED</span>;
-  return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-yellow-50 text-yellow-600 border-yellow-200 animate-pulse" style={{ fontSize: 12 }}>⏳ PENDING</span>;
+    return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-red-50 text-red-500 border-red-200" style={{ fontSize: isKhmer ? 12 : 13 }}>❌ FAILED</span>;
+  return <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold border bg-yellow-50 text-yellow-600 border-yellow-200 animate-pulse" style={{ fontSize: isKhmer ? 12 : 13 }}>⏳ PENDING</span>;
 }

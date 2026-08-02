@@ -12,6 +12,7 @@ import {
   RecaptchaVerifier,
 } from 'firebase/auth'
 import { auth } from '../../lib/firebase'
+import { toE164Phone, phoneValidationMessage } from '../../lib/phone'
 import axiosClient from '../../lib/axios'
 import { useLang } from '../../context/LanguageContext'
 
@@ -59,26 +60,19 @@ export default function PhoneVerify({ user, dark, notify, onVerified }) {
 
   const handleSendCode = async () => {
     setError(null)
-    if (!/^\+?[0-9\s\-]{7,20}$/.test(phone.trim())) {
-      setError(isKhmer ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ' : 'Please enter a valid phone number.')
+    // Show the raw input as-is in the field; only normalize here on submit.
+    const raw = phone.trim()
+    const e164 = toE164Phone(raw)
+    const invalidMsg = phoneValidationMessage(raw, isKhmer)
+    if (invalidMsg || !e164) {
+      setError(invalidMsg || (isKhmer ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ' : 'Please enter a valid phone number.'))
       return
     }
     setBusy(true)
     try {
       const verifier = makeVerifier()
-      // Firebase needs international format with country code.
-      //   012 345 678 → +855 12 345 678 (Cambodian local format)
-      const p = phone.trim()
-      const digits = p.replace(/[^\d+]/g, '')
-      let formatted
-      if (digits.startsWith('+')) {
-        formatted = digits
-      } else if (digits.startsWith('0')) {
-        formatted = '+855' + digits.slice(1)
-      } else {
-        formatted = '+855' + digits
-      }
-      const confirmation = await signInWithPhoneNumber(auth, formatted, verifier)
+      // Strict E.164: +855XXXXXXXXX (no spaces)
+      const confirmation = await signInWithPhoneNumber(auth, e164, verifier)
       confirmationRef.current = confirmation
       setStep('code')
     } catch (e) {

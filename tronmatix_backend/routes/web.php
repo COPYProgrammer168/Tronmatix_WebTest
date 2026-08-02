@@ -64,8 +64,10 @@ Route::prefix('dashboard')->name('dashboard.')
         // Named dashboard.password.* (no collision with Fortify's customer
         // password.* routes at /forgot-password and /reset-password/{token}).
         Route::get('/password/email', [PasswordResetController::class, 'showForgotForm'])->name('password.email');
+        // No route-level throttle here — sendResetLink() does its own cooldown +
+        // per-IP attempt limiting with friendly countdown feedback (see
+        // config/security.php). throttle:5,1 would 429 before those kick in.
         Route::post('/password/email', [PasswordResetController::class, 'sendResetLink'])
-            ->middleware('throttle:5,1')
             ->name('password.email.post');
         Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
         Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])

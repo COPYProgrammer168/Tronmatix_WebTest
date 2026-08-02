@@ -402,7 +402,7 @@ return [
         'success' => 'ជោគជ័យ',
         'error' => 'កំហុស',
         'staffMembers' => 'បុគ្គលិក',
-        'inviteAdmin' => 'អញ្ជើញអ្នកគ្រប់គ្រង',
+        'admin' => 'អ្នកគ្រប់គ្រង',
         'superAdmin' => 'Super Admin',
         'fullAccess' => 'សិទ្ធិពេញលេញ គ្រប់គ្រងបុគ្គលិក និងការកំណត់',
         'fullSystemOwner' => 'សិទ្ធិគ្រប់គ្រងប្រព័ន្ធទាំងមូល',
@@ -552,7 +552,7 @@ return [
     // ── Role names ──────────────────────────────────────────────────────────
     'roles' => [
         'superadmin' => 'Super Admin',
-        'admin' => 'អ្នកគ្រប់គ្រង',
+        'admin' => 'Admin',
         'editor' => 'អ្នកកែសម្រួល',
         'seller' => 'អ្នកលក់',
         'delivery' => 'ដឹកជញ្ជូន',

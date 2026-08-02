@@ -78,4 +78,9 @@ class Admin extends Authenticatable
             : substr($this->name ?? 'AD', 0, 2)
         );
     }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPassword($token));
+    }
 }

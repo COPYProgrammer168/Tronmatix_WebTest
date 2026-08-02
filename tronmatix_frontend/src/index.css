@@ -146,6 +146,15 @@ body.lang-km [style*="Kh_Jrung_Thom"] {
   text-transform: none !important;
 }
 
+/* Specifications Table header — keep HurstBagod in Khmer mode too.
+   Scoped to the .specs-header class ONLY, so every other element with
+   inline HurstBagod keeps its normal Khmer fallback (heading font). */
+body.lang-km .specs-header {
+  font-family: 'HurstBagod', var(--font-kh-heading), sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
 /* Elements with inline Kdam Thmor Pro → stay as body font */
 body.lang-km [style*="Kdam Thmor Pro"] {
   font-family: var(--font-kh-body) !important;

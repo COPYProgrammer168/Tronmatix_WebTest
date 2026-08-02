@@ -143,14 +143,14 @@ export default function FavoritesPage() {
                 </Link>
                 <div className="p-3 text-center flex flex-col flex-1">
                   <Link to={`/product/${product.slug || product.id}`}>
-                    <h3
-                      className="font-bold mb-1 hover:text-primary transition-colors"
-                      style={{
-                        fontFamily: headingFont,
-                        fontSize: 12,
-                        color: text,
-                      }}
-                    >
+                     <h3
+                       className="font-bold mb-1 hover:text-primary transition-colors"
+                       style={{
+                         fontFamily: headingFont,
+                         fontSize: isKhmer ? 13 : 14,
+                         color: text,
+                       }}
+                     >
                       {product.name}
                     </h3>
                   </Link>
@@ -161,28 +161,28 @@ export default function FavoritesPage() {
                     {isAskPrice ? '$$$' : displayPrice(product.price)}
                   </div>
                   {isAskPrice ? (
-                    <Link to={`/product/${product.slug || product.id}`}
-                      className="mt-auto w-full text-white py-2 rounded font-bold transition-colors"
-                      style={{
-                        fontFamily: bodyFont,
-                        fontSize: 13,
-                        letterSpacing: 1,
-                        background: '#111827',
-                      }}
-                    >
-                      {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'VIEW DETAIL'}
-                    </Link>
+                     <Link to={`/product/${product.slug || product.id}`}
+                       className="mt-auto w-full text-white py-2 rounded font-bold transition-colors"
+                       style={{
+                         fontFamily: bodyFont,
+                         fontSize: isKhmer ? 13 : 14,
+                         letterSpacing: 1,
+                         background: '#111827',
+                       }}
+                     >
+                       {isKhmer ? 'មើលព័ត៌មានលម្អិត' : 'VIEW DETAIL'}
+                     </Link>
                   ) : (
-                    <button
-                      onClick={() => addItem(product)}
-                      className="mt-auto w-full text-white py-2 rounded font-bold hover:bg-primary transition-colors"
-                      style={{
-                        fontFamily: bodyFont,
-                        fontSize: 13,
-                        letterSpacing: 1,
-                        background: btnBg,
-                      }}
-                    >
+                     <button
+                       onClick={() => addItem(product)}
+                       className="mt-auto w-full text-white py-2 rounded font-bold hover:bg-primary transition-colors"
+                       style={{
+                         fontFamily: bodyFont,
+                         fontSize: isKhmer ? 13 : 14,
+                         letterSpacing: 1,
+                         background: btnBg,
+                       }}
+                     >
                       {t("favorites.addToCart")}
                     </button>
                   )}

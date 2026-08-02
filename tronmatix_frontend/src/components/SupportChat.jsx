@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from '../lib/axios';
 import { useCart } from '../context/CartContext';
+import { useBottomNavVisible } from '../hooks/useBottomNavVisible';
+import { useMobileMenu } from '../context/MobileMenuContext';
 
 const SUGGESTIONS = [
   { label: '🖥 Build me a PC',           text: 'Can you help me build a gaming PC? What budget should I set?' },
@@ -205,6 +207,8 @@ export default function SupportChat() {
   const inputRef  = useRef(null)
   const textareaRef = useRef(null)
   const { cartOpen } = useCart();
+  const { isVisible: bottomNavVisible } = useBottomNavVisible();
+  const { isMobileMenuOpen, isLoginModalOpen } = useMobileMenu();
 
   useEffect(() => {
     if (cartOpen) setOpen(false);
@@ -498,8 +502,10 @@ export default function SupportChat() {
       </div>
 
       {/* ── Floating toggle button and menu ───────────────────────────────────── */}
-      {!cartOpen && (
-        <div style={{ position: 'fixed', bottom: 20, right: 16, zIndex: 200, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+      {!cartOpen && !isMobileMenuOpen && !isLoginModalOpen && (
+         <div
+           className={`fixed right-4 z-[200] flex flex-col items-center gap-3 ${bottomNavVisible ? 'bottom-20 md:bottom-5' : 'bottom-5'}`}
+         >
           {showMenu && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 4 }}>
               {/* Chatbot Button */}

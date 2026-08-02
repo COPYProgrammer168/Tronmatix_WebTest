@@ -7,11 +7,14 @@ import { LocationProvider } from "./context/LocationContext";
 import { DiscountProvider } from "./context/DiscountContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LanguageProvider } from "./context/LanguageContext";
+import { MobileMenuProvider, useMobileMenu } from "./context/MobileMenuContext";
 import { useTheme } from "./context/ThemeContext";
 import { useLang } from "./context/LanguageContext";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ErrorBoundary from "./components/ErrorBoundary";
+import BottomNav from "./components/BottomNav";
 import CartSlider from "./components/CartSlider";
 import SupportChat from "./components/SupportChat";
 import Notification from "./components/Notification";
@@ -60,6 +63,13 @@ function AppContent() {
   const { isKhmer } = useLang();
   const location    = useLocation();
   const { notification, setNotification } = useCart();
+  const { setIsLoginModalOpen } = useMobileMenu();
+
+  // Sync the login/register modal open state into shared context so floating
+  // buttons (scroll-to-top, chat bubble) can hide while the modal is open.
+  useEffect(() => {
+    setIsLoginModalOpen(!!authMode);
+  }, [authMode, setIsLoginModalOpen]);
 
   const isPortal =
     location.pathname.startsWith("/staff") ||
@@ -118,6 +128,7 @@ function AppContent() {
       )}
 
       <main className="flex-1">
+        <ErrorBoundary>
         <Suspense fallback={<PageSpinner />}>
           <Routes>
             <Route path="/"                        element={<HomePage />} />
@@ -151,8 +162,10 @@ function AppContent() {
             />
           </Routes>
         </Suspense>
+        </ErrorBoundary>
       </main>
 
+      {!isPortal && <BottomNav />}
       {!isPortal && <Footer />}
     </div>
   );
@@ -168,7 +181,9 @@ export default function App() {
               <FavoritesProvider>
                 <LocationProvider>
                   <DiscountProvider>
-                    <AppContent />
+                    <MobileMenuProvider>
+                      <AppContent />
+                    </MobileMenuProvider>
                   </DiscountProvider>
                 </LocationProvider>
               </FavoritesProvider>

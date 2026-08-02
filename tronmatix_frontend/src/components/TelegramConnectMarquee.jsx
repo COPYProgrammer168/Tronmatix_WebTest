@@ -6,13 +6,13 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function TelegramConnectMarquee() {
   const { user } = useAuth()
+  if (!user || user.telegram_connected) return null
+
   const { isKhmer } = useLang()
   const location = useLocation()
   const [text, setText] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
   const trackRef = useRef(null)
-
-  if (!user || user.telegram_connected) return null
 
   useEffect(() => {
     const route = location.pathname.replace(/^\//, '') || '/'

@@ -104,4 +104,9 @@ class User extends Authenticatable
             ->whereNotIn('status', [Order::STATUS_CANCELLED])
             ->sum('total');
     }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPassword($token));
+    }
 }

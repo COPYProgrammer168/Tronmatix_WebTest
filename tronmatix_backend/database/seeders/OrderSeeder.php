@@ -88,8 +88,8 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        // ── Create 120+ orders spread across the last 12 months ──────────────
-        $orderCount = 120;
+        // ── Create orders spread across the last 12 months ──────────────
+        $orderCount = 200;
 
         for ($i = 0; $i < $orderCount; $i++) {
             $orderDate = Carbon::now()
