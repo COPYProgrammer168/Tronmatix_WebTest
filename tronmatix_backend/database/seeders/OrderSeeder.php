@@ -73,6 +73,12 @@ class OrderSeeder extends Seeder
 
     public function run(): void
     {
+        // ── Reset orders each run so the count stays fixed (no accumulation) ──
+        // Re-seeding should produce exactly `$orderCount` orders every time,
+        // not grow on top of previous runs.
+        \App\Models\OrderItem::query()->delete();
+        \App\Models\Order::query()->delete();
+
         $users = User::with('locations')->get();
         $products = Product::all();
         $discounts = \App\Models\Discount::where('is_active', true)->get();
