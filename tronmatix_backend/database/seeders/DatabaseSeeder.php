@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         // ── Run seeders in dependency order ───────────────────────────────────
         $this->call([
             // AdminSeeder::class,
-            // StaffSeeder::class,
+            StaffSeeder::class,
             UserSeeder::class,
             CustomerSeeder::class,          // 50 customers with lat/lng locations
             UserLocationSeeder::class,      // after UserSeeder

@@ -88,27 +88,20 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        // ── Create orders spread across the last 12 months ──────────────
-        // ~15% land in the CURRENT month (a modest amount, similar to what the
-        // other months each get) so the current month shows some orders too;
-        // the rest spread across the prior 11 months.
-        $orderCount = 200;
+        // ── Create orders spread across ALL of 2026 ─────────────────────
+        // Every month of the year gets a share so the year-long charts show
+        // data across Jan–Dec 2026 (current month included).
+        $orderCount = 100;
 
         for ($i = 0; $i < $orderCount; $i++) {
-            if (rand(0, 100) < 10) {
-                // Current month — within the last N days of this month.
-                $orderDate = Carbon::now()
-                    ->subDays(rand(0, min(now()->day - 1, 28)))
-                    ->subHours(rand(0, 23))
-                    ->subMinutes(rand(0, 59));
-            } else {
-                // Prior 11 months.
-                $orderDate = Carbon::now()
-                    ->subMonths(rand(1, 11))
-                    ->subDays(rand(0, 28))
-                    ->subHours(rand(0, 23))
-                    ->subMinutes(rand(0, 59));
-            }
+            // Random month in 2026, random day within that month.
+            $orderDate = Carbon::create(
+                2026,
+                rand(1, 12),
+                rand(1, 28),       // safe for all months
+                rand(0, 23),
+                rand(0, 59)
+            );
 
             $user = $users->random();
             $locations = $user->locations;
