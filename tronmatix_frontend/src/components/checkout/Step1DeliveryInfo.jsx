@@ -3,7 +3,7 @@ import { useState, useRef } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { useLang } from "../../context/LanguageContext"
 import { signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth"
-import { auth } from "../../lib/firebase"
+import { auth, isConfigured as firebaseConfigured } from "../../lib/firebase"
 import { toE164Phone, phoneValidationMessage } from "../../lib/phone"
 import DeliverySchedulePicker from "./DeliverySchedulePicker"
 import ProvinceSelect from "./ProvinceSelect"
@@ -87,6 +87,7 @@ export default function Step1DeliveryInfo({
 
   // ── Firebase phone OTP helpers (reuses AuthModal / PhoneVerify pattern) ──
   const makeVerifier = () => {
+    if (!firebaseConfigured || !auth) return null
     if (verifierRef.current) return verifierRef.current
     if (!window.tronmatixRecaptchaContainer) {
       const div = document.createElement("div")
@@ -100,6 +101,10 @@ export default function Step1DeliveryInfo({
 
   const handleSendCode = async () => {
     setPhoneError("")
+    if (!firebaseConfigured || !auth) {
+      setPhoneError(isKhmer ? "សេវាផ្ទៀងផ្ទាត់លេខទូរស័ព្ទមិនអាចប្រើបានទេ" : "Phone verification is not configured.")
+      return
+    }
     // Show the raw input as-is in the field; only normalize here on submit.
     const raw = location.phone.trim()
     const e164 = toE164Phone(raw)

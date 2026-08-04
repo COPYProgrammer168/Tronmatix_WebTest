@@ -55,6 +55,7 @@ const NAV_SECTIONS = [
     items: [
       { id: 'orders',    label: 'Orders',    icon: '📦', tab: 'orders' },
       { id: 'products',  label: 'Products',  icon: '🖥️', tab: 'products' },
+      { id: 'categories', label: 'Categories', icon: '📂', tab: 'categories' },
       { id: 'delivery',  label: 'Delivery',  icon: '🚚', tab: 'delivery' },
     ],
   },
@@ -1781,6 +1782,7 @@ export default function StaffDashboard() {
     overview: <OverviewTab setTab={setTab} />,
     orders:   <OrdersTab />,
     products: <ProductsTab />,
+    categories: <CategoriesTab />,
     users:    <UsersTab />,
     delivery: <DeliveryTab />,
     report:   <ReportTab />,

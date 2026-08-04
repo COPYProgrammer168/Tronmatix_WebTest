@@ -420,7 +420,7 @@ updatePermissions.put = (options?: RouteQueryOptions): RouteDefinition<'put'> =>
     updatePermissions.form = updatePermissionsForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 export const marquees = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -435,7 +435,7 @@ marquees.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 marquees.url = (options?: RouteQueryOptions) => {
@@ -444,7 +444,7 @@ marquees.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 marquees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -453,7 +453,7 @@ marquees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -463,7 +463,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
     const marqueesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -473,7 +473,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
         marqueesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -482,7 +482,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
         marqueesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -498,7 +498,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     marquees.form = marqueesForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::storeMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:367
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:371
  * @route '/dashboard/settings/marquees'
  */
 export const storeMarquee = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -513,7 +513,7 @@ storeMarquee.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::storeMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:367
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:371
  * @route '/dashboard/settings/marquees'
  */
 storeMarquee.url = (options?: RouteQueryOptions) => {
@@ -522,7 +522,7 @@ storeMarquee.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::storeMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:367
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:371
  * @route '/dashboard/settings/marquees'
  */
 storeMarquee.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -532,7 +532,7 @@ storeMarquee.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::storeMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:367
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:371
  * @route '/dashboard/settings/marquees'
  */
     const storeMarqueeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -542,7 +542,7 @@ storeMarquee.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::storeMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:367
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:371
  * @route '/dashboard/settings/marquees'
  */
         storeMarqueeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -553,7 +553,7 @@ storeMarquee.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     storeMarquee.form = storeMarqueeForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::updateMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:391
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:395
  * @route '/dashboard/settings/marquees/{id}'
  */
 export const updateMarquee = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -568,7 +568,7 @@ updateMarquee.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::updateMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:391
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:395
  * @route '/dashboard/settings/marquees/{id}'
  */
 updateMarquee.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -596,7 +596,7 @@ updateMarquee.url = (args: { id: string | number } | [id: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::updateMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:391
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:395
  * @route '/dashboard/settings/marquees/{id}'
  */
 updateMarquee.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -606,7 +606,7 @@ updateMarquee.put = (args: { id: string | number } | [id: string | number ] | st
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::updateMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:391
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:395
  * @route '/dashboard/settings/marquees/{id}'
  */
     const updateMarqueeForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -621,7 +621,7 @@ updateMarquee.put = (args: { id: string | number } | [id: string | number ] | st
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::updateMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:391
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:395
  * @route '/dashboard/settings/marquees/{id}'
  */
         updateMarqueeForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -637,7 +637,7 @@ updateMarquee.put = (args: { id: string | number } | [id: string | number ] | st
     updateMarquee.form = updateMarqueeForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroyMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:421
  * @route '/dashboard/settings/marquees/{id}'
  */
 export const destroyMarquee = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -652,7 +652,7 @@ destroyMarquee.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroyMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:421
  * @route '/dashboard/settings/marquees/{id}'
  */
 destroyMarquee.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -680,7 +680,7 @@ destroyMarquee.url = (args: { id: string | number } | [id: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroyMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:421
  * @route '/dashboard/settings/marquees/{id}'
  */
 destroyMarquee.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -690,7 +690,7 @@ destroyMarquee.delete = (args: { id: string | number } | [id: string | number ] 
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroyMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:421
  * @route '/dashboard/settings/marquees/{id}'
  */
     const destroyMarqueeForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -705,7 +705,7 @@ destroyMarquee.delete = (args: { id: string | number } | [id: string | number ] 
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroyMarquee
- * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:421
  * @route '/dashboard/settings/marquees/{id}'
  */
         destroyMarqueeForm.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

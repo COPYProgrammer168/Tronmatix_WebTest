@@ -265,7 +265,7 @@ permissions.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     permissions.form = permissionsForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 export const marquees = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -280,7 +280,7 @@ marquees.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 marquees.url = (options?: RouteQueryOptions) => {
@@ -289,7 +289,7 @@ marquees.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 marquees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -298,7 +298,7 @@ marquees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
 marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -308,7 +308,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
     const marqueesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -318,7 +318,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
         marqueesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -327,7 +327,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:350
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:354
  * @route '/dashboard/settings/marquees'
  */
         marqueesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

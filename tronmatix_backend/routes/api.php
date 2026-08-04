@@ -4,6 +4,7 @@
 
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CategoryTreeController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\CheckPaymentController;
 use App\Http\Controllers\Api\DeliveryScheduleController;
@@ -44,6 +45,7 @@ Route::get('/auth/telegram-status',          [TelegramAuthController::class, 'ch
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/tree', [CategoryTreeController::class, 'tree']);
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/videos', [VideoController::class, 'index']);
 Route::get('/marquees', [MarqueeController::class, 'index']);

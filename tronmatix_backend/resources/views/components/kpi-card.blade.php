@@ -4,6 +4,7 @@
     'trend' => null, // ['pct' => int, 'trend' => 'up'|'down'|'flat']
     'color' => 'orange', // orange | green | blue | purple | red | yellow
     'icon' => '',
+    'href' => null, // optional URL — makes the whole card clickable
 ])
 
 @php
@@ -23,8 +24,11 @@
     $showTrend = $trend && ($trendUp || $trendDown);
 @endphp
 
+@if($href)
+<a href="{{ $href }}" style="text-decoration:none; color:inherit; display:block;">
+@endif
 <div class="stat-card" style="
-    position:relative; overflow:hidden; cursor:default;
+    position:relative; overflow:hidden; cursor:{{ $href ? 'pointer' : 'default' }};
     transition:border-color 0.2s, transform 0.2s;
 " onmouseenter="this.style.borderColor='{{ $c }}';this.style.transform='translateY(-2px)'"
    onmouseleave="this.style.borderColor='';this.style.transform=''">
@@ -51,3 +55,6 @@
         @endif
     </div>
 </div>
+@if($href)
+</a>
+@endif

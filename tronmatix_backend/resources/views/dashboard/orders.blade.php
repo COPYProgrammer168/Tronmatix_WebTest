@@ -127,7 +127,7 @@
                             <th>{{ strtoupper(__('dashboard.table.orderId')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.customer')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.shippingTo')) }}</th>
-                            <th>ORDER</th>
+                            <th>{{ strtoupper(__('dashboard.table.product')) }}</th>
                             <th>{{ strtoupper(__('dashboard.orders.subtotal')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.discount')) }}</th>
                             <th>{{ strtoupper(__('dashboard.table.total')) }}</th>
@@ -190,11 +190,45 @@
                                     @endif
                                 </td>
 
-                                {{-- ORDER — show order_id with # prefix --}}
+                                {{-- ORDER — product image stack from the customer's items --}}
                                 <td>
-                                    <div style="font-size:var(--text-md); font-weight:600; color:var(--text);">
-                                        #{{ $order->order_id }}
-                                    </div>
+                                    @php
+                                        $orderItems = $order->items ?? collect();
+                                        $itemImgs = $orderItems->pluck('image')
+                                            ->filter(fn($img) => !empty($img))
+                                            ->take(3)
+                                            ->values();
+                                        $itemCount = $orderItems->count();
+                                    @endphp
+                                    @if ($itemImgs->isNotEmpty())
+                                        <div style="display:flex; align-items:center;">
+                                            <div style="display:flex; position:relative; height:38px;">
+                                                @foreach ($itemImgs as $idx => $img)
+                                                    <div
+                                                        style="width:34px; height:34px; border-radius:8px; overflow:hidden;
+                                                               border:2px solid var(--surface); background:var(--surface-2);
+                                                               position:relative; margin-left:{{ $idx === 0 ? 0 : -10 }}px; z-index:{{ 10 - $idx }};">
+                                                        <img src="{{ $img }}" alt=""
+                                                             style="width:100%; height:100%; object-fit:cover; display:block;"
+                                                             onerror="this.style.display='none'; this.parentNode.style.background='var(--surface-2)';" />
+                                                    </div>
+                                                @endforeach
+                                                @if ($itemCount > count($itemImgs))
+                                                    <div
+                                                        style="width:34px; height:34px; border-radius:8px; margin-left:-10px; z-index:5;
+                                                               display:flex; align-items:center; justify-content:center;
+                                                               background:rgba(249,115,22,0.15); border:2px solid var(--surface);
+                                                               color:#F97316; font-size:11px; font-weight:800;">
+                                                        +{{ $itemCount - count($itemImgs) }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div style="font-size:var(--text-md); font-weight:600; color:var(--text-muted);">
+                                            #{{ $order->order_id }}
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- SUBTOTAL --}}

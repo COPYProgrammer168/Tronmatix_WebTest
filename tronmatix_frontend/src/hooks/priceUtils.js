@@ -7,8 +7,8 @@ export const numericPrice = (p) =>
 
 // Returns display string
 export const displayPrice = (p) => {
-  if (!p || p == 0) return "$";
+  if (!p || p == 0) return "$$$"; // unlisted price → "$$$" (matches original site)
   if (/^\$+$/.test(String(p))) return String(p); // $, $$, $$$
   const n = parseFloat(String(p).replace(/[$,]/g, ""));
-  return isNaN(n) ? "$" : `$${n.toFixed(2)}`;
+  return isNaN(n) ? "$$$" : `$${n.toFixed(2)}`;
 };

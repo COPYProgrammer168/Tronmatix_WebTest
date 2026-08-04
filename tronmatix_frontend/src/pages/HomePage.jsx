@@ -309,6 +309,55 @@ export default function HomePage() {
     background-size: 1200px 100%;
     animation: shimmer 1s linear infinite;
   }
+
+  /* ── Mobile category rows: horizontal scroll showing 2 columns per
+       "page" — swipe to reveal more cards (up to 10) ─────────────── */
+  .cat-swiper { display: block; }
+  .cat-mobile-scroll { display: none; }
+
+  @media (max-width: 640px) {
+    .cat-swiper { display: none !important; }
+    .cat-mobile-scroll {
+      display: grid;
+      grid-auto-flow: column;
+      grid-template-rows: repeat(2, auto);           /* 2 rows … */
+      grid-auto-columns: calc(50% - 5px);            /* … = 2 columns per view (minus half the gap) */
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .cat-mobile-scroll::-webkit-scrollbar { display: none; }
+    .cat-mobile-scroll > * {
+      scroll-snap-align: start;
+    }
+  }
+
+  /* ── Mobile new-products section: same horizontal-scroll treatment ── */
+  .new-prod-swiper { display: block; }
+  .new-prod-mobile-scroll { display: none; }
+
+  @media (max-width: 640px) {
+    .new-prod-swiper { display: none !important; }
+    .new-prod-mobile-scroll {
+      display: grid;
+      grid-auto-flow: column;
+      grid-template-rows: repeat(2, auto);
+      grid-auto-columns: calc(50% - 5px);
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .new-prod-mobile-scroll::-webkit-scrollbar { display: none; }
+    .new-prod-mobile-scroll > * {
+      scroll-snap-align: start;
+    }
+  }
 `}</style>
 
       <div className="w-full mb-2">
@@ -554,6 +603,7 @@ export default function HomePage() {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <style>{`.new-prod-scroll::-webkit-scrollbar{display:none}`}</style>
+            {/* Desktop: horizontal carousel */}
             <Swiper
               modules={[Scrollbar]}
               spaceBetween={16}
@@ -564,7 +614,7 @@ export default function HomePage() {
                 "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
                 "--swiper-scrollbar-drag-bg-color": "#F97316",
               }}
-              className="!pb-7 w-full"
+              className="new-prod-swiper !pb-7 w-full"
             >
               {newProducts.map((p, i) => (
                 <SwiperSlide key={p.id || i} style={{ width: 200 }}>
@@ -572,6 +622,12 @@ export default function HomePage() {
                 </SwiperSlide>
               ))}
             </Swiper>
+          </div>
+          {/* Mobile: horizontal scroll — 2 columns per view, up to 10 cards */}
+          <div className="new-prod-mobile-scroll">
+            {newProducts.slice(0, 10).map((p, i) => (
+              <ProductCard key={p.id || i} product={p} />
+            ))}
           </div>
         </div>
       )}
@@ -658,34 +714,52 @@ export default function HomePage() {
 
             {/* Product rows */}
             {(isLoading || catItems.length > 0) && (
-              <Swiper
-                modules={[Scrollbar]}
-                spaceBetween={16}
-                slidesPerView="auto"
-                scrollbar={{ draggable: true, hide: false }}
-                style={{
-                  paddingBottom: 8,
-                  "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
-                  "--swiper-scrollbar-drag-bg-color": "#F97316",
-                }}
-                className="!pb-7"
-              >
-                {isLoading
-                  ? Array(6).fill(null).map((_, i) => (
-                    <SwiperSlide key={i} style={{ width: 210 }}>
-                      <div className="rounded-xl skeleton-shimmer" style={{
-                        width: 210, aspectRatio: "1 / 1",
+              <>
+                {/* Desktop: horizontal carousel */}
+                <Swiper
+                  modules={[Scrollbar]}
+                  spaceBetween={16}
+                  slidesPerView="auto"
+                  scrollbar={{ draggable: true, hide: false }}
+                  style={{
+                    paddingBottom: 8,
+                    "--swiper-scrollbar-bg-color": "rgba(249,115,22,0.10)",
+                    "--swiper-scrollbar-drag-bg-color": "#F97316",
+                  }}
+                  className="cat-swiper !pb-7"
+                >
+                  {isLoading
+                    ? Array(6).fill(null).map((_, i) => (
+                      <SwiperSlide key={i} style={{ width: 210 }}>
+                        <div className="rounded-xl skeleton-shimmer" style={{
+                          width: 210, aspectRatio: "1 / 1",
+                          "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                          "--sk-shine": dark ? "#374151" : "#e9eaec",
+                        }} />
+                      </SwiperSlide>
+                    ))
+                    : catItems.map((p, i) => (
+                      <SwiperSlide key={p.id || i} style={{ width: 210 }}>
+                        <ProductCard product={p} />
+                      </SwiperSlide>
+                    ))}
+                </Swiper>
+
+                {/* Mobile: horizontal scroll — 2 columns per view, up to 10 cards */}
+                <div className="cat-mobile-scroll">
+                  {isLoading
+                    ? Array(10).fill(null).map((_, i) => (
+                      <div key={i} className="rounded-xl skeleton-shimmer" style={{
+                        aspectRatio: "1 / 1",
                         "--sk-base": dark ? "#1f2937" : "#f3f4f6",
                         "--sk-shine": dark ? "#374151" : "#e9eaec",
                       }} />
-                    </SwiperSlide>
-                  ))
-                  : catItems.map((p, i) => (
-                    <SwiperSlide key={p.id || i} style={{ width: 210 }}>
-                      <ProductCard product={p} />
-                    </SwiperSlide>
-                  ))}
-              </Swiper>
+                    ))
+                    : catItems.slice(0, 10).map((p, i) => (
+                      <ProductCard key={p.id || i} product={p} />
+                    ))}
+                </div>
+              </>
             )}
 
             <div className="flex justify-end mt-3">

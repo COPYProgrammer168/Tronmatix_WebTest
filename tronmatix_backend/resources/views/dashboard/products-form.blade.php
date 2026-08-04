@@ -3,11 +3,14 @@
 
 @section('content')
 
-        @include('dashboard._permission_check', ['feature' => 'products'])
-    @php if (!isset($_permDenied))
-    $_permDenied = false; @endphp
+    @include('dashboard._permission_check', ['feature' => 'products'])
+    @php
+        if (!isset($_permDenied)) {
+            $_permDenied = false;
+        }
+    @endphp
 
-    @if(!$_permDenied)
+    @if (!$_permDenied)
         <div>
             <a href="{{ route('dashboard.products') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
                 ← {{ __('dashboard.form.btp') }}
@@ -52,9 +55,9 @@
                                 @if ($product?->images && count($product->images))
                                     @foreach ($product->images as $idx => $img)
                                         @php
-            $imgSrc = Str::startsWith($img, ['http://', 'https://'])
-                ? $img
-                : asset(ltrim($img, '/'));
+                                            $imgSrc = Str::startsWith($img, ['http://', 'https://'])
+                                                ? $img
+                                                : asset(ltrim($img, '/'));
                                         @endphp
                                         <div class="gallery-thumb {{ $idx === 0 ? 'gallery-main' : '' }}"
                                             data-index="{{ $idx }}" data-raw-path="{{ $img }}"
@@ -65,15 +68,15 @@
                                             @endif
                                             <button type="button" class="gallery-remove"
                                                 onclick="removeExistingImage('{{ $idx }}', this)">✕</button>
-                                            <input type="hidden" name="existing_images[]"
-                                                value="{{ $img }}" id="existing_{{ $idx }}" />
+                                            <input type="hidden" name="existing_images[]" value="{{ $img }}"
+                                                id="existing_{{ $idx }}" />
                                         </div>
                                     @endforeach
                                 @elseif ($product?->image)
                                     @php
-        $imgSrc = Str::startsWith($product->image, ['http://', 'https://'])
-            ? $product->image
-            : asset(ltrim($product->image, '/'));
+                                        $imgSrc = Str::startsWith($product->image, ['http://', 'https://'])
+                                            ? $product->image
+                                            : asset(ltrim($product->image, '/'));
                                     @endphp
                                     <div class="gallery-thumb gallery-main" data-index="0"
                                         data-raw-path="{{ $product->image }}" data-type="existing" draggable="true">
@@ -107,8 +110,8 @@
                             <button type="button" class="btn btn-outline"
                                 style="width:100%; margin-bottom:10px; justify-content:center;"
                                 onclick="document.getElementById('multiImageInput').click()">
-                                <svg width="14" height="14" fill="none" stroke="currentColor"
-                                    stroke-width="2" viewBox="0 0 24 24">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
                                     <polyline points="16 16 12 12 8 16" />
                                     <line x1="12" y1="12" x2="12" y2="21" />
                                     <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
@@ -124,11 +127,14 @@
                                 <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
                             </div>
 
-                            {{-- URL Input for extra images --}}
+                            {{-- URL Input for extra images — auto-adds on paste --}}
                             <label class="form-label">{{ __('dashboard.form.addImageUrl') }}</label>
                             <div style="display:flex; gap:8px;">
                                 <input type="text" id="imageUrlInput" class="form-control"
-                                    placeholder="https://example.com/image.jpg" style="flex:1;" />
+                                    placeholder="https://example.com/image.jpg" style="flex:1;"
+                                    onpaste="setTimeout(autoAddImageByUrl, 150)"
+                                    onchange="setTimeout(autoAddImageByUrl, 150)"
+                                    onblur="setTimeout(autoAddImageByUrl, 150)" />
                                 <button type="button" class="btn btn-outline" onclick="addImageByUrl()"
                                     style="white-space:nowrap; padding:0 14px;">+ ADD</button>
                             </div>
@@ -143,8 +149,8 @@
                             @if ($product?->image || ($product?->images && count($product->images)))
                                 <div style="margin-top:12px;">
                                     <label class="toggle-wrap" style="cursor:pointer;">
-                                        <input type="checkbox" name="remove_image" value="1"
-                                            id="removeImageCheck" onchange="toggleRemoveImage(this)" />
+                                        <input type="checkbox" name="remove_image" value="1" id="removeImageCheck"
+                                            onchange="toggleRemoveImage(this)" />
                                         <span style="font-size: var(--title-size); color:rgba(239,68,68,0.7);">
                                             {{ __('dashboard.form.removeallimages') }}
                                         </span>
@@ -154,344 +160,297 @@
                         </div>
 
                         {{-- Name --}}
-                                <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.productName') }}</label>
-                                    <input type="text" name="name"
-                                        class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
-                                        value="{{ old('name', $product?->name) }}" placeholder="e.g. AMD Ryzen 7 9800X3D"
-                                        required />
-                                </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ __('dashboard.form.productName') }}</label>
+                            <input type="text" name="name"
+                                class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
+                                value="{{ old('name', $product?->name) }}" placeholder="e.g. AMD Ryzen 7 9800X3D"
+                                required />
+                        </div>
 
-                                {{-- Caption --}}
-                                <div class="form-group">
-                                    <label class="form-label">Caption</label>
-                                    <input type="text" name="caption"
-                                        class="form-control {{ $errors->has('caption') ? 'is-invalid' : '' }}"
-                                        value="{{ old('caption', $product?->caption) }}"
-                                        placeholder="e.g. G SKILL TRIDENT Z DDR5 32GB 6000MHZ" />
-                                </div>
+                        {{-- Caption --}}
+                        <div class="form-group">
+                            <label class="form-label">Caption</label>
+                            <input type="text" name="caption"
+                                class="form-control {{ $errors->has('caption') ? 'is-invalid' : '' }}"
+                                value="{{ old('caption', $product?->caption) }}"
+                                placeholder="e.g. G SKILL TRIDENT Z DDR5 32GB 6000MHZ" />
+                        </div>
 
-                                {{-- Category + Brand --}}
-                                <div class="form-grid-2">
-                                    <div class="form-group" style="font-size: var(--title-size);">
-                                        <label class="form-label">{{ __('dashboard.form.category') }}</label>
-                                        <select name="category" id="categorySelect" class="form-control" required>
-                                            <option value="" disabled
-                                                {{ old('category', $product?->category) ? '' : 'selected' }}>
-                                                — Select Category —
-                                            </option>
+                        {{-- Category + Brand --}}
+                        <div class="form-grid-2">
+                            <div class="form-group" style="font-size: var(--title-size);">
+                                <label class="form-label">{{ __('dashboard.form.category') }}</label>
+                                <select name="category" id="categorySelect" class="form-control" required>
+                                    <option value="" disabled
+                                        {{ old('category', $product?->category) ? '' : 'selected' }}>
+                                        — Select Category —
+                                    </option>
 
-                                            <optgroup label="─── PC BUILDS ───────────────">
-                                                @foreach (['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                            <optgroup label="─── MONITOR ───────────────">
-                                                @foreach (['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                            <optgroup label="─── PC PARTS ───────────────" id="pcPartsGroup">
-                                                @foreach (['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-
-                                            <optgroup label="─── HOT ITEM ────────────────">
-                                                @foreach (['BEST PRICE', 'BEST SET'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-
-                                            <optgroup label="─── ACCESSORY ────────────">
-                                                @foreach (['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-
-                                            <optgroup label="─── TABLE CHAIR ─────────────">
-                                                @foreach (['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-
-                                            <optgroup label="─── RESELL ITEM  ──────────────">
-                                                @foreach (['Second hand', 'Used', 'Pre-owned'] as $cat)
-                                                    <option value="{{ $cat }}"
-                                                        {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>
-                                                        {{ $cat }}
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="form-label">{{ __('dashboard.form.brand') }}</label>
-                                        <input type="text" name="brand" class="form-control"
-                                            value="{{ old('brand', $product?->brand) }}"
-                                            placeholder="e.g. AMD, Intel, NVIDIA" list="brandList" />
-                                        <datalist id="brandList">
-                                            @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
-                                                <option value="{{ $brand }}">
+                                    {{-- Dynamic optgroups from the category tree:
+                                                 group title = MAIN CATEGORY, options = its SUB CATEGORIES. --}}
+                                    @forelse($categoryGroups ?? [] as $group)
+                                        <optgroup label="────────── {{ $group['label'] }} ──────────">
+                                            @foreach ($group['options'] as $opt)
+                                                <option value="{{ $opt['value'] }}"
+                                                    {{ old('category', $product?->category) === $opt['value'] ? 'selected' : '' }}>
+                                                    {{ $opt['label'] }}
+                                                </option>
                                             @endforeach
-                                        </datalist>
-                                    </div>
-                                    <div class="form-group" id="pcPartBrandGroup" style="display: none;">
-                                        <label class="form-label">PC Part Brand</label>
-                                        <select name="brand_pc_part" id="pcPartBrandSelect" class="form-control" data-selected="{{ old('brand_pc_part', $product?->brand_pc_part) }}">
-                                            <option value="">— Select PC Part Brand —</option>
-                                        </select>
-                                    </div>
-
-                                    <script>
-                                        const categorySelect = document.getElementById('categorySelect');
-                                        const pcPartBrandGroup = document.getElementById('pcPartBrandGroup');
-                                        const pcPartBrandSelect = document.getElementById('pcPartBrandSelect');
-
-                                        const pcPartBrands = {
-                                            'CPU': ['INTEL 12TH', 'INTEL 13TH', 'INTEL 14TH', 'INTEL 15TH ULTRA', 'AMD ALL SERIES'],
-                                            'RAM': ['8GB DDR4', '16GB DDR4', '16GB DDR5', '32GB DDR5', '24GB DDR5', '48GB DDR5', '96GB DDR5',
-                                                'RAM DDR5 64GB X2 128GB'
-                                            ],
-                                            'MAINBOARD': ['H610 SERIES', 'B760 SERIES', 'Z790 SERIES', 'Z890 SERIES', 'X670 SERIES', 'X870 SERIES',
-                                                'B850 SERIES', 'H810 SERIES', 'B860 SERIES'
-                                            ],
-                                            'COOLING': ['THERMAL GREASE', 'COOLER', 'LIQUID 240MM', 'LIQUID 360MM', 'LIQUID WATERLOOP'],
-                                            'M2': ['256G', '500G', '1TB', '2TB', '4TB', '8TB', '4TB', 'ENCLOSURE', 'M.2 TRAY'],
-                                            'VGA': ['RTX 3050', 'RTX 5080', 'RTX 5090', 'RTX 5070TI', 'INTER VGA', 'VGA AMD ALL SERIES', 'VGA RTX5070',
-                                                'RTX5060TI', 'RTX 5060'
-                                            ],
-                                            'CASE': ['UNDER 50$', 'UNDER 100$', 'UNDER 200$', 'UNDER 300$', 'UNDER 500$', 'UNDER 1000$', 'UNDER 10000$',
-                                                'MINI ITX'
-                                            ],
-                                            'POWER SUPPLY': ['550W', '650W', '750W', '850W', '1000W', '1200W', '1600W', '2200W'],
-                                            'FAN': ['CASE FAN', 'RGB FAN', 'INDUSTRIAL FAN']
-                                        };
-
-                                        function updatePcPartBrands() {
-                                            const category = categorySelect.value;
-                                            const brands = pcPartBrands[category];
-                                            const selectedBrand = pcPartBrandSelect.dataset.selected || '';
-
-                                            if (brands) {
-                                                pcPartBrandGroup.style.display = 'block';
-                                                pcPartBrandSelect.innerHTML = '<option value="">— Select PC Part Brand —</option>';
-                                                brands.forEach(b => {
-                                                    const opt = document.createElement('option');
-                                                    opt.value = b;
-                                                    opt.textContent = b;
-                                                    if (b === selectedBrand) opt.selected = true;
-                                                    pcPartBrandSelect.appendChild(opt);
-                                                });
-                                            } else {
-                                                pcPartBrandGroup.style.display = 'none';
-                                            }
-                                        }
-
-                                        categorySelect.addEventListener('change', updatePcPartBrands);
-                                        updatePcPartBrands();
-                                    </script>
-                                </div>
+                                        </optgroup>
+                                    @empty
+                                        <option value="" disabled>No categories available</option>
+                                    @endforelse
+                                </select>
                             </div>
 
-                            {{-- Price + Stock + Rating --}}
-                            <div class="form-grid-3">
-                                <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.price') }}</label>
-                                    <input type="text" name="price"
-                                        class="form-control {{ $errors->has('price') ? 'is-invalid' : '' }}"
-                                        value="{{ old('price', $product?->price) }}" placeholder="$ or 0.00"
-                                        inputmode="decimal" oninput="this.value = this.value.replace(/[^0-9$.]/g, '');"
-                                        required />
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.stock') }}</label>
-                                    <input type="number" name="stock"
-                                        class="form-control {{ $errors->has('stock') ? 'is-invalid' : '' }}"
-                                        value="{{ old('stock', $product?->stock ?? 0) }}" min="0" required />
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.warranty') }}</label>
-                                    <input type="text" name="warranty" class="form-control"
-                                        value="{{ old('warranty', $product?->warranty) }}" placeholder="e.g. 3 years" />
-                                </div>
-                            </div>
-                            {{-- Description --}}
                             <div class="form-group">
-                                <label class="form-label">{{ __('dashboard.form.description') }}</label>
-                                <textarea name="description" id="descriptionField" class="form-control" rows="6"
-                                    placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
+                                <label class="form-label">{{ __('dashboard.form.brand') }}</label>
+                                <input type="text" name="brand" class="form-control"
+                                    value="{{ old('brand', $product?->brand) }}" placeholder="e.g. AMD, Intel, NVIDIA"
+                                    list="brandList" />
+                                <datalist id="brandList">
+                                    @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
+                                        <option value="{{ $brand }}">
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            <div class="form-group" id="pcPartBrandGroup" style="display: none;">
+                                <label class="form-label">PC Part Brand</label>
+                                <select name="brand_pc_part" id="pcPartBrandSelect" class="form-control"
+                                    data-selected="{{ old('brand_pc_part', $product?->brand_pc_part) }}">
+                                    <option value="">— Select PC Part Brand —</option>
+                                </select>
                             </div>
 
-                            {{-- ── Specifications Table ──────────────────────────── --}}
-                            <div style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px;">
-                                <label class="form-label" style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; margin-bottom:12px;">
-                                    📋 SPECIFICATIONS TABLE
-                                </label>
+                            <script>
+                                const categorySelect = document.getElementById('categorySelect');
+                                const pcPartBrandGroup = document.getElementById('pcPartBrandGroup');
+                                const pcPartBrandSelect = document.getElementById('pcPartBrandSelect');
 
-                                <div class="form-group" style="margin-bottom:12px;">
-                                    <label class="form-label" style="font-size: var(--title-size);">TABLE TITLE</label>
-                                    <input type="text" name="specs_title" id="specsTitle" class="form-control"
-                                        value="{{ old('specs_title', $product?->specs_title) }}"
-                                        placeholder="e.g. Technical Specifications" />
-                                </div>
+                                const pcPartBrands = {
+                                    'CPU': ['INTEL 12TH', 'INTEL 13TH', 'INTEL 14TH', 'INTEL 15TH ULTRA', 'AMD ALL SERIES'],
+                                    'RAM': ['8GB DDR4', '16GB DDR4', '16GB DDR5', '32GB DDR5', '24GB DDR5', '48GB DDR5', '96GB DDR5',
+                                        'RAM DDR5 64GB X2 128GB'
+                                    ],
+                                    'MAINBOARD': ['H610 SERIES', 'B760 SERIES', 'Z790 SERIES', 'Z890 SERIES', 'X670 SERIES', 'X870 SERIES',
+                                        'B850 SERIES', 'H810 SERIES', 'B860 SERIES'
+                                    ],
+                                    'COOLING': ['THERMAL GREASE', 'COOLER', 'LIQUID 240MM', 'LIQUID 360MM', 'LIQUID WATERLOOP'],
+                                    'M2': ['256GB', '500GB', '1TB', '2TB', '4TB', '8TB', 'ENCLOSURE', 'M.2 TRAY'],
+                                    'VGA': ['RTX3050', 'RTX5080', 'RTX5090', 'RTX 5070TI', 'INTEL VGA', 'VGA AMD ALL SERIES', 'VGA RTX5070',
+                                        'RTX5060TI', 'RTX 5060'
+                                    ],
+                                    'CASE': ['UNDER 50$', 'UNDER 100$', 'UNDER 200$', 'UNDER 300$', 'UNDER 500$', 'UNDER 1000$', 'UNDER 10000$',
+                                        'MINI ITX'
+                                    ],
+                                    'POWER SUPPLY': ['550W', '650W', '750W', '850W', '1000W', '1200W', '1600W', '2200W'],
+                                    'FAN': ['CASE FAN', 'RGB FAN', 'INDUSTRIAL FAN']
+                                };
 
-                                <div id="specsRows">
-                                    @php
-                                        $_specs = old('specs.key')
-                                            ? array_combine(old('specs.key'), old('specs.value'))
-                                            : ($product?->specs ?? []);
-                                    @endphp
-                                    @if(is_array($_specs) && count($_specs))
-                                        @foreach($_specs as $sk => $sv)
-                                            @continue(is_numeric($sk) && $sk === '')
-                                            <div class="spec-row" style="display:flex; gap:8px; margin-bottom:8px;">
-                                                <input type="text" name="specs[key][]" value="{{ $sk }}"
-                                                    class="form-control" placeholder="Key (e.g. Model)"
-                                                    style="flex:1; min-width:0;"
-                                                    onfocusin="this.style.borderColor='#F97316'"
-                                                    onfocusout="this.style.borderColor=''">
-                                                <input type="text" name="specs[value][]" value="{{ $sv }}"
-                                                    class="form-control" placeholder="Value (e.g. AMD Ryzen 7)"
-                                                    style="flex:2; min-width:0;"
-                                                    onfocusin="this.style.borderColor='#F97316'"
-                                                    onfocusout="this.style.borderColor=''">
-                                                <button type="button" onclick="this.closest('.spec-row').remove()"
-                                                    class="btn btn-sm"
-                                                    style="border:1px solid rgba(239,68,68,0.3); color:#ef4444; background:transparent; flex-shrink:0; padding:0 12px;">✕</button>
-                                            </div>
-                                        @endforeach
-                                    @else
+                                function updatePcPartBrands() {
+                                    const category = categorySelect.value;
+                                    const brands = pcPartBrands[category];
+                                    const selectedBrand = pcPartBrandSelect.dataset.selected || '';
+
+                                    if (brands) {
+                                        pcPartBrandGroup.style.display = 'block';
+                                        pcPartBrandSelect.innerHTML = '<option value="">— Select PC Part Brand —</option>';
+                                        brands.forEach(b => {
+                                            const opt = document.createElement('option');
+                                            opt.value = b;
+                                            opt.textContent = b;
+                                            if (b === selectedBrand) opt.selected = true;
+                                            pcPartBrandSelect.appendChild(opt);
+                                        });
+                                    } else {
+                                        pcPartBrandGroup.style.display = 'none';
+                                    }
+                                }
+
+                                categorySelect.addEventListener('change', updatePcPartBrands);
+                                updatePcPartBrands();
+                            </script>
+                        </div>
+
+
+                        {{-- Price + Stock + Rating --}}
+                        <div class="form-grid-3 px-10">
+                            <div class="form-group">
+                                <label class="form-label">{{ __('dashboard.form.price') }}</label>
+                                <input type="text" name="price"
+                                    class="form-control {{ $errors->has('price') ? 'is-invalid' : '' }}"
+                                    value="{{ old('price', $product?->price) }}" placeholder="$ or 0.00"
+                                    inputmode="decimal" oninput="this.value = this.value.replace(/[^0-9$.]/g, '');"
+                                    required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">{{ __('dashboard.form.stock') }}</label>
+                                <input type="number" name="stock"
+                                    class="form-control {{ $errors->has('stock') ? 'is-invalid' : '' }}"
+                                    value="{{ old('stock', $product?->stock ?? 0) }}" min="0" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">{{ __('dashboard.form.warranty') }}</label>
+                                <input type="text" name="warranty" class="form-control"
+                                    value="{{ old('warranty', $product?->warranty) }}" placeholder="e.g. 3 years" />
+                            </div>
+                        </div>
+                        {{-- Description --}}
+                        <div class="form-group">
+                            <label class="form-label">{{ __('dashboard.form.description') }}</label>
+                            <textarea name="description" id="descriptionField" class="form-control" rows="6"
+                                placeholder="Product description...">{{ old('description', $product?->description) }}</textarea>
+                        </div>
+
+                        {{-- ── Specifications Table ──────────────────────────── --}}
+                        <div style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.07); padding-top:20px;">
+                            <label class="form-label"
+                                style="font-size: var(--title-size); font-weight:800; letter-spacing:2px; margin-bottom:12px;">
+                                📋 SPECIFICATIONS TABLE
+                            </label>
+
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size: var(--title-size);">TABLE TITLE</label>
+                                <input type="text" name="specs_title" id="specsTitle" class="form-control"
+                                    value="{{ old('specs_title', $product?->specs_title) }}"
+                                    placeholder="e.g. Technical Specifications" />
+                            </div>
+
+                            <div id="specsRows">
+                                @php
+                                    $_specs = old('specs.key')
+                                        ? array_combine(old('specs.key'), old('specs.value'))
+                                        : $product?->specs ?? [];
+                                @endphp
+                                @if (is_array($_specs) && count($_specs))
+                                    @foreach ($_specs as $sk => $sv)
+                                        @continue(is_numeric($sk) && $sk === '')
                                         <div class="spec-row" style="display:flex; gap:8px; margin-bottom:8px;">
-                                            <input type="text" name="specs[key][]" class="form-control"
-                                                placeholder="Key (e.g. Model)"
-                                                style="flex:1; min-width:0;"
-                                                onfocusin="this.style.borderColor='#F97316'"
+                                            <input type="text" name="specs[key][]" value="{{ $sk }}"
+                                                class="form-control" placeholder="Key (e.g. Model)"
+                                                style="flex:1; min-width:0;" onfocusin="this.style.borderColor='#F97316'"
                                                 onfocusout="this.style.borderColor=''">
-                                            <input type="text" name="specs[value][]" class="form-control"
-                                                placeholder="Value (e.g. AMD Ryzen 7)"
-                                                style="flex:2; min-width:0;"
-                                                onfocusin="this.style.borderColor='#F97316'"
+                                            <input type="text" name="specs[value][]" value="{{ $sv }}"
+                                                class="form-control" placeholder="Value (e.g. AMD Ryzen 7)"
+                                                style="flex:2; min-width:0;" onfocusin="this.style.borderColor='#F97316'"
                                                 onfocusout="this.style.borderColor=''">
                                             <button type="button" onclick="this.closest('.spec-row').remove()"
                                                 class="btn btn-sm"
                                                 style="border:1px solid rgba(239,68,68,0.3); color:#ef4444; background:transparent; flex-shrink:0; padding:0 12px;">✕</button>
                                         </div>
-                                    @endif
-                                </div>
-
-                                <button type="button" onclick="addSpecRow()" class="btn btn-outline btn-sm" style="margin-top:4px;">
-                                    + ADD SPEC ROW
-                                </button>
+                                    @endforeach
+                                @else
+                                    <div class="spec-row" style="display:flex; gap:8px; margin-bottom:8px;">
+                                        <input type="text" name="specs[key][]" class="form-control"
+                                            placeholder="Key (e.g. Model)" style="flex:1; min-width:0;"
+                                            onfocusin="this.style.borderColor='#F97316'"
+                                            onfocusout="this.style.borderColor=''">
+                                        <input type="text" name="specs[value][]" class="form-control"
+                                            placeholder="Value (e.g. AMD Ryzen 7)" style="flex:2; min-width:0;"
+                                            onfocusin="this.style.borderColor='#F97316'"
+                                            onfocusout="this.style.borderColor=''">
+                                        <button type="button" onclick="this.closest('.spec-row').remove()"
+                                            class="btn btn-sm"
+                                            style="border:1px solid rgba(239,68,68,0.3); color:#ef4444; background:transparent; flex-shrink:0; padding:0 12px;">✕</button>
+                                    </div>
+                                @endif
                             </div>
 
-                            {{-- Stock Status + Details --}}
-                            <div class="form-grid-2">
-                                <div class="form-group">
-                                    <label class="form-label">Stock Status</label>
-                                    <select name="stock_status" class="form-control">
-                                        <option value=""
-                                            {{ old('stock_status', $product?->stock_status) === '' ? 'selected' : '' }}>
-                                            Select Status</option>
-                                        @foreach (['Available InStock Now', 'Pre-order'] as $status)
-                                            <option value="{{ $status }}"
-                                                {{ old('stock_status', $product?->stock_status) === $status ? 'selected' : '' }}>
-                                                {{ $status }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Stock Details</label>
-                                    <input type="text" name="stock_details" class="form-control"
-                                        value="{{ old('stock_details', $product?->stock_details) }}"
-                                        placeholder="e.g. Arriving next week" />
-                                </div>
-                            </div>
-
-                            {{-- Featured + Hot toggles --}}
-                            <div style="display:flex; gap:32px; margin-top:4px;">
-                                <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.featuredProduct') }}</label>
-                                    <label class="toggle-wrap" style="cursor:pointer;">
-                                        <label class="toggle">
-                                            <input type="checkbox" name="is_featured" value="1"
-                                                {{ old('is_featured', $product?->is_featured) ? 'checked' : '' }} />
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                        <span style="font-size: var(--title-size); color:rgba(255,255,255,0.5);">
-                                            Show on featured section
-                                        </span>
-                                    </label>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">{{ __('dashboard.form.hotItem') }}</label>
-                                    <label class="toggle-wrap" style="cursor:pointer;">
-                                        <label class="toggle">
-                                            <input type="checkbox" name="is_hot" value="1"
-                                                {{ old('is_hot', $product?->is_hot) ? 'checked' : '' }} />
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                        <span style="font-size: var(--title-size); color:rgba(255,255,255,0.5);">
-                                            Mark as hot item 🔥
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
-
-                {{-- ── Submit Buttons ────────────────────────────────────── --}}
-                <div
-                    style="position:sticky; bottom:0; background:#1A1A1A; display:flex; justify-content:center; gap:12px; margin-top:24px; padding:20px 0; border-top:1px solid rgba(255,255,255,0.07);">
-                    <button type="submit" class="btn btn-orange" id="submitBtn">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
-                            viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        {{ $product ? strtoupper(__('dashboard.form.updateProduct')) : strtoupper(__('dashboard.form.createProduct')) }}
-                    </button>
-                    <a href="{{ route('dashboard.products') }}" class="btn btn-outline">
-                        {{ __('dashboard.form.cancel') }}
-                    </a>
-                    @if ($product)
-                        <div style="margin-left:auto;">
-                            <button type="button" class="btn btn-danger"
-                                onclick="if(confirm('Delete this product permanently?')) document.getElementById('deleteForm').submit()">
-                                {{ __('dashboard.form.delete') }}
+                            <button type="button" onclick="addSpecRow()" class="btn btn-outline btn-sm"
+                                style="margin-top:4px;">
+                                + ADD SPEC ROW
                             </button>
                         </div>
+
+                        {{-- Stock Status + Details --}}
+                        <div class="form-grid-2" style="margin-top:20px;">
+                            <div class="form-group">
+                                <label class="form-label">Stock Status</label>
+                                <input type="text" name="stock_status" class="form-control" list="stockStatusList"
+                                    value="{{ old('stock_status', $product?->stock_status) }}"
+                                    placeholder="Select or type status" />
+                                <datalist id="stockStatusList">
+                                    @foreach ($stockStatuses ?? [] as $status)
+                                        <option value="{{ $status }}">
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Stock Details</label>
+                                <input type="text" name="stock_details" class="form-control"
+                                    value="{{ old('stock_details', $product?->stock_details) }}"
+                                    placeholder="e.g. Arriving next week" />
+                            </div>
+                        </div>
+
+                        {{-- Featured + Hot toggles --}}
+                        <div style="display:flex; gap:32px; margin-top:4px;">
+                            <div class="form-group">
+                                <label class="form-label">{{ __('dashboard.form.featuredProduct') }}</label>
+                                <label class="toggle-wrap" style="cursor:pointer;">
+                                    <label class="toggle">
+                                        <input type="checkbox" name="is_featured" value="1"
+                                            {{ old('is_featured', $product?->is_featured) ? 'checked' : '' }} />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span style="font-size: var(--title-size); color:rgba(255,255,255,0.5);">
+                                        Show on featured section
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">{{ __('dashboard.form.hotItem') }}</label>
+                                <label class="toggle-wrap" style="cursor:pointer;">
+                                    <label class="toggle">
+                                        <input type="checkbox" name="is_hot" value="1"
+                                            {{ old('is_hot', $product?->is_hot) ? 'checked' : '' }} />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span style="font-size: var(--title-size); color:rgba(255,255,255,0.5);">
+                                        Mark as hot item 🔥
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {{-- ── Submit Buttons ────────────────────────────────────── --}}
+                        <div
+                            style="position:sticky; bottom:0; background:#1A1A1A; display:flex; justify-content:center; gap:12px; margin-top:24px; padding:20px 0; border-top:1px solid rgba(255,255,255,0.07);">
+                            <button type="submit" class="btn btn-orange" id="submitBtn">
+                                <svg width="14" height="14" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" viewBox="0 0 24 24">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                {{ $product ? strtoupper(__('dashboard.form.updateProduct')) : strtoupper(__('dashboard.form.createProduct')) }}
+                            </button>
+                            <a href="{{ route('dashboard.products') }}" class="btn btn-outline">
+                                {{ __('dashboard.form.cancel') }}
+                            </a>
+                            @if ($product)
+                                <div style="margin-left:auto;">
+                                    <button type="button" class="btn btn-danger"
+                                        onclick="if(confirm('Delete this product permanently?')) document.getElementById('deleteForm').submit()">
+                                        {{ __('dashboard.form.delete') }}
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+
+                    </form>
+
+                    {{-- ── Delete Form — MUST sit outside the main <form> ─────── --}}
+                    @if ($product)
+                        <form id="deleteForm" method="POST"
+                            action="{{ route('dashboard.products.destroy', $product) }}">
+                            @csrf
+                            @method('DELETE')
+                        </form>
                     @endif
                 </div>
-
-                </form>
-
-                {{-- ── Delete Form — MUST sit outside the main <form> ─────── --}}
-                @if ($product)
-                    <form id="deleteForm" method="POST" action="{{ route('dashboard.products.destroy', $product) }}">
-                        @csrf
-                        @method('DELETE')
-                    </form>
-                @endif
             </div>
+        </div>
         </div>
         </div>
 
@@ -508,6 +467,30 @@
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 auto !important;
+        }
+
+        /* Product form: SINGLE source of card-level horizontal padding. The
+                       layout's .content (24px) provides the outer page gap; this controls
+                       the gap from the card border to the fields. Values mirror the
+                       layout's breakpoints (≤1024px → 16px, ≤480px → 12px) so the
+                       responsive intent is preserved instead of overridden. */
+        #productFormCard .card-body {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            #productFormCard .card-body {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #productFormCard .card-body {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
         }
 
         /* ── Form Grid Utilities ───────────────────────────────────────────────── */
@@ -552,6 +535,7 @@
             .form-group-horizontal {
                 grid-template-columns: 1fr;
             }
+
             .form-group-horizontal .form-label {
                 margin-bottom: 7px;
             }
@@ -652,18 +636,28 @@
             border-color: #EF4444;
         }
 
-        /* ── Optgroup styling ──────────────────────────────────────────────────── */
-        select.form-control option,
-        select.form-control optgroup {
+        /* ── Category optgroup styling — scoped to the product form card, matching
+                         the banner category select (dark bg, bold orange optgroup headers) ── */
+        #productFormCard select.form-control option,
+        #productFormCard select.form-control optgroup {
             background: #1A1A1A;
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
+            /* Center the label text, keep rows compact with tight padding + line-height */
+            text-align: center;
+            padding: 7px 10px;
+            line-height: 1.3;
         }
 
-        select.form-control optgroup {
+        #productFormCard select.form-control optgroup {
             color: #F97316;
             font-weight: 700;
-            font-size: var(--title-size);
+            font-size: 19px;
+        }
+
+        #productFormCard select.form-control option {
+            font-weight: 700;
+            font-size: 19px;
         }
 
         /* ── Responsive ────────────────────────────────────────────────────────── */
@@ -853,6 +847,39 @@
                 }
             })
             input.files = dt.files
+        }
+
+        // ── Auto-add image by URL (fires after paste/change) ──────────────────────
+        // Automatically adds the pasted URL without requiring the "+ ADD" click.
+        // Only triggers when the field contains a valid-looking http(s) URL and the
+        // input is still focused/active, so it doesn't loop or re-add on blur.
+        let _autoAddingUrl = false
+
+        function autoAddImageByUrl() {
+            const input = document.getElementById('imageUrlInput')
+            const url = (input ? input.value : '').trim()
+            if (!url) return
+            if (!/^https?:\/\/\S+$/i.test(url)) return
+            if (_autoAddingUrl) return
+
+            const gallery = document.getElementById('imageGallery')
+            const existing = Array.from(gallery.querySelectorAll('.gallery-thumb'))
+            if (existing.length >= 8) {
+                alert('Max 8 images.');
+                return
+            }
+
+            _autoAddingUrl = true
+            const img = new Image()
+            img.onload = () => {
+                _autoAddingUrl = false
+                // Add via the same path as the "+ ADD" button (dedupes by clearing the input)
+                addImageByUrl()
+            }
+            img.onerror = () => {
+                _autoAddingUrl = false
+            }
+            img.src = url
         }
 
         // ── Add image by URL ──────────────────────────────────────────────────────

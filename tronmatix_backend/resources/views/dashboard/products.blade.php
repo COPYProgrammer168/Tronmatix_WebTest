@@ -49,59 +49,20 @@
                 <select name="category" class="filter-select" onchange="this.form.submit()">
                     <option value="">{{ __('dashboard.productsPage.allCategories') }}</option>
 
-                    <optgroup label="─── PC BUILDS ───────────────">
-                        @foreach (['PC BUILD UNDER 1K','PC BUILD UNDER 2K','PC BUILD UNDER 3K','PC BUILD UNDER 4K','PC BUILD UNDER 5K','PC BUILD 5K UP'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-                    <optgroup label="─── MONITOR ───────────────">
-                        @foreach (['MONITOR 25INCH','MONITOR 27INCH','MONITOR 32INCH','MONITOR 34INCH','MONITOR 39INCH','MONITOR 42INCH','MONITOR 48INCH','MONITOR 49INCH'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-                    <optgroup label="─── PC PARTS ───────────────">
-                        @foreach (['CPU','RAM','MAINBOARD','COOLING','M2','VGA','CASE','POWER SUPPLY','FAN'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-
-                    <optgroup label="─── HOT ITEM ────────────────">
-                        @foreach (['BEST PRICE','BEST SET'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-
-                    <optgroup label="─── ACCESSORY ────────────">
-                        @foreach (['KEYBOARD','MOUSE','HEADSET','EARPHONE','MONITOR STAND','SPEAKER','MICROPHONE','WEBCAM','MOUSEPAD','LIGHTBAR','ROUTER'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-
-                    <optgroup label="─── TABLE CHAIR ─────────────">
-                        @foreach (['DX RACER','SECRETLAB','RAZER','CONSAIR','FANTECH','COOLER MASTER','TTR RACING'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-
-                    <optgroup label="─── RESELL ITEM  ──────────────">
-                        @foreach (['Second hand', 'Used', 'Pre-owned'] as $cat)
-                            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </optgroup>
+                    {{-- Dynamic optgroups from the category tree.
+                         Group title = MAIN CATEGORY, options = its SUB CATEGORIES.
+                         Styled like the banner category list (bold optgroups/options). --}}
+                    @forelse($categoryGroups ?? [] as $group)
+                        <optgroup label="─── {{ $group['label'] }} ───────────────">
+                            @foreach ($group['options'] as $opt)
+                                <option value="{{ $opt['value'] }}" {{ request('category') === $opt['value'] ? 'selected' : '' }}>
+                                    {{ $opt['label'] }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    @empty
+                        <option value="" disabled>{{ __('dashboard.productsPage.noProducts') }}</option>
+                    @endforelse
                 </select>
             </div>
 
@@ -399,7 +360,7 @@
             border-color: #F97316;
         }
 
-        /* Optgroup styling */
+        /* Optgroup styling — bold, matching the banner category list */
         .filter-select option,
         .filter-select optgroup {
             background: #1A1A1A;
@@ -409,8 +370,12 @@
 
         .filter-select optgroup {
             color: #F97316;
-            font-weight: 400;
+            font-weight: 700;
             font-size: var(--title-size);
+        }
+
+        .filter-select option {
+            font-weight: 700;
         }
 
         .filter-select option {

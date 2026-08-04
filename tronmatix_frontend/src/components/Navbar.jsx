@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -7,157 +7,56 @@ import { useFavorites } from '../context/FavoritesContext'
 import { useTheme } from '../context/ThemeContext'
 import { useLang } from '../context/LanguageContext'
 import { useMobileMenu } from '../context/MobileMenuContext'
+import { useCategories } from '../context/CategoryContext'
 import LogoutConfirmModal from './LogoutConfirmModal'
 import logo from '../assets/logo.png'
 
 const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
 
-const navItems = [
-  { label: 'HOME', path: '/' },
-  {
-    label: 'PC BUILD', path: '/category/pc-build',
-    categories: ['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'],
-    sub: ['PC BUILD UNDER 1K', 'PC BUILD UNDER 2K', 'PC BUILD UNDER 3K', 'PC BUILD UNDER 4K', 'PC BUILD UNDER 5K', 'PC BUILD 5K UP'],
-  },
-  {
-    label: 'MONITOR', path: '/category/monitor',
-    categories: ['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'],
-    sub: ['MONITOR 25INCH', 'MONITOR 27INCH', 'MONITOR 32INCH', 'MONITOR 34INCH', 'MONITOR 39INCH', 'MONITOR 42INCH', 'MONITOR 48INCH', 'MONITOR 49INCH'],
-  },
-  {
-    label: 'PC PART', path: '/category/pc-part',
-    categories: ['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'],
-    sub: [
-      { label: 'CPU', brands: ['INTEL 12TH', 'INTEL 13TH', 'INTEL 14TH', 'INTEL 15TH ULTRA', 'AMD ALL SERIES'] },
-      { label: 'RAM', brands: ['8GB DDR4', '16GB DDR4', '16GB DDR5', '32GB DDR5', '24GB DDR5', '48GB DDR5', '96GB DDR5', 'RAM DDR5 64GB X2 128GB'] },
-      { label: 'MAINBOARD', brands: ['H610 SERIES', 'B760 SERIES', 'Z790 SERIES', 'Z890 SERIES', 'X670 SERIES', 'X870 SERIES', 'B850 SERIES', 'H810 SERIES', 'B860 SERIES'] },
-      { label: 'COOLING', brands: ['THERMAL GREASE', 'COOLER', 'LIQUID 240MM', 'LIQUID 360MM', 'LIQUID WATERLOOP'] },
-      { label: 'M2', brands: ['256G', '500G', '1TB', '2TB', '4TB', '8TB', '4TB', 'ENCLOSURE', 'M.2 TRAY'] },
-      { label: 'VGA', brands: ['RTX 3050', 'RTX 5080', 'RTX 5090', 'RTX 5070TI', 'INTER VGA', 'VGA AMD ALL SERIES', 'VGA RTX5070', 'RTX5060TI', 'RTX 5060'] },
-      { label: 'CASE', brands: ['UNDER 50$', 'UNDER 100$', 'UNDER 200$', 'UNDER 300$', 'UNDER 500$', 'UNDER 1000$', 'UNDER 10000$', 'MINI ITX'] },
-      { label: 'POWER SUPPLY', brands: ['550W', '650W', '750W', '850W', '1000W', '1200W', '1600W', '2200W'] },
-      { label: 'FAN', brands: ['CASE FAN', 'RGB FAN', 'INDUSTRIAL FAN'] },
-    ],
-  },
-  {
-    label: 'HOT ITEM', path: '/category/hot-item',
-    categories: ['BEST PRICE', 'BEST SET'], sub: ['BEST PRICE', 'BEST SET'],
-  },
-  {
-    label: 'ACCESSORY', path: '/category/accessory',
-    categories: ['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'],
-    sub: ['KEYBOARD', 'MOUSE', 'HEADSET', 'EARPHONE', 'MONITOR STAND', 'SPEAKER', 'MICROPHONE', 'WEBCAM', 'MOUSEPAD', 'LIGHTBAR', 'ROUTER'],
-  },
-  {
-    label: 'TABLE CHAIR', path: '/category/table-chair',
-    categories: ['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'],
-    sub: ['DX RACER', 'SECRETLAB', 'RAZER', 'CONSAIR', 'FANTECH', 'COOLER MASTER', 'TTR RACING'],
-  },
-  // {
-  //   label: 'RESLL ITEM', path: '/category/resell-item',
-  //   categories: ['Second Hand', 'Used', 'Pre-owned'],
-  //   sub: ['Second Hand', 'Used', 'Pre-owned'],
-  // },
-  { label: 'CONTACT US', path: '/contact' },
-]
+/* ── Desktop dropdown panel (4-level: Category → MainCate → SubCate → Brand) ─ */
+function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOpenSub, setOpenSubSub, isKhmer, dark, expandedCatNames }) {
+  const closeTimeoutRef = useRef(null)
 
-// Maps English label → i18n key so URLs stay English but text translates
-const NAV_LABEL_KEYS = {
-  'HOME': 'nav.home',
-  'PC BUILD': 'nav.pcBuild',
-  'MONITOR': 'nav.monitor',
-  'PC PART': 'nav.pcPart',
-  'HOT ITEM': 'nav.hotItem',
-  'ACCESSORY': 'nav.accessory',
-  'TABLE CHAIR': 'nav.tableChair',
-  // 'RESLL ITEM':  'nav.resellItem',
-  'CONTACT US': 'nav.contactUs',
-}
+  const clearClose = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+  }
 
-/* ── Theme Toggle ─────────────────────────────────────────────────────────── */
-function ThemeToggle() {
-  const { dark, toggle } = useTheme()
-  return (
-    <button onClick={toggle}
-      title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-      className="relative flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all duration-300 focus:outline-none flex-shrink-0"
-      style={{ borderColor: dark ? '#F97316' : '#e5e7eb', background: dark ? 'rgba(249,115,22,0.12)' : '#f3f4f6' }}>
-      <span className="absolute transition-all duration-300"
-        style={{ opacity: dark ? 0 : 1, transform: dark ? 'scale(0.4) rotate(90deg)' : 'scale(1) rotate(0deg)' }}>
-        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm5 10a5 5 0 11-10 0 5 5 0 0110 0zm4.95-1H21a1 1 0 110 2h-1.05A8.001 8.001 0 0113 20.95V22a1 1 0 11-2 0v-1.05A8.001 8.001 0 013.05 13H2a1 1 0 110-2h1.05A8.001 8.001 0 0111 3.05V2a1 1 0 112 0v1.05A8.001 8.001 0 0120.95 11z" />
-        </svg>
-      </span>
-      <span className="absolute transition-all duration-300"
-        style={{ opacity: dark ? 1 : 0, transform: dark ? 'scale(1) rotate(0deg)' : 'scale(0.4) rotate(-90deg)' }}>
-        <svg className="w-4 h-4" fill="#F97316" viewBox="0 0 24 24">
-          <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-        </svg>
-      </span>
-    </button>
-  )
-}
+  const scheduleCloseTop = () => {
+    clearClose()
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenDrop(null)
+      setOpenSub(null)
+      setOpenSubSub(null)
+    }, 150)
+  }
 
-/* ── Language Toggle ──────────────────────────────────────────────────────── */
-function LanguageToggle() {
-  const { toggle, isKhmer } = useLang()
-  return (
-    <button
-      onClick={toggle}
-      title={isKhmer ? 'Switch to English' : 'ប្តូរទៅភាសាខ្មែរ'}
-      aria-label={isKhmer ? 'Switch to English' : 'Switch to Khmer'}
-      className="relative flex items-center flex-shrink-0 focus:outline-none"
-      style={{
-        height: 36, minWidth: 76, borderRadius: 20,
-        border: `2px solid ${isKhmer ? '#F97316' : '#e5e7eb'}`,
-        background: isKhmer ? 'rgba(249,115,22,0.10)' : '#f3f4f6',
-        padding: '0 3px', cursor: 'pointer', overflow: 'hidden',
-        transition: 'border-color 0.25s ease, background 0.25s ease',
-      }}>
-      <span aria-hidden="true" style={{
-        position: 'absolute', top: 2, bottom: 2,
-        width: 'calc(50% - 2px)', borderRadius: 16,
-        background: isKhmer ? '#F97316' : '#1f2937', left: 2,
-        transform: isKhmer ? 'translateX(calc(100% + 0px))' : 'translateX(0)',
-        transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1), background 0.25s',
-        pointerEvents: 'none',
-      }} />
-      <span style={{
-        position: 'relative', flex: 1, textAlign: 'center',
-        fontSize: 11, fontWeight: 800, letterSpacing: 0.5,
-        color: isKhmer ? 'rgba(156,163,175,1)' : '#ffffff',
-        fontFamily: 'Rajdhani, sans-serif',
-        transition: 'color 0.2s', zIndex: 1, padding: '0 4px', userSelect: 'none',
-      }}>EN</span>
-      <span style={{
-        position: 'relative', flex: 1, textAlign: 'center',
-        fontSize: 12, fontWeight: 800,
-        color: isKhmer ? '#ffffff' : 'rgba(156,163,175,1)',
-        fontFamily: 'Kh_Jrung_Thom, Khmer OS, system-ui, sans-serif',
-        transition: 'color 0.2s', zIndex: 1, padding: '0 4px',
-        userSelect: 'none', lineHeight: 1.8,
-      }}>ខ្មែរ</span>
-    </button>
-  )
-}
+  const scheduleCloseSub = () => {
+    clearClose()
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenSub(null)
+      setOpenSubSub(null)
+    }, 150)
+  }
 
-/* ── Icon button ─────────────────────────────────────────────────────────── */
-function IconBtn({ onClick, className = '', style = {}, children, title }) {
-  const [hovered, setHovered] = useState(false)
-  return (
-    <button onClick={onClick} title={title}
-      className={`relative p-2 transition-colors ${className}`}
-      style={{ ...style, color: hovered ? '#F97316' : style.color }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}>
-      {children}
-    </button>
-  )
-}
+  const scheduleCloseSubSub = () => {
+    clearClose()
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpenSubSub(null)
+    }, 150)
+  }
 
-/* ── Desktop dropdown panel ─────────────────────────────────────────────── */
-function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhmer, dark }) {
-  const isNested = typeof item.sub[0] === 'object'
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const hasNested = item.sub && item.sub.length > 0 && item.sub[0].sub
   const dropFont = isKhmer ? 'Kh_Jrung_Thom, sans-serif' : 'Rajdhani, sans-serif'
   return (
     <div className="absolute top-full left-0 shadow-2xl z-[200] py-2 min-w-[210px]"
@@ -167,98 +66,203 @@ function DropdownPanel({ item, openDrop, openSub, setOpenDrop, setOpenSub, isKhm
         WebkitBackdropFilter: 'blur(12px) saturate(180%)',
         border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
       }}
-      onMouseEnter={() => setOpenDrop(item.label)}
-      onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
+      onMouseEnter={() => { clearClose(); setOpenDrop(item.label) }}
+      onMouseLeave={scheduleCloseTop}>
       <Link
-        to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+        to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
         className="block px-4 py-2 font-bold text-primary border-b border-[#333] mb-1 tracking-wider"
         style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#F97316' : '#1f2937' }}
-        onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
+        onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
         ALL {item.label}
       </Link>
-      {isNested
-        ? item.sub.map(subObj => (
-          <div key={subObj.label} className="relative"
-            onMouseEnter={() => setOpenSub(subObj.label)}
-            onMouseLeave={() => setOpenSub(null)}>
-            <div className="flex items-center justify-between transition-colors"
-              style={{ backgroundColor: openSub === subObj.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
-              onMouseEnter={() => setOpenSub(subObj.label)}
-              onMouseLeave={() => setOpenSub(null)}>
-              <Link to={`/category/${slugify(item.label)}/${slugify(subObj.label)}`}
-                className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
-                style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
-                onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
-                {subObj.label}
-              </Link>
-              <span className="pr-3 text-gray-500">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-            {openSub === subObj.label && (
-              <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
-                style={{
-                  background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
-                  backdropFilter: 'blur(12px) saturate(180%)',
-                  WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                  border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
-                }}
-                onMouseEnter={() => setOpenSub(subObj.label)}
-                onMouseLeave={() => setOpenSub(null)}>
-                <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
-                  {subObj.label}
-                </div>
-                {subObj.brands.map(brand => (
-                  <Link key={brand}
-                    to={`/category/${slugify(item.label)}/${slugify(subObj.label)}?brand=${encodeURIComponent(brand)}`}
-                    className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
-                    style={{
-                      fontFamily: dropFont,
-                      fontSize: 16,
-                      letterSpacing: isKhmer ? 0 : undefined,
-                      color: dark ? '#d1d5db' : '#374151',
-                      backgroundColor: 'transparent'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
-                    {brand}
-                  </Link>
-                ))}
+
+      {hasNested
+        ? item.sub.map(mc => (
+            <div key={mc.label} className="relative"
+              onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
+              onMouseLeave={scheduleCloseSub}>
+              <div className="flex items-center justify-between transition-colors"
+                style={{ backgroundColor: openSub === mc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
+                onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
+                onMouseLeave={scheduleCloseSub}>
+                <Link to={`/category/${slugify(item.label)}/${slugify(mc.label)}`}
+                  className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
+                  style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
+                  onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                  {mc.label}
+                </Link>
+                {/* Arrow only when this main category actually has sub-categories */}
+                {mc.sub && mc.sub.length > 0 && (
+                  <span className="pr-3 text-gray-500">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-        ))
-        : item.sub.map(sub => (
-          <Link key={sub}
-            to={`/category/${slugify(item.label)}/${slugify(sub)}`}
-            className="block px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
-            style={{
-              fontFamily: dropFont,
-              fontSize: 16,
-              letterSpacing: isKhmer ? 0 : undefined,
-              color: dark ? '#d1d5db' : '#374151',
-              backgroundColor: 'transparent'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-            onClick={() => { setOpenDrop(null); setOpenSub(null) }}>
-            {sub}
-          </Link>
-        ))
+
+              {openSub === mc.label && mc.sub && (
+                <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
+                  style={{
+                    background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                    backdropFilter: 'blur(12px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                    border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+                  }}
+                  onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
+                  onMouseLeave={scheduleCloseSub}>
+                  <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
+                    {mc.label}
+                  </div>
+                  {mc.sub.map(sc => (
+                    <div key={sc.label} className="relative"
+                      onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
+                      onMouseLeave={scheduleCloseSubSub}>
+                      <div className="flex items-center justify-between transition-colors"
+                        style={{ backgroundColor: openSubSub === sc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
+                        onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
+                        onMouseLeave={scheduleCloseSubSub}>
+                        <Link to={`/category/${slugify(item.label)}/${slugify(mc.label)}/${slugify(sc.label)}`}
+                          className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
+                          style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
+                          onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                          {sc.label}
+                        </Link>
+                        {sc.brands && sc.brands.length > 0 && (
+                          <span className="pr-3 text-gray-500">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                          </span>
+                        )}
+                      </div>
+
+                      {openSubSub === sc.label && sc.brands && (
+                        <div className="absolute left-full top-0 shadow-2xl z-[220] min-w-[220px] py-2"
+                          style={{
+                            background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                            backdropFilter: 'blur(12px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                            border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+                          }}
+                          onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
+                          onMouseLeave={scheduleCloseSubSub}>
+                          <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
+                            {sc.label}
+                          </div>
+                          {sc.brands.map(brand => (
+                            <Link key={brand}
+                              to={`/category/${slugify(item.label)}/${slugify(mc.label)}/${slugify(sc.label)}?brand=${encodeURIComponent(brand)}`}
+                              className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
+                              style={{
+                                fontFamily: dropFont,
+                                fontSize: 16,
+                                letterSpacing: isKhmer ? 0 : undefined,
+                                color: dark ? '#d1d5db' : '#374151',
+                                backgroundColor: 'transparent'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                              onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                              {brand}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        : item.sub.map(sub => {
+            // Flattened single-main categories (e.g. PC BUILD) surface their
+            // sub-categories here as { label, brands } objects; legacy nav
+            // strings still work too.
+            const subLabel = typeof sub === 'string' ? sub : sub.label
+            const subBrands = typeof sub === 'string' ? [] : (sub.brands || [])
+            const hasFlyout = subBrands.length > 0
+
+            const link = (
+              <Link to={`/category/${slugify(item.label)}/${slugify(subLabel)}`}
+                className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
+                style={{
+                  fontFamily: dropFont,
+                  fontSize: 16,
+                  letterSpacing: isKhmer ? 0 : undefined,
+                  color: dark ? '#d1d5db' : '#374151',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                {subLabel}
+              </Link>
+            )
+
+            return (
+              <div key={subLabel} className="relative flex items-center justify-between transition-colors"
+                onMouseEnter={() => { clearClose(); if (hasFlyout) setOpenSub(subLabel) }}
+                onMouseLeave={scheduleCloseSub}>
+                {link}
+                {/* Flyout arrow only when this item has brands to show */}
+                {hasFlyout && (
+                  <span className="pr-3 text-gray-500">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                )}
+                {openSub === subLabel && hasFlyout && (
+                  <div className="absolute left-full top-0 shadow-2xl z-[220] min-w-[220px] py-2"
+                    style={{
+                      background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                      backdropFilter: 'blur(12px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                      border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+                    }}
+                    onMouseEnter={() => { clearClose(); setOpenSub(subLabel) }}
+                    onMouseLeave={scheduleCloseSub}>
+                    <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
+                      {subLabel}
+                    </div>
+                    {subBrands.map(brand => (
+                      <Link key={brand}
+                        to={`/category/${slugify(item.label)}/${slugify(subLabel)}?brand=${encodeURIComponent(brand)}`}
+                        className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
+                        style={{
+                          fontFamily: dropFont,
+                          fontSize: 16,
+                          letterSpacing: isKhmer ? 0 : undefined,
+                          color: dark ? '#d1d5db' : '#374151',
+                          backgroundColor: 'transparent'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                        {brand}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })
       }
     </div>
   )
 }
 
 export default function Navbar({ onAuthOpen }) {
+  const { categories: apiCategories, loading, error } = useCategories()
+
   const [openDrop, setOpenDrop] = useState(null)
   const [openSub, setOpenSub] = useState(null)
+  const [openSubSub, setOpenSubSub] = useState(null)
   const { isMobileMenuOpen: mobileOpen, setIsMobileMenuOpen } = useMobileMenu()
   const [mobileSub, setMobileSub] = useState(null)
   const [mobileSubItem, setMobileSubItem] = useState(null)
+  const [mobileSubSub, setMobileSubSub] = useState(null)
   const [search, setSearch] = useState('')
   const [userMenu, setUserMenu] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -299,6 +303,124 @@ export default function Navbar({ onAuthOpen }) {
     ? 'Kdam Thmor Pro, Rajdhani, sans-serif'
     : 'Rajdhani, sans-serif'
 
+  /* ── Build navItems from API tree ──────────────────────────────────────── */
+  const navItems = useMemo(() => {
+    const items = [
+      { label: 'HOME', path: '/' },
+    ]
+
+    if (error || !apiCategories.length) {
+      return items
+    }
+
+    apiCategories.forEach(cat => {
+      const mainCates = cat.main_categories || []
+      const mainNames = mainCates.map(mc => mc.name)
+
+      // Each main category → { label, sub: [subCate], brands }
+      const mainItems = mainCates.map(mc => {
+        const subCates = mc.sub_categories || []
+        return {
+          label: mc.name,
+          sub: subCates.map(sc => {
+            const raw = sc.brands
+            const brandList = Array.isArray(raw)
+              ? raw.map(b => b.name)
+              : (typeof raw === 'string' ? raw.split(',').map(s => s.trim()).filter(Boolean) : [])
+            return { label: sc.name, brands: brandList }
+          }),
+        }
+      })
+
+      // Flatten a category that has exactly ONE main category with the SAME
+      // name (e.g. PC BUILD → [PC BUILD], MONITOR → [MONITOR], ACCESSORY →
+      // [ACCESSORY]). Hoisting its sub-categories up one level avoids the
+      // redundant "PC BUILD → PC BUILD → UNDER 1K" nesting the real site
+      // doesn't have. PC PARTS keeps its mains (CPU, RAM, …) as-is.
+      let sub
+      if (mainItems.length === 1 && mainItems[0].label === cat.name) {
+        sub = mainItems[0].sub
+      } else {
+        sub = mainItems
+      }
+
+      // TABLE / CHAIR (and any single-main category) whose only sub is the
+      // "GENERAL" placeholder should surface its brands directly — matching
+      // the live site where brands appear as top-level dropdown items.
+      if (
+        sub.length === 1 &&
+        typeof sub[0] === 'object' &&
+        sub[0].label === 'GENERAL' &&
+        (sub[0].brands || []).length > 0
+      ) {
+        sub = sub[0].brands.map(name => ({ label: name }))
+      }
+
+      items.push({
+        label: cat.name,
+        path: `/category/${cat.slug}`,
+        categories: mainNames,
+        sub,
+      })
+    })
+
+    items.push({ label: 'CONTACT US', path: '/contact' })
+    return items
+  }, [apiCategories, error])
+
+  /* ── Expanded category names for "ALL {label}" links ──────────────────────
+     Include main + sub + brand names so products stored under any of those
+     show up. e.g. table-chair → "GENERAL,DX RACER,SECRETLAB,TTR RACING,..."
+     (not just "TABLE CHAIR", which matches no products). */
+  const expandedCatNames = useMemo(() => {
+    const map = {}
+    ;(apiCategories || []).forEach(cat => {
+      const names = []
+      ;(cat.main_categories || []).forEach(mc => {
+        if (mc.name) names.push(mc.name)
+        const scs = mc.sub_categories || []
+        scs.forEach(sc => {
+          if (sc.name) names.push(sc.name)
+          const brands = Array.isArray(sc.brands)
+            ? sc.brands.map(b => b.name).filter(b => b && b !== 'TBD')
+            : (typeof sc.brands === 'string' ? sc.brands.split(',').map(s => s.trim()).filter(s => s && s !== 'TBD') : [])
+          if (brands.length) names.push(...brands)
+        })
+      })
+      map[cat.slug] = [...new Set(names.filter(Boolean))]
+    })
+    return map
+  }, [apiCategories])
+
+  /* ── Dynamic NAV_LABEL_KEYS (slug → existing i18n key, fallback to label) ─ */
+  const SLUG_TO_I18N_KEY = {
+    'pc-build': 'pcBuild',
+    'monitor': 'monitor',
+    // CategorySeeder now matches the live site exactly: "PC PARTS" → pc-parts,
+    // "TABLE / CHAIR" → table-chair. Keep the old keys too as fallbacks so any
+    // stale DB rows (old slugs) still resolve.
+    'pc-part': 'pcPart',
+    'pc-parts': 'pcParts',
+    'hot-item': 'hotItem',
+    'accessory': 'accessory',
+    'table-chair': 'tableChair',
+  }
+
+  const NAV_LABEL_KEYS = useMemo(() => {
+    const known = { 'HOME': 'nav.home', 'CONTACT US': 'nav.contactUs' }
+    const map = {}
+    navItems.forEach(item => {
+      if (known[item.label]) {
+        map[item.label] = known[item.label]
+      } else if (SLUG_TO_I18N_KEY[slugify(item.label)]) {
+        map[item.label] = `nav.${SLUG_TO_I18N_KEY[slugify(item.label)]}`
+      } else {
+        map[item.label] = item.label
+      }
+    })
+    return map
+  }, [navItems])
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -308,7 +430,7 @@ export default function Navbar({ onAuthOpen }) {
   useEffect(() => {
     const handler = e => {
       if (headerRef.current && !headerRef.current.contains(e.target)) {
-        setOpenDrop(null); setOpenSub(null)
+        setOpenDrop(null); setOpenSub(null); setOpenSubSub(null)
       }
       const inFull = userMenuRef.current && userMenuRef.current.contains(e.target)
       const inCompact = compactUserMenuRef.current && compactUserMenuRef.current.contains(e.target)
@@ -326,6 +448,8 @@ export default function Navbar({ onAuthOpen }) {
   useEffect(() => {
     setIsMobileMenuOpen(false)
     setMobileSub(null)
+    setMobileSubItem(null)
+    setMobileSubSub(null)
     document.body.style.overflow = ''
   }, [location.pathname])
 
@@ -347,7 +471,95 @@ export default function Navbar({ onAuthOpen }) {
     return location.pathname === item.path || location.pathname.startsWith(item.path + '/')
   }
 
-  const dropProps = { openDrop, openSub, setOpenDrop, setOpenSub, isKhmer, dark }
+  const dropProps = { openDrop, openSub, openSubSub, setOpenDrop, setOpenSub, setOpenSubSub, isKhmer, dark, expandedCatNames }
+
+  /* ── Loading skeleton for nav ──────────────────────────────────────────── */
+  const NavSkeleton = () => (
+    <li className="flex-shrink-0 px-3">
+      <div className="animate-pulse rounded" style={{ width: 70, height: 20, background: dark ? '#374151' : '#e5e7eb' }} />
+    </li>
+  )
+
+  /* ── Theme Toggle ──────────────────────────────────────────────────────── */
+  function ThemeToggle() {
+    const { dark, toggle } = useTheme()
+    return (
+      <button onClick={toggle}
+        title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        className="relative flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all duration-300 focus:outline-none flex-shrink-0"
+        style={{ borderColor: dark ? '#F97316' : '#e5e7eb', background: dark ? 'rgba(249,115,22,0.12)' : '#f3f4f6' }}>
+        <span className="absolute transition-all duration-300"
+          style={{ opacity: dark ? 0 : 1, transform: dark ? 'scale(0.4) rotate(90deg)' : 'scale(1) rotate(0deg)' }}>
+          <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm5 10a5 5 0 11-10 0 5 5 0 0110 0zm4.95-1H21a1 1 0 110 2h-1.05A8.001 8.001 0 0113 20.95V22a1 1 0 11-2 0v-1.05A8.001 8.001 0 013.05 13H2a1 1 0 110-2h1.05A8.001 8.001 0 0111 3.05V2a1 1 0 112 0v1.05A8.001 8.001 0 0120.95 11z" />
+          </svg>
+        </span>
+        <span className="absolute transition-all duration-300"
+          style={{ opacity: dark ? 1 : 0, transform: dark ? 'scale(1) rotate(0deg)' : 'scale(0.4) rotate(-90deg)' }}>
+          <svg className="w-4 h-4" fill="#F97316" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
+          </svg>
+        </span>
+      </button>
+    )
+  }
+
+  /* ── Language Toggle ────────────────────────────────────────────────────── */
+  function LanguageToggle() {
+    const { toggle, isKhmer } = useLang()
+    return (
+      <button
+        onClick={toggle}
+        title={isKhmer ? 'Switch to English' : 'ប្តូរទៅភាសាខ្មែរ'}
+        aria-label={isKhmer ? 'Switch to English' : 'Switch to Khmer'}
+        className="relative flex items-center flex-shrink-0 focus:outline-none"
+        style={{
+          height: 36, minWidth: 76, borderRadius: 20,
+          border: `2px solid ${isKhmer ? '#F97316' : '#e5e7eb'}`,
+          background: isKhmer ? 'rgba(249,115,22,0.10)' : '#f3f4f6',
+          padding: '0 3px', cursor: 'pointer', overflow: 'hidden',
+          transition: 'border-color 0.25s ease, background 0.25s ease',
+        }}>
+        <span aria-hidden="true" style={{
+          position: 'absolute', top: 2, bottom: 2,
+          width: 'calc(50% - 2px)', borderRadius: 16,
+          background: isKhmer ? '#F97316' : '#1f2937', left: 2,
+          transform: isKhmer ? 'translateX(calc(100% + 0px))' : 'translateX(0)',
+          transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1), background 0.25s',
+          pointerEvents: 'none',
+        }} />
+        <span style={{
+          position: 'relative', flex: 1, textAlign: 'center',
+          fontSize: 11, fontWeight: 800, letterSpacing: 0.5,
+          color: isKhmer ? 'rgba(156,163,175,1)' : '#ffffff',
+          fontFamily: 'Rajdhani, sans-serif',
+          transition: 'color 0.2s', zIndex: 1, padding: '0 4px', userSelect: 'none',
+        }}>EN</span>
+        <span style={{
+          position: 'relative', flex: 1, textAlign: 'center',
+          fontSize: 12, fontWeight: 800,
+          color: isKhmer ? '#ffffff' : 'rgba(156,163,175,1)',
+          fontFamily: 'Kh_Jrung_Thom, Khmer OS, system-ui, sans-serif',
+          transition: 'color 0.2s', zIndex: 1, padding: '0 4px',
+          userSelect: 'none', lineHeight: 1.8,
+        }}>ខ្មែរ</span>
+      </button>
+    )
+  }
+
+  /* ── Icon button ────────────────────────────────────────────────────────── */
+  function IconBtn({ onClick, className = '', style = {}, children, title }) {
+    const [hovered, setHovered] = useState(false)
+    return (
+      <button onClick={onClick} title={title}
+        className={`relative p-2 transition-colors ${className}`}
+        style={{ ...style, color: hovered ? '#F97316' : style.color }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}>
+        {children}
+      </button>
+    )
+  }
 
   /* ── User Avatar ─────────────────────────────────────────────────────── */
   const UserAvatar = ({ size = 10, fontSize = 16 }) => (
@@ -461,27 +673,33 @@ export default function Navbar({ onAuthOpen }) {
             {/* Inline nav tablet+ */}
             <nav className="hidden xl:flex items-center flex-1 min-w-0 justify-center">
               <ul className="flex items-center flex-wrap">
-                {navItems.map(item => (
-                  <li key={item.label} className="relative flex-shrink-0">
-                    <div onMouseEnter={() => { if (item.sub) setOpenDrop(item.label); setHoveredNav(item.label) }}
-                      onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
-                      <Link
-                        to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                        className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
-                        style={{ fontFamily: navbFont, fontSize: isKhmer ? 18 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
-                        onClick={() => { setOpenDrop(null); setOpenSub(null); setHoveredNav(null) }}>
-                        {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                        {item.sub && (
-                          <svg className={`w-2 h-2 flex-shrink-0 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        )}
-                      </Link>
-                      {item.sub && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
-                    </div>
-                  </li>
-                ))}
+                {loading ? (
+                  <>
+                    <NavSkeleton /><NavSkeleton /><NavSkeleton /><NavSkeleton /><NavSkeleton />
+                  </>
+                ) : (
+                  navItems.map(item => (
+                    <li key={item.label} className="relative flex-shrink-0">
+                      <div onMouseEnter={() => { if (item.sub && !error) setOpenDrop(item.label); setHoveredNav(item.label) }}
+                        onMouseLeave={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                        <Link
+                          to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
+                          className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
+                          style={{ fontFamily: navbFont, fontSize: isKhmer ? 18 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                          onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null); setHoveredNav(null) }}>
+                          {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                          {item.sub && !error && (
+                            <svg className={`w-2 h-2 flex-shrink-0 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
+                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          )}
+                        </Link>
+                        {item.sub && !error && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
+                      </div>
+                    </li>
+                  ))
+                )}
               </ul>
             </nav>
 
@@ -507,8 +725,8 @@ export default function Navbar({ onAuthOpen }) {
               </IconBtn>
 
               <IconBtn onClick={() => setCartOpen(true)} className="hidden md:flex" style={{ color: textColor }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {totalQty > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
@@ -569,8 +787,8 @@ export default function Navbar({ onAuthOpen }) {
               </div>
 
               <IconBtn onClick={() => setCartOpen(true)} className="xl:hidden" style={{ color: textColor }}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {totalQty > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 bg-primary text-white w-4 h-4 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 9 }}>
@@ -630,8 +848,8 @@ export default function Navbar({ onAuthOpen }) {
                   <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}
                     onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                     onMouseLeave={e => e.currentTarget.style.color = subTextColor}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </button>
                 </div>
@@ -658,8 +876,8 @@ export default function Navbar({ onAuthOpen }) {
                 </IconBtn>
 
                 <IconBtn onClick={() => setCartOpen(true)} style={{ color: textColor }}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   {totalQty > 0 && (
                     <span className="absolute -top-1 -right-1 bg-primary text-white w-5 h-5 flex items-center justify-center rounded-full font-bold" style={{ fontSize: 11 }}>
@@ -686,37 +904,43 @@ export default function Navbar({ onAuthOpen }) {
           <nav className="hidden xl:block" style={{ background: navBg, borderBottom: `1px solid ${navBorder}` }}>
             <div className="max-w-[1280px] mx-auto px-2 flex items-center">
               <ul className="flex items-center justify-center flex-1 flex-wrap">
-                {navItems.map(item => (
-                  <li key={item.label} className="relative">
-                    <div className="flex items-center"
-                      onMouseEnter={() => { if (item.sub) setOpenDrop(item.label); setHoveredNav(item.label) }}
-                      onMouseLeave={() => { setOpenDrop(null); setOpenSub(null) }}>
-                      <Link
-                        to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
-                        className="flex items-center gap-0.5 border-b-2 border-transparent whitespace-nowrap font-bold tracking-wide"
-                        style={{
-                          fontFamily: navbFont,
-                          fontSize: isKhmer ? 20 : 21,
-                          fontWeight: 700,
-                          padding: 'clamp(10px, 1.2vw, 20px) clamp(6px, 0.8vw, 18px)',
-                          color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor,
-                          borderBottomColor: (hoveredNav === item.label || isActive(item)) ? '#F97316' : 'transparent',
-                          letterSpacing: isKhmer ? 0 : undefined,
-                          transition: 'color 0.15s, border-color 0.15s',
-                        }}
-                        onClick={() => { setOpenDrop(null); setOpenSub(null); setHoveredNav(null) }}>
-                        {t(NAV_LABEL_KEYS[item.label] || item.label)}
-                        {item.sub && (
-                          <svg className={`w-3 h-3 flex-shrink-0 ml-0.5 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        )}
-                      </Link>
-                      {item.sub && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
-                    </div>
-                  </li>
-                ))}
+                {loading ? (
+                  <>
+                    <NavSkeleton /><NavSkeleton /><NavSkeleton /><NavSkeleton /><NavSkeleton />
+                  </>
+                ) : (
+                  navItems.map(item => (
+                    <li key={item.label} className="relative">
+                      <div className="flex items-center"
+                        onMouseEnter={() => { if (item.sub && !error) setOpenDrop(item.label); setHoveredNav(item.label) }}
+                        onMouseLeave={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                        <Link
+                          to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
+                          className="flex items-center gap-0.5 border-b-2 border-transparent whitespace-nowrap font-bold tracking-wide"
+                          style={{
+                            fontFamily: navbFont,
+                            fontSize: isKhmer ? 20 : 21,
+                            fontWeight: 700,
+                            padding: 'clamp(10px, 1.2vw, 20px) clamp(6px, 0.8vw, 18px)',
+                            color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor,
+                            borderBottomColor: (hoveredNav === item.label || isActive(item)) ? '#F97316' : 'transparent',
+                            letterSpacing: isKhmer ? 0 : undefined,
+                            transition: 'color 0.15s, border-color 0.15s',
+                          }}
+                          onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null); setHoveredNav(null) }}>
+                          {t(NAV_LABEL_KEYS[item.label] || item.label)}
+                          {item.sub && !error && (
+                            <svg className={`w-3 h-3 flex-shrink-0 ml-0.5 transition-transform ${openDrop === item.label ? 'rotate-180' : ''}`}
+                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          )}
+                        </Link>
+                        {item.sub && !error && openDrop === item.label && <DropdownPanel item={item} {...dropProps} />}
+                      </div>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
           </nav>
@@ -853,8 +1077,8 @@ export default function Navbar({ onAuthOpen }) {
                     border: dark ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(249,115,22,0.2)',
                   }} />
                 <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </button>
               </div>
@@ -868,11 +1092,12 @@ export default function Navbar({ onAuthOpen }) {
                 }}>
                   <div className="flex items-center justify-between px-4 py-3.5 select-none"
                     onClick={() => {
-                      if (item.sub) {
+                      if (item.sub && !error) {
                         setMobileSub(mobileSub === item.label ? null : item.label);
                       } else {
-                        const dest = item.categories
-                          ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}`
+                        const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []
+                        const dest = cats.length
+                          ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}`
                           : item.path;
                         navigate(dest);
                         setIsMobileMenuOpen(false);
@@ -884,7 +1109,7 @@ export default function Navbar({ onAuthOpen }) {
                     >
                       {t(NAV_LABEL_KEYS[item.label] || item.label)}
                     </span>
-                    {item.sub && (
+                    {item.sub && !error && (
                       <svg className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${mobileSub === item.label ? 'rotate-180' : ''}`}
                         fill="none" stroke={textColor} viewBox="0 0 24 24"
                         onClick={(e) => { e.stopPropagation(); setMobileSub(mobileSub === item.label ? null : item.label); }}>
@@ -893,42 +1118,46 @@ export default function Navbar({ onAuthOpen }) {
                     )}
                   </div>
                   <div>
-                    {item.sub && mobileSub === item.label && (
+                    {item.sub && !error && mobileSub === item.label && (
                       <div className="pb-2" style={{ background: drawerSubBg }}>
                         <Link
-                          to={item.categories ? `${item.path}?cats=${item.categories.map(c => encodeURIComponent(c)).join(',')}` : item.path}
+                          to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
                           className="block px-8 py-2 font-bold text-primary border-b mb-1"
                           style={{ fontSize: 14, borderColor: drawerBorder }}
                           onClick={() => setIsMobileMenuOpen(false)}>
                           ALL {item.label}
                         </Link>
-                        {/* State for all sub-category expansions */}
-                        {item.sub.map(sub => {
-                          const isObj = typeof sub === 'object'
-                          const label = isObj ? sub.label : sub
-                          const brands = isObj ? sub.brands : []
-                          const path = `/category/${slugify(item.label)}/${slugify(label)}`
-                          const expanded = mobileSub === item.label && mobileSubItem === label;
+                        {/* 3-level accordion: MainCate → SubCate → Brand.
+                            Flattened single-main categories (e.g. PC BUILD)
+                            surface their sub-categories here directly. */}
+                        {item.sub.map(mc => {
+                          const mcLabel = typeof mc === 'string' ? mc : mc.label
+                          const mcPath = `/category/${slugify(item.label)}/${slugify(mcLabel)}`
+                          const mcExpanded = mobileSub === item.label && mobileSubItem === mcLabel;
+                          const mcSubs = (mc && mc.sub) || []
+                          const mcBrands = (mc && mc.brands) || []
 
                           return (
-                            <div key={label}>
+                            <div key={mcLabel}>
                               <div className="flex items-center justify-between">
-                                <Link to={path}
+                                <Link to={mcPath}
                                   className="block px-8 py-2 font-bold flex-1"
                                   style={{ fontSize: 14, color: '#F97316', transition: 'color 0.15s' }}
-                                  onClick={() => setIsMobileMenuOpen(false)}>{label}</Link>
-                                {isObj && brands.length > 0 && (
+                                  onMouseEnter={e => e.currentTarget.style.color = '#FB923C'}
+                                  onMouseLeave={e => e.currentTarget.style.color = '#F97316'}
+                                  onClick={() => setIsMobileMenuOpen(false)}>{mcLabel}</Link>
+                                {(mcSubs.length > 0 || mcBrands.length > 0) && (
                                   <button
                                     className="px-4 py-2"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setMobileSubItem(expanded ? null : label);
+                                      setMobileSubItem(mcExpanded ? null : mcLabel);
                                     }}>
                                     <span style={{
                                       color: subTextColor,
                                       display: 'inline-block',
                                       transition: 'transform 0.3s',
-                                      transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                                      transform: mcExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
                                     }}>
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -938,20 +1167,76 @@ export default function Navbar({ onAuthOpen }) {
                                 )}
                               </div>
 
-                              {isObj && brands.length > 0 && (
+                              {(mcSubs.length > 0 || mcBrands.length > 0) && (
                                 <div className="pl-12 pb-1 overflow-hidden transition-all duration-300 ease-in-out"
                                   style={{
-                                    maxHeight: expanded ? brands.length * 35 : 0,
-                                    opacity: expanded ? 1 : 0
+                                    maxHeight: mcExpanded ? Math.max(mcSubs.length, mcBrands.length) * 35 : 0,
+                                    opacity: mcExpanded ? 1 : 0
                                   }}>
-                                  {brands.map(brand => (
-                                    <Link key={brand} to={`${path}?brand=${encodeURIComponent(brand)}`}
+                                  {/* Flattened single-main: sub-categories are the brand level */}
+                                  {mcSubs.length === 0 && mcBrands.map(brand => (
+                                    <Link key={brand} to={`${mcPath}?brand=${encodeURIComponent(brand)}`}
                                       className="block py-1 font-semibold"
                                       style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
                                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                                       onMouseLeave={e => e.currentTarget.style.color = subTextColor}
                                       onClick={() => setIsMobileMenuOpen(false)}>- {brand}</Link>
                                   ))}
+                                  {mcSubs.map(sc => {
+                                    const scLabel = sc.label
+                                    const scPath = `${mcPath}/${slugify(scLabel)}`
+                                    const scExpanded = mcExpanded && mobileSubSub === scLabel;
+                                    const brands = sc.brands || [];
+
+                                    return (
+                                      <div key={scLabel}>
+                                        <div className="flex items-center justify-between">
+                                          <Link to={scPath}
+                                            className="block py-1 font-semibold flex-1"
+                                            style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
+                                            onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                                            onMouseLeave={e => e.currentTarget.style.color = subTextColor}
+                                            onClick={() => setIsMobileMenuOpen(false)}>{scLabel}</Link>
+                                          {brands.length > 0 && (
+                                            <button
+                                              className="px-2 py-1"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setMobileSubSub(scExpanded ? null : scLabel);
+                                              }}>
+                                              <span style={{
+                                                color: subTextColor,
+                                                display: 'inline-block',
+                                                transition: 'transform 0.3s',
+                                                transform: scExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                                              }}>
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                              </span>
+                                            </button>
+                                          )}
+                                        </div>
+
+                                        {brands.length > 0 && (
+                                          <div className="pl-8 pb-1 overflow-hidden transition-all duration-300 ease-in-out"
+                                            style={{
+                                              maxHeight: scExpanded ? brands.length * 30 : 0,
+                                              opacity: scExpanded ? 1 : 0
+                                            }}>
+                                            {brands.map(brand => (
+                                              <Link key={brand} to={`${scPath}?brand=${encodeURIComponent(brand)}`}
+                                                className="block py-1 font-semibold"
+                                                style={{ fontSize: 12, color: subTextColor, transition: 'color 0.15s' }}
+                                                onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                                                onMouseLeave={e => e.currentTarget.style.color = subTextColor}
+                                                onClick={() => setIsMobileMenuOpen(false)}>- {brand}</Link>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                               )}
                             </div>

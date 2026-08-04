@@ -90,16 +90,15 @@ class OrderSeeder extends Seeder
         }
 
         if ($products->isEmpty()) {
-            $this->command->warn('⚠️  No products found — run ProductSeeder first.');
-            return;
-        }
+            $this->command->warn('⚠️  No products found — orders cannot be created.');
+        } else {
+            // ── Create orders spread across ALL of 2026 ─────────────────────
+            // Every month of the year gets a share so the year-long charts show
+            // data across Jan–Dec 2026 (current month included).
+            $orderCount = 200;
 
-        // ── Create orders spread across ALL of 2026 ─────────────────────
-        // Every month of the year gets a share so the year-long charts show
-        // data across Jan–Dec 2026 (current month included).
-        $orderCount = 100;
-
-        for ($i = 0; $i < $orderCount; $i++) {
+            for ($i = 0; $i < $orderCount; $i++) {
+                // ... rest of the loop remains the same
             // Random month in 2026, random day within that month.
             $orderDate = Carbon::create(
                 2026,
@@ -253,6 +252,7 @@ class OrderSeeder extends Seeder
         $this->command->info('✅ OrderItemSeeder: ' . OrderItem::count() . ' items');
         $this->command->info("📍 Delivery orders with map coordinates: {$deliveryOrders}");
         $this->command->info("📦 Pickup orders: {$pickupOrders}");
+        }
     }
 
     private function cities(): array

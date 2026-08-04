@@ -134,7 +134,7 @@ login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     login.form = loginForm
 /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
 export const showRegister = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ showRegister.definition = {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
 showRegister.url = (options?: RouteQueryOptions) => {
@@ -158,7 +158,7 @@ showRegister.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
 showRegister.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ showRegister.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
 showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -177,7 +177,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
     const showRegisterForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -187,7 +187,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
         showRegisterForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -196,7 +196,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\AdminAuthController::showRegister
- * @see app/Http/Controllers/AdminAuthController.php:129
+ * @see app/Http/Controllers/AdminAuthController.php:130
  * @route '/dashboard/register'
  */
         showRegisterForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -212,7 +212,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     showRegister.form = showRegisterForm
 /**
 * @see \App\Http\Controllers\AdminAuthController::register
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +227,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::register
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -236,7 +236,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::register
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
 register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -246,7 +246,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\AdminAuthController::register
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,7 +256,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\AdminAuthController::register
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
         registerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -267,7 +267,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     register.form = registerForm
 /**
 * @see \App\Http\Controllers\AdminAuthController::logout
- * @see app/Http/Controllers/AdminAuthController.php:172
+ * @see app/Http/Controllers/AdminAuthController.php:173
  * @route '/dashboard/logout'
  */
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -282,7 +282,7 @@ logout.definition = {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::logout
- * @see app/Http/Controllers/AdminAuthController.php:172
+ * @see app/Http/Controllers/AdminAuthController.php:173
  * @route '/dashboard/logout'
  */
 logout.url = (options?: RouteQueryOptions) => {
@@ -291,7 +291,7 @@ logout.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::logout
- * @see app/Http/Controllers/AdminAuthController.php:172
+ * @see app/Http/Controllers/AdminAuthController.php:173
  * @route '/dashboard/logout'
  */
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -301,7 +301,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\AdminAuthController::logout
- * @see app/Http/Controllers/AdminAuthController.php:172
+ * @see app/Http/Controllers/AdminAuthController.php:173
  * @route '/dashboard/logout'
  */
     const logoutForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -311,7 +311,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\AdminAuthController::logout
- * @see app/Http/Controllers/AdminAuthController.php:172
+ * @see app/Http/Controllers/AdminAuthController.php:173
  * @route '/dashboard/logout'
  */
         logoutForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

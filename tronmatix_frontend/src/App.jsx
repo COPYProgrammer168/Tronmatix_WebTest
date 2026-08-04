@@ -8,6 +8,7 @@ import { DiscountProvider } from "./context/DiscountContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { MobileMenuProvider, useMobileMenu } from "./context/MobileMenuContext";
+import { CategoryProvider } from "./context/CategoryContext";
 import { useTheme } from "./context/ThemeContext";
 import { useLang } from "./context/LanguageContext";
 
@@ -136,8 +137,9 @@ function AppContent() {
             <Route path="/checkout"                element={<CheckoutPage />} />
             <Route path="/orders"                  element={<OrdersPage />} />
             <Route path="/favorites"               element={<FavoritesPage />} />
-            <Route path="/category/:category"      element={<CategoryPage />} />
-            <Route path="/category/:category/:sub" element={<CategoryPage />} />
+            <Route path="/category/:category"          element={<CategoryPage />} />
+            <Route path="/category/:category/:main"    element={<CategoryPage />} />
+            <Route path="/category/:category/:main/:sub" element={<CategoryPage />} />
             <Route path="/product/:id"             element={<ProductDetailPage />} />
             <Route path="/search"                  element={<CategoryPage />} />
             <Route path="/contact"                 element={<ContactPage />} />
@@ -173,7 +175,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
@@ -182,7 +184,9 @@ export default function App() {
                 <LocationProvider>
                   <DiscountProvider>
                     <MobileMenuProvider>
-                      <AppContent />
+                      <CategoryProvider>
+                        <AppContent />
+                      </CategoryProvider>
                     </MobileMenuProvider>
                   </DiscountProvider>
                 </LocationProvider>

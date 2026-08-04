@@ -80,7 +80,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::password
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
 export const password = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -95,7 +95,7 @@ password.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::password
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
 password.url = (options?: RouteQueryOptions) => {
@@ -104,7 +104,7 @@ password.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::password
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
 password.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -114,7 +114,7 @@ password.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::password
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
     const passwordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -129,7 +129,7 @@ password.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::password
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
         passwordForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -145,7 +145,7 @@ password.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     password.form = passwordForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::role
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
 export const role = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -160,7 +160,7 @@ role.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::role
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
 role.url = (options?: RouteQueryOptions) => {
@@ -169,7 +169,7 @@ role.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::role
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
 role.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -179,7 +179,7 @@ role.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::role
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
     const roleForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -194,7 +194,7 @@ role.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::role
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
         roleForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

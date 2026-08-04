@@ -51,12 +51,25 @@ class ProductController extends Controller
 
         $products = $query->latest()->paginate(20)->withQueryString();
 
-        return view('dashboard.products', compact('products'));
+        // ── Dynamic category dropdown from the category-management tree ─────
+        // Each top-level category becomes a group; the main-category level is
+        // flattened out so options read "CATEGORY ▸ SUB" (the product's real
+        // category value). Only nodes with products appear.
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+
+        return view('dashboard.products', compact('products', 'categoryGroups'));
     }
 
     public function create()
     {
-        return view('dashboard.products-form', ['product' => null]);
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+        $stockStatuses  = $this->stockStatusList();
+
+        return view('dashboard.products-form', [
+            'product'        => null,
+            'categoryGroups' => $categoryGroups,
+            'stockStatuses'  => $stockStatuses,
+        ]);
     }
 
     public function store(Request $request)
@@ -73,7 +86,29 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        return view('dashboard.products-form', compact('product'));
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+        $stockStatuses  = $this->stockStatusList();
+
+        return view('dashboard.products-form', compact('product', 'categoryGroups', 'stockStatuses'));
+    }
+
+    /**
+     * Stock-status options for the product form's datalist: the two built-in
+     * defaults always shown, plus any previously-saved custom statuses pulled
+     * from the products table so a status typed once reappears for future items.
+     */
+    private function stockStatusList(): \Illuminate\Support\Collection
+    {
+        $defaults = collect(['Available InStock Now', 'Pre-order']);
+
+        $used = \App\Models\Product::query()
+            ->whereNotNull('stock_status')
+            ->where('stock_status', '!=', '')
+            ->distinct()
+            ->orderBy('stock_status')
+            ->pluck('stock_status');
+
+        return $defaults->merge($used)->unique()->values();
     }
 
     public function update(Request $request, Product $product)

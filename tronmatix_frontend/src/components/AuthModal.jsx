@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLang } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
 import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth'
-import { auth } from '../lib/firebase'
+import { auth, isConfigured as firebaseConfigured } from '../lib/firebase'
 import { toE164Phone, phoneValidationMessage } from '../lib/phone'
 import logo from '../assets/logo.png'
 
@@ -283,6 +283,12 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
   const handleSendOtp = async () => {
     setError('')
     setSuccess('')
+    if (!firebaseConfigured || !auth) {
+      setError(isKhmer
+        ? 'ការផ្ទៀងផ្ទាត់តាមទូរស័ព្ទមិនអាចប្រើបានទេ។ សូមប្រើអ៊ីមែលជំនួស។'
+        : 'Phone verification is not available. Please use email instead.')
+      return
+    }
     // Show the raw input as-is in the field; only normalize here on submit.
     const raw = phone.trim()
     const e164 = toE164Phone(raw)

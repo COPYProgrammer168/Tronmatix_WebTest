@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::remove
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
 export const remove = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -16,7 +16,7 @@ remove.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::remove
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
 remove.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ remove.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::remove
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
 remove.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -35,7 +35,7 @@ remove.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::remove
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
     const removeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -50,7 +50,7 @@ remove.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::remove
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
         removeForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -134,7 +134,7 @@ submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     submit.form = submitForm
 /**
 * @see \App\Http\Controllers\StaffRequestController::accept
- * @see app/Http/Controllers/StaffRequestController.php:76
+ * @see app/Http/Controllers/StaffRequestController.php:78
  * @route '/dashboard/staff-requests/{id}/accept'
  */
 export const accept = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -149,7 +149,7 @@ accept.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffRequestController::accept
- * @see app/Http/Controllers/StaffRequestController.php:76
+ * @see app/Http/Controllers/StaffRequestController.php:78
  * @route '/dashboard/staff-requests/{id}/accept'
  */
 accept.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -177,7 +177,7 @@ accept.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\StaffRequestController::accept
- * @see app/Http/Controllers/StaffRequestController.php:76
+ * @see app/Http/Controllers/StaffRequestController.php:78
  * @route '/dashboard/staff-requests/{id}/accept'
  */
 accept.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ accept.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\StaffRequestController::accept
- * @see app/Http/Controllers/StaffRequestController.php:76
+ * @see app/Http/Controllers/StaffRequestController.php:78
  * @route '/dashboard/staff-requests/{id}/accept'
  */
     const acceptForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -197,7 +197,7 @@ accept.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\StaffRequestController::accept
- * @see app/Http/Controllers/StaffRequestController.php:76
+ * @see app/Http/Controllers/StaffRequestController.php:78
  * @route '/dashboard/staff-requests/{id}/accept'
  */
         acceptForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -208,7 +208,7 @@ accept.post = (args: { id: string | number } | [id: string | number ] | string |
     accept.form = acceptForm
 /**
 * @see \App\Http\Controllers\StaffRequestController::reject
- * @see app/Http/Controllers/StaffRequestController.php:127
+ * @see app/Http/Controllers/StaffRequestController.php:130
  * @route '/dashboard/staff-requests/{id}/reject'
  */
 export const reject = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -223,7 +223,7 @@ reject.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffRequestController::reject
- * @see app/Http/Controllers/StaffRequestController.php:127
+ * @see app/Http/Controllers/StaffRequestController.php:130
  * @route '/dashboard/staff-requests/{id}/reject'
  */
 reject.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -251,7 +251,7 @@ reject.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\StaffRequestController::reject
- * @see app/Http/Controllers/StaffRequestController.php:127
+ * @see app/Http/Controllers/StaffRequestController.php:130
  * @route '/dashboard/staff-requests/{id}/reject'
  */
 reject.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -261,7 +261,7 @@ reject.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\StaffRequestController::reject
- * @see app/Http/Controllers/StaffRequestController.php:127
+ * @see app/Http/Controllers/StaffRequestController.php:130
  * @route '/dashboard/staff-requests/{id}/reject'
  */
     const rejectForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -271,7 +271,7 @@ reject.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\StaffRequestController::reject
- * @see app/Http/Controllers/StaffRequestController.php:127
+ * @see app/Http/Controllers/StaffRequestController.php:130
  * @route '/dashboard/staff-requests/{id}/reject'
  */
         rejectForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

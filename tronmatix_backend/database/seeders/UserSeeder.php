@@ -7,17 +7,21 @@ namespace Database\Seeders;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        DB::table('users')->truncate();
+        Schema::enableForeignKeyConstraints();
+
         $users = [
-            // Known test account — always present, always the same credentials
             ['name' => 'Test User', 'username' => 'testuser', 'email' => 'test@tronmatix.com', 'months_ago' => 12, 'password' => 'Test@1234'],
 
-            // Cambodian sample users spread across the last 11 months
             ['name' => 'Sokha', 'username' => 'sokha',   'email' => 'sokha@gmail.com',   'months_ago' => 11],
             ['name' => 'Dara', 'username' => 'dara',    'email' => 'dara@gmail.com',    'months_ago' => 10],
             ['name' => 'Chanthy', 'username' => 'chanthy', 'email' => 'chanthy@gmail.com', 'months_ago' => 9],

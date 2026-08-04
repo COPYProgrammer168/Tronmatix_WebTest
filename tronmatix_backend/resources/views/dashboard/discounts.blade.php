@@ -21,51 +21,6 @@
             $badgeDiscounts = $discounts->filter(
                 fn($d) => ($d->badge_config && !empty($d->badge_config['text'])) || ($d->kind ?? 'code') === 'badge',
             );
-
-            $catGroups = [
-                'PC BUILD' => [
-                    'PC BUILD UNDER 1K',
-                    'PC BUILD UNDER 2K',
-                    'PC BUILD UNDER 3K',
-                    'PC BUILD UNDER 4K',
-                    'PC BUILD UNDER 5K',
-                    'PC BUILD 5K UP',
-                ],
-                'MONITOR' => [
-                    'MONITOR 25INCH',
-                    'MONITOR 27INCH',
-                    'MONITOR 32INCH',
-                    'MONITOR 34INCH',
-                    'MONITOR 39INCH',
-                    'MONITOR 42INCH',
-                    'MONITOR 48INCH',
-                    'MONITOR 49INCH',
-                ],
-                'PC PART' => ['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'],
-                'HOT ITEM' => ['BEST PRICE', 'BEST SET'],
-                'ACCESSORY' => [
-                    'KEYBOARD',
-                    'MOUSE',
-                    'HEADSET',
-                    'EARPHONE',
-                    'MONITOR STAND',
-                    'SPEAKER',
-                    'MICROPHONE',
-                    'WEBCAM',
-                    'MOUSEPAD',
-                    'LIGHTBAR',
-                    'ROUTER',
-                ],
-                'TABLE CHAIR' => [
-                    'DX RACER',
-                    'SECRETLAB',
-                    'RAZER',
-                    'CONSAIR',
-                    'FANTECH',
-                    'COOLER MASTER',
-                    'TTR RACING',
-                ],
-            ];
         @endphp
 
         <style>
@@ -99,6 +54,28 @@
 
             .modal-full {
                 grid-column: 1/-1;
+            }
+
+            /* ── Category select (discount form) — bold + centered, matching the
+                 product form's categorySelect: dark bg, bold orange optgroup
+                 headers, bold centered option text. ── */
+            #couponModal select.form-control option,
+            #couponModal select.form-control optgroup {
+                background: #1A1A1A;
+                color: #fff;
+                font-family: 'Rajdhani', sans-serif;
+                text-align: center;
+                padding: 7px 10px;
+                line-height: 1.3;
+            }
+            #couponModal select.form-control optgroup {
+                color: #F97316;
+                font-weight: 700;
+                font-size: 19px;
+            }
+            #couponModal select.form-control option {
+                font-weight: 700;
+                font-size: 19px;
             }
 
             @media(max-width:900px) {
@@ -670,22 +647,21 @@
                                     style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(empty
                                     = all categories)</span>
                             </label>
-                            <div id="catHiddenInputs"></div>
-                            <div id="catTags" onclick="toggleCatDropdown(event)"
-                                style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15);
-                                border-radius:8px; padding:6px 36px 6px 10px; cursor:pointer;
-                                display:flex; flex-wrap:wrap; gap:6px; align-items:center;
-                                position:relative; transition:border-color .2s; box-sizing:border-box;">
-                                <span id="catPlaceholder"
-                                    style="color:rgba(255,255,255,0.3); font-size: var(--title-size); user-select:none;">
-                                    Select categories…
-                                </span>
-                                <svg style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;"
-                                    width="14" height="14" fill="none" stroke="rgba(255,255,255,0.4)"
-                                    stroke-width="2" viewBox="0 0 24 24">
-                                    <polyline points="6 9 12 15 18 9" />
-                                </svg>
-                            </div>
+                            {{-- Single-select category picker — same style as the product form's
+                                 categorySelect (dynamic optgroups from the category tree). Submits
+                                 categories[] so the controller's array validation & model cast work. --}}
+                            <select name="categories[]" id="fCategorySelect" class="form-control">
+                                <option value="">-- All categories (sitewide) --</option>
+                                @forelse($categoryGroups ?? [] as $group)
+                                    <optgroup label="────────── {{ $group['label'] }} ──────────">
+                                        @foreach ($group['options'] as $opt)
+                                            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @empty
+                                    <option value="" disabled>No categories available</option>
+                                @endforelse
+                            </select>
                         </div>
                         <div class="modal-full">
                             <label class="form-label" style="margin-bottom:8px; display:block;">DISCOUNT KIND</label>
@@ -777,46 +753,6 @@
                     </div>
                 </form>
             </div>
-        </div>
-
-
-        {{-- ══════════════════════════════════════════════════════════════════════════ --}}
-        {{-- CATEGORY DROPDOWN — at body level, escapes modal overflow clipping        --}}
-        {{-- ══════════════════════════════════════════════════════════════════════════ --}}
-        <div id="catDropdown"
-            style="display:none; position:fixed; z-index:99999; background:#1e1e1e;
-            border:1px solid rgba(249,115,22,0.4); border-radius:10px;
-            padding:12px; max-height:300px; overflow-y:auto;
-            box-shadow:0 8px 32px rgba(0,0,0,0.85);">
-            <input id="catSearch" type="text" placeholder="🔍 Search category…" oninput="filterCats(this.value)"
-                style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.1);
-                  color:#fff; border-radius:6px; padding:6px 10px; font-size: var(--title-size);
-                  margin-bottom:10px; outline:none; box-sizing:border-box;"
-                onclick="event.stopPropagation()">
-            @foreach ($catGroups as $group => $subs)
-                <div class="cat-group" style="margin-bottom:10px;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-                        <input type="checkbox" class="group-checkbox" data-group="{{ $group }}"
-                            style="accent-color:#F97316; width:14px; height:14px; cursor:pointer; flex-shrink:0;"
-                            onclick="toggleGroup('{{ $group }}', this.checked); event.stopPropagation()">
-                        <span
-                            style="color:#F97316; font-weight:800; font-size: var(--title-size); letter-spacing:1.5px; user-select:none;">{{ $group }}</span>
-                    </div>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; padding-left:22px;">
-                        @foreach ($subs as $cat)
-                            <label class="cat-chip" data-cat="{{ $cat }}" data-group="{{ $group }}"
-                                style="display:inline-flex; align-items:center; gap:5px; background:#2a2a2a; border:1.5px solid transparent;
-                          border-radius:20px; padding:4px 11px; cursor:pointer; font-size: var(--title-size); color:rgba(255,255,255,0.7);
-                          transition:all .15s; user-select:none; white-space:nowrap;"
-                                onclick="toggleCat('{{ $cat }}', '{{ $group }}'); event.stopPropagation()">
-                                <span class="chip-dot"
-                                    style="width:7px; height:7px; border-radius:50%; background:transparent; border:1.5px solid #666; flex-shrink:0;"></span>
-                                {{ $cat }}
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            @endforeach
         </div>
 
 
@@ -962,141 +898,27 @@
                 })
             }
 
-            // ── Category dropdown ─────────────────────────────────────────────────────────
-            let selectedCats = []
-
-            function toggleCatDropdown(e) {
-                if (e) e.stopPropagation()
-                const dd = document.getElementById('catDropdown')
-                if (dd.style.display !== 'none') {
-                    dd.style.display = 'none';
-                    return
-                }
-                const rect = document.getElementById('catTags').getBoundingClientRect()
-                const ddW = Math.min(460, window.innerWidth - 24)
-                let left = rect.left
-                if (left + ddW > window.innerWidth - 12) left = window.innerWidth - ddW - 12
-                if (left < 12) left = 12
-                dd.style.left = left + 'px'
-                dd.style.width = ddW + 'px'
-                dd.style.top = (rect.bottom + 6) + 'px'
-                dd.style.display = 'block'
-                setTimeout(() => document.getElementById('catSearch').focus(), 50)
-            }
-
-            function toggleCat(cat, group) {
-                // If product selected, prevent cat selection
-                if (document.getElementById('fProduct').value) return;
-
-                const idx = selectedCats.indexOf(cat)
-                if (idx === -1) selectedCats.push(cat);
-                else selectedCats.splice(idx, 1)
-
-                // If we have selected categories, clear the product selection
-                if (selectedCats.length > 0) {
-                    document.getElementById('fProduct').value = '';
-                    document.getElementById('fProductShadow').value = '';
-                }
-
-                renderCatState();
-                updateGroupCheckbox(group)
-            }
-
+            // ── Category select (single-select, mirrors product form) ─────────────────────
+            // When a specific product is chosen, a category discount can't also apply —
+            // disable the category select (the controller ignores categories when
+            // product_id is set).
             function updateProductSelect() {
                 const product = document.getElementById('fProduct').value;
-                const catTags = document.getElementById('catTags');
-                const ph = document.getElementById('catPlaceholder');
+                const catSel = document.getElementById('fCategorySelect');
+                if (!catSel) return;
 
                 if (product) {
-                    selectedCats = [];
-                    renderCatState();
-                    catTags.style.pointerEvents = 'none';
-                    catTags.style.opacity = '0.5';
-                    ph.textContent = 'Category selection disabled (product discount applied)';
+                    catSel.value = '';
+                    catSel.disabled = true;
+                    catSel.style.opacity = '0.5';
                 } else {
-                    catTags.style.pointerEvents = 'auto';
-                    catTags.style.opacity = '1';
-                    ph.textContent = 'Select categories…';
+                    catSel.disabled = false;
+                    catSel.style.opacity = '1';
                 }
             }
 
             // Ensure it runs on change
             document.getElementById('fProduct').addEventListener('change', updateProductSelect);
-
-            function toggleGroup(group, checked) {
-                document.querySelectorAll(`[data-group="${group}"]`).forEach(chip => {
-                    const cat = chip.dataset.cat;
-                    if (!cat) return
-                    if (checked && !selectedCats.includes(cat)) selectedCats.push(cat)
-                    else if (!checked) selectedCats = selectedCats.filter(c => c !== cat)
-                })
-                renderCatState()
-            }
-
-            function updateGroupCheckbox(group) {
-                const chips = document.querySelectorAll(`label[data-group="${group}"]`)
-                const total = chips.length
-                const chk = [...chips].filter(c => selectedCats.includes(c.dataset.cat)).length
-                const cb = document.querySelector(`.group-checkbox[data-group="${group}"]`)
-                if (cb) {
-                    cb.checked = chk === total && total > 0;
-                    cb.indeterminate = chk > 0 && chk < total
-                }
-            }
-
-            function renderCatState() {
-                document.querySelectorAll('label[data-cat]').forEach(chip => {
-                    const active = selectedCats.includes(chip.dataset.cat)
-                    chip.style.background = active ? 'rgba(249,115,22,0.2)' : '#2a2a2a'
-                    chip.style.borderColor = active ? '#F97316' : 'transparent'
-                    chip.style.color = active ? '#fff' : 'rgba(255,255,255,0.7)'
-                    const dot = chip.querySelector('.chip-dot')
-                    if (dot) {
-                        dot.style.background = active ? '#F97316' : 'transparent';
-                        dot.style.borderColor = active ? '#F97316' : '#666'
-                    }
-                })
-                const tagsEl = document.getElementById('catTags'),
-                    ph = document.getElementById('catPlaceholder')
-                if (!tagsEl) return
-                tagsEl.querySelectorAll('.selected-tag').forEach(t => t.remove())
-                if (selectedCats.length === 0) {
-                    ph.style.display = ''
-                } else {
-                    ph.style.display = 'none'
-                    selectedCats.forEach(cat => {
-                        const tag = document.createElement('span')
-                        tag.className = 'selected-tag'
-                        tag.style.cssText =
-                            'background:#F97316;color:#fff;font-size: var(--title-size);font-weight:700;border-radius:20px;padding:2px 10px;display:inline-flex;align-items:center;gap:5px;letter-spacing:.5px;white-space:nowrap;'
-                        tag.innerHTML =
-                            `${cat} <span onclick="removeCat('${cat}');event.stopPropagation()" style="cursor:pointer;opacity:.8;font-size: var(--title-size);line-height:1;">&times;</span>`
-                        tagsEl.insertBefore(tag, tagsEl.lastElementChild)
-                    })
-                }
-                const hd = document.getElementById('catHiddenInputs')
-                if (hd) hd.innerHTML = selectedCats.map(c => `<input type="hidden" name="categories[]" value="${c}">`).join('')
-            }
-
-            function removeCat(cat) {
-                selectedCats = selectedCats.filter(c => c !== cat)
-                const group = document.querySelector(`label[data-cat="${cat}"]`)?.dataset.group
-                renderCatState();
-                if (group) updateGroupCheckbox(group)
-            }
-
-            function filterCats(q) {
-                q = (q || "").toLowerCase().trim()
-                document.querySelectorAll(".cat-group").forEach(function(group) {
-                    var groupVisible = false
-                    group.querySelectorAll("label[data-cat]").forEach(function(chip) {
-                        var match = !q || chip.dataset.cat.toLowerCase().indexOf(q) !== -1
-                        chip.style.display = match ? "" : "none"
-                        if (match) groupVisible = true
-                    })
-                    group.style.display = groupVisible ? "" : "none"
-                })
-            }
 
             // ── Product map (id → name) ───────────────────────────────────────────────────
             const _productMap = {
@@ -1169,24 +991,6 @@
                 }
             }
 
-            function repositionDropdown() {
-                const dd = document.getElementById('catDropdown');
-                if (!dd || dd.style.display === 'none') return
-                const tags = document.getElementById('catTags');
-                if (!tags) return
-                const rect = tags.getBoundingClientRect()
-                dd.style.top = (rect.bottom + 6) + 'px';
-                dd.style.left = rect.left + 'px'
-            }
-            window.addEventListener('scroll', repositionDropdown, true)
-            window.addEventListener('resize', repositionDropdown)
-
-            document.addEventListener('click', function(e) {
-                const dd = document.getElementById('catDropdown'),
-                    tags = document.getElementById('catTags')
-                if (dd && !dd.contains(e.target) && tags && !tags.contains(e.target)) dd.style.display = 'none'
-            })
-
             // ── Coupon Modal ──────────────────────────────────────────────────────────────
             function syncProductId() {
                 document.getElementById('fProductShadow').value = document.getElementById('fProduct').value;
@@ -1200,12 +1004,13 @@
                 document.getElementById('productSearch').value = ''
                 hideProductDropdown()
 
-                selectedCats = categories && categories.length ? [...categories] : []
-                renderCatState()
-                document.querySelectorAll('.group-checkbox').forEach(cb => updateGroupCheckbox(cb.dataset.group))
-                document.getElementById('catSearch').value = '';
-                filterCats('')
-                document.getElementById('catDropdown').style.display = 'none'
+                // Pre-select the first saved category (if any) in the new single-select.
+                const catSel = document.getElementById('fCategorySelect');
+                if (catSel) {
+                    catSel.disabled = false;
+                    catSel.style.opacity = '1';
+                    catSel.value = (categories && categories.length) ? categories[0] : '';
+                }
 
                 document.getElementById('couponModal').style.display = 'flex'
 
@@ -1238,8 +1043,8 @@
                     document.getElementById('couponId').value = ''
                     document.getElementById('fActive').checked = true
                     syncActiveVisual()
-                    selectedCats = [];
-                    renderCatState()
+                    const catSelAdd = document.getElementById('fCategorySelect');
+                    if (catSelAdd) { catSelAdd.value = ''; catSelAdd.disabled = false; catSelAdd.style.opacity = '1'; }
                     setKind('code')
                     updateProductSelect()
                 }
@@ -1247,7 +1052,6 @@
 
             function closeCouponModal() {
                 document.getElementById('couponModal').style.display = 'none'
-                document.getElementById('catDropdown').style.display = 'none'
             }
             document.getElementById('couponModal').addEventListener('click', function(e) {
                 if (e.target === this) closeCouponModal()
@@ -1520,29 +1324,6 @@
             [data-theme="light"] #badgeModal [style*="border-bottom:1px solid rgba(255,255,255"] {
                 border-bottom-color: rgba(15, 23, 42, 0.08) !important;
             }
-
-            /* Category dropdown */
-            [data-theme="light"] #catDropdown {
-                background: #FFFFFF !important;
-                border-color: rgba(15, 23, 42, 0.15) !important;
-                box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1) !important;
-            }
-
-            [data-theme="light"] #catSearch {
-                background: #F8FAFC !important;
-                border-color: rgba(15, 23, 42, 0.1) !important;
-                color: #0F172A !important;
-            }
-
-            [data-theme="light"] .cat-chip {
-                background: #F1F5F9 !important;
-                color: rgba(15, 23, 42, 0.7) !important;
-            }
-
-            [data-theme="light"] .cat-chip[style*="border-color: #F97316"] {
-                background: rgba(249, 115, 22, 0.1) !important;
-            }
-
 
             [data-theme="light"] .discount-card [style*="color:rgba(255,255,255,0.4)"] {
                 color: rgba(15, 23, 42, 0.45) !important;

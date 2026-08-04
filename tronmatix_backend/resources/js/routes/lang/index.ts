@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
 export const switchMethod = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ switchMethod.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
 switchMethod.url = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -41,7 +41,7 @@ switchMethod.url = (args: { locale: string | number } | [locale: string | number
 }
 
 /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
 switchMethod.get = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -49,7 +49,7 @@ switchMethod.get = (args: { locale: string | number } | [locale: string | number
     method: 'get',
 })
 /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
 switchMethod.head = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -58,7 +58,7 @@ switchMethod.head = (args: { locale: string | number } | [locale: string | numbe
 })
 
     /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
     const switchMethodForm = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -67,7 +67,7 @@ switchMethod.head = (args: { locale: string | number } | [locale: string | numbe
     })
 
             /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
         switchMethodForm.get = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -75,7 +75,7 @@ switchMethod.head = (args: { locale: string | number } | [locale: string | numbe
             method: 'get',
         })
             /**
- * @see routes/web.php:24
+ * @see routes/web.php:31
  * @route '/lang/{locale}'
  */
         switchMethodForm.head = (args: { locale: string | number } | [locale: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

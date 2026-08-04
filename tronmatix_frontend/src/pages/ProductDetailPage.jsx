@@ -123,7 +123,7 @@ export default function ProductDetailPage() {
       : [null];
   const images = rawImages.map((img) => resolveImage(img));
   const inStock = (product.stock ?? 99) > 0;
-  const isAskPrice = product.price === '$$$' || !inStock;
+  const isAskPrice = isSymbolPrice(product.price) || !inStock;
   const telegramLink = `https://t.me/KJ_Jen?text=${encodeURIComponent("Hello, I would like to ask about the price of: " + product.name)}`;
   const maxQty = product.stock ?? 99;
 

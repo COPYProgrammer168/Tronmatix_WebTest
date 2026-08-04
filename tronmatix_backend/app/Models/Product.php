@@ -5,6 +5,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\AdminSetting;
 use Illuminate\Support\Str;
@@ -20,6 +21,7 @@ class Product extends Model
         'price',
         'category',
         'brand',
+        'brand_id',
         'warranty',
         'image',
         'image_disk',
@@ -56,6 +58,15 @@ class Product extends Model
         parent::boot();
 
         static::saving(function (Product $product) {
+            // Auto-fill a random 1–3 year warranty whenever none is set, so
+            // every product always carries one ("1 year" | "2 years" | "3 years").
+            // OrderController parses this string to derive each order item's
+            // warranty_start/end dates.
+            if (empty($product->warranty)) {
+                $years = [1, 2, 3][array_rand([1, 2, 3])];
+                $product->warranty = $years === 1 ? '1 year' : "{$years} years";
+            }
+
             // Auto-update stock_status based on stock count
             if ($product->stock !== null && $product->stock <= 0) {
                 $product->stock_status = 'Sold Out';
@@ -81,6 +92,11 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     public function discounts(): HasMany

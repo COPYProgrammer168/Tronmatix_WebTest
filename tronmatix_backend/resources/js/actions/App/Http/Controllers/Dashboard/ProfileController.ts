@@ -157,7 +157,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updatePassword
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
 export const updatePassword = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -172,7 +172,7 @@ updatePassword.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updatePassword
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
 updatePassword.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ updatePassword.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updatePassword
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
 updatePassword.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -191,7 +191,7 @@ updatePassword.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updatePassword
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
     const updatePasswordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -206,7 +206,7 @@ updatePassword.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updatePassword
- * @see app/Http/Controllers/Dashboard/ProfileController.php:64
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:74
  * @route '/dashboard/profile/password'
  */
         updatePasswordForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -222,7 +222,7 @@ updatePassword.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     updatePassword.form = updatePasswordForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updateRole
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
 export const updateRole = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -237,7 +237,7 @@ updateRole.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updateRole
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
 updateRole.url = (options?: RouteQueryOptions) => {
@@ -246,7 +246,7 @@ updateRole.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updateRole
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
 updateRole.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -256,7 +256,7 @@ updateRole.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updateRole
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
     const updateRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -271,7 +271,7 @@ updateRole.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::updateRole
- * @see app/Http/Controllers/Dashboard/ProfileController.php:84
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:94
  * @route '/dashboard/profile/role'
  */
         updateRoleForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -287,7 +287,7 @@ updateRole.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     updateRole.form = updateRoleForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::removeAvatar
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
 export const removeAvatar = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -302,7 +302,7 @@ removeAvatar.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::removeAvatar
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
 removeAvatar.url = (options?: RouteQueryOptions) => {
@@ -311,7 +311,7 @@ removeAvatar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::removeAvatar
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
 removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -321,7 +321,7 @@ removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::removeAvatar
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
     const removeAvatarForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -336,7 +336,7 @@ removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProfileController::removeAvatar
- * @see app/Http/Controllers/Dashboard/ProfileController.php:52
+ * @see app/Http/Controllers/Dashboard/ProfileController.php:62
  * @route '/dashboard/profile/avatar'
  */
         removeAvatarForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

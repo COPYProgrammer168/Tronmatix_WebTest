@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Listeners\BackupBeforeDestructiveCommandListener;
 use App\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\ResetPassword as BaseResetPassword;
+use Illuminate\Events\Event;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -55,5 +58,12 @@ class AppServiceProvider extends ServiceProvider
                 'mode'  => $notifiable instanceof \App\Models\Staff ? 'staff' : 'admin',
             ]));
         });
+
+        if (app()->runningInConsole()) {
+            EventFacade::listen(
+                [\Illuminate\Console\Events\CommandStarting::class, \Illuminate\Console\Events\CommandFinished::class],
+                [BackupBeforeDestructiveCommandListener::class, 'handle']
+            );
+        }
     }
 }

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AdminAuthController::post
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
 export const post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ post.definition = {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::post
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
 post.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ post.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AdminAuthController::post
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
 post.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ post.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\AdminAuthController::post
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
     const postForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ post.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\AdminAuthController::post
- * @see app/Http/Controllers/AdminAuthController.php:142
+ * @see app/Http/Controllers/AdminAuthController.php:143
  * @route '/dashboard/register'
  */
         postForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

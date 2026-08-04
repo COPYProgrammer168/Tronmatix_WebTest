@@ -163,7 +163,8 @@ function banner_img_url(?string $path): string {
                 @js($b->video ? banner_img_url($b->video) : ''),
                 @js($b->video_type ?? ''),
                 {{ $b->product_id ?? 'null' }},
-                @js($b->product?->name ?? '')
+                @js($b->product?->name ?? ''),
+                @js($b->category ?? '')
                 )" class="btn btn-outline btn-sm">{{ strtoupper(__('dashboard.banners.edit')) }}</button>
 
                 <form method="POST" action="{{ route('dashboard.banners.destroy', $b) }}"
@@ -273,6 +274,23 @@ function banner_img_url(?string $path): string {
                             <div id="productList"></div>
                         </div>
                     </div>
+                </div>
+
+                {{-- Category (dynamic from the category tree) --}}
+                <div style="grid-column:1/-1;">
+                    <label class="form-label">Category</label>
+                    <select name="category" id="fCategory" class="form-control">
+                        <option value="">-- No category (sitewide link) --</option>
+                        @forelse($categoryGroups ?? [] as $group)
+                            <optgroup label="─── {{ $group['label'] }} ───────────────">
+                                @foreach ($group['options'] as $opt)
+                                    <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                @endforeach
+                            </optgroup>
+                        @empty
+                            <option value="" disabled>No categories available</option>
+                        @endforelse
+                    </select>
                 </div>
 
                 {{-- Colors --}}
@@ -490,7 +508,7 @@ function filterProducts(q) {
 }
 
 // ── Modal open / close ────────────────────────────────────────────────────────
-function openModal(id, title, subtitle, badge, bgColor, textColor, image, order, active, video, videoType, productId, productName) {
+function openModal(id, title, subtitle, badge, bgColor, textColor, image, order, active, video, videoType, productId, productName, category) {
     document.getElementById('bannerModal').style.display = 'flex'
 
     if (id) {
@@ -502,6 +520,7 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('fBadge').value            = badge    || ''
         document.getElementById('fProductId').value        = productId || ''
         document.getElementById('productSearch').value      = productName || ''
+        document.getElementById('fCategory').value          = category || ''
         document.getElementById('fOrder').value            = order    ?? 0
         document.getElementById('fActive').checked         = active   ?? true
 
@@ -538,6 +557,7 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('bannerForm').reset()
         document.getElementById('fProductId').value        = ''
         document.getElementById('productSearch').value      = ''
+        document.getElementById('fCategory').value          = ''
         document.getElementById('fActive').checked         = true
         document.getElementById('fBgColor').value          = '#111111'
         document.getElementById('fBgColorText').value      = '#111111'
@@ -586,6 +606,22 @@ document.getElementById('bannerModal').addEventListener('click', function(e) {
     .banner-form-grid > div:not([style*="grid-column:1/-1"]):not([style*="grid-column: 1 / -1"]) {
         grid-column: auto !important;
     }
+}
+
+/* ── Category dropdown — bold optgroups & options (matches products/discount) ── */
+#bannerModal select.form-control option,
+#bannerModal select.form-control optgroup {
+    background: #1A1A1A;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+}
+#bannerModal select.form-control optgroup {
+    color: #F97316;
+    font-weight: 700;
+    font-size: var(--title-size);
+}
+#bannerModal select.form-control option {
+    font-weight: 700;
 }
 </style>
 

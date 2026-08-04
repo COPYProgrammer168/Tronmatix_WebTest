@@ -1,7 +1,62 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\Api\UserProfileController::verifyPhone
+ * @see app/Http/Controllers/Api/UserProfileController.php:61
+ * @route '/api/verify-phone'
+ */
+export const verifyPhone = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: verifyPhone.url(options),
+    method: 'post',
+})
+
+verifyPhone.definition = {
+    methods: ["post"],
+    url: '/api/verify-phone',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\UserProfileController::verifyPhone
+ * @see app/Http/Controllers/Api/UserProfileController.php:61
+ * @route '/api/verify-phone'
+ */
+verifyPhone.url = (options?: RouteQueryOptions) => {
+    return verifyPhone.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\UserProfileController::verifyPhone
+ * @see app/Http/Controllers/Api/UserProfileController.php:61
+ * @route '/api/verify-phone'
+ */
+verifyPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: verifyPhone.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\Api\UserProfileController::verifyPhone
+ * @see app/Http/Controllers/Api/UserProfileController.php:61
+ * @route '/api/verify-phone'
+ */
+    const verifyPhoneForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: verifyPhone.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\Api\UserProfileController::verifyPhone
+ * @see app/Http/Controllers/Api/UserProfileController.php:61
+ * @route '/api/verify-phone'
+ */
+        verifyPhoneForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: verifyPhone.url(options),
+            method: 'post',
+        })
+    
+    verifyPhone.form = verifyPhoneForm
+/**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +71,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
 show.url = (options?: RouteQueryOptions) => {
@@ -25,7 +80,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +89,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +99,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
     const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +109,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
         showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +118,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::show
- * @see app/Http/Controllers/Api/UserProfileController.php:24
+ * @see app/Http/Controllers/Api/UserProfileController.php:25
  * @route '/api/user/profile'
  */
         showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +134,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     show.form = showForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::update
- * @see app/Http/Controllers/Api/UserProfileController.php:33
+ * @see app/Http/Controllers/Api/UserProfileController.php:34
  * @route '/api/user/profile'
  */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +149,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::update
- * @see app/Http/Controllers/Api/UserProfileController.php:33
+ * @see app/Http/Controllers/Api/UserProfileController.php:34
  * @route '/api/user/profile'
  */
 update.url = (options?: RouteQueryOptions) => {
@@ -103,7 +158,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::update
- * @see app/Http/Controllers/Api/UserProfileController.php:33
+ * @see app/Http/Controllers/Api/UserProfileController.php:34
  * @route '/api/user/profile'
  */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -113,7 +168,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::update
- * @see app/Http/Controllers/Api/UserProfileController.php:33
+ * @see app/Http/Controllers/Api/UserProfileController.php:34
  * @route '/api/user/profile'
  */
     const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -128,7 +183,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::update
- * @see app/Http/Controllers/Api/UserProfileController.php:33
+ * @see app/Http/Controllers/Api/UserProfileController.php:34
  * @route '/api/user/profile'
  */
         updateForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -144,7 +199,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::completeProfile
- * @see app/Http/Controllers/Api/UserProfileController.php:57
+ * @see app/Http/Controllers/Api/UserProfileController.php:99
  * @route '/api/user/profile/complete'
  */
 export const completeProfile = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -159,7 +214,7 @@ completeProfile.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::completeProfile
- * @see app/Http/Controllers/Api/UserProfileController.php:57
+ * @see app/Http/Controllers/Api/UserProfileController.php:99
  * @route '/api/user/profile/complete'
  */
 completeProfile.url = (options?: RouteQueryOptions) => {
@@ -168,7 +223,7 @@ completeProfile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::completeProfile
- * @see app/Http/Controllers/Api/UserProfileController.php:57
+ * @see app/Http/Controllers/Api/UserProfileController.php:99
  * @route '/api/user/profile/complete'
  */
 completeProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +233,7 @@ completeProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::completeProfile
- * @see app/Http/Controllers/Api/UserProfileController.php:57
+ * @see app/Http/Controllers/Api/UserProfileController.php:99
  * @route '/api/user/profile/complete'
  */
     const completeProfileForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -188,7 +243,7 @@ completeProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::completeProfile
- * @see app/Http/Controllers/Api/UserProfileController.php:57
+ * @see app/Http/Controllers/Api/UserProfileController.php:99
  * @route '/api/user/profile/complete'
  */
         completeProfileForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -199,7 +254,7 @@ completeProfile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
     completeProfile.form = completeProfileForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -214,7 +269,7 @@ stats.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
 stats.url = (options?: RouteQueryOptions) => {
@@ -223,7 +278,7 @@ stats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -232,7 +287,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -242,7 +297,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
     const statsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -252,7 +307,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
         statsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -261,7 +316,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::stats
- * @see app/Http/Controllers/Api/UserProfileController.php:207
+ * @see app/Http/Controllers/Api/UserProfileController.php:249
  * @route '/api/user/stats'
  */
         statsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -277,7 +332,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     stats.form = statsForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::uploadAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:79
+ * @see app/Http/Controllers/Api/UserProfileController.php:121
  * @route '/api/user/avatar'
  */
 export const uploadAvatar = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -292,7 +347,7 @@ uploadAvatar.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::uploadAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:79
+ * @see app/Http/Controllers/Api/UserProfileController.php:121
  * @route '/api/user/avatar'
  */
 uploadAvatar.url = (options?: RouteQueryOptions) => {
@@ -301,7 +356,7 @@ uploadAvatar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::uploadAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:79
+ * @see app/Http/Controllers/Api/UserProfileController.php:121
  * @route '/api/user/avatar'
  */
 uploadAvatar.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -311,7 +366,7 @@ uploadAvatar.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::uploadAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:79
+ * @see app/Http/Controllers/Api/UserProfileController.php:121
  * @route '/api/user/avatar'
  */
     const uploadAvatarForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -321,7 +376,7 @@ uploadAvatar.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::uploadAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:79
+ * @see app/Http/Controllers/Api/UserProfileController.php:121
  * @route '/api/user/avatar'
  */
         uploadAvatarForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -332,7 +387,7 @@ uploadAvatar.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     uploadAvatar.form = uploadAvatarForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::removeAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:101
+ * @see app/Http/Controllers/Api/UserProfileController.php:143
  * @route '/api/user/avatar'
  */
 export const removeAvatar = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -347,7 +402,7 @@ removeAvatar.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::removeAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:101
+ * @see app/Http/Controllers/Api/UserProfileController.php:143
  * @route '/api/user/avatar'
  */
 removeAvatar.url = (options?: RouteQueryOptions) => {
@@ -356,7 +411,7 @@ removeAvatar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::removeAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:101
+ * @see app/Http/Controllers/Api/UserProfileController.php:143
  * @route '/api/user/avatar'
  */
 removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -366,7 +421,7 @@ removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::removeAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:101
+ * @see app/Http/Controllers/Api/UserProfileController.php:143
  * @route '/api/user/avatar'
  */
     const removeAvatarForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -381,7 +436,7 @@ removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::removeAvatar
- * @see app/Http/Controllers/Api/UserProfileController.php:101
+ * @see app/Http/Controllers/Api/UserProfileController.php:143
  * @route '/api/user/avatar'
  */
         removeAvatarForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -397,7 +452,7 @@ removeAvatar.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
     removeAvatar.form = removeAvatarForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
 export const locations = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -412,7 +467,7 @@ locations.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
 locations.url = (options?: RouteQueryOptions) => {
@@ -421,7 +476,7 @@ locations.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
 locations.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -430,7 +485,7 @@ locations.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
 locations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -440,7 +495,7 @@ locations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
     const locationsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -450,7 +505,7 @@ locations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
         locationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -459,7 +514,7 @@ locations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::locations
- * @see app/Http/Controllers/Api/UserProfileController.php:115
+ * @see app/Http/Controllers/Api/UserProfileController.php:157
  * @route '/api/user/locations'
  */
         locationsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -475,7 +530,7 @@ locations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     locations.form = locationsForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::storeLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:126
+ * @see app/Http/Controllers/Api/UserProfileController.php:168
  * @route '/api/user/locations'
  */
 export const storeLocation = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -490,7 +545,7 @@ storeLocation.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::storeLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:126
+ * @see app/Http/Controllers/Api/UserProfileController.php:168
  * @route '/api/user/locations'
  */
 storeLocation.url = (options?: RouteQueryOptions) => {
@@ -499,7 +554,7 @@ storeLocation.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::storeLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:126
+ * @see app/Http/Controllers/Api/UserProfileController.php:168
  * @route '/api/user/locations'
  */
 storeLocation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -509,7 +564,7 @@ storeLocation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::storeLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:126
+ * @see app/Http/Controllers/Api/UserProfileController.php:168
  * @route '/api/user/locations'
  */
     const storeLocationForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -519,7 +574,7 @@ storeLocation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::storeLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:126
+ * @see app/Http/Controllers/Api/UserProfileController.php:168
  * @route '/api/user/locations'
  */
         storeLocationForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -530,7 +585,7 @@ storeLocation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
     storeLocation.form = storeLocationForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::updateLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:165
+ * @see app/Http/Controllers/Api/UserProfileController.php:207
  * @route '/api/user/locations/{id}'
  */
 export const updateLocation = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -545,7 +600,7 @@ updateLocation.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::updateLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:165
+ * @see app/Http/Controllers/Api/UserProfileController.php:207
  * @route '/api/user/locations/{id}'
  */
 updateLocation.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -573,7 +628,7 @@ updateLocation.url = (args: { id: string | number } | [id: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::updateLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:165
+ * @see app/Http/Controllers/Api/UserProfileController.php:207
  * @route '/api/user/locations/{id}'
  */
 updateLocation.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -583,7 +638,7 @@ updateLocation.put = (args: { id: string | number } | [id: string | number ] | s
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::updateLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:165
+ * @see app/Http/Controllers/Api/UserProfileController.php:207
  * @route '/api/user/locations/{id}'
  */
     const updateLocationForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -598,7 +653,7 @@ updateLocation.put = (args: { id: string | number } | [id: string | number ] | s
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::updateLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:165
+ * @see app/Http/Controllers/Api/UserProfileController.php:207
  * @route '/api/user/locations/{id}'
  */
         updateLocationForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -614,7 +669,7 @@ updateLocation.put = (args: { id: string | number } | [id: string | number ] | s
     updateLocation.form = updateLocationForm
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::destroyLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:192
+ * @see app/Http/Controllers/Api/UserProfileController.php:234
  * @route '/api/user/locations/{id}'
  */
 export const destroyLocation = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -629,7 +684,7 @@ destroyLocation.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::destroyLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:192
+ * @see app/Http/Controllers/Api/UserProfileController.php:234
  * @route '/api/user/locations/{id}'
  */
 destroyLocation.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -657,7 +712,7 @@ destroyLocation.url = (args: { id: string | number } | [id: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Api\UserProfileController::destroyLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:192
+ * @see app/Http/Controllers/Api/UserProfileController.php:234
  * @route '/api/user/locations/{id}'
  */
 destroyLocation.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -667,7 +722,7 @@ destroyLocation.delete = (args: { id: string | number } | [id: string | number ]
 
     /**
 * @see \App\Http\Controllers\Api\UserProfileController::destroyLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:192
+ * @see app/Http/Controllers/Api/UserProfileController.php:234
  * @route '/api/user/locations/{id}'
  */
     const destroyLocationForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -682,7 +737,7 @@ destroyLocation.delete = (args: { id: string | number } | [id: string | number ]
 
             /**
 * @see \App\Http\Controllers\Api\UserProfileController::destroyLocation
- * @see app/Http/Controllers/Api/UserProfileController.php:192
+ * @see app/Http/Controllers/Api/UserProfileController.php:234
  * @route '/api/user/locations/{id}'
  */
         destroyLocationForm.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -696,6 +751,6 @@ destroyLocation.delete = (args: { id: string | number } | [id: string | number ]
         })
     
     destroyLocation.form = destroyLocationForm
-const UserProfileController = { show, update, completeProfile, stats, uploadAvatar, removeAvatar, locations, storeLocation, updateLocation, destroyLocation }
+const UserProfileController = { verifyPhone, show, update, completeProfile, stats, uploadAvatar, removeAvatar, locations, storeLocation, updateLocation, destroyLocation }
 
 export default UserProfileController

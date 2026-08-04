@@ -14,6 +14,10 @@ use App\Http\Controllers\Dashboard\StaffInviteController;
 use App\Http\Controllers\Dashboard\PasswordResetController;
 use App\Http\Controllers\Dashboard\PhoneOtpController;
 use App\Http\Controllers\Dashboard\DeliveryProviderController;
+use App\Http\Controllers\Dashboard\CategoryController;
+use App\Http\Controllers\Dashboard\MainCategoryController;
+use App\Http\Controllers\Dashboard\SubCategoryController;
+use App\Http\Controllers\Dashboard\BrandController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffRequestController;
@@ -90,6 +94,29 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('/request-access', [StaffRequestController::class, 'showForm'])->name('request-access');
         Route::post('/request-access', [StaffRequestController::class, 'submit'])->name('request-access.submit');
+
+        // ── Category system (single accordion page at /dashboard/categories) ─
+        Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::patch('/categories/{category}/toggle', [CategoryController::class, 'toggle'])->name('categories.toggle');
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+        Route::post('/category-management/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
+
+        Route::post('/main-categories', [MainCategoryController::class, 'store'])->name('main-categories.store');
+        Route::put('/main-categories/{mainCategory}', [MainCategoryController::class, 'update'])->name('main-categories.update');
+        Route::patch('/main-categories/{mainCategory}/toggle', [MainCategoryController::class, 'toggle'])->name('main-categories.toggle');
+        Route::delete('/main-categories/{mainCategory}', [MainCategoryController::class, 'destroy'])->name('main-categories.destroy');
+
+        Route::post('/sub-categories', [SubCategoryController::class, 'store'])->name('sub-categories.store');
+        Route::put('/sub-categories/{subCategory}', [SubCategoryController::class, 'update'])->name('sub-categories.update');
+        Route::patch('/sub-categories/{subCategory}/toggle', [SubCategoryController::class, 'toggle'])->name('sub-categories.toggle');
+        Route::delete('/sub-categories/{subCategory}', [SubCategoryController::class, 'destroy'])->name('sub-categories.destroy');
+
+        Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
+        Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+        Route::patch('/brands/{brand}/toggle', [BrandController::class, 'toggle'])->name('brands.toggle');
+        Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
         // ── Products ──────────────────────────────────────────────────────────
         Route::get('/products', [ProductController::class, 'index'])->name('products');

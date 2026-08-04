@@ -22,20 +22,25 @@
             </div>
         </div>
     </div>
-    <a href="{{ route('dashboard.index') }}"
-       style="display:inline-flex; align-items:center; gap:6px; padding:9px 18px;
-              border-radius:9px; border:1px solid rgba(255,255,255,0.1);
-              background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5);
-              font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
-              letter-spacing:1px; text-decoration:none; transition:all .2s;"
-       onmouseover="this.style.color='var(--text-primary)'"
-       onmouseout="this.style.color='rgba(255,255,255,0.5)'">
-        ← {{ strtoupper(__('dashboard.btn.goToDashboard')) }}
-    </a>
 </div>
 
-{{-- ── Month Selector ────────────────────────────────────────────────────────── --}}
+{{-- ── Period Selector + Month Selector ─────────────────────────────────────── ── --}}
 @if(isset($month))
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+        <div style="font-size: var(--title-size); font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase;">
+            PERIOD:
+        </div>
+        <select id="periodSelect" name="period" onchange="applyPeriod(this.value)"
+                class="export-input export-select"
+                style="padding:7px 30px 7px 12px; cursor:pointer;">
+            <option value="about"       {{ ($period ?? 'this-month') === 'about' ? 'selected' : '' }}>📅 All-Time</option>
+            <option value="today"       {{ ($period ?? 'this-month') === 'today' ? 'selected' : '' }}>🗓️ Today</option>
+            <option value="this-month"  {{ ($period ?? 'this-month') === 'this-month' ? 'selected' : '' }}>📆 This Month</option>
+            <option value="6-months"    {{ ($period ?? 'this-month') === '6-months' ? 'selected' : '' }}>🗓️ Last 6 Months</option>
+            <option value="this-year"   {{ ($period ?? 'this-month') === 'this-year' ? 'selected' : '' }}>📅 This Year</option>
+        </select>
+    </div>
+
     <x-month-selector :month="$month" />
 
     {{-- ── Trend KPI Cards ─────────────────────────────────────────────────────── --}}
@@ -395,6 +400,51 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
+// ── Period selector ───────────────────────────────────────────────────────────
+// Computes the export from/to month range for a given period.
+function periodRange(period) {
+    const now = new Date();
+    const fmtMonth = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+
+    switch (period) {
+        case 'today':
+            return { from: fmtMonth(now), to: fmtMonth(now) };
+        case '6-months': {
+            const m = new Date(now); m.setMonth(now.getMonth() - 5); // inclusive range
+            return { from: fmtMonth(m), to: fmtMonth(now) };
+        }
+        case 'this-year':
+            return { from: now.getFullYear() + '-01', to: fmtMonth(now) };
+        case 'about':
+        default:
+            return { from: '', to: '' }; // all time — empty = everything
+    }
+}
+
+// Syncs the export form's from/to month pickers to the selected period (no reload).
+function syncExportRange(period) {
+    const { from, to } = periodRange(period);
+    const fromEl = document.querySelector('input[name="from"]');
+    const toEl   = document.querySelector('input[name="to"]');
+    if (fromEl) fromEl.value = from;
+    if (toEl)   toEl.value = to;
+}
+
+// Called on period change: sync the export range, then reload with ?period=
+// so the report label reflects it.
+function applyPeriod(period) {
+    syncExportRange(period);
+    const params = new URLSearchParams(window.location.search);
+    params.set('period', period);
+    if (period === 'about') params.delete('month');
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+// On load, sync the export range to the current period WITHOUT reloading.
+document.addEventListener('DOMContentLoaded', function () {
+    const sel = document.getElementById('periodSelect');
+    if (sel) syncExportRange(sel.value);
+});
 // ── Theme-aware colour helpers ────────────────────────────────────────────────
 function isLight() {
     return document.documentElement.getAttribute('data-theme') === 'light';

@@ -11,7 +11,7 @@ import {
   signInWithPhoneNumber,
   RecaptchaVerifier,
 } from 'firebase/auth'
-import { auth } from '../../lib/firebase'
+import { auth, isConfigured as firebaseConfigured } from '../../lib/firebase'
 import { toE164Phone, phoneValidationMessage } from '../../lib/phone'
 import axiosClient from '../../lib/axios'
 import { useLang } from '../../context/LanguageContext'
@@ -42,6 +42,7 @@ export default function PhoneVerify({ user, dark, notify, onVerified }) {
   }
 
   const makeVerifier = () => {
+    if (!firebaseConfigured || !auth) return null
     if (verifierRef.current) return verifierRef.current
     // Invisible reCAPTCHA needs a container element in the DOM.
     if (!window.recaptchaVerifierContainer) {
@@ -60,6 +61,10 @@ export default function PhoneVerify({ user, dark, notify, onVerified }) {
 
   const handleSendCode = async () => {
     setError(null)
+    if (!firebaseConfigured || !auth) {
+      setError(isKhmer ? 'សេវាផ្ទៀងផ្ទាត់លេខទូរស័ព្ទមិនអាចប្រើបានទេ' : 'Phone verification is not configured.')
+      return
+    }
     // Show the raw input as-is in the field; only normalize here on submit.
     const raw = phone.trim()
     const e164 = toE164Phone(raw)

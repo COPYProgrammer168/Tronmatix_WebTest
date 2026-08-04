@@ -16,24 +16,25 @@
 <div class="stats-grid">
 
     @if(isset($month) && isset($customers))
-        <x-kpi-card label="{{ __('dashboard.stats.kpiOrders') }}" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange">
+        <x-kpi-card label="{{ __('dashboard.stats.kpiOrders') }}" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange" href="{{ route('dashboard.report') }}">
             <x-slot:icon>
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
             </x-slot:icon>
         </x-kpi-card>
-        <x-kpi-card label="{{ __('dashboard.stats.kpiRevenue') }}" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green">
+        <x-kpi-card label="{{ __('dashboard.stats.kpiRevenue') }}" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green" href="{{ route('dashboard.report') }}">
             <x-slot:icon>
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </x-slot:icon>
         </x-kpi-card>
-        <x-kpi-card label="{{ __('dashboard.stats.kpiCustomers') }}" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue">
+        <x-kpi-card label="{{ __('dashboard.stats.kpiCustomers') }}" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue" href="{{ route('dashboard.report') }}">
             <x-slot:icon>
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </x-slot:icon>
         </x-kpi-card>
     @endif
 
-    <div class="stat-card">
+    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
@@ -46,8 +47,10 @@
             </div>
         </div>
     </div>
+    </a>
 
-    <div class="stat-card">
+    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
@@ -58,8 +61,10 @@
             <div class="stat-label">{{ __('dashboard.stats.totalProducts') }}</div>
         </div>
     </div>
+    </a>
 
-    <div class="stat-card">
+    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -70,8 +75,10 @@
             <div class="stat-label">{{ __('dashboard.stats.pendingOrders') }}</div>
         </div>
     </div>
+    </a>
 
-    <div class="stat-card">
+    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12"/>
@@ -82,6 +89,7 @@
             <div class="stat-label">{{ __('dashboard.stats.activeItems') }}</div>
         </div>
     </div>
+    </a>
 
     {{-- <div class="stat-card" style="border-color: rgba(168,85,247,0.3);">
         <div class="stat-icon" style="background:rgba(168,85,247,0.1); border-color:rgba(168,85,247,0.25);">

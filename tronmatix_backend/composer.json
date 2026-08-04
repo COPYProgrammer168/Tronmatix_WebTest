@@ -21,6 +21,7 @@
         "laravel/wayfinder": "^0.1.9",
         "league/commonmark": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.0",
+        "livewire/livewire": "^4.3",
         "maatwebsite/excel": "^3.1",
         "pisethchhun/bakong-khqr-php": "^1.0",
         "twilio/sdk": "^8.11"
@@ -40,7 +41,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

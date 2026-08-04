@@ -64,19 +64,111 @@ class DashboardController extends Controller
             ? Carbon::createFromFormat('Y-m-d', $request->input('month') . '-01')
             : now();
 
-        $orders    = $comparison->compare(Order::query(), 'created_at', $month, 'count');
-        $revenue   = $comparison->compare(
-            Order::whereNotIn('status', ['cancelled']), 'created_at', $month, 'sum', 'total'
+        // ── Period selector ──────────────────────────────────────────────────────
+        // The period select drives the KPI cards AND the export range. For
+        // month-based periods we reuse the MetricComparisonService (current vs
+        // previous month). For wider ranges we aggregate over the full range and
+        // compare against the immediately preceding period of equal length.
+        $validPeriods = ['today', 'this-month', '6-months', 'this-year', 'about'];
+        $period = in_array($request->input('period'), $validPeriods, true)
+            ? $request->input('period')
+            : 'this-month';
+
+        [$curStart, $curEnd, $prevStart, $prevEnd] = $this->periodRange($period, $month);
+
+        $orders = $this->periodCompare(Order::query(), 'created_at', $curStart, $curEnd, $prevStart, $prevEnd, 'count');
+        $revenue = $this->periodCompare(
+            Order::whereNotIn('status', ['cancelled']), 'created_at',
+            $curStart, $curEnd, $prevStart, $prevEnd, 'sum', 'total'
         );
-        $customers = $comparison->compare(User::query(), 'created_at', $month, 'count');
+        $customers = $this->periodCompare(User::query(), 'created_at', $curStart, $curEnd, $prevStart, $prevEnd, 'count');
 
         $data = $this->buildDashboardData($month);
         $data['month']     = $month;
         $data['orders']    = $orders;
         $data['revenue']   = $revenue;
         $data['customers'] = $customers;
+        $data['period']    = $period;
 
         return view('dashboard.report', $data);
+    }
+
+    /**
+     * Return [currentStart, currentEnd, prevStart, prevEnd] Carbon dates for a
+     * period relative to the reference month. For 'about' (all-time) the current
+     * range is open-ended and there is no meaningful previous range.
+     */
+    private function periodRange(string $period, Carbon $month): array
+    {
+        $now = Carbon::now();
+
+        return match ($period) {
+            'today' => [
+                $now->copy()->startOfDay(), $now->copy()->endOfDay(),
+                $now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay(),
+            ],
+            '6-months' => [
+                $now->copy()->subMonths(5)->startOfMonth(), $now->copy()->endOfMonth(),
+                $now->copy()->subMonths(11)->startOfMonth(), $now->copy()->subMonths(6)->endOfMonth(),
+            ],
+            'this-year' => [
+                $now->copy()->startOfYear(), $now->copy()->endOfDay(),
+                $now->copy()->subYear()->startOfYear(), $now->copy()->subYear()->endOfYear(),
+            ],
+            'about' => [
+                null, null, null, null,
+            ],
+            default => [ // 'this-month' and any fallback
+                $month->copy()->startOfMonth(), $month->copy()->endOfMonth(),
+                $month->copy()->subMonth()->startOfMonth(), $month->copy()->subMonth()->endOfMonth(),
+            ],
+        };
+    }
+
+    /**
+     * Aggregate a metric over a current range and compare against a previous
+     * range, mirroring MetricComparisonService::compare() but range-based.
+     */
+    private function periodCompare(
+        $query,
+        string $dateCol,
+        $curStart,
+        $curEnd,
+        $prevStart,
+        $prevEnd,
+        string $agg,
+        ?string $sumCol = null
+    ): array {
+        $aggFn = fn ($start, $end) => match ($agg) {
+            'sum' => (float) (clone $query)->whereBetween($dateCol, [$start, $end])->sum($sumCol ?? 'total'),
+            'avg' => (float) (clone $query)->whereBetween($dateCol, [$start, $end])->avg($sumCol ?? 'total'),
+            default => (int) (clone $query)->whereBetween($dateCol, [$start, $end])->count(),
+        };
+
+        // 'about' (all-time): current = everything, no previous range.
+        if ($curStart === null) {
+            $current  = match ($agg) {
+                'sum' => (float) $query->sum($sumCol ?? 'total'),
+                'avg' => (float) $query->avg($sumCol ?? 'total'),
+                default => (int) $query->count(),
+            };
+            return ['current' => $current, 'previous' => 0, 'trend' => 'flat', 'pct' => 0];
+        }
+
+        $current  = $aggFn($curStart, $curEnd);
+        $previous = $aggFn($prevStart, $prevEnd);
+
+        $trend = 'flat';
+        $pct   = 0;
+        if ($previous != 0) {
+            $pct   = round((($current - $previous) / $previous) * 100);
+            $trend = $pct > 0 ? 'up' : ($pct < 0 ? 'down' : 'flat');
+        } elseif ($current > 0) {
+            $trend = 'up';
+            $pct   = 100;
+        }
+
+        return ['current' => $current, 'previous' => $previous, 'trend' => $trend, 'pct' => abs($pct)];
     }
 
     // ── Shared analytics data builder ─────────────────────────────────────────
@@ -642,7 +734,12 @@ class DashboardController extends Controller
     {
         $discounts = \App\Models\Discount::latest()->get();
         $products  = \App\Models\Product::all();
-        return view('dashboard.discounts', compact('discounts', 'products'));
+
+        // Dynamic category groups for the "applies to categories" chip picker —
+        // derived from the navigation tree (main category → sub categories).
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+
+        return view('dashboard.discounts', compact('discounts', 'products', 'categoryGroups'));
     }
 
     public function discountsStore(Request $request)

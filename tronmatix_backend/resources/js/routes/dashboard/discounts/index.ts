@@ -56,7 +56,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::update
- * @see app/Http/Controllers/Dashboard/DiscountController.php:58
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:72
  * @route '/dashboard/discounts/{discount}'
  */
 export const update = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -71,7 +71,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::update
- * @see app/Http/Controllers/Dashboard/DiscountController.php:58
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:72
  * @route '/dashboard/discounts/{discount}'
  */
 update.url = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -104,7 +104,7 @@ update.url = (args: { discount: number | { id: number } } | [discount: number | 
 
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::update
- * @see app/Http/Controllers/Dashboard/DiscountController.php:58
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:72
  * @route '/dashboard/discounts/{discount}'
  */
 update.put = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -114,7 +114,7 @@ update.put = (args: { discount: number | { id: number } } | [discount: number | 
 
     /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::update
- * @see app/Http/Controllers/Dashboard/DiscountController.php:58
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:72
  * @route '/dashboard/discounts/{discount}'
  */
     const updateForm = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -129,7 +129,7 @@ update.put = (args: { discount: number | { id: number } } | [discount: number | 
 
             /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::update
- * @see app/Http/Controllers/Dashboard/DiscountController.php:58
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:72
  * @route '/dashboard/discounts/{discount}'
  */
         updateForm.put = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -145,7 +145,7 @@ update.put = (args: { discount: number | { id: number } } | [discount: number | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::destroy
- * @see app/Http/Controllers/Dashboard/DiscountController.php:78
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:108
  * @route '/dashboard/discounts/{discount}'
  */
 export const destroy = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -160,7 +160,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::destroy
- * @see app/Http/Controllers/Dashboard/DiscountController.php:78
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:108
  * @route '/dashboard/discounts/{discount}'
  */
 destroy.url = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -193,7 +193,7 @@ destroy.url = (args: { discount: number | { id: number } } | [discount: number |
 
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::destroy
- * @see app/Http/Controllers/Dashboard/DiscountController.php:78
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:108
  * @route '/dashboard/discounts/{discount}'
  */
 destroy.delete = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -203,7 +203,7 @@ destroy.delete = (args: { discount: number | { id: number } } | [discount: numbe
 
     /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::destroy
- * @see app/Http/Controllers/Dashboard/DiscountController.php:78
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:108
  * @route '/dashboard/discounts/{discount}'
  */
     const destroyForm = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -218,7 +218,7 @@ destroy.delete = (args: { discount: number | { id: number } } | [discount: numbe
 
             /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::destroy
- * @see app/Http/Controllers/Dashboard/DiscountController.php:78
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:108
  * @route '/dashboard/discounts/{discount}'
  */
         destroyForm.delete = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -234,7 +234,7 @@ destroy.delete = (args: { discount: number | { id: number } } | [discount: numbe
     destroy.form = destroyForm
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::badge
- * @see app/Http/Controllers/Dashboard/DiscountController.php:90
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:134
  * @route '/dashboard/discounts/{discount}/badge'
  */
 export const badge = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -249,7 +249,7 @@ badge.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::badge
- * @see app/Http/Controllers/Dashboard/DiscountController.php:90
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:134
  * @route '/dashboard/discounts/{discount}/badge'
  */
 badge.url = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -282,7 +282,7 @@ badge.url = (args: { discount: number | { id: number } } | [discount: number | {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::badge
- * @see app/Http/Controllers/Dashboard/DiscountController.php:90
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:134
  * @route '/dashboard/discounts/{discount}/badge'
  */
 badge.patch = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -292,7 +292,7 @@ badge.patch = (args: { discount: number | { id: number } } | [discount: number |
 
     /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::badge
- * @see app/Http/Controllers/Dashboard/DiscountController.php:90
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:134
  * @route '/dashboard/discounts/{discount}/badge'
  */
     const badgeForm = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -307,7 +307,7 @@ badge.patch = (args: { discount: number | { id: number } } | [discount: number |
 
             /**
 * @see \App\Http\Controllers\Dashboard\DiscountController::badge
- * @see app/Http/Controllers/Dashboard/DiscountController.php:90
+ * @see app/Http/Controllers/Dashboard/DiscountController.php:134
  * @route '/dashboard/discounts/{discount}/badge'
  */
         badgeForm.patch = (args: { discount: number | { id: number } } | [discount: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

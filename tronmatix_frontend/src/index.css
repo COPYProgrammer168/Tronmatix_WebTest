@@ -386,3 +386,31 @@ body.lang-km footer * {
     transform: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE PRODUCT CARD — compact sizing for the 2-column homepage grid.
+   Inline styles win normally, so these use !important to shrink the
+   title, price and CTA button on small screens only. Scoped to dedicated
+   classes so fav buttons / badges keep their tiny sizes.
+───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .product-card-title {
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+    min-height: 2.2em !important;
+  }
+
+  .product-card-price {
+    font-size: 16px !important;
+  }
+
+  .product-card-cta {
+    font-size: 12px !important;
+    height: 36px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .product-card .p-3 {
+    padding: 8px !important;
+  }
+}

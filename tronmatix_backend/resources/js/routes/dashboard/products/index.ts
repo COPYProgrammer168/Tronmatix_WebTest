@@ -137,7 +137,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-export const edit = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -152,13 +152,13 @@ edit.definition = {
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-edit.url = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { product: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { product: args.id }
+            if (typeof args === 'object' && !Array.isArray(args) && 'slug' in args) {
+            args = { product: args.slug }
         }
     
     if (Array.isArray(args)) {
@@ -171,7 +171,7 @@ edit.url = (args: { product: number | { id: number } } | [product: number | { id
 
     const parsedArgs = {
                         product: typeof args.product === 'object'
-                ? args.product.id
+                ? args.product.slug
                 : args.product,
                 }
 
@@ -185,7 +185,7 @@ edit.url = (args: { product: number | { id: number } } | [product: number | { id
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-edit.get = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -194,7 +194,7 @@ edit.get = (args: { product: number | { id: number } } | [product: number | { id
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-edit.head = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -204,7 +204,7 @@ edit.head = (args: { product: number | { id: number } } | [product: number | { i
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-    const editForm = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const editForm = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
         method: 'get',
     })
@@ -214,7 +214,7 @@ edit.head = (args: { product: number | { id: number } } | [product: number | { i
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-        editForm.get = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.get = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
@@ -223,7 +223,7 @@ edit.head = (args: { product: number | { id: number } } | [product: number | { i
  * @see app/Http/Controllers/Dashboard/ProductController.php:74
  * @route '/dashboard/products/{product}/edit'
  */
-        editForm.head = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.head = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -239,7 +239,7 @@ edit.head = (args: { product: number | { id: number } } | [product: number | { i
  * @see app/Http/Controllers/Dashboard/ProductController.php:79
  * @route '/dashboard/products/{product}'
  */
-export const update = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -254,13 +254,13 @@ update.definition = {
  * @see app/Http/Controllers/Dashboard/ProductController.php:79
  * @route '/dashboard/products/{product}'
  */
-update.url = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { product: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { product: args.id }
+            if (typeof args === 'object' && !Array.isArray(args) && 'slug' in args) {
+            args = { product: args.slug }
         }
     
     if (Array.isArray(args)) {
@@ -273,7 +273,7 @@ update.url = (args: { product: number | { id: number } } | [product: number | { 
 
     const parsedArgs = {
                         product: typeof args.product === 'object'
-                ? args.product.id
+                ? args.product.slug
                 : args.product,
                 }
 
@@ -287,7 +287,7 @@ update.url = (args: { product: number | { id: number } } | [product: number | { 
  * @see app/Http/Controllers/Dashboard/ProductController.php:79
  * @route '/dashboard/products/{product}'
  */
-update.put = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -297,7 +297,7 @@ update.put = (args: { product: number | { id: number } } | [product: number | { 
  * @see app/Http/Controllers/Dashboard/ProductController.php:79
  * @route '/dashboard/products/{product}'
  */
-    const updateForm = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateForm = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -312,7 +312,7 @@ update.put = (args: { product: number | { id: number } } | [product: number | { 
  * @see app/Http/Controllers/Dashboard/ProductController.php:79
  * @route '/dashboard/products/{product}'
  */
-        updateForm.put = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.put = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -328,7 +328,7 @@ update.put = (args: { product: number | { id: number } } | [product: number | { 
  * @see app/Http/Controllers/Dashboard/ProductController.php:101
  * @route '/dashboard/products/{product}'
  */
-export const destroy = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -343,13 +343,13 @@ destroy.definition = {
  * @see app/Http/Controllers/Dashboard/ProductController.php:101
  * @route '/dashboard/products/{product}'
  */
-destroy.url = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { product: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { product: args.id }
+            if (typeof args === 'object' && !Array.isArray(args) && 'slug' in args) {
+            args = { product: args.slug }
         }
     
     if (Array.isArray(args)) {
@@ -362,7 +362,7 @@ destroy.url = (args: { product: number | { id: number } } | [product: number | {
 
     const parsedArgs = {
                         product: typeof args.product === 'object'
-                ? args.product.id
+                ? args.product.slug
                 : args.product,
                 }
 
@@ -376,7 +376,7 @@ destroy.url = (args: { product: number | { id: number } } | [product: number | {
  * @see app/Http/Controllers/Dashboard/ProductController.php:101
  * @route '/dashboard/products/{product}'
  */
-destroy.delete = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -386,7 +386,7 @@ destroy.delete = (args: { product: number | { id: number } } | [product: number 
  * @see app/Http/Controllers/Dashboard/ProductController.php:101
  * @route '/dashboard/products/{product}'
  */
-    const destroyForm = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -401,7 +401,7 @@ destroy.delete = (args: { product: number | { id: number } } | [product: number 
  * @see app/Http/Controllers/Dashboard/ProductController.php:101
  * @route '/dashboard/products/{product}'
  */
-        destroyForm.delete = (args: { product: number | { id: number } } | [product: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

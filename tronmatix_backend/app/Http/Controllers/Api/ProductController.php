@@ -18,22 +18,24 @@ class ProductController extends Controller
         if ($request->has('category') && is_array($request->input('category'))) {
             $cats = array_values(array_filter(array_map('strtolower', $request->input('category'))));
             if (count($cats) > 0) {
-                $query->whereIn(DB::raw('LOWER(category)'), $cats);
+                $query->where(function($q) use ($cats) {
+                    foreach ($cats as $cat) {
+                        $q->orWhereRaw('LOWER(category) LIKE ?', ['%' . $cat . '%']);
+                    }
+                });
             }
         } elseif ($request->filled('category') && strtolower($request->category) !== 'all') {
-            $query->whereRaw('LOWER(category) = ?', [strtolower($request->category)]);
+            $query->whereRaw('LOWER(category) LIKE ?', ['%' . strtolower($request->category) . '%']);
         }
-if ($request->filled('brand')) {
-    $brand = strtolower($request->brand);
+        if ($request->filled('brand')) {
+            $brand = strtolower($request->brand);
+            $like = '%' . $brand . '%';
 
-    // Flexible matching: check if search term is part of DB brand or vice-versa
-    $query->where(function($q) use ($brand) {
-        $q->whereRaw('LOWER(brand) LIKE CONCAT(\'%\', ?, \'%\')', [$brand])
-          ->orWhereRaw('? LIKE CONCAT(\'%\', LOWER(brand), \'%\')', [$brand])
-          ->orWhereRaw('LOWER(brand_pc_part) LIKE CONCAT(\'%\', ?, \'%\')', [$brand])
-          ->orWhereRaw('? LIKE CONCAT(\'%\', LOWER(brand_pc_part), \'%\')', [$brand]);
-    });
-}
+            $query->where(function($q) use ($like) {
+                $q->whereRaw('LOWER(brand) LIKE ?', [$like])
+                  ->orWhereRaw('LOWER(brand_pc_part) LIKE ?', [$like]);
+            });
+        }
 
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
@@ -55,7 +57,11 @@ if ($request->filled('brand')) {
         if ($request->filled('cats')) {
             $cats = array_map('strtolower', array_filter(explode(',', $request->cats)));
             if (count($cats) > 0) {
-                $query->whereIn(DB::raw('LOWER(category)'), $cats);
+                $query->where(function($q) use ($cats) {
+                    foreach ($cats as $cat) {
+                        $q->orWhereRaw('LOWER(category) LIKE ?', ['%' . $cat . '%']);
+                    }
+                });
             }
         }
 

@@ -1,5 +1,7 @@
 // src/components/orders/OrderBadges.jsx
 
+import { useLang } from "../../context/LanguageContext";
+
 export const STATUS_COLORS = {
   confirmed:  { bg: "bg-blue-50",   text: "text-blue-600",   border: "border-blue-200",   dot: "bg-blue-500" },
   processing: { bg: "bg-yellow-50", text: "text-yellow-600", border: "border-yellow-200", dot: "bg-yellow-500" },
@@ -59,6 +61,7 @@ export const MOCK_ORDERS = [
 
 // StatusBadge — pass fulfillmentType so label changes for pickup
 export function StatusBadge({ status, fulfillmentType }) {
+  const { isKhmer } = useLang();
   const c = STATUS_COLORS[status] || STATUS_COLORS.pending;
   const label = getStatusLabel(status, fulfillmentType);
   return (
@@ -73,6 +76,7 @@ export function StatusBadge({ status, fulfillmentType }) {
 }
 
 export function PaymentStatusBadge({ paymentMethod, paymentStatus, fulfillmentType }) {
+  const { isKhmer } = useLang();
   const isPickup = fulfillmentType === "pickup";
   if (paymentMethod === "cash")
     return (

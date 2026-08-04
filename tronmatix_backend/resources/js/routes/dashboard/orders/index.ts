@@ -1,96 +1,91 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-export const show = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 show.definition = {
     methods: ["get","head"],
-    url: '/dashboard/orders/{order}',
+    url: '/dashboard/orders/{order_id}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-show.url = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { order: args }
+        args = { order_id: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { order: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    order: args[0],
+                    order_id: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        order: typeof args.order === 'object'
-                ? args.order.id
-                : args.order,
+                        order_id: args.order_id,
                 }
 
     return show.definition.url
-            .replace('{order}', parsedArgs.order.toString())
+            .replace('{order_id}', parsedArgs.order_id.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-show.get = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-show.head = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-    const showForm = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const showForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-        showForm.get = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.get = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:373
- * @route '/dashboard/orders/{order}'
+ * @see app/Http/Controllers/DashboardController.php:400
+ * @route '/dashboard/orders/{order_id}'
  */
-        showForm.head = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.head = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -103,68 +98,63 @@ show.head = (args: { order: number | { id: number } } | [order: number | { id: n
     show.form = showForm
 /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:380
- * @route '/dashboard/orders/{order}/status'
+ * @see app/Http/Controllers/DashboardController.php:408
+ * @route '/dashboard/orders/{order_id}/status'
  */
-export const status = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const status = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: status.url(args, options),
     method: 'put',
 })
 
 status.definition = {
     methods: ["put"],
-    url: '/dashboard/orders/{order}/status',
+    url: '/dashboard/orders/{order_id}/status',
 } satisfies RouteDefinition<["put"]>
 
 /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:380
- * @route '/dashboard/orders/{order}/status'
+ * @see app/Http/Controllers/DashboardController.php:408
+ * @route '/dashboard/orders/{order_id}/status'
  */
-status.url = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+status.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { order: args }
+        args = { order_id: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { order: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    order: args[0],
+                    order_id: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        order: typeof args.order === 'object'
-                ? args.order.id
-                : args.order,
+                        order_id: args.order_id,
                 }
 
     return status.definition.url
-            .replace('{order}', parsedArgs.order.toString())
+            .replace('{order_id}', parsedArgs.order_id.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:380
- * @route '/dashboard/orders/{order}/status'
+ * @see app/Http/Controllers/DashboardController.php:408
+ * @route '/dashboard/orders/{order_id}/status'
  */
-status.put = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+status.put = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: status.url(args, options),
     method: 'put',
 })
 
     /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:380
- * @route '/dashboard/orders/{order}/status'
+ * @see app/Http/Controllers/DashboardController.php:408
+ * @route '/dashboard/orders/{order_id}/status'
  */
-    const statusForm = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const statusForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: status.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -176,10 +166,10 @@ status.put = (args: { order: number | { id: number } } | [order: number | { id: 
 
             /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:380
- * @route '/dashboard/orders/{order}/status'
+ * @see app/Http/Controllers/DashboardController.php:408
+ * @route '/dashboard/orders/{order_id}/status'
  */
-        statusForm.put = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        statusForm.put = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: status.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -192,78 +182,73 @@ status.put = (args: { order: number | { id: number } } | [order: number | { id: 
     status.form = statusForm
 /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:426
- * @route '/dashboard/orders/{order}/confirm-delivery'
+ * @see app/Http/Controllers/DashboardController.php:462
+ * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
-export const confirmDelivery = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const confirmDelivery = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: confirmDelivery.url(args, options),
     method: 'post',
 })
 
 confirmDelivery.definition = {
     methods: ["post"],
-    url: '/dashboard/orders/{order}/confirm-delivery',
+    url: '/dashboard/orders/{order_id}/confirm-delivery',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:426
- * @route '/dashboard/orders/{order}/confirm-delivery'
+ * @see app/Http/Controllers/DashboardController.php:462
+ * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
-confirmDelivery.url = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+confirmDelivery.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { order: args }
+        args = { order_id: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { order: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    order: args[0],
+                    order_id: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        order: typeof args.order === 'object'
-                ? args.order.id
-                : args.order,
+                        order_id: args.order_id,
                 }
 
     return confirmDelivery.definition.url
-            .replace('{order}', parsedArgs.order.toString())
+            .replace('{order_id}', parsedArgs.order_id.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:426
- * @route '/dashboard/orders/{order}/confirm-delivery'
+ * @see app/Http/Controllers/DashboardController.php:462
+ * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
-confirmDelivery.post = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+confirmDelivery.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: confirmDelivery.url(args, options),
     method: 'post',
 })
 
     /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:426
- * @route '/dashboard/orders/{order}/confirm-delivery'
+ * @see app/Http/Controllers/DashboardController.php:462
+ * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
-    const confirmDeliveryForm = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const confirmDeliveryForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: confirmDelivery.url(args, options),
         method: 'post',
     })
 
             /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:426
- * @route '/dashboard/orders/{order}/confirm-delivery'
+ * @see app/Http/Controllers/DashboardController.php:462
+ * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
-        confirmDeliveryForm.post = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        confirmDeliveryForm.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: confirmDelivery.url(args, options),
             method: 'post',
         })
@@ -271,78 +256,73 @@ confirmDelivery.post = (args: { order: number | { id: number } } | [order: numbe
     confirmDelivery.form = confirmDeliveryForm
 /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:456
- * @route '/dashboard/orders/{order}/verify-payment'
+ * @see app/Http/Controllers/DashboardController.php:501
+ * @route '/dashboard/orders/{order_id}/verify-payment'
  */
-export const verifyPayment = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const verifyPayment = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: verifyPayment.url(args, options),
     method: 'post',
 })
 
 verifyPayment.definition = {
     methods: ["post"],
-    url: '/dashboard/orders/{order}/verify-payment',
+    url: '/dashboard/orders/{order_id}/verify-payment',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:456
- * @route '/dashboard/orders/{order}/verify-payment'
+ * @see app/Http/Controllers/DashboardController.php:501
+ * @route '/dashboard/orders/{order_id}/verify-payment'
  */
-verifyPayment.url = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+verifyPayment.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { order: args }
+        args = { order_id: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { order: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    order: args[0],
+                    order_id: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        order: typeof args.order === 'object'
-                ? args.order.id
-                : args.order,
+                        order_id: args.order_id,
                 }
 
     return verifyPayment.definition.url
-            .replace('{order}', parsedArgs.order.toString())
+            .replace('{order_id}', parsedArgs.order_id.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:456
- * @route '/dashboard/orders/{order}/verify-payment'
+ * @see app/Http/Controllers/DashboardController.php:501
+ * @route '/dashboard/orders/{order_id}/verify-payment'
  */
-verifyPayment.post = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+verifyPayment.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: verifyPayment.url(args, options),
     method: 'post',
 })
 
     /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:456
- * @route '/dashboard/orders/{order}/verify-payment'
+ * @see app/Http/Controllers/DashboardController.php:501
+ * @route '/dashboard/orders/{order_id}/verify-payment'
  */
-    const verifyPaymentForm = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const verifyPaymentForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: verifyPayment.url(args, options),
         method: 'post',
     })
 
             /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:456
- * @route '/dashboard/orders/{order}/verify-payment'
+ * @see app/Http/Controllers/DashboardController.php:501
+ * @route '/dashboard/orders/{order_id}/verify-payment'
  */
-        verifyPaymentForm.post = (args: { order: number | { id: number } } | [order: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        verifyPaymentForm.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: verifyPayment.url(args, options),
             method: 'post',
         })

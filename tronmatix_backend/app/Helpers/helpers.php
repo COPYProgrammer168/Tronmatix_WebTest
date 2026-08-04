@@ -8,6 +8,7 @@
 // After adding, run: composer dump-autoload
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 if (! function_exists('storage_url')) {
     /**
@@ -45,6 +46,29 @@ if (! function_exists('storage_url')) {
 // These helpers resolve the current dashboard user regardless of which guard
 // they authenticated under (admin guard for superadmin/admin, staff guard for
 // editor/seller/delivery/developer).
+
+if (! function_exists('unique_slug')) {
+    /**
+     * Generate a URL-safe slug for a given name, guaranteed unique across the
+     * given model/table by suffixing "-2", "-3", … when a collision occurs.
+     *
+     * @param string        $name  Source string (e.g. "PC BUILD")
+     * @param class-string  $model Eloquent model class to check against
+     * @param int|null      $ignoreId Row id to exclude (when updating)
+     */
+    function unique_slug(string $name, string $model, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name) ?: 'item';
+        $slug = $base;
+        $i    = 1;
+
+        while ($model::where('slug', $slug)->where('id', '!=', $ignoreId)->exists()) {
+            $slug = $base . '-' . ++$i;
+        }
+
+        return $slug;
+    }
+}
 
 if (! function_exists('dashboard_user')) {
     /**

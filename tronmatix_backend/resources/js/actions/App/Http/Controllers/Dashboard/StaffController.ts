@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/api/staff/heartbeat'
  */
 const heartbeat822f2e0714a0bce5e773065fb73f4d90 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ heartbeat822f2e0714a0bce5e773065fb73f4d90.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/api/staff/heartbeat'
  */
 heartbeat822f2e0714a0bce5e773065fb73f4d90.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ heartbeat822f2e0714a0bce5e773065fb73f4d90.url = (options?: RouteQueryOptions) =>
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/api/staff/heartbeat'
  */
 heartbeat822f2e0714a0bce5e773065fb73f4d90.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ heartbeat822f2e0714a0bce5e773065fb73f4d90.post = (options?: RouteQueryOptions): 
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/api/staff/heartbeat'
  */
     const heartbeat822f2e0714a0bce5e773065fb73f4d90Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ heartbeat822f2e0714a0bce5e773065fb73f4d90.post = (options?: RouteQueryOptions): 
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/api/staff/heartbeat'
  */
         heartbeat822f2e0714a0bce5e773065fb73f4d90Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -56,7 +56,7 @@ heartbeat822f2e0714a0bce5e773065fb73f4d90.post = (options?: RouteQueryOptions): 
     heartbeat822f2e0714a0bce5e773065fb73f4d90.form = heartbeat822f2e0714a0bce5e773065fb73f4d90Form
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/dashboard/staff/heartbeat'
  */
 const heartbeat83227fa3e59d10d274f0560f39e87e06 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -71,7 +71,7 @@ heartbeat83227fa3e59d10d274f0560f39e87e06.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/dashboard/staff/heartbeat'
  */
 heartbeat83227fa3e59d10d274f0560f39e87e06.url = (options?: RouteQueryOptions) => {
@@ -80,7 +80,7 @@ heartbeat83227fa3e59d10d274f0560f39e87e06.url = (options?: RouteQueryOptions) =>
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/dashboard/staff/heartbeat'
  */
 heartbeat83227fa3e59d10d274f0560f39e87e06.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -90,7 +90,7 @@ heartbeat83227fa3e59d10d274f0560f39e87e06.post = (options?: RouteQueryOptions): 
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/dashboard/staff/heartbeat'
  */
     const heartbeat83227fa3e59d10d274f0560f39e87e06Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -100,7 +100,7 @@ heartbeat83227fa3e59d10d274f0560f39e87e06.post = (options?: RouteQueryOptions): 
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::heartbeat
- * @see app/Http/Controllers/Dashboard/StaffController.php:147
+ * @see app/Http/Controllers/Dashboard/StaffController.php:179
  * @route '/dashboard/staff/heartbeat'
  */
         heartbeat83227fa3e59d10d274f0560f39e87e06Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -122,7 +122,7 @@ export const heartbeat = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -137,7 +137,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -146,7 +146,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -155,7 +155,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -165,7 +165,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -175,7 +175,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -184,7 +184,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::index
- * @see app/Http/Controllers/Dashboard/StaffController.php:42
+ * @see app/Http/Controllers/Dashboard/StaffController.php:44
  * @route '/dashboard/staff'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -200,7 +200,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::invite
- * @see app/Http/Controllers/Dashboard/StaffController.php:69
+ * @see app/Http/Controllers/Dashboard/StaffController.php:81
  * @route '/dashboard/staff/invite'
  */
 export const invite = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -215,7 +215,7 @@ invite.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::invite
- * @see app/Http/Controllers/Dashboard/StaffController.php:69
+ * @see app/Http/Controllers/Dashboard/StaffController.php:81
  * @route '/dashboard/staff/invite'
  */
 invite.url = (options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ invite.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::invite
- * @see app/Http/Controllers/Dashboard/StaffController.php:69
+ * @see app/Http/Controllers/Dashboard/StaffController.php:81
  * @route '/dashboard/staff/invite'
  */
 invite.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -234,7 +234,7 @@ invite.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::invite
- * @see app/Http/Controllers/Dashboard/StaffController.php:69
+ * @see app/Http/Controllers/Dashboard/StaffController.php:81
  * @route '/dashboard/staff/invite'
  */
     const inviteForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -244,7 +244,7 @@ invite.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::invite
- * @see app/Http/Controllers/Dashboard/StaffController.php:69
+ * @see app/Http/Controllers/Dashboard/StaffController.php:81
  * @route '/dashboard/staff/invite'
  */
         inviteForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -254,8 +254,82 @@ invite.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     invite.form = inviteForm
 /**
+* @see \App\Http\Controllers\Dashboard\StaffController::resendInvite
+ * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @route '/dashboard/staff/invites/{id}/resend'
+ */
+export const resendInvite = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: resendInvite.url(args, options),
+    method: 'post',
+})
+
+resendInvite.definition = {
+    methods: ["post"],
+    url: '/dashboard/staff/invites/{id}/resend',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Dashboard\StaffController::resendInvite
+ * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @route '/dashboard/staff/invites/{id}/resend'
+ */
+resendInvite.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { id: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    id: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        id: args.id,
+                }
+
+    return resendInvite.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Dashboard\StaffController::resendInvite
+ * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @route '/dashboard/staff/invites/{id}/resend'
+ */
+resendInvite.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: resendInvite.url(args, options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\Dashboard\StaffController::resendInvite
+ * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @route '/dashboard/staff/invites/{id}/resend'
+ */
+    const resendInviteForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: resendInvite.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\Dashboard\StaffController::resendInvite
+ * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @route '/dashboard/staff/invites/{id}/resend'
+ */
+        resendInviteForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: resendInvite.url(args, options),
+            method: 'post',
+        })
+    
+    resendInvite.form = resendInviteForm
+/**
 * @see \App\Http\Controllers\Dashboard\StaffController::updateRole
- * @see app/Http/Controllers/Dashboard/StaffController.php:111
+ * @see app/Http/Controllers/Dashboard/StaffController.php:143
  * @route '/dashboard/staff/{id}/role'
  */
 export const updateRole = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -270,7 +344,7 @@ updateRole.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::updateRole
- * @see app/Http/Controllers/Dashboard/StaffController.php:111
+ * @see app/Http/Controllers/Dashboard/StaffController.php:143
  * @route '/dashboard/staff/{id}/role'
  */
 updateRole.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -298,7 +372,7 @@ updateRole.url = (args: { id: string | number } | [id: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::updateRole
- * @see app/Http/Controllers/Dashboard/StaffController.php:111
+ * @see app/Http/Controllers/Dashboard/StaffController.php:143
  * @route '/dashboard/staff/{id}/role'
  */
 updateRole.patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -308,7 +382,7 @@ updateRole.patch = (args: { id: string | number } | [id: string | number ] | str
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::updateRole
- * @see app/Http/Controllers/Dashboard/StaffController.php:111
+ * @see app/Http/Controllers/Dashboard/StaffController.php:143
  * @route '/dashboard/staff/{id}/role'
  */
     const updateRoleForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -323,7 +397,7 @@ updateRole.patch = (args: { id: string | number } | [id: string | number ] | str
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::updateRole
- * @see app/Http/Controllers/Dashboard/StaffController.php:111
+ * @see app/Http/Controllers/Dashboard/StaffController.php:143
  * @route '/dashboard/staff/{id}/role'
  */
         updateRoleForm.patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -339,7 +413,7 @@ updateRole.patch = (args: { id: string | number } | [id: string | number ] | str
     updateRole.form = updateRoleForm
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::toggle
- * @see app/Http/Controllers/Dashboard/StaffController.php:130
+ * @see app/Http/Controllers/Dashboard/StaffController.php:162
  * @route '/dashboard/staff/{id}/toggle'
  */
 export const toggle = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -354,7 +428,7 @@ toggle.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::toggle
- * @see app/Http/Controllers/Dashboard/StaffController.php:130
+ * @see app/Http/Controllers/Dashboard/StaffController.php:162
  * @route '/dashboard/staff/{id}/toggle'
  */
 toggle.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -382,7 +456,7 @@ toggle.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::toggle
- * @see app/Http/Controllers/Dashboard/StaffController.php:130
+ * @see app/Http/Controllers/Dashboard/StaffController.php:162
  * @route '/dashboard/staff/{id}/toggle'
  */
 toggle.patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -392,7 +466,7 @@ toggle.patch = (args: { id: string | number } | [id: string | number ] | string 
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::toggle
- * @see app/Http/Controllers/Dashboard/StaffController.php:130
+ * @see app/Http/Controllers/Dashboard/StaffController.php:162
  * @route '/dashboard/staff/{id}/toggle'
  */
     const toggleForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -407,7 +481,7 @@ toggle.patch = (args: { id: string | number } | [id: string | number ] | string 
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::toggle
- * @see app/Http/Controllers/Dashboard/StaffController.php:130
+ * @see app/Http/Controllers/Dashboard/StaffController.php:162
  * @route '/dashboard/staff/{id}/toggle'
  */
         toggleForm.patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -423,7 +497,7 @@ toggle.patch = (args: { id: string | number } | [id: string | number ] | string 
     toggle.form = toggleForm
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::setOffline
- * @see app/Http/Controllers/Dashboard/StaffController.php:164
+ * @see app/Http/Controllers/Dashboard/StaffController.php:196
  * @route '/dashboard/staff/offline'
  */
 export const setOffline = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -438,7 +512,7 @@ setOffline.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::setOffline
- * @see app/Http/Controllers/Dashboard/StaffController.php:164
+ * @see app/Http/Controllers/Dashboard/StaffController.php:196
  * @route '/dashboard/staff/offline'
  */
 setOffline.url = (options?: RouteQueryOptions) => {
@@ -447,7 +521,7 @@ setOffline.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::setOffline
- * @see app/Http/Controllers/Dashboard/StaffController.php:164
+ * @see app/Http/Controllers/Dashboard/StaffController.php:196
  * @route '/dashboard/staff/offline'
  */
 setOffline.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -457,7 +531,7 @@ setOffline.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::setOffline
- * @see app/Http/Controllers/Dashboard/StaffController.php:164
+ * @see app/Http/Controllers/Dashboard/StaffController.php:196
  * @route '/dashboard/staff/offline'
  */
     const setOfflineForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -467,7 +541,7 @@ setOffline.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::setOffline
- * @see app/Http/Controllers/Dashboard/StaffController.php:164
+ * @see app/Http/Controllers/Dashboard/StaffController.php:196
  * @route '/dashboard/staff/offline'
  */
         setOfflineForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -478,7 +552,7 @@ setOffline.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     setOffline.form = setOfflineForm
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::destroy
- * @see app/Http/Controllers/Dashboard/StaffController.php:175
+ * @see app/Http/Controllers/Dashboard/StaffController.php:207
  * @route '/dashboard/staff/{id}'
  */
 export const destroy = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -493,7 +567,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::destroy
- * @see app/Http/Controllers/Dashboard/StaffController.php:175
+ * @see app/Http/Controllers/Dashboard/StaffController.php:207
  * @route '/dashboard/staff/{id}'
  */
 destroy.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -521,7 +595,7 @@ destroy.url = (args: { id: string | number } | [id: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::destroy
- * @see app/Http/Controllers/Dashboard/StaffController.php:175
+ * @see app/Http/Controllers/Dashboard/StaffController.php:207
  * @route '/dashboard/staff/{id}'
  */
 destroy.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -531,7 +605,7 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::destroy
- * @see app/Http/Controllers/Dashboard/StaffController.php:175
+ * @see app/Http/Controllers/Dashboard/StaffController.php:207
  * @route '/dashboard/staff/{id}'
  */
     const destroyForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -546,7 +620,7 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::destroy
- * @see app/Http/Controllers/Dashboard/StaffController.php:175
+ * @see app/Http/Controllers/Dashboard/StaffController.php:207
  * @route '/dashboard/staff/{id}'
  */
         destroyForm.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -560,6 +634,6 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
         })
     
     destroy.form = destroyForm
-const StaffController = { heartbeat, index, invite, updateRole, toggle, setOffline, destroy }
+const StaffController = { heartbeat, index, invite, resendInvite, updateRole, toggle, setOffline, destroy }
 
 export default StaffController

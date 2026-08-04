@@ -93,7 +93,7 @@ function AddToCartBtn({
     <button
       onClick={handleClick}
       disabled={state !== "idle"}
-      className="mt-auto w-full font-extrabold rounded transition-all duration-200"
+      className="product-card-cta mt-auto w-full font-extrabold rounded transition-all duration-200"
       style={{
         fontFamily: `${btnFont} !important`,
         fontWeight: 700,
@@ -215,8 +215,8 @@ export default function ProductCard({ product }) {
   const text = dark ? "#f9fafb" : "#1f2937";
   const favBg = dark ? "#1f2937" : "#fff";
 
-  // Detect "Ask Price" state
-  const isAskPrice = product.price === "$$$" || (product.stock ?? 99) <= 0;
+  // Detect "Ask Price" state — NULL/0/"$$$" price (not listed) or out of stock
+  const isAskPrice = isSymbolPrice(product.price) || (product.stock ?? 99) <= 0;
   const telegramLink = `https://t.me/KJ_Jen?text=${encodeURIComponent("Hello, I would like to ask about the price of: " + product.name)}`;
 
   return (
@@ -469,7 +469,7 @@ export default function ProductCard({ product }) {
         <Link to={`/product/${product.slug || product.id}`} className="flex flex-col">
           {/* Fixed-height title zone (2 lines max, clamped) — keeps price/button aligned across every card */}
           <h3
-            className="font-bold mb-1 transition-colors"
+            className="product-card-title font-bold mb-1 transition-colors"
             style={{
               color: hovered ? "#F97316" : text,
               letterSpacing: isKhmer ? 0 : undefined,
@@ -509,7 +509,7 @@ export default function ProductCard({ product }) {
         >
           {isAskPrice ? (
             <div
-              className="font-black transition-colors"
+              className="product-card-price font-black transition-colors"
               style={{
                 fontSize: 20,
                 color: "#F97316",
@@ -520,7 +520,7 @@ export default function ProductCard({ product }) {
           ) : discountedPrice !== null ? (
             <>
               <div
-                className="font-black transition-colors"
+                className="product-card-price font-black transition-colors"
                 style={{
                   fontSize: 20,
                   color: "#F97316",
@@ -553,7 +553,7 @@ export default function ProductCard({ product }) {
             </>
           ) : (
             <div
-              className="font-bold transition-colors"
+              className="product-card-price font-bold transition-colors"
               style={{
                 fontSize: 20,
                 color: hovered ? "#F97316" : text,
@@ -568,7 +568,7 @@ export default function ProductCard({ product }) {
         {isAskPrice ? (
           <Link
             to={`/product/${product.slug || product.id}`}
-            className="mt-auto w-full font-bold rounded transition-all duration-200 flex items-center justify-center gap-2"
+            className="product-card-cta mt-auto w-full font-bold rounded transition-all duration-200 flex items-center justify-center gap-2"
             style={{
               fontSize: 15,
               height: 42,

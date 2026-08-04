@@ -20,7 +20,11 @@ class BannerController extends Controller
         $banners = Banner::with('product')->orderBy('order')->get();
         $products = Product::all();
 
-        return view('dashboard.banners', compact('banners', 'products'));
+        // Dynamic category groups for the banner category picker — derived from
+        // the navigation tree (main category → sub categories).
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+
+        return view('dashboard.banners', compact('banners', 'products', 'categoryGroups'));
     }
 
     public function store(Request $request)
@@ -170,6 +174,7 @@ class BannerController extends Controller
             'bg_color'     => 'nullable|string|max:50',
             'text_color'   => 'nullable|string|max:50',
             'product_id'   => 'nullable|exists:products,id',
+            'category'     => 'nullable|string|max:100',
             'order'        => 'nullable|integer|min:0',
             'active'       => 'nullable',
             'image_file'   => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
