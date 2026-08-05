@@ -62,6 +62,8 @@ class UserLocation extends Model
             'city' => $this->city,
             'country' => $this->country,
             'note' => $this->note,
+            'province' => $this->province?->name_en ?? $this->province?->name_kh ?? null,
+            'province_id' => $this->province_id,
         ];
     }
 }

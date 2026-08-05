@@ -465,6 +465,7 @@ export default function CheckoutPage() {
           discount={discount} finalTotal={finalTotal} loading={loading}
           onBack={() => setStep(1)} onPlace={placeOrder}
           isPickup={isPickup}
+          selectedProvince={selectedProvince}
         />
       )}
 

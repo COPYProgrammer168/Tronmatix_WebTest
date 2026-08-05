@@ -18,6 +18,10 @@ class ActivityLog extends Model
         'entity_name',
         'details',
         'ip_address',
+        'ip_country',
+        'ip_region',
+        'ip_city',
+        'ip_isp',
         'user_agent',
     ];
 

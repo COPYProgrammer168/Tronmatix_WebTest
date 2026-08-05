@@ -137,13 +137,22 @@ class TelegramUserService
         $id    = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
 
-        $this->sendToUser($tgId, implode("\n", [
+        $shipping = $order->shipping;
+        if (is_string($shipping)) $shipping = json_decode($shipping, true) ?? [];
+        $locationParts = array_filter([
+            $shipping['address'] ?? null,
+            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['province'] ?? null,
+        ], fn($v) => !empty($v));
+
+        $this->sendToUser($tgId, implode("\n", array_filter([
             '✅ <b>Your order has been confirmed!</b>', '',
             "📦 Order: <code>#{$id}</code>",
             "💰 Total: \${$total}", '',
+            !empty($locationParts) ? '📍 ' . implode(', ', $locationParts) : null,
             "We're preparing your items for dispatch.",
             '🕐 '.$this->ts(),
-        ]));
+        ], fn($l) => $l !== null)));
     }
 
     public function onOrderShipped(Order $order): void
@@ -242,11 +251,20 @@ class TelegramUserService
             }
         }
 
+        $shipping = $order->shipping;
+        if (is_string($shipping)) $shipping = json_decode($shipping, true) ?? [];
+        $locationParts = array_filter([
+            $shipping['address'] ?? null,
+            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['province'] ?? null,
+        ], fn($v) => !empty($v));
+
         $lines = array_filter([
             '✅ <b>Payment Confirmed!</b>', '',
             "📦 Order: <code>#{$id}</code>",
             "💳 Paid via: <b>ABA BAKONG QR</b>",
             "🔑 Reference: <code>{$apvE}</code>",
+            !empty($locationParts) ? '📍 ' . implode(', ', $locationParts) : null,
             '',
             '<b>Items paid:</b>',
             $itemLines,
@@ -343,10 +361,12 @@ class TelegramUserService
         if (is_string($shipping)) $shipping = json_decode($shipping, true) ?? [];
 
         $id       = $this->e($order->order_id ?? (string) $order->id);
-        $address  = $this->e(
-            ($shipping['address'] ?? '—')
-            . (isset($shipping['city']) && $shipping['city'] ? ', '.$shipping['city'] : '')
-        );
+        $locationParts = array_filter([
+            $shipping['address'] ?? null,
+            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['province'] ?? null,
+        ], fn($v) => !empty($v));
+        $address  = $this->e(!empty($locationParts) ? implode(', ', $locationParts) : '—');
         $method   = $this->e(strtoupper($order->payment_method ?? ''));
         $subtotal = $this->e((string) ($order->subtotal ?? $order->total));
         $total    = $this->e((string) $order->total);

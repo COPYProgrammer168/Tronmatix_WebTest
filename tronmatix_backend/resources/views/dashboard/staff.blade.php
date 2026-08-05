@@ -912,194 +912,9 @@
     @endif
 
     {{-- ══════════════════════════════════════════════════════════════════════════
-     INVITE STAFF MODAL
+     INVITE MODAL — redesigned partial
 ══════════════════════════════════════════════════════════════════════════ --}}
-    <div id="invite-modal"
-        style="display:none;position:fixed;inset:0;z-index:9000;
-    align-items:center;justify-content:center;padding:20px;
-    background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);">
-        <div
-            style="width:100%;max-width:480px;border-radius:20px;
-                background:var(--dark-800);border:1px solid rgba(249,115,22,0.2);
-                box-shadow:0 32px 80px rgba(0,0,0,0.7);
-                animation:stModalIn .35s cubic-bezier(0.34,1.2,0.64,1);
-                font-family:Rajdhani, var(--font-kh), sans-serif;">
-            <div style="padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div
-                        style="width:44px;height:44px;border-radius:12px;background:rgba(249,115,22,0.12);
-                            border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;font-size: var(--title-size);">
-                        👤</div>
-                    <div>
-                        <div id="invite-modal-title" style="font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:2px;">{{ strtoupper(__('dashboard.staff.inviteStaff')) }}</div>
-                        <div style="font-size: var(--title-size);color:var(--text-muted);">{{ __('dashboard.staff.noStaffDesc') }}</div>
-                    </div>
-                </div>
-                <button onclick="closeInviteModal()"
-                    style="width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);
-                           background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size: var(--title-size);cursor:pointer;
-                           display:flex;align-items:center;justify-content:center;transition:all .2s;"
-                    onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">×</button>
-            </div>
-
-            <form method="POST" action="{{ route('dashboard.staff.invite') }}" id="invite-form">
-                @csrf
-                {{-- Hidden field switches route depending on active tab --}}
-                <input type="hidden" name="_target" id="invite-target" value="staff" />
-                <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
-                    @php $_fullNameLabel = strtoupper(__('dashboard.staff.fullName')); $_usernameLabel = strtoupper(__('dashboard.staff.username')); $_emailLabel = strtoupper(__('dashboard.staff.emailAddress')); @endphp
-                    {{-- Name + username are required. Email and phone are optional — at least one required. --}}
-                    @foreach ([['name', $_fullNameLabel, 'e.g. John Doe', 'text', true], ['username', $_usernameLabel, 'e.g. johndoe', 'text', true]] as [$fn, $fl, $fp, $ft, $req])
-                        <div>
-                            <label
-                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ $fl }} <span style="color:#ef4444;">*</span></label>
-                            <input type="{{ $ft }}" name="{{ $fn }}"
-                                placeholder="{{ $fp }}" {{ $req ? 'required' : '' }}
-                                style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
-                                  border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
-                                  font-size: var(--title-size);outline:none;transition:border-color .2s;"
-                                onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
-                        </div>
-                    @endforeach
-
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                        {{-- Email (optional) --}}
-                        <div>
-                            <label
-                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.table.email')) }} <span style="color:rgba(255,255,255,0.2);font-size:11px;">(opt)</span></label>
-                            <input type="email" name="email" placeholder="e.g. john@example.com"
-                                style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
-                                      border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
-                                      font-size: var(--title-size);outline:none;transition:border-color .2s;"
-                                onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
-                        </div>
-
-                        {{-- Phone (optional) --}}
-                        <div>
-                            <label
-                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.table.phone')) }} <span style="color:rgba(255,255,255,0.2);font-size:11px;">(opt)</span></label>
-                            <input type="tel" name="phone" placeholder="e.g. +855 12 345 678"
-                                style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
-                                      border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
-                                      font-size: var(--title-size);outline:none;transition:border-color .2s;"
-                                onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
-                        </div>
-                    </div>
-
-                    {{-- Contact hint --}}
-                    <div style="padding:10px 14px;border-radius:10px;background:rgba(59,130,246,0.06);
-                           border:1px solid rgba(59,130,246,0.2);font-size: var(--title-size);color:var(--text-muted);line-height:1.5;">
-                        ℹ️ Provide <strong style="color:#3b82f6;">email or phone</strong> (at least one). The invited person can
-                        set their own email when they accept the invite if you leave it blank.
-                    </div>
-
-                    {{-- STAFF roles (shown when tab = staff) — 2x2 grid --}}
-                    <div id="staff-role-section">
-                        <label
-                            style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:10px;">ASSIGN
-                            ROLE</label>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                            @foreach ($staffRoleMeta as $rOpt => $rM)
-                                <label data-role-card
-                                    style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:12px;cursor:pointer;
-                                      border:1.5px solid var(--border);background:var(--dark-700);transition:all .2s;text-align:center;"
-                                    onmouseover="this.style.borderColor='{{ $rM['color'] }}44';this.style.background='{{ $rM['color'] }}0d'"
-                                    onmouseout="this.querySelector('input').checked?null:(this.style.borderColor='rgba(255,255,255,0.07)',this.style.background='rgba(255,255,255,0.02)')">
-                                    <input type="radio" name="role" value="{{ $rOpt }}"
-                                        {{ $rOpt === 'editor' ? 'checked' : '' }}
-                                        style="accent-color:{{ $rM['color'] }};width:16px;height:16px;cursor:pointer;" />
-                                    <span style="font-size:22px;line-height:1;">{{ $rM['icon'] }}</span>
-                                    <div
-                                        style="font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1px;color:{{ $rM['color'] }};">
-                                        {{ strtoupper($rM['label']) }}</div>
-                                    <div style="font-size:11px;color:var(--text-muted);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                                        {{ $rM['desc'] }}</div>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    {{-- ADMIN roles (shown when tab = admins, superadmin only) --}}
-                    @if ($isSuper)
-                        <div id="admin-role-section" style="display:none;">
-                            <label
-                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">ASSIGN
-                                ADMIN ROLE</label>
-                            <div style="display:flex;flex-direction:column;gap:10px;">
-                                @foreach ($adminRoleMeta as $rOpt => $rM)
-                                    <label
-                                        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;
-                                      border:1.5px solid var(--border);background:var(--dark-700);transition:all .2s;"
-                                        onmouseover="this.style.borderColor='{{ $rM['color'] }}44';this.style.background='{{ $rM['color'] }}0d'"
-                                        onmouseout="this.querySelector('input').checked?null:(this.style.borderColor='rgba(255,255,255,0.07)',this.style.background='rgba(255,255,255,0.02)')">
-                                        <input type="radio" name="admin_role" value="{{ $rOpt }}"
-                                            {{ $rOpt === 'admin' ? 'checked' : '' }}
-                                            style="accent-color:{{ $rM['color'] }};width:16px;height:16px;cursor:pointer;" />
-                                        <span style="font-size: var(--title-size);">{{ $rM['icon'] }}</span>
-                                        <div style="flex:1;">
-                                            <div
-                                                style="font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1px;color:{{ $rM['color'] }};">
-                                                {{ strtoupper($rM['label']) }}</div>
-                                            <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:1px;">
-                                                {{ $rM['desc'] }}</div>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- Password: only required for ADMIN invites (direct create).
-                         Staff invites use the set-password link instead. --}}
-                    <div id="admin-password-section" style="display:none;">
-                        <label
-                            style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.staff.tempPassword')) }}</label>
-                        <div style="position:relative;">
-                            <input type="password" name="password" id="inv-pass" placeholder="Min 8 characters"
-                                minlength="8"
-                                style="width:100%;padding:11px 44px 11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
-                                      border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
-                                      font-size: var(--title-size);outline:none;transition:border-color .2s;"
-                                onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
-                            <button type="button" onclick="togglePassVis('inv-pass',this)"
-                                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
-                                       background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size: var(--title-size);">👁</button>
-                        </div>
-                        <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:6px;">Member should change this after
-                            first login.</div>
-                    </div>
-
-                    {{-- Staff invite hint (no password needed — the link sets it) --}}
-                    <div id="staff-invite-hint"
-                        style="padding:12px 14px;border-radius:10px;background:rgba(59,130,246,0.06);
-                               border:1px solid rgba(59,130,246,0.2);font-size: var(--title-size);color:var(--text-muted);line-height:1.5;">
-                        💡 After creating the invite, <strong style="color:#3b82f6;">copy the link</strong> from the success
-                        message and send it to this person. They'll set their own password and the account is activated
-                        automatically.
-                    </div>
-                </div>
-
-                <div style="padding:0 24px 24px;display:flex;gap:10px;justify-content:flex-end;">
-                    <button type="button" onclick="closeInviteModal()"
-                        style="padding:10px 20px;border-radius:9px;border:1px solid rgba(255,255,255,0.1);
-                               background:transparent;color:rgba(255,255,255,0.5);font-family:Rajdhani, var(--font-kh), sans-serif;
-                               font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;cursor:pointer;"
-                        onmouseover="this.style.color='#fff'"
-                        onmouseout="this.style.color='rgba(255,255,255,0.5)'">CANCEL</button>
-                    <button type="submit" id="invite-submit-btn"
-                        style="display:flex;align-items:center;gap:6px;padding:10px 22px;border-radius:9px;border:none;cursor:pointer;
-                               background:linear-gradient(135deg,#F97316,#ea580c);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
-                               font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);">
-                        ✉ {{ strtoupper(__('dashboard.staff.inviteStaff')) }}
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    @include('components.staff-invite-modal', ['activeTab' => $activeTab, 'isSuper' => $isSuper, 'staffRoleMeta' => $staffRoleMeta, 'adminRoleMeta' => $adminRoleMeta])
 
     {{-- ── Delete confirm modal ─────────────────────────────────────────────────── --}}
     <div id="del-modal"
@@ -1224,39 +1039,7 @@
             document.getElementById('invite-btn-label').textContent = tab === 'admins'
               ? '{{ strtoupper(__("dashboard.staff.admin")) }}'
               : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
-            // Update invite form action & role sections
-            const form = document.getElementById('invite-form');
-            form.action = tab === 'admins' ? routeAdminInvite : routeStaffInvite;
-            document.getElementById('staff-role-section').style.display = tab === 'staff' ? '' : 'none';
-            const adminSec = document.getElementById('admin-role-section');
-            if (adminSec) adminSec.style.display = tab === 'admins' ? '' : 'none';
-            // Password only required for ADMIN invites (staff use the set-password link)
-            const passSec = document.getElementById('admin-password-section');
-            if (passSec) passSec.style.display = tab === 'admins' ? '' : 'none';
-            const passInput = document.getElementById('inv-pass');
-            if (passInput) passInput.required = tab === 'admins';
-            const hintSec = document.getElementById('staff-invite-hint');
-            if (hintSec) hintSec.style.display = tab === 'staff' ? '' : 'none';
-            document.getElementById('invite-modal-title').textContent = tab === 'admins'
-              ? '{{ strtoupper(__("dashboard.staff.admin")) }}'
-              : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
-            document.getElementById('invite-target').value = tab;
-            document.getElementById('invite-submit-btn').innerHTML = tab === 'admins'
-                ? '🛡️ {{ strtoupper(__("dashboard.staff.inviteAdmin")) }}'
-                : '✉ {{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
         }
-
-        // Set correct form action on page load without requiring switchTab() call
-        document.getElementById('invite-form').action = currentTab === 'admins' ? routeAdminInvite : routeStaffInvite;
-        // Sync modal sections (password / hint) for the initially active tab
-        (function initInviteSections() {
-            const passSec = document.getElementById('admin-password-section');
-            if (passSec) passSec.style.display = currentTab === 'admins' ? '' : 'none';
-            const passInput = document.getElementById('inv-pass');
-            if (passInput) passInput.required = currentTab === 'admins';
-            const hintSec = document.getElementById('staff-invite-hint');
-            if (hintSec) hintSec.style.display = currentTab === 'staff' ? '' : 'none';
-        })();
 
         // ── Toast ─────────────────────────────────────────────────────────────────────
         function dismissToast(id) {
@@ -1266,24 +1049,20 @@
             setTimeout(() => el?.remove(), 300);
         }
 
-        // ── Invite modal ──────────────────────────────────────────────────────────────
+        // ── Invite modal — form logic lives inside the partial (Alpine.js) ─────────────
         function openInviteModal() {
-            switchTab(currentTab); // sync form action before opening
+            switchTab(currentTab); // sync visual tab state before opening
             const m = document.getElementById('invite-modal');
-            m.style.display = 'flex';
-            setTimeout(() => m.querySelector('input[name=name]')?.focus(), 100);
+            if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+            setTimeout(() => m?.querySelector('input[name=name]')?.focus(), 100);
         }
 
         function closeInviteModal() {
-            document.getElementById('invite-modal').style.display = 'none';
+            const m = document.getElementById('invite-modal');
+            if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
         }
         document.getElementById('invite-modal').addEventListener('click', function(e) {
             if (e.target === this) closeInviteModal();
-        });
-        document.getElementById('invite-form').addEventListener('submit', function() {
-            const b = document.getElementById('invite-submit-btn');
-            b.innerHTML = '⏳ SENDING...';
-            b.disabled = true;
         });
 
         // ── Delete modal ──────────────────────────────────────────────────────────────

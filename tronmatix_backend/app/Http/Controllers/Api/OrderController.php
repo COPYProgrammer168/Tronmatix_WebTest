@@ -224,6 +224,19 @@ class OrderController extends Controller
                     $shippingSnapshot['map_address'] = $validated['delivery_map_address'] ?? null;
                 }
 
+                // Enrich shipping snapshot with province/city so Telegram can show it
+                if (!empty($validated['province_id'])) {
+                    $prov = \App\Models\Province::find($validated['province_id']);
+                    if ($prov) {
+                        $shippingSnapshot['province']      = $prov->name_en ?? $prov->name_kh ?? '';
+                        $shippingSnapshot['province_id']   = (int) $prov->id;
+                        // Backfill city from province name if customer didn't type one
+                        if (empty($shippingSnapshot['city'])) {
+                            $shippingSnapshot['city'] = $prov->name_en ?? $prov->name_kh ?? '';
+                        }
+                    }
+                }
+
                 $shippingSnapshot['delivery_phone_verified'] = $validated['delivery_phone_verified'] ?? false;
 
                 $order = Order::create([

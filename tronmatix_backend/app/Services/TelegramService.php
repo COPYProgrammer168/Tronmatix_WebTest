@@ -55,9 +55,12 @@ class TelegramService
             $fulfillmentLine = '🚚 *DELIVERY*';
             $contactLine = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
             $phoneLine = '📞 Phone: ' . ($shipping['phone'] ?? '—');
-            $addressLine = '📍 Address: '
-                . ($shipping['address'] ?? '—')
-                . ($shipping['city'] ? ', ' . $shipping['city'] : '');
+            $locationParts = array_filter([
+                $shipping['address'] ?? '—',
+                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['province'] ?? null,
+            ], fn($v) => !empty($v));
+            $addressLine = '📍 Address: ' . implode(', ', $locationParts);
         }
 
         $scheduleLine = null;
@@ -171,6 +174,12 @@ class TelegramService
         $shippingPhone = $shipping['phone'] ?? '';
         $shippingName  = $shipping['name'] ?? '';
 
+        $locationParts = array_filter([
+            $shipping['address'] ?? null,
+            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['province'] ?? null,
+        ], fn($v) => !empty($v));
+
         $lines = array_filter([
             '✅ *ABA BAKONG Payment Confirmed!*',
             '',
@@ -178,6 +187,7 @@ class TelegramService
             '👤 Customer: ' . ($shippingName ?: $order->user?->username ?? 'Guest'),
             '📞 Phone: ' . ($shippingPhone ?: $order->user?->phone ?? '—'),
             $fulfillment,
+            !empty($locationParts) ? '📍 ' . implode(', ', $locationParts) : null,
             $order->delivery_date
             ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': ' . $order->delivery_date
             . ($order->delivery_time_slot ? ' | ' . $order->delivery_time_slot : '')

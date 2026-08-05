@@ -227,8 +227,15 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                     <span style="font-size:var(--text-xs); color:var(--text-muted);">{{ $alert->created_at?->format('H:i') ?? '—' }}</span>
-                    <span style="font-size:var(--text-xs); padding:2px 8px; border-radius:6px; background:{{ $accentColor }}18; color:{{ $accentColor }}; font-weight:{{ $_fw6 }}; white-space:nowrap;">
-                        {{ $alert->ip_address ?: '—' }}
+                    <span style="font-size:var(--text-xs); padding:2px 8px; border-radius:6px; background:{{ $accentColor }}18; color:{{ $accentColor }}; font-weight:{{ $_fw6 }}; white-space:nowrap; text-align:right;" title="{{ $alert->ip_address ?: '' }}">
+                        @php
+                            $loc = \App\Services\IpLocationService::format([
+                                'city'    => $alert->ip_city,
+                                'region'  => $alert->ip_region,
+                                'country' => $alert->ip_country,
+                            ]);
+                        @endphp
+                        {{ $loc !== 'Unknown' ? '📍 ' . $loc : ($alert->ip_address ?: '—') }}
                     </span>
                 </div>
             </div>
@@ -427,7 +434,18 @@
                             @endif
                         </td>
                         <td style="padding:10px 16px; white-space:nowrap; color:var(--text-muted); font-size:var(--text-sm); font-weight:{{ $_fw6 }};">
-                            {{ $log->ip_address ?: '—' }}
+                            @php
+                                $logLoc = \App\Services\IpLocationService::format([
+                                    'city'    => $log->ip_city,
+                                    'region'  => $log->ip_region,
+                                    'country' => $log->ip_country,
+                                ]);
+                            @endphp
+                            @if($logLoc !== 'Unknown')
+                                <span title="{{ $log->ip_address ?: '' }}">📍 {{ $logLoc }}</span>
+                            @else
+                                {{ $log->ip_address ?: '—' }}
+                            @endif
                         </td>
                     </tr>
                 @empty

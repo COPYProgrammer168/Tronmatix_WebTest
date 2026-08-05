@@ -46,15 +46,28 @@ class GenerateKhqrController extends Controller
      * Encode order items to base64 JSON as required by PayWay.
      * Format: base64( [{"name":"...","quantity":1,"price":0.99}, ...] )
      */
+    /**
+     * Encode order items to base64 JSON as required by PayWay.
+     * Truncates long names and caps at 20 items to stay within PayWay limits.
+     */
     private function encodeItems(Order $order): string
     {
-        $items = $order->items->map(fn($i) => [
-            'name' => $i->name,
+        $items = $order->items->take(20)->map(fn($i) => [
+            'name'     => mb_substr((string) $i->name, 0, 60),
             'quantity' => (int) $i->qty,
-            'price' => (float) number_format((float) $i->price, 2, '.', ''),
+            'price'    => (float) number_format((float) $i->price, 2, '.', ''),
         ])->values()->toArray();
 
-        return base64_encode(json_encode($items));
+        $json = json_encode($items, JSON_UNESCAPED_UNICODE);
+        $encoded = base64_encode($json);
+
+        Log::debug('PayWay items encoded', [
+            'count'   => count($items),
+            'json_len'=> strlen($json),
+            'b64_len' => strlen($encoded),
+        ]);
+
+        return $encoded;
     }
 
     /**
@@ -204,10 +217,12 @@ class GenerateKhqrController extends Controller
         ];
 
         Log::info('PayWay generate-qr request', [
-            'order_id' => $order->id,
+            'order_id'    => $order->id,
             'merchant_id' => $merchantId,
-            'tran_id' => $tranId,
-            'amount' => $amountStr,
+            'tran_id'     => $tranId,
+            'amount'      => $amountStr,
+            'items_count' => count($items),
+            'payload_len' => strlen(json_encode($payload)),
         ]);
 
         // ── Call PayWay API ───────────────────────────────────────────────────
@@ -221,15 +236,22 @@ class GenerateKhqrController extends Controller
 
             Log::info('PayWay generate-qr response', [
                 'http_status' => $response->status(),
-                'code' => $body['status']['code'] ?? 'n/a',
-                'message' => $body['status']['message'] ?? 'n/a',
+                'code'        => $body['status']['code'] ?? 'n/a',
+                'message'     => $body['status']['message'] ?? 'n/a',
+                'has_qrString'=> !empty($body['qrString']),
             ]);
 
             // PayWay returns code "0" on success
             if (!$response->successful() || ($body['status']['code'] ?? '') !== '0') {
-                $msg = $body['status']['message'] ?? 'PayWay QR generation failed';
-                Log::error('PayWay QR error', ['body' => $body]);
-                throw new \RuntimeException($msg);
+                $paywayMsg = $body['status']['message'] ?? 'PayWay QR generation failed';
+                $paywayCode = $body['status']['code'] ?? 'unknown';
+                Log::error('PayWay QR error', [
+                    'code'    => $paywayCode,
+                    'message' => $paywayMsg,
+                    'body'    => $body,
+                    'items'   => $items,
+                ]);
+                throw new \RuntimeException("PayWay error [{$paywayCode}]: {$paywayMsg}");
             }
 
             // ── Extract response values ───────────────────────────────────────

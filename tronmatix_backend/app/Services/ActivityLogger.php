@@ -42,6 +42,9 @@ class ActivityLogger
             [$actorType, $actorName] = $data['actor_override'];
         }
 
+        $ip = $request->ip();
+        $location = self::resolveLocation($ip);
+
         ActivityLog::create([
             'actor_id'    => $actor?->id,
             'actor_type'  => $actorType ?? $data['actor_type'] ?? null,
@@ -51,9 +54,24 @@ class ActivityLogger
             'entity_id'   => $data['entity_id'] ?? null,
             'entity_name' => $data['entity_name'] ?? null,
             'details'     => $data['details'] ?? null,
-            'ip_address'  => $request->ip(),
+            'ip_address'  => $ip,
+            'ip_country'  => $location['country'] ?? null,
+            'ip_region'   => $location['region']  ?? null,
+            'ip_city'     => $location['city']    ?? null,
+            'ip_isp'      => $location['isp']     ?? null,
             'user_agent'  => $request->userAgent(),
         ]);
+    }
+
+    /** Resolve IP → location, always returns an array. */
+    private static function resolveLocation(string $ip): array
+    {
+        return \App\Services\IpLocationService::resolve($ip) ?? [
+            'country' => null,
+            'region'  => null,
+            'city'    => null,
+            'isp'     => null,
+        ];
     }
 
     /**
