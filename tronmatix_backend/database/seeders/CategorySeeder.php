@@ -65,7 +65,7 @@ class CategorySeeder extends Seeder
             // ══ Level 3: Sub Categories ════════════════════════════════════════
 
             // PC BUILD — budget ranges (from real site)
-            foreach (['UNDER 1K','UNDER 2K','UNDER 3K','UNDER 4K','UNDER 5K','5K UP'] as $i => $name) {
+            foreach (['PC BUILD UNDER 1K','PC BUILD UNDER 2K','PC BUILD UNDER 3K','PC BUILD UNDER 4K','PC BUILD UNDER 5K','PC BUILD 5K UP'] as $i => $name) {
                 $this->seedSubCategory($pcBuildMc->id, $name, $i + 1);
             }
 

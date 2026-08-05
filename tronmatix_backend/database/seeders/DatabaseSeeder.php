@@ -19,42 +19,42 @@ class DatabaseSeeder extends Seeder
         // $forceFresh = (bool) env('SEED_FRESH', false);
         // $alreadySeeded = \App\Models\User::count() > 0;
 
-        // if ($forceFresh || ! $alreadySeeded) {
-        //     Schema::disableForeignKeyConstraints();
+        if ($forceFresh || ! $alreadySeeded) {
+            Schema::disableForeignKeyConstraints();
 
-        //     DB::table('payments')->truncate();
-        //     DB::table('order_items')->truncate();
-        //     DB::table('orders')->truncate();
-        //     DB::table('brands')->truncate();
-        //     DB::table('sub_categories')->truncate();
-        //     DB::table('main_categories')->truncate();
-        //     DB::table('categories')->truncate();
-        //     DB::table('discounts')->truncate();
-        //     DB::table('user_locations')->truncate();
-        //     DB::table('staff')->truncate();
-        //     DB::table('users')->truncate();
+            DB::table('payments')->truncate();
+            DB::table('order_items')->truncate();
+            DB::table('orders')->truncate();
+            DB::table('brands')->truncate();
+            DB::table('sub_categories')->truncate();
+            DB::table('main_categories')->truncate();
+            DB::table('categories')->truncate();
+            DB::table('discounts')->truncate();
+            DB::table('user_locations')->truncate();
+            // DB::table('staff')->truncate();
+            // DB::table('users')->truncate();
 
-        //     Schema::enableForeignKeyConstraints();
+            Schema::enableForeignKeyConstraints();
 
-        //     $this->command->info('🔄 Database empty — truncating + seeding from scratch.');
-        // } else {
-        //     $this->command->warn('⚠️  Database already has users — SKIPPING destructive truncate.');
-        //     $this->command->warn('    Run `SEED_FRESH=1 php artisan db:seed` to force a clean reseed.');
-        // }
+            $this->command->info('🔄 Database empty — truncating + seeding from scratch.');
+        } else {
+            $this->command->warn('⚠️  Database already has users — SKIPPING destructive truncate.');
+            $this->command->warn('    Run `SEED_FRESH=1 php artisan db:seed` to force a clean reseed.');
+        }
 
         // ── Run seeders in dependency order ───────────────────────────────────
         $this->call([
             // AdminSeeder::class,
             // StaffSeeder::class,
             // UserSeeder::class,
-            // CustomerSeeder::class,
-            // UserLocationSeeder::class,
-            // DiscountSeeder::class,
-            // CategorySeeder::class,
+            CustomerSeeder::class,
+            UserLocationSeeder::class,
+            DiscountSeeder::class,
+            CategorySeeder::class,
             // DeliveryZoneSeeder::class,
             // ProvinceSeeder::class,
-            // OrderSeeder::class,
-            ProductImportSeeder::class,     // Full catalog (1,098 products) upserted by slug
+            OrderSeeder::class,
+            // ProductImportSeeder::class,
             // ActivityLogSeeder::class,       // login events incl. current month
             // DeliveryScheduleSeeder::class,
             // MarqueeSeeder::class,           // Telegram connect marquee messages
