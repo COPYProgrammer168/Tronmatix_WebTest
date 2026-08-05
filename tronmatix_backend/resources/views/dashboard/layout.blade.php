@@ -1108,8 +1108,6 @@
 
     @stack('styles')
 
-    {{-- Alpine.js for modal interactivity --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.x/dist/cdn.min.js"></script>
 
     {{-- Apply saved theme before paint to prevent flash --}}
     <script>
