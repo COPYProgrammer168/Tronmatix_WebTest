@@ -347,20 +347,48 @@ class AuthController extends Controller
         }
 
         // 4) Account exists — send the reset link.
-        $status = Password::sendResetLink(['email' => $email]);
+        try {
+            $status = Password::sendResetLink(['email' => $email]);
+        } catch (\Throwable $e) {
+            Log::channel('security')->error('Auth: forgot-password SMTP exception', [
+                'email'  => $email,
+                'ip'     => $ip,
+                'error'  => $e->getMessage(),
+                'mailer' => config('mail.default'),
+                'host'   => config('mail.mailers.smtp.host'),
+                'port'   => config('mail.mailers.smtp.port'),
+                'user'   => config('mail.mailers.smtp.username'),
+            ]);
 
-        if ($status !== Password::RESET_LINK_SENT) {
             RateLimiter::hit($ipKey, $ipLockoutSecs);
 
             return response()->json([
-                'message' => 'No account found with this email.',
-                'errors'  => ['email' => ['No account found with this email.']],
+                'message' => 'Failed to send reset email. Please try again later or contact support.',
+            ], 500);
+        }
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            Log::channel('security')->warning('Auth: forgot-password broker failed', [
+                'email'  => $email,
+                'ip'     => $ip,
+                'status' => $status,
+            ]);
+
+            RateLimiter::hit($ipKey, $ipLockoutSecs);
+
+            return response()->json([
+                'message' => 'Failed to send reset email. Please try again later.',
             ], 422);
         }
 
         // Success: reset IP counter, start email cooldown.
         RateLimiter::clear($ipKey);
         RateLimiter::hit($emailKey, $cooldownSecs);
+
+        Log::channel('security')->info('Auth: forgot-password email sent', [
+            'email' => $email,
+            'ip'    => $ip,
+        ]);
 
         return response()->json([
             'message' => 'If that email is registered, a reset link has been sent.',

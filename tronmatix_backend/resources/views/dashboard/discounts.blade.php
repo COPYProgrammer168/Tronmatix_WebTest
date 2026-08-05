@@ -573,6 +573,15 @@
 
                 <form id="couponForm" method="POST" onsubmit="syncProductId()">
                     @csrf
+                    @if ($errors->any())
+                        <div class="alert alert-error" style="margin-bottom:15px; padding: 10px;">
+                            <ul style="padding-left: 20px; margin: 0;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <input type="hidden" name="_method" id="couponMethod" value="POST">
                     <input type="hidden" id="couponId" name="id" value="">
                     {{-- Hidden input to ensure product_id is always submitted --}}
