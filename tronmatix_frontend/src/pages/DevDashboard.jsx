@@ -22,15 +22,16 @@ const NAV_SECTIONS = [
   {
     label: 'SYSTEM',
     items: [
-      { id: 'system', label: 'Health',      icon: '⚙️' },
-      { id: 'logs',   label: 'API Logs',    icon: '📋' },
-      { id: 'env',    label: 'Environment', icon: '🔑' },
+      { id: 'system', label: 'Health',       icon: '⚙️' },
+      { id: 'logs',   label: 'API Logs',     icon: '📋' },
+      { id: 'env',    label: 'Environment',  icon: '🔑' },
     ],
   },
   {
-    label: 'DATA',
+    label: 'MONITOR',
     items: [
-      { id: 'users',  label: 'All Users',   icon: '👥' },
+      { id: 'activity', label: 'Activity',   icon: '📊' },
+      { id: 'users',    label: 'All Users',  icon: '👥' },
     ],
   },
 ]
@@ -556,6 +557,116 @@ function EnvTab() {
   )
 }
 
+// ── ACTIVITY TAB ───────────────────────────────────────────────────────────────
+function ActivityTab() {
+  const [actionFilter, setActionFilter] = useState('ALL')
+  const [entityFilter, setEntityFilter] = useState('ALL')
+  const { data: logs, loading, error, refetch } = useFetch('/api/dev/activity', { refreshInterval: 30000 })
+
+  const actionGroups = ['ALL', 'login_success', 'login_failed', 'staff_invited', 'staff_role_changed', 'google_login', 'google_register', 'order_status_update', 'payment_verified']
+  const entityGroups = ['ALL', 'User', 'Staff', 'Admin', 'Order', 'Product']
+
+  const filtered = (logs ?? []).filter(l => {
+    const actionOk = actionFilter === 'ALL' || l.action === actionFilter
+    const entityOk = entityFilter === 'ALL' || l.entity_type === entityFilter
+    return actionOk && entityOk
+  })
+
+  const ACTION_STYLE = {
+    login_success:     { bg: 'rgba(34,197,94,0.15)',  color: '#22c55e' },
+    login_failed:      { bg: 'rgba(239,68,68,0.15)',  color: '#ef4444' },
+    staff_invited:     { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
+    staff_role_changed:{ bg: 'rgba(168,85,247,0.15)', color: '#a855f7' },
+    google_login:      { bg: 'rgba(99,102,241,0.15)', color: '#6366f1' },
+    google_register:   { bg: 'rgba(99,102,241,0.15)', color: '#6366f1' },
+    order_status_update:{ bg: 'rgba(245,158,11,0.15)',color: '#f59e0b' },
+    payment_verified:  { bg: 'rgba(34,197,94,0.15)',  color: '#22c55e' },
+    staff_deleted:     { bg: 'rgba(239,68,68,0.12)',  color: '#ef4444' },
+  }
+
+  const getActionStyle = (action) => ACTION_STYLE[action] ?? { bg: 'rgba(75,85,99,0.2)', color: '#6b7280' }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {actionGroups.map(a => {
+            const active = actionFilter === a
+            const ms = getActionStyle(a)
+            return (
+              <button key={a} onClick={() => setActionFilter(a)} style={{
+                padding: '5px 12px', borderRadius: 6, border: '1px solid', fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'monospace',
+                borderColor: active ? (a === 'ALL' ? ACCENT : ms.color) : 'rgba(255,255,255,0.1)',
+                background:  active ? (a === 'ALL' ? 'rgba(59,130,246,0.12)' : ms.bg) : 'transparent',
+                color:       active ? (a === 'ALL' ? ACCENT : ms.color) : 'rgba(255,255,255,0.45)',
+                transition: 'all 0.15s',
+              }}>{a.replace(/_/g, ' ')}</button>
+            )
+          })}
+        </div>
+        <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.07)' }} />
+        <div style={{ display: 'flex', gap: 6 }}>
+          {entityGroups.map(e => {
+            const active = entityFilter === e
+            return (
+              <button key={e} onClick={() => setEntityFilter(e)} style={{
+                padding: '5px 12px', borderRadius: 6, border: '1px solid', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'monospace',
+                borderColor: active ? ACCENT : 'rgba(255,255,255,0.1)',
+                background:  active ? 'rgba(59,130,246,0.12)' : 'transparent',
+                color:       active ? ACCENT : 'rgba(255,255,255,0.45)',
+                transition: 'all 0.15s',
+              }}>{e}</button>
+            )
+          })}
+        </div>
+        <button onClick={refetch} style={{
+          marginLeft: 'auto', padding: '5px 14px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6,
+          background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: 11, cursor: 'pointer',
+        }}>↻ Refresh</button>
+      </div>
+
+      {error ? <ErrorState message={error} onRetry={refetch} /> : (
+        <TableBox headers={['ACTION', 'ENTITY', 'ACTOR', 'DETAILS', 'AT']} mono>
+          {loading ? <SkeletonRows cols={5} rows={8} color={ACCENT} /> : filtered.length === 0 ? (
+            <tr><td colSpan={5}><EmptyState label="No activity logs" /></td></tr>
+          ) : filtered.map((l, i) => {
+            const ms = getActionStyle(l.action)
+            return (
+              <tr key={l.id ?? i} style={{
+                borderBottom: '1px solid rgba(255,255,255,0.04)',
+                background: i % 2 ? 'rgba(255,255,255,0.02)' : 'transparent',
+                transition: 'background 0.15s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                onMouseLeave={e => e.currentTarget.style.background = i % 2 ? 'rgba(255,255,255,0.02)' : 'transparent'}
+              >
+                <td style={{ padding: '10px 16px' }}>
+                  <span style={{
+                    background: ms.bg, color: ms.color, borderRadius: 4, padding: '2px 8px',
+                    fontSize: 10, fontWeight: 800, fontFamily: 'monospace', whiteSpace: 'nowrap',
+                  }}>{l.action?.replace(/_/g, ' ')}</span>
+                </td>
+                <td style={{ padding: '10px 16px', fontSize: 12, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>
+                  {l.entity_type}{l.entity_id ? ` #${l.entity_id}` : ''}
+                </td>
+                <td style={{ padding: '10px 16px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 600, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {l.actor_name ?? l.actor_type ?? '—'}
+                </td>
+                <td style={{ padding: '10px 16px', fontSize: 11, color: 'rgba(255,255,255,0.35)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {l.details ? JSON.stringify(l.details) : '—'}
+                </td>
+                <td style={{ padding: '10px 16px', fontSize: 11, color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                  {l.created_at?.slice(11, 19) ?? '—'}
+                </td>
+              </tr>
+            )
+          })}
+        </TableBox>
+      )}
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function DevDashboard() {
   const [tab, setTab] = useState('system')
@@ -568,10 +679,11 @@ export default function DevDashboard() {
   }
 
   const TAB_CONTENT = {
-    system: <SystemTab />,
-    logs:   <ApiLogsTab />,
-    users:  <UsersTab />,
-    env:    <EnvTab />,
+    system:   <SystemTab />,
+    logs:     <ApiLogsTab />,
+    env:      <EnvTab />,
+    activity: <ActivityTab />,
+    users:    <UsersTab />,
   }
 
   const flatNav = NAV_SECTIONS.flatMap(s => s.items)

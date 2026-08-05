@@ -60,4 +60,16 @@ class StaffInvite extends Model
     {
         return url('/dashboard/invite/' . $this->token);
     }
+
+    public function links()
+    {
+        return $this->hasMany(StaffInviteLink::class, 'staff_invite_id');
+    }
+
+    public function activeLinks()
+    {
+        return $this->links()->whereNull('used_at')->where(function ($q) {
+            $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+        });
+    }
 }

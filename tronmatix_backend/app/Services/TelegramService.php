@@ -88,9 +88,22 @@ class TelegramService
             $itemLines,
             '',
             "💰 Subtotal: \${$order->subtotal}",
-            $order->discount_amount > 0
-            ? "🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"
-            : null,
+            $order->discount_amount > 0 ? (function () use ($order) {
+                $lines = ["🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"];
+                $d = \App\Models\Discount::find($order->discount_id);
+                if ($d) {
+                    if ($d->product_id) {
+                        $prod = \App\Models\Product::find($d->product_id);
+                        $lines[] = '   📌 Product: '.($prod ? $prod->name : '#'.$d->product_id);
+                    } elseif (!empty($d->categories)) {
+                        $lines[] = '   📌 Categories: '.implode(', ', $d->categories);
+                    } else {
+                        $lines[] = '   📌 Sitewide (all items)';
+                    }
+                    $lines[] = '   🔑 '.($d->type === 'percentage' ? $d->value.'% OFF' : '$'.$d->value.' OFF');
+                }
+                return implode("\n", $lines);
+            })() : null,
             "✅ *Total: \${$order->total}*",
             '',
             '🕐 ' . $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
@@ -176,9 +189,22 @@ class TelegramService
             ($order->subtotal && (float) $order->subtotal !== (float) $order->total)
             ? "💰 Subtotal: \${$order->subtotal}"
             : null,
-            ($order->discount_amount ?? 0) > 0
-            ? "🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"
-            : null,
+            ($order->discount_amount ?? 0) > 0 ? (function () use ($order) {
+                $lines = ["🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"];
+                $d = \App\Models\Discount::find($order->discount_id);
+                if ($d) {
+                    if ($d->product_id) {
+                        $prod = \App\Models\Product::find($d->product_id);
+                        $lines[] = '   📌 Product: '.($prod ? $prod->name : '#'.$d->product_id);
+                    } elseif (!empty($d->categories)) {
+                        $lines[] = '   📌 Categories: '.implode(', ', $d->categories);
+                    } else {
+                        $lines[] = '   📌 Sitewide (all items)';
+                    }
+                    $lines[] = '   🔑 '.($d->type === 'percentage' ? $d->value.'% OFF' : '$'.$d->value.' OFF');
+                }
+                return implode("\n", $lines);
+            })() : null,
             "✅ *Total Paid: \${$order->total} USD*",
             "🔑 APV: `{$apv}`",
             '',

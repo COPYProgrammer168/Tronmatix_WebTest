@@ -10,6 +10,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -126,6 +127,28 @@ connected'
         return response()->json([
             'data' => array_slice(array_reverse($parsed), 0, 100)
         ]);
+    }
+
+    /** GET /api/dev/activity — recent activity logs for dev dashboard */
+    public function activity(Request $request)
+    {
+        $limit = min((int) $request->input('limit', 100), 200);
+
+        $query = ActivityLog::query()->whereNotNull('created_at')->orderByDesc('created_at');
+
+        if ($request->filled('action')) {
+            $query->where('action', $request->input('action'));
+        }
+        if ($request->filled('entity_type')) {
+            $query->where('entity_type', $request->input('entity_type'));
+        }
+        if ($request->filled('actor_name')) {
+            $query->where('actor_name', 'like', '%' . $request->input('actor_name') . '%');
+        }
+
+        $logs = $query->limit($limit)->get();
+
+        return response()->json(['data' => $logs]);
     }
 
     /** GET /api/dev/env — safe subset of env vars, sensitive values masked server-side */

@@ -108,9 +108,10 @@ Route::middleware(['auth:sanctum', 'not_banned', 'throttle:60,1'])->group(functi
 
     // Dev tools — developer only
     Route::middleware('role:developer')->group(function () {
-        Route::get('/dev/health', [DevToolsController::class, 'health']);
-        Route::get('/dev/logs',   [DevToolsController::class, 'logs']);
-        Route::get('/dev/env',    [DevToolsController::class, 'env']);
+        Route::get('/dev/health',   [DevToolsController::class, 'health']);
+        Route::get('/dev/logs',     [DevToolsController::class, 'logs']);
+        Route::get('/dev/env',      [DevToolsController::class, 'env']);
+        Route::get('/dev/activity', [DevToolsController::class, 'activity']);
     });
 
     // Staff product management — create, update, delete

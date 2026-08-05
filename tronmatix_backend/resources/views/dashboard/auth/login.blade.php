@@ -377,9 +377,14 @@
 </div>
 
 <script>
-    var currentMode = 'admin';
+    var currentMode = '{{ request('mode', 'admin') }}';
     var forgotEmailUrl = '{{ route('dashboard.password.email', ['mode' => 'admin']) }}';
     var forgotStaffUrl = '{{ route('dashboard.password.email', ['mode' => 'staff']) }}';
+
+    // Auto-select staff mode if redirected from invite acceptance
+    if (currentMode === 'staff') {
+        setMode('staff');
+    }
 
     function setMode(mode) {
         currentMode = mode;

@@ -224,6 +224,24 @@ class TelegramUserService
             return "  • {$name} ×{$item->qty} → \${$lineTotal}";
         })->join("\n");
 
+        $discountDetail = null;
+        if (($order->discount_amount ?? 0) > 0 && $order->discount_id) {
+            $d = \App\Models\Discount::find($order->discount_id);
+            if ($d) {
+                $parts = ["🏷 Discount ({$this->e($order->discount_code ?? '')}): −\$" . $this->e((string) $order->discount_amount)];
+                if ($d->product_id) {
+                    $prod = \App\Models\Product::find($d->product_id);
+                    $parts[] = '   📌 Product: '.($prod ? $this->e($prod->name) : '#'.$d->product_id);
+                } elseif (!empty($d->categories)) {
+                    $parts[] = '   📌 Categories: '.implode(', ', array_map([$this, 'e'], $d->categories));
+                } else {
+                    $parts[] = '   📌 Sitewide (all items)';
+                }
+                $parts[] = '   🔑 '.($d->type === 'percentage' ? $d->value.'% OFF' : '$'.$d->value.' OFF');
+                $discountDetail = implode("\n", $parts);
+            }
+        }
+
         $lines = array_filter([
             '✅ <b>Payment Confirmed!</b>', '',
             "📦 Order: <code>#{$id}</code>",
@@ -233,9 +251,7 @@ class TelegramUserService
             '<b>Items paid:</b>',
             $itemLines,
             '',
-            ($order->discount_amount ?? 0) > 0
-                ? "🏷 Discount: −\$" . $this->e((string) $order->discount_amount)
-                : null,
+            $discountDetail,
             "✅ <b>Total Paid: \${$total} USD</b>",
             '',
             $fulfillment,
@@ -346,6 +362,24 @@ class TelegramUserService
             return "  • {$name} ×{$item->qty} → \${$lineTotal}{$warranty}";
         })->join("\n");
 
+        // Build discount detail lines — show which products/categories the code applied to
+        $discountLines = [];
+        if (($order->discount_amount ?? 0) > 0 && $order->discount_id) {
+            $discountLines[] = '🏷 Discount ('.$this->e($order->discount_code ?? '').'): -$'.$this->e((string) $order->discount_amount);
+            $d = \App\Models\Discount::find($order->discount_id);
+            if ($d) {
+                if ($d->product_id) {
+                    $prod = \App\Models\Product::find($d->product_id);
+                    $discountLines[] = '   📌 Applied to: '.($prod ? $this->e($prod->name) : 'Product #'.$d->product_id);
+                } elseif (!empty($d->categories)) {
+                    $discountLines[] = '   📌 Categories: '.implode(', ', array_map([$this, 'e'], $d->categories));
+                } else {
+                    $discountLines[] = '   📌 Applied to: All items (sitewide)';
+                }
+                $discountLines[] = '   🔑 Type: '.($d->type === 'percentage' ? $d->value.'% OFF' : '$'.$d->value.' OFF');
+            }
+        }
+
         $lines = array_filter([
             '🧾 <b>Your Order Receipt</b>', '',
             "📦 Order: <code>#{$id}</code>",
@@ -358,9 +392,7 @@ class TelegramUserService
             '<b>Items:</b>',
             $itemLines, '',
             "💰 Subtotal: \${$subtotal}",
-            ($order->discount_amount ?? 0) > 0
-                ? '🏷 Discount ('.$this->e($order->discount_code ?? '').'): -$'.$this->e((string) $order->discount_amount)
-                : null,
+            ...$discountLines,
             "✅ <b>Total: \${$total}</b>", '',
             "We'll notify you when your order ships. 💙",
             '🕐 '.$this->ts(),

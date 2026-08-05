@@ -307,9 +307,8 @@
                             <tr style="border-bottom:1px solid var(--border);">
                                 <th style="padding:12px 16px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">NAME</th>
                                 <th style="padding:12px 16px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">EMAIL</th>
-                                <th style="padding:12px 16px;text-align:left;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">PHONE</th>
                                 <th style="padding:12px 16px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">ROLE</th>
-                                <th style="padding:12px 16px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">EXPIRES</th>
+                                <th style="padding:12px 16px;text-align:center;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">LINKS</th>
                                 <th style="padding:12px 16px;text-align:right;font-size: var(--title-size);letter-spacing:2px;color:var(--text-muted);font-weight:{{ $_fw7 }};">ACTIONS</th>
                             </tr>
                         </thead>
@@ -318,11 +317,11 @@
                                 @php
                                     $iRole = $inv->role ?? 'editor';
                                     $iMeta = $staffRoleMeta[$iRole] ?? $staffRoleMeta['editor'];
+                                    $linkCount = $inv->links->count();
                                 @endphp
                                 <tr style="border-bottom:1px solid var(--border);">
                                     <td style="padding:12px 16px;white-space:nowrap;font-weight:{{ $_fw7 }};color:var(--text-primary);">{{ $inv->name }}</td>
                                     <td style="padding:12px 16px;font-size: var(--title-size);color:var(--text-secondary);">{{ $inv->email }}</td>
-                                    <td style="padding:12px 16px;font-size: var(--title-size);color:var(--text-secondary);">{{ $inv->phone ?? '—' }}</td>
                                     <td style="padding:12px 16px;text-align:center;">
                                         <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;
                                             font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;
@@ -331,16 +330,52 @@
                                         </span>
                                     </td>
                                     <td style="padding:12px 16px;text-align:center;font-size: var(--title-size);color:var(--text-muted);">
-                                        {{ $inv->expires_at ? $inv->expires_at->format('d M Y') : '—' }}
+                                        <span style="background:rgba(255,255,255,0.06);padding:2px 10px;border-radius:20px;font-weight:{{ $_fw8 }};">{{ $linkCount }} link{{ $linkCount !== 1 ? 's' : '' }}</span>
                                     </td>
-                                    <td style="padding:12px 16px;text-align:right;white-space:nowrap;">
-                                        <form method="POST" action="{{ route('dashboard.staff.invite.resend', $inv->id) }}" style="display:inline;">
+                                    <td style="padding:12px 16px;text-align:right;white-space:nowrap;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
+                                        {{-- Expandable links list --}}
+                                        <button type="button" onclick="toggleLinks(this, 'links-{{ $inv->id }}')"
+                                            style="padding:5px 10px;border-radius:6px;cursor:pointer;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                                   font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:0.5px;
+                                                   border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-muted);">
+                                            LINKS ▾
+                                        </button>
+                                        {{-- Generate new link --}}
+                                        <form method="POST" action="{{ route('dashboard.staff.invite.resend', $inv->id) }}" style="display:inline;" onsubmit="return generateNewLink(this, event)">
                                             @csrf
                                             <button type="submit" title="Generate a new invite link"
                                                 style="padding:6px 14px;border-radius:8px;cursor:pointer;font-family:Rajdhani, var(--font-kh), sans-serif;
                                                        font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;
-                                                       border:1px solid rgba(249,115,22,0.3);background:rgba(249,115,22,0.08);color:#F97316;">↻ NEW LINK</button>
+                                                       border:1px solid rgba(249,115,22,0.3);background:rgba(249,115,22,0.08);color:#F97316;">+ NEW LINK</button>
                                         </form>
+                                    </td>
+                                </tr>
+                                {{-- Expandable links detail row --}}
+                                <tr id="links-{{ $inv->id }}" style="display:none;border-bottom:1px solid var(--border);">
+                                    <td colspan="5" style="padding:12px 16px;">
+                                        <div style="display:flex;flex-direction:column;gap:8px;">
+                                            @foreach ($inv->links as $l)
+                                                @php
+                                                    $lValid = $l->isValid();
+                                                    $lStatus = $l->used_at ? 'Used' : ($l->expires_at && $l->expires_at->isPast() ? 'Expired' : 'Active');
+                                                    $lColor = $l->used_at ? '#ef4444' : ($l->expires_at && $l->expires_at->isPast() ? '#f59e0b' : '#22c55e');
+                                                @endphp
+                                                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:var(--dark-700);border:1px solid var(--border);flex-wrap:wrap;">
+                                                    <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:{{ $lColor }};min-width:50px;">{{ strtoupper($lStatus) }}</span>
+                                                    <span style="flex:1;min-width:200px;font-size:12px;color:var(--text-secondary);word-break:break-all;font-family:monospace;">{{ $l->inviteUrl() }}</span>
+                                                    <span style="font-size:11px;color:var(--text-muted);white-space:nowrap;">Exp: {{ $l->expires_at ? $l->expires_at->format('d M Y H:i') : 'Never' }}</span>
+                                                    @if ($lValid)
+                                                    <button type="button" onclick="copyText('{{ $l->inviteUrl() }}', this)"
+                                                        style="padding:4px 10px;border-radius:6px;cursor:pointer;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                                               font-size:11px;font-weight:700;letter-spacing:1px;
+                                                               border:1px solid rgba(249,115,22,0.3);background:rgba(249,115,22,0.08);color:#F97316;">COPY</button>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                            @if ($inv->links->isEmpty())
+                                                <div style="font-size:12px;color:var(--text-muted);padding:8px;">No links generated yet.</div>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -400,11 +435,7 @@
             @else
                 <div style="overflow-x:auto;">
                     <style>
-                        @media (max-width: 768px) {
-                            #staff-table .col-email, #staff-table .col-phone, #staff-table .col-joined, #staff-table .col-status {
-                                display: none;
-                            }
-                        }
+                        /* keep all columns visible on mobile — table scrolls horizontally */
                     </style>
                     <table style="width:100%;border-collapse:collapse;" id="staff-table">
                         <thead>
@@ -917,10 +948,11 @@
                 <input type="hidden" name="_target" id="invite-target" value="staff" />
                 <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
                     @php $_fullNameLabel = strtoupper(__('dashboard.staff.fullName')); $_usernameLabel = strtoupper(__('dashboard.staff.username')); $_emailLabel = strtoupper(__('dashboard.staff.emailAddress')); @endphp
-                    @foreach ([['name', $_fullNameLabel, 'e.g. John Doe', 'text', true], ['username', $_usernameLabel, 'e.g. johndoe', 'text', true], ['email', $_emailLabel, 'e.g. john@example.com', 'email', true]] as [$fn, $fl, $fp, $ft, $req])
+                    {{-- Name + username are required. Email and phone are optional — at least one required. --}}
+                    @foreach ([['name', $_fullNameLabel, 'e.g. John Doe', 'text', true], ['username', $_usernameLabel, 'e.g. johndoe', 'text', true]] as [$fn, $fl, $fp, $ft, $req])
                         <div>
                             <label
-                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ $fl }}</label>
+                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ $fl }} <span style="color:#ef4444;">*</span></label>
                             <input type="{{ $ft }}" name="{{ $fn }}"
                                 placeholder="{{ $fp }}" {{ $req ? 'required' : '' }}
                                 style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
@@ -931,41 +963,60 @@
                         </div>
                     @endforeach
 
-                    {{-- Phone (optional — used for SMS password reset) --}}
-                    <div>
-                        <label
-                            style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.table.phone')) }}</label>
-                        <input type="tel" name="phone" placeholder="e.g. +855 12 345 678"
-                            style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
-                                  border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
-                                  font-size: var(--title-size);outline:none;transition:border-color .2s;"
-                            onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
-                            onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        {{-- Email (optional) --}}
+                        <div>
+                            <label
+                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.table.email')) }} <span style="color:rgba(255,255,255,0.2);font-size:11px;">(opt)</span></label>
+                            <input type="email" name="email" placeholder="e.g. john@example.com"
+                                style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
+                                      border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                      font-size: var(--title-size);outline:none;transition:border-color .2s;"
+                                onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
+                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                        </div>
+
+                        {{-- Phone (optional) --}}
+                        <div>
+                            <label
+                                style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">{{ strtoupper(__('dashboard.table.phone')) }} <span style="color:rgba(255,255,255,0.2);font-size:11px;">(opt)</span></label>
+                            <input type="tel" name="phone" placeholder="e.g. +855 12 345 678"
+                                style="width:100%;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,0.04);
+                                      border:1px solid rgba(255,255,255,0.1);color:#fff;font-family:Rajdhani, var(--font-kh), sans-serif;
+                                      font-size: var(--title-size);outline:none;transition:border-color .2s;"
+                                onfocus="this.style.borderColor='rgba(249,115,22,0.5)'"
+                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                        </div>
                     </div>
 
-                    {{-- STAFF roles (shown when tab = staff) --}}
+                    {{-- Contact hint --}}
+                    <div style="padding:10px 14px;border-radius:10px;background:rgba(59,130,246,0.06);
+                           border:1px solid rgba(59,130,246,0.2);font-size: var(--title-size);color:var(--text-muted);line-height:1.5;">
+                        ℹ️ Provide <strong style="color:#3b82f6;">email or phone</strong> (at least one). The invited person can
+                        set their own email when they accept the invite if you leave it blank.
+                    </div>
+
+                    {{-- STAFF roles (shown when tab = staff) — 2x2 grid --}}
                     <div id="staff-role-section">
                         <label
-                            style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:8px;">ASSIGN
+                            style="display:block;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:2px;color:var(--text-muted);margin-bottom:10px;">ASSIGN
                             ROLE</label>
-                        <div style="display:flex;flex-direction:column;gap:10px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                             @foreach ($staffRoleMeta as $rOpt => $rM)
-                                <label
-                                    style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;cursor:pointer;
-                                      border:1.5px solid var(--border);background:var(--dark-700);transition:all .2s;"
+                                <label data-role-card
+                                    style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:12px;cursor:pointer;
+                                      border:1.5px solid var(--border);background:var(--dark-700);transition:all .2s;text-align:center;"
                                     onmouseover="this.style.borderColor='{{ $rM['color'] }}44';this.style.background='{{ $rM['color'] }}0d'"
                                     onmouseout="this.querySelector('input').checked?null:(this.style.borderColor='rgba(255,255,255,0.07)',this.style.background='rgba(255,255,255,0.02)')">
                                     <input type="radio" name="role" value="{{ $rOpt }}"
                                         {{ $rOpt === 'editor' ? 'checked' : '' }}
                                         style="accent-color:{{ $rM['color'] }};width:16px;height:16px;cursor:pointer;" />
-                                    <span style="font-size: var(--title-size);">{{ $rM['icon'] }}</span>
-                                    <div style="flex:1;">
-                                        <div
-                                            style="font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1px;color:{{ $rM['color'] }};">
-                                            {{ strtoupper($rM['label']) }}</div>
-                                        <div style="font-size: var(--title-size);color:var(--text-muted);margin-top:1px;">
-                                            {{ $rM['desc'] }}</div>
-                                    </div>
+                                    <span style="font-size:22px;line-height:1;">{{ $rM['icon'] }}</span>
+                                    <div
+                                        style="font-size: var(--title-size);font-weight:{{ $_fw8 }};letter-spacing:1px;color:{{ $rM['color'] }};">
+                                        {{ strtoupper($rM['label']) }}</div>
+                                    <div style="font-size:11px;color:var(--text-muted);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                        {{ $rM['desc'] }}</div>
                                 </label>
                             @endforeach
                         </div>
@@ -1190,6 +1241,9 @@
               ? '{{ strtoupper(__("dashboard.staff.admin")) }}'
               : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
             document.getElementById('invite-target').value = tab;
+            document.getElementById('invite-submit-btn').innerHTML = tab === 'admins'
+                ? '🛡️ {{ strtoupper(__("dashboard.staff.inviteAdmin")) }}'
+                : '✉ {{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
         }
 
         // Set correct form action on page load without requiring switchTab() call
@@ -1325,7 +1379,47 @@
             if (e.target === this) closeMemberProfile();
         });
 
-        document.addEventListener('keydown', e => {
+            // ── Invite links expand/collapse & copy ─────────────────────────────────
+        function toggleLinks(btn, rowId) {
+            const row = document.getElementById(rowId);
+            const open = row.style.display !== 'none';
+            row.style.display = open ? 'none' : '';
+            btn.textContent = open ? 'LINKS ▾' : 'LINKS ▴';
+        }
+
+        function copyText(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = 'COPIED ✓';
+                btn.style.background = 'rgba(34,197,94,0.15)';
+                btn.style.color = '#22c55e';
+                btn.style.borderColor = 'rgba(34,197,94,0.4)';
+                setTimeout(() => {
+                    btn.textContent = orig;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                const orig = btn.textContent;
+                btn.textContent = 'COPIED ✓';
+                setTimeout(() => { btn.textContent = orig; }, 2000);
+            });
+        }
+
+        function generateNewLink(form, event) {
+            // The form submit already triggers; just return true.
+            // We use onsubmit to allow any future async handling.
+            return true;
+        }
+
+    document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 closeInviteModal();
                 closeDelModal();
@@ -1454,20 +1548,6 @@
             }
         }
 
-        @media(max-width:700px) {
-
-            .col-joined,
-            .col-email,
-            .col-phone {
-                display: none;
-            }
-        }
-
-        @media(max-width:500px) {
-            .col-status {
-                display: none;
-            }
-        }
 
         @media(max-width:600px) {
             div[style*="align-items:flex-start;justify-content:space-between"] {
@@ -1506,6 +1586,13 @@
                 border-radius: 16px !important;
             }
         }
+
+        /* ── Invite links detail rows ───────────────────────────────────────────── */
+        #invite-table td[colspan] {
+            padding: 8px 16px 12px !important;
+        }
+
+        /* ── Role cards: 2x2 grid stays 2x2 on all screen sizes ────────────────── */
 
         /* ── Light theme ─────────────────────────────────────────────────────────── */
         [data-theme="light"] #invite-modal>div,

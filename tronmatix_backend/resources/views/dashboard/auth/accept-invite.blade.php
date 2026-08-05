@@ -202,7 +202,7 @@
             <div class="onetime-text">
                 <div class="onetime-title">SET YOUR PASSWORD</div>
                 <div class="onetime-desc">
-                    You've been invited as <strong style="color:#F97316;">{{ strtoupper($invite->role) }}</strong>.
+                    You've been invited as <strong style="color:#F97316;">{{ strtoupper($link->invite->role) }}</strong>.
                     Set a password below to activate your account. After that, log in through the dashboard
                     STAFF portal with the email shown.
                 </div>
@@ -224,21 +224,25 @@
         @endif
 
         {{-- Accept form --}}
-        <form method="POST" action="{{ route('dashboard.invite.accept', $invite->token) }}" id="acceptForm">
+        <form method="POST" action="{{ route('dashboard.invite.accept', $link->token) }}" id="acceptForm">
             @csrf
 
             {{-- Read-only identity fields --}}
             <div class="form-group">
                 <label class="form-label">Full Name</label>
-                <input type="text" class="form-control" value="{{ $invite->name }}" readonly />
+                <input type="text" class="form-control" value="{{ $link->invite->name }}" readonly />
             </div>
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <input type="text" class="form-control" value="{{ $invite->username }}" readonly />
+                <input type="text" class="form-control" value="{{ $link->invite->username }}" readonly />
             </div>
             <div class="form-group">
                 <label class="form-label">Email Address</label>
-                <input type="email" class="form-control" value="{{ $invite->email }}" readonly />
+                <input type="email" name="email" class="form-control" value="{{ $link->invite->email }}" placeholder="Enter your email"
+                    {{ $link->invite->email ? 'readonly' : 'required' }} />
+                @if(!$link->invite->email)
+                    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">Set your email to use for login.</div>
+                @endif
             </div>
 
             {{-- Password --}}

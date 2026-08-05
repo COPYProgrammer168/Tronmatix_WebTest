@@ -22,7 +22,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Services\ActivityLogger;
 
 class GoogleAuthController extends Controller
 {
@@ -106,6 +108,19 @@ class GoogleAuthController extends Controller
         // Revoke old tokens, issue fresh one
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        // Log activity — devs and admins can see this in the activity log
+        ActivityLogger::log([
+            'action'      => $isNewUser ? 'google_register' : 'google_login',
+            'entity_type' => 'User',
+            'entity_id'   => $user->id,
+            'entity_name' => $user->name ?? $user->email,
+            'details'     => [
+                'provider'    => 'google',
+                'google_id'   => $googleId,
+                'is_new_user' => $isNewUser,
+            ],
+        ], $request);
 
         return response()->json([
             'success'      => true,

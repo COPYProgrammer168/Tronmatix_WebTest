@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Staff;
 use App\Models\StaffInvite;
+use App\Models\StaffInviteLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -69,6 +70,7 @@ class StaffController extends Controller
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
             ->orderByDesc('created_at')
+            ->with('links') // eager-load links for display
             ->get();
 
         return view('dashboard.staff', compact('admins', 'staff', 'pendingInvites'));
@@ -93,35 +95,42 @@ class StaffController extends Controller
                 'unique:staff,username',
                 'unique:admins,username'
             ],
-            'email' => [
-                'required',
-                'email',
-                'unique:staff,email',
-                'unique:admins,email'
-            ],
+            'email' => ['nullable', 'email', 'max:150', 'unique:staff,email', 'unique:admins,email'],
             'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', 'in:' . implode(',', Staff::ROLES)],
         ]);
+
+        // At least one contact method required (email or phone)
+        if (empty($data['email']) && empty($data['phone'])) {
+            return back()->withErrors(['email' => 'Provide at least an email or phone number.'])->withInput();
+        }
 
         $invite = StaffInvite::create([
             'token'      => Str::random(64),
             'name'       => $data['name'],
             'username'   => $data['username'],
-            'email'      => $data['email'],
+            'email'      => $data['email'] ?? null,
             'phone'      => \App\Support\PhoneHelper::toE164($data['phone'] ?? null),
             'role'       => $data['role'],
+            'expires_at' => null,
+        ]);
+
+        // Create the first invite link (7-day default expiry)
+        $link = $invite->links()->create([
+            'token'      => Str::random(64),
             'expires_at' => now()->addDays(7),
         ]);
 
         \App\Services\ActivityLogger::staffInvited($data['name'], $data['role'], $request);
 
         return redirect()->route('dashboard.staff')
-            ->with('success', "Invite created for {$data['name']}. Share this link — they set their own password: " . $invite->inviteUrl());
+            ->with('success', "Invite created for {$data['name']}. Share this link — they set their own email and password: " . $link->inviteUrl());
     }
 
     // ── resendInvite ──────────────────────────────────────────────────────────
-    // Regenerates the token for an already-created invite and returns the new
-    // link so the admin can copy/share it again.
+    // Creates a NEW invite link for an existing invite (unlimited links possible).
+    // Each link has its own expiration and token. The old links remain valid until
+    // they expire or are used.
 
     public function resendInvite(int $id, Request $request)
     {
@@ -129,13 +138,12 @@ class StaffController extends Controller
 
         $invite = StaffInvite::findOrFail($id);
 
-        $invite->update([
+        $link = $invite->links()->create([
             'token'      => Str::random(64),
             'expires_at' => now()->addDays(7),
-            'used_at'    => null,
         ]);
 
-        return back()->with('success', 'New invite link: ' . $invite->inviteUrl());
+        return back()->with('success', 'New invite link generated (link #' . $invite->links()->count() . '): ' . $link->inviteUrl());
     }
 
     // ── updateRole ────────────────────────────────────────────────────────────
