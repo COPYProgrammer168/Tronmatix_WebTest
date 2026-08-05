@@ -751,15 +751,20 @@ class DashboardController extends Controller
             'min_order' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date',
-            'product_id' => 'nullable|exists:products,id', // Added
+            'product_id' => 'nullable|exists:products,id',
             'categories' => 'nullable|array',
             'categories.*' => 'string|max:100',
+            'kind' => 'nullable|in:code,badge', // Ensure kind is validated
         ]);
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->has('is_active');
-        $data['product_id'] = $request->input('product_id') ?: null; // Added
-        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null); // Added enforcement
-        Discount::create($data);
+        $data['kind'] = $request->input('kind', 'code'); // Handle kind
+        $data['product_id'] = $request->input('product_id') ?: null;
+        $data['min_order'] = $request->input('min_order') ?: 0;
+        $data['max_uses'] = $request->input('max_uses') ?: null;
+        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+
+        \App\Models\Discount::create($data);
 
         return redirect()->route('dashboard.discounts')->with('success', 'Discount created.');
     }
@@ -773,14 +778,19 @@ class DashboardController extends Controller
             'min_order' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date',
-            'product_id' => 'nullable|exists:products,id', // Added
+            'product_id' => 'nullable|exists:products,id',
             'categories' => 'nullable|array',
             'categories.*' => 'string|max:100',
+            'kind' => 'nullable|in:code,badge', // Ensure kind is validated
         ]);
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->has('is_active');
-        $data['product_id'] = $request->input('product_id') ?: null; // Added
-        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null); // Added enforcement
+        $data['kind'] = $request->input('kind', $discount->kind ?? 'code'); // Handle kind
+        $data['product_id'] = $request->input('product_id') ?: null;
+        $data['min_order'] = $request->input('min_order') ?: 0;
+        $data['max_uses'] = $request->input('max_uses') ?: null;
+        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+
         $discount->update($data);
 
         return redirect()->route('dashboard.discounts')->with('success', 'Discount updated.');
