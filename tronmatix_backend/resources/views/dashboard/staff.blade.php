@@ -1050,20 +1050,7 @@
         }
 
         // ── Invite modal — form logic lives inside the partial (Alpine.js) ─────────────
-        function openInviteModal() {
-            switchTab(currentTab); // sync visual tab state before opening
-            const m = document.getElementById('invite-modal');
-            if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-            setTimeout(() => m?.querySelector('input[name=name]')?.focus(), 100);
-        }
-
-        function closeInviteModal() {
-            const m = document.getElementById('invite-modal');
-            if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
-        }
-        document.getElementById('invite-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeInviteModal();
-        });
+        // (openInviteModal / closeInviteModal are defined in components.staff-invite-modal)
 
         // ── Delete modal ──────────────────────────────────────────────────────────────
         function confirmDelete(id, name, type) {
