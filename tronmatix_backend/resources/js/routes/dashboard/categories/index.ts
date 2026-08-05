@@ -399,12 +399,68 @@ destroy.delete = (args: { category: number | { id: number } } | [category: numbe
         })
     
     destroy.form = destroyForm
+/**
+* @see \App\Http\Controllers\Dashboard\CategoryController::reorder
+ * @see app/Http/Controllers/Dashboard/CategoryController.php:68
+ * @route '/dashboard/category-management/reorder'
+ */
+export const reorder = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: reorder.url(options),
+    method: 'post',
+})
+
+reorder.definition = {
+    methods: ["post"],
+    url: '/dashboard/category-management/reorder',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Dashboard\CategoryController::reorder
+ * @see app/Http/Controllers/Dashboard/CategoryController.php:68
+ * @route '/dashboard/category-management/reorder'
+ */
+reorder.url = (options?: RouteQueryOptions) => {
+    return reorder.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Dashboard\CategoryController::reorder
+ * @see app/Http/Controllers/Dashboard/CategoryController.php:68
+ * @route '/dashboard/category-management/reorder'
+ */
+reorder.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: reorder.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\Dashboard\CategoryController::reorder
+ * @see app/Http/Controllers/Dashboard/CategoryController.php:68
+ * @route '/dashboard/category-management/reorder'
+ */
+    const reorderForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: reorder.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\Dashboard\CategoryController::reorder
+ * @see app/Http/Controllers/Dashboard/CategoryController.php:68
+ * @route '/dashboard/category-management/reorder'
+ */
+        reorderForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: reorder.url(options),
+            method: 'post',
+        })
+    
+    reorder.form = reorderForm
 const categories = {
     index: Object.assign(index, index),
 store: Object.assign(store, store),
 update: Object.assign(update, update),
 toggle: Object.assign(toggle, toggle),
 destroy: Object.assign(destroy, destroy),
+reorder: Object.assign(reorder, reorder),
 }
 
 export default categories

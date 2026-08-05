@@ -30,6 +30,7 @@ class AdminSetting extends Model
             'admin_settings' => '1',
             'admin_staff' => '1',
             'admin_activity_log' => '1',
+            'admin_stock' => '1',
             // editor — content only, no sensitive admin pages
             'editor_dashboard' => '1',
             'editor_products' => '1',
@@ -41,6 +42,7 @@ class AdminSetting extends Model
             'editor_settings' => '0',
             'editor_staff' => '0',
             'editor_activity_log' => '0',
+            'editor_stock' => '1',
             // seller — products, orders & discounts
             'seller_dashboard' => '1',
             'seller_products' => '1',
@@ -52,6 +54,7 @@ class AdminSetting extends Model
             'seller_settings' => '0',
             'seller_staff' => '0',
             'seller_activity_log' => '0',
+            'seller_stock' => '1',
             // delivery — orders view & edit only
             'delivery_dashboard' => '1',
             'delivery_products' => '0',
@@ -63,6 +66,7 @@ class AdminSetting extends Model
             'delivery_settings' => '0',
             'delivery_staff' => '0',
             'delivery_activity_log' => '0',
+            'delivery_stock' => '0',
             // developer — read access, no admin-sensitive pages
             'developer_dashboard' => '1',
             'developer_products' => '1',
@@ -74,6 +78,7 @@ class AdminSetting extends Model
             'developer_settings' => '0',
             'developer_staff' => '0',
             'developer_activity_log' => '0',
+            'developer_stock' => '0',
         ];
     }
 

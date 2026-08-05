@@ -129,12 +129,16 @@ class OrderController extends Controller
         try {
             $order = DB::transaction(function () use ($validated, $user, $discount, $discountCode) {
 
-                $productIds = collect($validated['items'])->pluck('product_id');
-                $products   = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
+                // ── Pre-check pass (UX nicety only — the real guarantee comes from
+                //    the locked sell() calls in stockOutOrder below). Merges + sorts
+                //    line items and reads stock in one batched query.
+                $mergedItems = app(\App\Services\OrderStockService::class)->mergeAndSortForValidation($validated['items']);
+                $productIds  = array_column($mergedItems, 'product_id');
+                $products    = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
-                foreach ($validated['items'] as $item) {
+                foreach ($mergedItems as $item) {
                     $product = $products->get($item['product_id']);
-                    if ($product->stock !== null && $product->stock < $item['qty']) {
+                    if ($product && $product->stock !== null && $product->stock < $item['qty']) {
                         throw new \RuntimeException(
                             "Insufficient stock for \"{$product->name}\". Only {$product->stock} left."
                         );
@@ -292,10 +296,12 @@ class OrderController extends Controller
                         'warranty_start' => $warrantyStart,
                         'warranty_end'   => $warrantyEnd,
                     ]);
-                    if ($product->stock !== null) {
-                        $product->decrement('stock', $item['qty']);
-                    }
                 }
+
+                // ── Stock-out: merged + product_id-sorted sell() calls inside an
+                //    outer transaction, with the order as the reference. Replaces the
+                //    old per-item decrement. Idempotent (double-processing guard).
+                app(\App\Services\OrderStockService::class)->stockOutOrder($order, $validated['items']);
 
                 if ($discountId) {
                     Discount::where('id', $discountId)->increment('used_count');
@@ -382,12 +388,9 @@ class OrderController extends Controller
 
         DB::transaction(function () use ($order) {
             $order->update(['status' => 'cancelled']);
-            foreach ($order->items as $item) {
-                $product = Product::find($item->product_id);
-                if ($product && $product->stock !== null) {
-                    $product->increment('stock', $item->qty);
-                }
-            }
+            // Stock-back-in via the ledger — reverses each not-yet-reversed
+            // movement referencing this order, inside the same outer transaction.
+            app(\App\Services\OrderStockService::class)->restoreOrderStock($order);
         });
 
         \App\Services\ActivityLogger::log([
@@ -521,6 +524,16 @@ class OrderController extends Controller
             'payment_status' => 'paid',
             'status'         => $order->status === 'pending' ? 'confirmed' : $order->status,
         ]);
+
+        // ── Stock management: pending Bakong/KHQR orders were not stocked out at
+        //    placement; stock leaves the shelf on confirmation. Idempotent.
+        if ($order->status === 'confirmed') {
+            try {
+                app(\App\Services\OrderStockService::class)->stockOutOrder($order, $order->items);
+            } catch (\Throwable $e) {
+                Log::warning('[Stock] Stock-out on API payment verify failed: ' . $e->getMessage());
+            }
+        }
 
         $order->load(['items', 'user']);
 

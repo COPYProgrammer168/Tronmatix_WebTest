@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::store
- * @see app/Http/Controllers/Dashboard/BannerController.php:26
+ * @see app/Http/Controllers/Dashboard/BannerController.php:30
  * @route '/dashboard/banners'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::store
- * @see app/Http/Controllers/Dashboard/BannerController.php:26
+ * @see app/Http/Controllers/Dashboard/BannerController.php:30
  * @route '/dashboard/banners'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::store
- * @see app/Http/Controllers/Dashboard/BannerController.php:26
+ * @see app/Http/Controllers/Dashboard/BannerController.php:30
  * @route '/dashboard/banners'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\BannerController::store
- * @see app/Http/Controllers/Dashboard/BannerController.php:26
+ * @see app/Http/Controllers/Dashboard/BannerController.php:30
  * @route '/dashboard/banners'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\BannerController::store
- * @see app/Http/Controllers/Dashboard/BannerController.php:26
+ * @see app/Http/Controllers/Dashboard/BannerController.php:30
  * @route '/dashboard/banners'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -134,7 +134,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::update
- * @see app/Http/Controllers/Dashboard/BannerController.php:51
+ * @see app/Http/Controllers/Dashboard/BannerController.php:55
  * @route '/dashboard/banners/{banner}'
  */
 export const update = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -149,7 +149,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::update
- * @see app/Http/Controllers/Dashboard/BannerController.php:51
+ * @see app/Http/Controllers/Dashboard/BannerController.php:55
  * @route '/dashboard/banners/{banner}'
  */
 update.url = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -182,7 +182,7 @@ update.url = (args: { banner: number | { id: number } } | [banner: number | { id
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::update
- * @see app/Http/Controllers/Dashboard/BannerController.php:51
+ * @see app/Http/Controllers/Dashboard/BannerController.php:55
  * @route '/dashboard/banners/{banner}'
  */
 update.put = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -192,7 +192,7 @@ update.put = (args: { banner: number | { id: number } } | [banner: number | { id
 
     /**
 * @see \App\Http\Controllers\Dashboard\BannerController::update
- * @see app/Http/Controllers/Dashboard/BannerController.php:51
+ * @see app/Http/Controllers/Dashboard/BannerController.php:55
  * @route '/dashboard/banners/{banner}'
  */
     const updateForm = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ update.put = (args: { banner: number | { id: number } } | [banner: number | { id
 
             /**
 * @see \App\Http\Controllers\Dashboard\BannerController::update
- * @see app/Http/Controllers/Dashboard/BannerController.php:51
+ * @see app/Http/Controllers/Dashboard/BannerController.php:55
  * @route '/dashboard/banners/{banner}'
  */
         updateForm.put = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -223,7 +223,7 @@ update.put = (args: { banner: number | { id: number } } | [banner: number | { id
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::toggle
- * @see app/Http/Controllers/Dashboard/BannerController.php:104
+ * @see app/Http/Controllers/Dashboard/BannerController.php:108
  * @route '/dashboard/banners/{banner}/toggle'
  */
 export const toggle = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -238,7 +238,7 @@ toggle.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::toggle
- * @see app/Http/Controllers/Dashboard/BannerController.php:104
+ * @see app/Http/Controllers/Dashboard/BannerController.php:108
  * @route '/dashboard/banners/{banner}/toggle'
  */
 toggle.url = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -271,7 +271,7 @@ toggle.url = (args: { banner: number | { id: number } } | [banner: number | { id
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::toggle
- * @see app/Http/Controllers/Dashboard/BannerController.php:104
+ * @see app/Http/Controllers/Dashboard/BannerController.php:108
  * @route '/dashboard/banners/{banner}/toggle'
  */
 toggle.patch = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -281,7 +281,7 @@ toggle.patch = (args: { banner: number | { id: number } } | [banner: number | { 
 
     /**
 * @see \App\Http\Controllers\Dashboard\BannerController::toggle
- * @see app/Http/Controllers/Dashboard/BannerController.php:104
+ * @see app/Http/Controllers/Dashboard/BannerController.php:108
  * @route '/dashboard/banners/{banner}/toggle'
  */
     const toggleForm = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -296,7 +296,7 @@ toggle.patch = (args: { banner: number | { id: number } } | [banner: number | { 
 
             /**
 * @see \App\Http\Controllers\Dashboard\BannerController::toggle
- * @see app/Http/Controllers/Dashboard/BannerController.php:104
+ * @see app/Http/Controllers/Dashboard/BannerController.php:108
  * @route '/dashboard/banners/{banner}/toggle'
  */
         toggleForm.patch = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -312,7 +312,7 @@ toggle.patch = (args: { banner: number | { id: number } } | [banner: number | { 
     toggle.form = toggleForm
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::destroy
- * @see app/Http/Controllers/Dashboard/BannerController.php:112
+ * @see app/Http/Controllers/Dashboard/BannerController.php:116
  * @route '/dashboard/banners/{banner}'
  */
 export const destroy = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -327,7 +327,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::destroy
- * @see app/Http/Controllers/Dashboard/BannerController.php:112
+ * @see app/Http/Controllers/Dashboard/BannerController.php:116
  * @route '/dashboard/banners/{banner}'
  */
 destroy.url = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -360,7 +360,7 @@ destroy.url = (args: { banner: number | { id: number } } | [banner: number | { i
 
 /**
 * @see \App\Http\Controllers\Dashboard\BannerController::destroy
- * @see app/Http/Controllers/Dashboard/BannerController.php:112
+ * @see app/Http/Controllers/Dashboard/BannerController.php:116
  * @route '/dashboard/banners/{banner}'
  */
 destroy.delete = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -370,7 +370,7 @@ destroy.delete = (args: { banner: number | { id: number } } | [banner: number | 
 
     /**
 * @see \App\Http\Controllers\Dashboard\BannerController::destroy
- * @see app/Http/Controllers/Dashboard/BannerController.php:112
+ * @see app/Http/Controllers/Dashboard/BannerController.php:116
  * @route '/dashboard/banners/{banner}'
  */
     const destroyForm = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -385,7 +385,7 @@ destroy.delete = (args: { banner: number | { id: number } } | [banner: number | 
 
             /**
 * @see \App\Http\Controllers\Dashboard\BannerController::destroy
- * @see app/Http/Controllers/Dashboard/BannerController.php:112
+ * @see app/Http/Controllers/Dashboard/BannerController.php:116
  * @route '/dashboard/banners/{banner}'
  */
         destroyForm.delete = (args: { banner: number | { id: number } } | [banner: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

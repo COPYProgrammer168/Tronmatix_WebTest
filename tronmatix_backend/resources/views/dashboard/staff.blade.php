@@ -928,8 +928,9 @@
                 font-family:Rajdhani, var(--font-kh), sans-serif;animation:stModalIn .3s cubic-bezier(0.34,1.2,0.64,1);">
             <div style="font-size: var(--title-size);margin-bottom:12px;">⚠️</div>
             <div style="font-size: var(--title-size);font-weight:{{ $_fw9 }};letter-spacing:2px;margin-bottom:8px;">{{ strtoupper(__('dashboard.staff.removeMember')) }}</div>
-            <div style="font-size: var(--title-size);color:var(--text-muted);margin-bottom:24px;">
+            <div style="font-size: var(--title-size);color:var(--text-muted);margin-bottom:24px;word-break:break-word;">
                 {{ __('dashboard.staff.confirmRemove') }}
+                <strong id="del-name" style="display:block;margin-top:6px;color:#F97316;font-weight:{{ $_fw9 }};"></strong>
             </div>
             <form method="POST" id="del-form">
                 @csrf @method('DELETE')
@@ -1037,7 +1038,7 @@
             });
             // Update invite button label
             document.getElementById('invite-btn-label').textContent = tab === 'admins'
-              ? '{{ strtoupper(__("dashboard.staff.admin")) }}'
+              ? '{{ strtoupper(__("dashboard.staff.inviteAdmin")) }}'
               : '{{ strtoupper(__("dashboard.staff.inviteStaff")) }}';
         }
 
@@ -1049,12 +1050,13 @@
             setTimeout(() => el?.remove(), 300);
         }
 
-        // ── Invite modal — form logic lives inside the partial (Alpine.js) ─────────────
+        // ── Invite modal — form logic & open/close helpers live in the partial ─────────
         // (openInviteModal / closeInviteModal are defined in components.staff-invite-modal)
 
         // ── Delete modal ──────────────────────────────────────────────────────────────
         function confirmDelete(id, name, type) {
-            document.getElementById('del-name').textContent = name;
+            const nameEl = document.getElementById('del-name');
+            if (nameEl) nameEl.textContent = name;
             const base = type === 'admin' ? '/dashboard/admin/' : '/dashboard/staff/';
             document.getElementById('del-form').action = base + id;
             document.getElementById('del-modal').style.display = 'flex';

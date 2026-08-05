@@ -39,7 +39,7 @@
                 <a href="{{ $href }}" {{ !$isActive ? 'class="order-status-tab-inactive"' : '' }}
                     style="
                     display:inline-flex; align-items:center; gap:6px;
-                    padding:8px 16px; border-radius:30px; font-family:Rajdhani,sans-serif;
+                    padding:8px 16px; border-radius:30px; font-family:Rajdhani, var(--font-kh), sans-serif;
                     font-size: var(--text-sm); font-weight:700; letter-spacing:1px; text-decoration:none;
                     transition:all 0.2s;
                     background: {{ $isActive ? $tab['color'] : 'var(--hover-bg)' }};
@@ -71,11 +71,11 @@
                     class="orders-search-input"
                     style="background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12);
                    color:#fff; border-radius:10px; padding:8px 16px; font-size: var(--title-size);
-                   font-family:Rajdhani,sans-serif; outline:none; width:230px; transition:border-color .2s;"
+                   font-family:Rajdhani, var(--font-kh), sans-serif; outline:none; width:230px; transition:border-color .2s;"
                     onfocus="this.style.borderColor='#F97316'" onblur="this.style.borderColor=''" />
                 <button type="submit"
                     style="background:#F97316; color:#fff; border:none; border-radius:10px;
-                padding:8px 16px; font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                padding:8px 16px; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
                 cursor:pointer; letter-spacing:1px;">SEARCH</button>
                 @if ($search)
                     <a href="{{ route('dashboard.orders', $activeTab && $activeTab !== 'all' ? ['status' => $activeTab, 'user' => $userParam] : ['user' => $userParam]) }}"
@@ -90,7 +90,9 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title" style="font-size: var(--title-size);">
-                    @if ($activeTab && $activeTab !== 'all')
+                    @if ($today ?? false)
+                        🗓 TODAY'S ORDERS
+                    @elseif ($activeTab && $activeTab !== 'all')
                         {{ strtoupper($activeTab) }} ORDERS
                     @else
                         ALL ORDERS
@@ -290,14 +292,14 @@
                                         <span class="badge badge-gray" style="font-size:var(--text-xs);">💵 COD</span>
                                     @elseif($payStatus === 'manual_pending' || ($order->payment_method === 'bakong' && $order->status === 'pending'))
                                         <form method="POST"
-                                              action="{{ route('dashboard.orders.verify-payment', $order) }}"
+                                              action="{{ route('dashboard.orders.verify-payment', $order->order_id) }}"
                                               style="display:inline;"
                                               onsubmit="return confirm('Mark Order #{{ $order->order_id }} as paid?');">
                                             @csrf
                                             <button type="submit"
                                                 style="background:#F97316; color:#fff; border:none; border-radius:6px;
                                                        padding:4px 10px; font-size:10px; font-weight:800; cursor:pointer;
-                                                       font-family:Rajdhani,sans-serif; letter-spacing:1px; white-space:nowrap;">
+                                                       font-family:Rajdhani, var(--font-kh), sans-serif; letter-spacing:1px; white-space:nowrap;">
                                                 ⚠️ VERIFY
                                             </button>
                                         </form>

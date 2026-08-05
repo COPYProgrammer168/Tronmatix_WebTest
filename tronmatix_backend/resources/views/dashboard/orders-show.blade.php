@@ -24,7 +24,7 @@
 <div id="flash-success" style="
     position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
     background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff;
-    border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
+    border-radius:14px; padding:14px 28px; font-family:Rajdhani, var(--font-kh), sans-serif;
     font-size: var(--title-size); font-weight:700; letter-spacing:1px;
     box-shadow:0 8px 32px rgba(34,197,94,0.4);
     display:flex; align-items:center; gap:10px;
@@ -44,7 +44,7 @@
 <div id="flash-error" style="
     position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
     background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
-    border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
+    border-radius:14px; padding:14px 28px; font-family:Rajdhani, var(--font-kh), sans-serif;
     font-size: var(--title-size); font-weight:700; letter-spacing:1px;
     box-shadow:0 8px 32px rgba(239,68,68,0.4);
     display:flex; align-items:center; gap:10px;
@@ -422,7 +422,7 @@
                     <button onclick="window.print()" style="
                         width:100%; padding:13px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.12);
                         background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7);
-                        font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                        font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
                         letter-spacing:2px; cursor:pointer; transition:all .2s;
                         display:flex; align-items:center; justify-content:center; gap:8px;
                     " onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
@@ -624,7 +624,7 @@
                 <button onclick="openPopup('confirm-delivery')" style="
                     background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
                     width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
-                    letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
+                    letter-spacing:1px; cursor:pointer; font-family:Rajdhani, var(--font-kh), sans-serif;
                     box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
                 " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                     {{ $nextAction['icon'] }} {{ $nextAction['label'] }}
@@ -686,7 +686,7 @@
                         style="
                         --meta-color: {{ $meta['color'] }};
                         display:flex; align-items:center; gap:7px;
-                        padding:9px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
+                        padding:9px 12px; border-radius:10px; font-family:Rajdhani, var(--font-kh), sans-serif;
                         font-size: var(--label-status); font-weight:700; letter-spacing:1px;
                         cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
                         border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.1)' }};
@@ -715,7 +715,7 @@
         @if($order->status === 'pending' && ($order->payment_status ?? 'pending') !== 'paid')
         <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
             <div class="card-body">
-                <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
+                <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order->order_id) }}">
                     @csrf
                     <button type="submit" style="
                         width: 100%; padding: 12px; border-radius: 10px; border: none;
@@ -850,7 +850,7 @@
                 font-size: var(--title-size); box-shadow:0 0 32px {{ $nextAction['shadow'] }};
                 animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $nextAction['icon'] }}</div>
-            <div style="font-size: var(--title-size); font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+            <div style="font-size: var(--title-size); font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani, var(--font-kh), sans-serif;">
                 {!! $nextAction['title'] !!}
             </div>
             <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-top:6px;">
@@ -906,7 +906,7 @@
 
         <div style="display:flex; gap:10px;">
             <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
-            <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
+            <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
                 @csrf @method('PUT')
                 <input type="hidden" name="status" value="{{ $nextAction['status'] }}">
                 <button type="submit" class="popup-btn-confirm" style="background:{{ $nextAction['gradient'] }}; width:100%;">
@@ -942,7 +942,7 @@
                 box-shadow:0 0 28px {{ $meta['color'] }}55;
                 animation:popIn .45s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $meta['icon'] }}</div>
-            <div style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+            <div style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani, var(--font-kh), sans-serif;">
                 <span class="km-english">SET TO</span> {{ $meta['label'] }}
             </div>
             <div style="color:rgba(255,255,255,0.4); font-size: var(--title-size); margin-top:6px;">
@@ -972,7 +972,7 @@
 
         <div style="display:flex; gap:10px;">
                 <button onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel km-english">CANCEL</button>
-            <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
+            <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
                 @csrf @method('PUT')
                 <input type="hidden" name="status" value="{{ $key }}">
                 <button type="submit" class="popup-btn-confirm" style="background:{{ $meta['gradient'] }}; width:100%;">
@@ -1006,16 +1006,6 @@
     <div class="tr-row"><span>Date</span><span>{{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i') }} (ICT)</span></div>
     <div class="tr-row"><span>Payment</span><span>{{ strtoupper($order->payment_method) }}</span></div>
     <div class="tr-row"><span>Type</span><span>{{ $order->isPickup() ? '🏪 PICKUP' : '🚚 DELIVERY' }}</span></div>
-    <div style="font-weight:700;">{{ $item->name }}</div>
-    @if($item->warranty_start && $item->warranty_end)
-    <div style="font-size: var(--title-size); color:#444;">
-        Warranty: {{ $item->warranty_start->format('d M Y') }} - {{ $item->warranty_end->format('d M Y') }}
-    </div>
-    @elseif($item->warranty_start)
-    <div style="font-size: var(--title-size); color:#444;">
-        Warranty from: {{ $item->warranty_start->format('d M Y') }}
-    </div>
-    @endif
     <div class="tr-divider"></div>
 
     <div class="tr-bold" style="margin-bottom:6px; font-size: var(--title-size); letter-spacing:1px;">ITEMS</div>
@@ -1113,7 +1103,7 @@
     width:100%; max-width:420px;
     box-shadow:0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
     animation:boxIn .3s cubic-bezier(0.34,1.2,0.64,1);
-    font-family:Rajdhani,sans-serif;
+    font-family:Rajdhani, var(--font-kh), sans-serif;
 }
 .popup-box.closing { animation:boxOut .25s ease forwards; }
 
@@ -1121,13 +1111,13 @@
     flex:1; padding:12px; border-radius:10px;
     border:1.5px solid rgba(255,255,255,0.12);
     background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.6);
-    font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+    font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
     letter-spacing:1px; cursor:pointer; transition:all .15s;
 }
 .popup-btn-cancel:hover { background:rgba(255,255,255,0.1); color:#fff; }
 .popup-btn-confirm {
     flex:2; padding:12px; border-radius:10px; border:none;
-    color:#fff; font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+    color:#fff; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
     letter-spacing:1px; cursor:pointer; transition:transform .15s;
     box-shadow:0 4px 16px rgba(0,0,0,0.3);
 }

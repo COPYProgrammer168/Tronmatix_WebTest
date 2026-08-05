@@ -94,8 +94,8 @@ export default function TelegramConnectMarquee() {
 
       <style>{`
         @keyframes marqueeScroll {
-          0%   { transform: translateX(-50%); }
-          100% { transform: translateX(0%); }
+          100%   { transform: translateX(-50%); }
+            0% { transform: translateX(0%); }
         }
         @media (prefers-reduced-motion: reduce) {
           .marquee-track {

@@ -88,8 +88,20 @@ class AdminStatsController extends Controller
             $query->where('role', $request->role);
         }
 
-        $users = $query->orderByDesc('created_at')
-            ->get(['id', 'name', 'username', 'email', 'role', 'email_verified_at', 'created_at']);
+        // Optional "recent" filter: ?recent=1 → only users who have actually
+        // logged in (last_login_at set), newest login first. "New customers"
+        // on the dashboard opens this view.
+        if ($request->boolean('recent')) {
+            $query->whereNotNull('last_login_at')
+                ->orderByDesc('last_login_at');
+        } else {
+            $query->orderByDesc('created_at');
+        }
+
+        $users = $query->get([
+            'id', 'name', 'username', 'email', 'role', 'email_verified_at',
+            'created_at', 'last_login_at',
+        ]);
 
         return response()->json($users);
     }

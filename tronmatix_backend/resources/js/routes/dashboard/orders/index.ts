@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
 export const show = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
 show.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ show.url = (args: { order_id: string | number } | [order_id: string | number ] |
 
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
 show.get = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { order_id: string | number } | [order_id: string | number ] |
 })
 /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
 show.head = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { order_id: string | number } | [order_id: string | number ] 
 
     /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
     const showForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ show.head = (args: { order_id: string | number } | [order_id: string | number ] 
 
             /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
         showForm.get = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ show.head = (args: { order_id: string | number } | [order_id: string | number ] 
         })
             /**
 * @see \App\Http\Controllers\DashboardController::show
- * @see app/Http/Controllers/DashboardController.php:400
+ * @see app/Http/Controllers/DashboardController.php:492
  * @route '/dashboard/orders/{order_id}'
  */
         showForm.head = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -98,7 +98,7 @@ show.head = (args: { order_id: string | number } | [order_id: string | number ] 
     show.form = showForm
 /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:408
+ * @see app/Http/Controllers/DashboardController.php:500
  * @route '/dashboard/orders/{order_id}/status'
  */
 export const status = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -113,7 +113,7 @@ status.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:408
+ * @see app/Http/Controllers/DashboardController.php:500
  * @route '/dashboard/orders/{order_id}/status'
  */
 status.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ status.url = (args: { order_id: string | number } | [order_id: string | number ]
 
 /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:408
+ * @see app/Http/Controllers/DashboardController.php:500
  * @route '/dashboard/orders/{order_id}/status'
  */
 status.put = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -151,7 +151,7 @@ status.put = (args: { order_id: string | number } | [order_id: string | number ]
 
     /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:408
+ * @see app/Http/Controllers/DashboardController.php:500
  * @route '/dashboard/orders/{order_id}/status'
  */
     const statusForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -166,7 +166,7 @@ status.put = (args: { order_id: string | number } | [order_id: string | number ]
 
             /**
 * @see \App\Http\Controllers\DashboardController::status
- * @see app/Http/Controllers/DashboardController.php:408
+ * @see app/Http/Controllers/DashboardController.php:500
  * @route '/dashboard/orders/{order_id}/status'
  */
         statusForm.put = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +182,7 @@ status.put = (args: { order_id: string | number } | [order_id: string | number ]
     status.form = statusForm
 /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:462
+ * @see app/Http/Controllers/DashboardController.php:554
  * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
 export const confirmDelivery = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ confirmDelivery.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:462
+ * @see app/Http/Controllers/DashboardController.php:554
  * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
 confirmDelivery.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -225,7 +225,7 @@ confirmDelivery.url = (args: { order_id: string | number } | [order_id: string |
 
 /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:462
+ * @see app/Http/Controllers/DashboardController.php:554
  * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
 confirmDelivery.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -235,7 +235,7 @@ confirmDelivery.post = (args: { order_id: string | number } | [order_id: string 
 
     /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:462
+ * @see app/Http/Controllers/DashboardController.php:554
  * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
     const confirmDeliveryForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -245,7 +245,7 @@ confirmDelivery.post = (args: { order_id: string | number } | [order_id: string 
 
             /**
 * @see \App\Http\Controllers\DashboardController::confirmDelivery
- * @see app/Http/Controllers/DashboardController.php:462
+ * @see app/Http/Controllers/DashboardController.php:554
  * @route '/dashboard/orders/{order_id}/confirm-delivery'
  */
         confirmDeliveryForm.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,7 +256,7 @@ confirmDelivery.post = (args: { order_id: string | number } | [order_id: string 
     confirmDelivery.form = confirmDeliveryForm
 /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:501
+ * @see app/Http/Controllers/DashboardController.php:593
  * @route '/dashboard/orders/{order_id}/verify-payment'
  */
 export const verifyPayment = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -271,7 +271,7 @@ verifyPayment.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:501
+ * @see app/Http/Controllers/DashboardController.php:593
  * @route '/dashboard/orders/{order_id}/verify-payment'
  */
 verifyPayment.url = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -299,7 +299,7 @@ verifyPayment.url = (args: { order_id: string | number } | [order_id: string | n
 
 /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:501
+ * @see app/Http/Controllers/DashboardController.php:593
  * @route '/dashboard/orders/{order_id}/verify-payment'
  */
 verifyPayment.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -309,7 +309,7 @@ verifyPayment.post = (args: { order_id: string | number } | [order_id: string | 
 
     /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:501
+ * @see app/Http/Controllers/DashboardController.php:593
  * @route '/dashboard/orders/{order_id}/verify-payment'
  */
     const verifyPaymentForm = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -319,7 +319,7 @@ verifyPayment.post = (args: { order_id: string | number } | [order_id: string | 
 
             /**
 * @see \App\Http\Controllers\DashboardController::verifyPayment
- * @see app/Http/Controllers/DashboardController.php:501
+ * @see app/Http/Controllers/DashboardController.php:593
  * @route '/dashboard/orders/{order_id}/verify-payment'
  */
         verifyPaymentForm.post = (args: { order_id: string | number } | [order_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

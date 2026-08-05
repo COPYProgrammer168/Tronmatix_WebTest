@@ -37,6 +37,7 @@ class User extends Authenticatable
         'telegram_username',
         'telegram_connected_at',
         'google_id',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -50,6 +51,7 @@ class User extends Authenticatable
         'two_factor_confirmed_at' => 'datetime',
         'is_banned'               => 'boolean',
         'telegram_connected_at'   => 'datetime',
+        'last_login_at'           => 'datetime',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────

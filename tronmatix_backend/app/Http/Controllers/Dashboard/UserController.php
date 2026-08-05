@@ -45,6 +45,14 @@ public function index(Request $request): View
         });
     }
 
+    // "Recently logged-in" filter: ?recent=1 → only users who logged into the
+    // website (last_login_at set), newest login first. The dashboard "new
+    // customers" stat opens this view.
+    $recent = $request->boolean('recent');
+    if ($recent) {
+        $query->whereNotNull('last_login_at')->orderByDesc('last_login_at');
+    }
+
     $users = $query->paginate(15)->withQueryString();
 
     $roleCounts = User::whereNotIn('email', $excludedEmails)
@@ -55,7 +63,7 @@ public function index(Request $request): View
 
     $vipGoal = (float) AdminSetting::get('vip_threshold', 5000);
 
-    return view('dashboard.users', compact('users', 'roleCounts', 'vipGoal'));
+    return view('dashboard.users', compact('users', 'roleCounts', 'vipGoal', 'recent'));
 }
 
     // ── PUT /dashboard/users/{user}/role ──────────────────────────────────────

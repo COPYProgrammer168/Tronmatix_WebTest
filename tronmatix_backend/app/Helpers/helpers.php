@@ -115,3 +115,36 @@ if (! function_exists('is_staff_guard')) {
         return Auth::guard('staff')->check();
     }
 }
+
+if (! function_exists('compact_number')) {
+    /**
+     * Compact number formatting for large values in Blade:
+     *   100,000   → "100K"
+     *   1,000,000 → "1.0M"
+     *   1,500,000 → "1.5M"
+     *   2,000,000 → "2M"
+     *   999       → "999"
+     *
+     * @param  int|float|null  $number
+     * @param  string  $prefix  optional currency/label prefix, e.g. '$'
+     */
+    function compact_number(int|float|null $number, string $prefix = ''): string
+    {
+        $n = (float) ($number ?? 0);
+        if (! is_finite($n)) {
+            return $prefix . '0';
+        }
+
+        $abs = abs($n);
+        if ($abs >= 1_000_000) {
+            $val = rtrim(rtrim(number_format($n / 1_000_000, 1, '.', ''), '0'), '.');
+            return $prefix . $val . 'M';
+        }
+        if ($abs >= 1_000) {
+            $val = rtrim(rtrim(number_format($n / 1_000, 1, '.', ''), '0'), '.');
+            return $prefix . $val . 'K';
+        }
+
+        return $prefix . number_format((int) $n);
+    }
+}

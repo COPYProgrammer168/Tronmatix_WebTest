@@ -168,6 +168,28 @@
                                 required />
                         </div>
 
+                        {{-- SKU (read-only preview on create, immutable on edit) --}}
+                        <div class="form-group">
+                            <label class="form-label">SKU</label>
+                            @if ($product && $product->sku)
+                                <input type="text" value="{{ $product->sku }}" readonly
+                                    class="form-control"
+                                    title="SKU is permanent and cannot be changed after creation" />
+                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:6px;">
+                                    SKU is permanent and cannot be changed after creation.
+                                </div>
+                            @else
+                                <input type="text" id="skuPreview" readonly
+                                    class="form-control"
+                                    value="{{ old('sku', \App\Services\SkuGenerator::preview(old('category', ''))) }}"
+                                    style="font-family:monospace;"
+                                    placeholder="Auto-generated on save" />
+                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:6px;">
+                                    Auto-generated when you save. Preview updates as you pick a category.
+                                </div>
+                            @endif
+                        </div>
+
                         {{-- Caption --}}
                         <div class="form-group">
                             <label class="form-label">Caption</label>
@@ -270,6 +292,44 @@
 
                                 categorySelect.addEventListener('change', updatePcPartBrands);
                                 updatePcPartBrands();
+                            </script>
+
+                            <script>
+                                // ── SKU preview: mirrors the server-side PREFIX_MAP so the
+                                //    read-only preview updates as the category changes. The real
+                                //    SKU is generated server-side on save. ─────────────────
+                                const skuPrefixMap = {
+                                    'CPU': 'CPU', 'RAM': 'RAM', 'VGA': 'VGA', 'MAINBOARD': 'MB',
+                                    'COOLING': 'COOL', 'M2': 'M2', 'CASE': 'CASE',
+                                    'POWER SUPPLY': 'PSU', 'FAN': 'FAN', 'KEYBOARD': 'KBD',
+                                    'MOUSE': 'MOU', 'MOUSEPAD': 'MPD', 'HEADSET': 'HDS',
+                                    'EARPHONE': 'EAR', 'SPEAKER': 'SPK', 'MICROPHONE': 'MIC',
+                                    'MONITOR STAND': 'MST', 'ROUTER': 'RTR', 'STRIMER SET': 'STS',
+                                    'SECRETLAB': 'SECRET', 'TTR RACING': 'TTR', 'DX RACER': 'DXR',
+                                    'ASUS': 'ASU', 'FANTECH': 'FTK', 'BEST PRICE': 'BP'
+                                };
+                                const skuFallbackPrefixes = {};
+                                ['MONITOR 25INCH','MONITOR 27INCH','MONITOR 32INCH','MONITOR 34INCH',
+                                 'MONITOR 39INCH','MONITOR 42INCH','MONITOR 45INCH','MONITOR 48INCH',
+                                 'MONITOR 49INCH'].forEach(c => skuFallbackPrefixes[c] = 'MON');
+                                ['PC BUILD UNDER 1K','PC BUILD UNDER 2K','PC BUILD UNDER 3K',
+                                 'PC BUILD UNDER 4K','PC BUILD UNDER 5K','PC BUILD 5K UP'].forEach(c => skuFallbackPrefixes[c] = 'PB');
+
+                                function skuPrefixFor(category) {
+                                    const c = (category || '').trim().toUpperCase();
+                                    if (skuPrefixMap[c]) return skuPrefixMap[c];
+                                    if (skuFallbackPrefixes[c]) return skuFallbackPrefixes[c];
+                                    // Fallback: first 4 letters of the first word
+                                    return (c.split(' ')[0] || c).substring(0, 4);
+                                }
+
+                                function updateSkuPreview() {
+                                    const el = document.getElementById('skuPreview');
+                                    if (!el) return;
+                                    const cat = categorySelect.value;
+                                    el.value = cat ? (skuPrefixFor(cat) + 'XXXXX') : '';
+                                }
+                                categorySelect.addEventListener('change', updateSkuPreview);
                             </script>
                         </div>
 

@@ -138,6 +138,7 @@
                 <thead>
                     <tr>
                         <th>{{ __('dashboard.productsPage.product') }}</th>
+                        <th>SKU</th>
                         <th>{{ __('dashboard.productsPage.category') }}</th>
                         <th>{{ __('dashboard.productsPage.brand') }}</th>
                         <th>{{ __('dashboard.productsPage.warranty') }}</th>
@@ -177,6 +178,7 @@
                                     </div>
                                 </div>
                             </td>
+                            <td style="font-family:monospace; color:rgba(255,255,255,0.7);">{{ $product->sku ?? '—' }}</td>
                             <td>
                                 <span class="badge badge-orange">{{ $product->category }}</span>
                             </td>

@@ -19,6 +19,7 @@ use App\Http\Controllers\Dashboard\MainCategoryController;
 use App\Http\Controllers\Dashboard\SubCategoryController;
 use App\Http\Controllers\Dashboard\BrandController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Dashboard\StockController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffRequestController;
 use App\Models\Feedback;
@@ -125,6 +126,13 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/products/{product:slug}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product:slug}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product:slug}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        // ── Stock management ──────────────────────────────────────────────────
+        Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::post('/stock/receive', [StockController::class, 'receive'])->name('stock.receive');
+        Route::post('/stock/adjust', [StockController::class, 'adjust'])->name('stock.adjust');
+        Route::post('/stock/damaged', [StockController::class, 'damaged'])->name('stock.damaged');
+        Route::get('/stock/{product}/history', [StockController::class, 'history'])->name('stock.history');
 
         // ── Orders ────────────────────────────────────────────────────────────
         Route::get('/orders', [DashboardController::class, 'orders'])->name('orders');

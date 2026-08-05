@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
             // DeliveryZoneSeeder::class,
             // ProvinceSeeder::class,
             OrderSeeder::class,
+            ProductSkuSeeder::class, // assigns SKUs to any product missing one
             // ProductImportSeeder::class,
             // ActivityLogSeeder::class,       // login events incl. current month
             // DeliveryScheduleSeeder::class,

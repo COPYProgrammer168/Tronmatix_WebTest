@@ -16,6 +16,7 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
+        'sku',
         'caption',
         'description',
         'price',
@@ -28,7 +29,9 @@ class Product extends Model
         'images',
         'specs',
         'specs_title',
-        'stock',
+        'current_stock',
+        'cost_price',
+        'low_stock_threshold',
         'stock_status',
         'stock_details',
         'brand_pc_part',
@@ -41,7 +44,9 @@ class Product extends Model
     protected $casts = [
         'price' => 'string',
         'rating' => 'decimal:1',
-        'stock' => 'integer',
+        'current_stock' => 'integer',
+        'cost_price' => 'decimal:2',
+        'low_stock_threshold' => 'integer',
         'is_featured' => 'boolean',
         'is_hot' => 'boolean',
         'images' => 'array',
@@ -70,8 +75,15 @@ class Product extends Model
             // Auto-update stock_status based on stock count
             if ($product->stock !== null && $product->stock <= 0) {
                 $product->stock_status = 'Sold Out';
-            } elseif ($product->isDirty('stock') && $product->stock > 0 && ($product->stock_status === 'Sold Out' || empty($product->stock_status))) {
+            } elseif ($product->isDirty('current_stock') && $product->stock > 0 && ($product->stock_status === 'Sold Out' || empty($product->stock_status))) {
                 $product->stock_status = 'Available InStock Now';
+            }
+
+            // Auto-generate SKU from category ({PREFIX}{5 random chars}, e.g. CPUA7BQP).
+            // Only fills when empty — SKUs are permanent once created and never
+            // re-derived on update (sku is not part of the edit payload).
+            if (empty($product->sku)) {
+                $product->sku = \App\Services\SkuGenerator::generate($product->category);
             }
 
             // Auto-generate slug from name
@@ -104,7 +116,33 @@ class Product extends Model
         return $this->hasMany(Discount::class);
     }
 
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
     // ── Accessors ─────────────────────────────────────────────────────────────
+
+    /**
+     * Backwards-compatible `stock` accessor → reads the current_stock column.
+     * The DB column was renamed to `current_stock` (system-of-record for the
+     * inventory ledger), but the entire storefront + API + order flow still
+     * reads `$product->stock`, so map it through here to avoid touching every
+     * consumer. Null still means "unlimited".
+     */
+    public function getStockAttribute(): ?int
+    {
+        return $this->current_stock;
+    }
+
+    /**
+     * Backwards-compatible `stock` mutator → writes current_stock.
+     * Lets existing code do `$product->stock = X` / mass-assign `'stock'`.
+     */
+    public function setStockAttribute(?int $value): void
+    {
+        $this->attributes['current_stock'] = $value;
+    }
 
     /**
      * Unified images array — bridges single `image` (old) and `images[]` (new).
@@ -159,7 +197,7 @@ class Product extends Model
             return false;
         }
         if ($this->stock !== null) {
-            $this->decrement('stock', $qty);
+            $this->decrement('current_stock', $qty);
         }
 
         return true;
@@ -183,10 +221,12 @@ class Product extends Model
         $this->save();
     }
 
-    // FIX [2]: reads AdminSetting instead of hardcoded 5
+    // Uses the per-product low_stock_threshold column (falls back to the global
+    // AdminSetting when the column is unset/0).
     public function isLowStock(): bool
     {
-        $threshold = (int) AdminSetting::get('notif_low_stock_threshold', 5);
+        $threshold = $this->low_stock_threshold
+            ?: (int) AdminSetting::get('notif_low_stock_threshold', 5);
 
         return $this->stock !== null && $this->stock > 0 && $this->stock <= $threshold;
     }
@@ -211,7 +251,7 @@ class Product extends Model
 
     public function scopeInStock($q)
     {
-        return $q->where(fn ($q) => $q->whereNull('stock')->orWhere('stock', '>', 0));
+        return $q->where(fn ($q) => $q->whereNull('current_stock')->orWhere('current_stock', '>', 0));
     }
 
     public function scopeByCategory($q, string $cat)
@@ -223,6 +263,6 @@ class Product extends Model
     {
         $threshold = (int) AdminSetting::get('notif_low_stock_threshold', 5);
 
-        return $q->where('stock', '>', 0)->where('stock', '<=', $threshold);
+        return $q->where('current_stock', '>', 0)->where('current_stock', '<=', $threshold);
     }
 }

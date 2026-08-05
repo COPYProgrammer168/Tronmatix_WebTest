@@ -195,6 +195,18 @@ class DashboardController extends Controller
             'monthly_discount_count' => Order::whereNotNull('discount_id')
                                             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                                             ->count(),
+            // ── Inventory widgets (Prompt 6) ─────────────────────────────
+            // Total inventory value = SUM(current_stock * cost_price), treating
+            // NULL cost_price as 0 so a missing cost doesn't break the total.
+            'inventory_value'     => (float) Product::selectRaw('COALESCE(SUM(current_stock * COALESCE(cost_price, 0)), 0) as total')->value('total'),
+            // How many products are missing a cost price (surfaced so the figure
+            // above is understood to be an undercount, not silently wrong).
+            'no_cost_products'    => (int) Product::whereNull('cost_price')->orWhere('cost_price', 0)->count(),
+            // Low stock count uses each product's low_stock_threshold column,
+            // falling back to the global setting when the column is 0/unset.
+            'low_stock_count'     => (int) Product::where('current_stock', '>', 0)
+                ->whereRaw('current_stock <= COALESCE(NULLIF(low_stock_threshold, 0), ?)', [(int) AdminSetting::int('notif_low_stock_threshold', 5)])
+                ->count(),
         ];
 
         // ── Daily revenue & orders for selected month ─────────────────────────
@@ -305,7 +317,7 @@ class DashboardController extends Controller
         }
 
         $top_products = Product::withCount('orderItems')->orderByDesc('order_items_count')->take(5)->get();
-        $low_stock    = Product::lowStock()->orderBy('stock')->take(5)->get();
+        $low_stock    = Product::lowStock()->orderBy('current_stock')->take(5)->get();
         $recent_orders = Order::with(['user', 'items', 'location'])->latest()->take(14)->get();
 
         $top_discount_codes = Discount::select(
@@ -444,9 +456,13 @@ class DashboardController extends Controller
         $status = $request->input('status');
         $search = trim($request->input('search', ''));
         $userIdentifier = $request->input('user');
+        $today = $request->boolean('today');
 
         $query = Order::with(['user', 'items', 'location'])->latest();
 
+        if ($today) {
+            $query->whereDate('created_at', today());
+        }
         if ($userIdentifier) {
             $user = User::where('username', $userIdentifier)
                 ->orWhere('email', $userIdentifier)
@@ -486,7 +502,7 @@ class DashboardController extends Controller
             ->orWhere('email', $userIdentifier)
             ->first();
 
-        return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search', 'userFilter'));
+        return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search', 'userFilter', 'today'));
     }
 
     public function showOrder($order_id)
@@ -508,6 +524,16 @@ class DashboardController extends Controller
         $newStatus = $request->status;
 
         $order->update(['status' => $newStatus]);
+
+        // ── Stock management: cancelling an order puts its stock back via the
+        //    ledger. Reverses each not-yet-reversed movement referencing the order.
+        if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+            try {
+                app(\App\Services\OrderStockService::class)->restoreOrderStock($order);
+            } catch (\Throwable $e) {
+                Log::warning('[Stock] Restore on cancel failed: ' . $e->getMessage());
+            }
+        }
 
         // ── Log activity ────────────────────────────────────────────────────────
         try {
@@ -600,6 +626,17 @@ class DashboardController extends Controller
             'payment_status' => 'paid',
             'status'         => $order->status === 'pending' ? 'confirmed' : $order->status
         ]);
+
+        // ── Stock management: a pending (Bakong/KHQR) order was NOT stocked out
+        //    at placement — stock leaves the shelf only on confirmation. Promote
+        //    to confirmed → stock-out now (idempotent via the double-processing guard).
+        if ($order->status === 'confirmed') {
+            try {
+                app(\App\Services\OrderStockService::class)->stockOutOrder($order, $order->items);
+            } catch (\Throwable $e) {
+                Log::warning('[Stock] Stock-out on payment verify failed: ' . $e->getMessage());
+            }
+        }
 
         // ── Log activity ────────────────────────────────────────────────────────
         try {
@@ -708,6 +745,14 @@ class DashboardController extends Controller
             );
         }
 
+        // "Recently logged-in" filter: ?recent=1 → only users who have logged in
+        // (last_login_at set), newest login first. The dashboard "new customers"
+        // stat opens this view.
+        $recent = $request->boolean('recent');
+        if ($recent) {
+            $query->whereNotNull('last_login_at')->orderByDesc('last_login_at');
+        }
+
         $perPage = AdminSetting::int('dashboard_rows_per_page', 15);
         $users = $query->paginate($perPage)->withQueryString();
 
@@ -718,7 +763,7 @@ class DashboardController extends Controller
 
         $vipGoal = (float) AdminSetting::get('vip_threshold', 5000);
 
-        return view('dashboard.users', compact('users', 'roleCounts', 'vipGoal'));
+        return view('dashboard.users', compact('users', 'roleCounts', 'vipGoal', 'recent'));
     }
 
     // ── Banners ───────────────────────────────────────────────────────────────

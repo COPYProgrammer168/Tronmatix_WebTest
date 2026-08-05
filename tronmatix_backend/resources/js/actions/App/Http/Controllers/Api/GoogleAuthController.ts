@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\GoogleAuthController::handleCallback
- * @see app/Http/Controllers/Api/GoogleAuthController.php:29
+ * @see app/Http/Controllers/Api/GoogleAuthController.php:31
  * @route '/api/auth/google'
  */
 export const handleCallback = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ handleCallback.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\GoogleAuthController::handleCallback
- * @see app/Http/Controllers/Api/GoogleAuthController.php:29
+ * @see app/Http/Controllers/Api/GoogleAuthController.php:31
  * @route '/api/auth/google'
  */
 handleCallback.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ handleCallback.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\GoogleAuthController::handleCallback
- * @see app/Http/Controllers/Api/GoogleAuthController.php:29
+ * @see app/Http/Controllers/Api/GoogleAuthController.php:31
  * @route '/api/auth/google'
  */
 handleCallback.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ handleCallback.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 
     /**
 * @see \App\Http\Controllers\Api\GoogleAuthController::handleCallback
- * @see app/Http/Controllers/Api/GoogleAuthController.php:29
+ * @see app/Http/Controllers/Api/GoogleAuthController.php:31
  * @route '/api/auth/google'
  */
     const handleCallbackForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ handleCallback.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 
             /**
 * @see \App\Http\Controllers\Api\GoogleAuthController::handleCallback
- * @see app/Http/Controllers/Api/GoogleAuthController.php:29
+ * @see app/Http/Controllers/Api/GoogleAuthController.php:31
  * @route '/api/auth/google'
  */
         handleCallbackForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

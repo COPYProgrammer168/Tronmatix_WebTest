@@ -257,7 +257,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
 export const exportMethod = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,7 +272,7 @@ exportMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
 exportMethod.url = (options?: RouteQueryOptions) => {
@@ -281,7 +281,7 @@ exportMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
 exportMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -290,7 +290,7 @@ exportMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
 exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -300,7 +300,7 @@ exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
     const exportMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -310,7 +310,7 @@ exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
         exportMethodForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -319,7 +319,7 @@ exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:734
+ * @see app/Http/Controllers/DashboardController.php:841
  * @route '/dashboard/export'
  */
         exportMethodForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -546,7 +546,7 @@ products.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     products.form = productsForm
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
 export const orders = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -561,7 +561,7 @@ orders.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
 orders.url = (options?: RouteQueryOptions) => {
@@ -570,7 +570,7 @@ orders.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
 orders.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -579,7 +579,7 @@ orders.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
 orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -589,7 +589,7 @@ orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
     const ordersForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -599,7 +599,7 @@ orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
         ordersForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -608,7 +608,7 @@ orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:350
+ * @see app/Http/Controllers/DashboardController.php:442
  * @route '/dashboard/orders'
  */
         ordersForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -702,7 +702,7 @@ users.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     users.form = usersForm
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
 export const discounts = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -717,7 +717,7 @@ discounts.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
 discounts.url = (options?: RouteQueryOptions) => {
@@ -726,7 +726,7 @@ discounts.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
 discounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -735,7 +735,7 @@ discounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
 discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -745,7 +745,7 @@ discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
     const discountsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -755,7 +755,7 @@ discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
         discountsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -764,7 +764,7 @@ discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:641
+ * @see app/Http/Controllers/DashboardController.php:733
  * @route '/dashboard/discounts'
  */
         discountsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1248,7 +1248,7 @@ activityLogs.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     activityLogs.form = activityLogsForm
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
 export const staff = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1263,7 +1263,7 @@ staff.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
 staff.url = (options?: RouteQueryOptions) => {
@@ -1272,7 +1272,7 @@ staff.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
 staff.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1281,7 +1281,7 @@ staff.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
 staff.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1291,7 +1291,7 @@ staff.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
     const staffForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1301,7 +1301,7 @@ staff.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
         staffForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1310,7 +1310,7 @@ staff.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::staff
- * @see app/Http/Controllers/Dashboard/StaffController.php:44
+ * @see app/Http/Controllers/Dashboard/StaffController.php:45
  * @route '/dashboard/staff'
  */
         staffForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1482,7 +1482,7 @@ report.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     report.form = reportForm
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1497,7 +1497,7 @@ stats.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
 stats.url = (options?: RouteQueryOptions) => {
@@ -1506,7 +1506,7 @@ stats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1515,7 +1515,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1525,7 +1525,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
     const statsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1535,7 +1535,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
         statsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1544,7 +1544,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:867
+ * @see app/Http/Controllers/DashboardController.php:974
  * @route '/dashboard/stats'
  */
         statsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

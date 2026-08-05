@@ -652,7 +652,7 @@ export default function Navbar({ onAuthOpen }) {
 
         {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
         <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-          <div className="w-full max-w-[1500px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
+          <div className="w-full max-w-[1550px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
             <Link to="/" className="flex-shrink-0">
               <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
             </Link>
@@ -831,11 +831,11 @@ export default function Navbar({ onAuthOpen }) {
                     <div style={{ fontFamily: navFont, fontSize: 13, fontWeight: 700, color: textColor, letterSpacing: isKhmer ? 0 : 0.5 }}>{isKhmer ? '096 733 3725 / 077 711 126' : '096 733 3725 / 077 711 126'}</div>
                   </div>
                 </div>
-                <div className="flex gap-3 mt-1.5 ml-7">
+                {/* <div className="flex gap-3 mt-1.5 ml-7">
                   <a href="https://www.facebook.com/TronmatixComputer?_rdc=1&_rdr#" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#F97316'} onMouseLeave={e => e.currentTarget.style.color = subTextColor}><FacebookIcon /></a>
                   <a href="https://t.me/+VZScFi_U95PsFk0M" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#F97316'} onMouseLeave={e => e.currentTarget.style.color = subTextColor}><TelegramIcon /></a>
                   <a href="https://www.tiktok.com/@tronmatixcomputer" style={{ color: subTextColor, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#F97316'} onMouseLeave={e => e.currentTarget.style.color = subTextColor}><TikTokIcon /></a>
-                </div>
+                </div> */}
               </div>
 
               <form onSubmit={handleSearch} className="flex-1 hidden md:flex mx-3">

@@ -166,7 +166,7 @@ forgotPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
     forgotPassword.form = forgotPasswordForm
 /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:371
+ * @see app/Http/Controllers/AuthController.php:399
  * @route '/api/auth/reset-password'
  */
 export const resetPassword = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -181,7 +181,7 @@ resetPassword.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:371
+ * @see app/Http/Controllers/AuthController.php:399
  * @route '/api/auth/reset-password'
  */
 resetPassword.url = (options?: RouteQueryOptions) => {
@@ -190,7 +190,7 @@ resetPassword.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:371
+ * @see app/Http/Controllers/AuthController.php:399
  * @route '/api/auth/reset-password'
  */
 resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -200,7 +200,7 @@ resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
     /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:371
+ * @see app/Http/Controllers/AuthController.php:399
  * @route '/api/auth/reset-password'
  */
     const resetPasswordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -210,7 +210,7 @@ resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
             /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:371
+ * @see app/Http/Controllers/AuthController.php:399
  * @route '/api/auth/reset-password'
  */
         resetPasswordForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -221,7 +221,7 @@ resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
     resetPassword.form = resetPasswordForm
 /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:403
+ * @see app/Http/Controllers/AuthController.php:431
  * @route '/api/auth/reset-by-phone'
  */
 export const resetByPhone = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -236,7 +236,7 @@ resetByPhone.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:403
+ * @see app/Http/Controllers/AuthController.php:431
  * @route '/api/auth/reset-by-phone'
  */
 resetByPhone.url = (options?: RouteQueryOptions) => {
@@ -245,7 +245,7 @@ resetByPhone.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:403
+ * @see app/Http/Controllers/AuthController.php:431
  * @route '/api/auth/reset-by-phone'
  */
 resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -255,7 +255,7 @@ resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:403
+ * @see app/Http/Controllers/AuthController.php:431
  * @route '/api/auth/reset-by-phone'
  */
     const resetByPhoneForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -265,7 +265,7 @@ resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:403
+ * @see app/Http/Controllers/AuthController.php:431
  * @route '/api/auth/reset-by-phone'
  */
         resetByPhoneForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

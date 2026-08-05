@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Api\GenerateKhqrController::generate
- * @see app/Http/Controllers/Api/GenerateKhqrController.php:80
+ * @see app/Http/Controllers/Api/GenerateKhqrController.php:93
  * @route '/api/payment/generate-qr'
  */
 export const generate = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ generate.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\GenerateKhqrController::generate
- * @see app/Http/Controllers/Api/GenerateKhqrController.php:80
+ * @see app/Http/Controllers/Api/GenerateKhqrController.php:93
  * @route '/api/payment/generate-qr'
  */
 generate.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generate.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\GenerateKhqrController::generate
- * @see app/Http/Controllers/Api/GenerateKhqrController.php:80
+ * @see app/Http/Controllers/Api/GenerateKhqrController.php:93
  * @route '/api/payment/generate-qr'
  */
 generate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ generate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Api\GenerateKhqrController::generate
- * @see app/Http/Controllers/Api/GenerateKhqrController.php:80
+ * @see app/Http/Controllers/Api/GenerateKhqrController.php:93
  * @route '/api/payment/generate-qr'
  */
     const generateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ generate.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Api\GenerateKhqrController::generate
- * @see app/Http/Controllers/Api/GenerateKhqrController.php:80
+ * @see app/Http/Controllers/Api/GenerateKhqrController.php:93
  * @route '/api/payment/generate-qr'
  */
         generateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

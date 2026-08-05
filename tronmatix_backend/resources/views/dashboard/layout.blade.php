@@ -54,7 +54,7 @@
             --text-nav:  16px;
             --text-xs:   12px;
             --text-sm:   14px;
-            --text-base: 15px;
+            --text-base: 18px;
             --text-md:   16px;
             --text-lg:   20px;
             --text-xl:   22px;
@@ -103,7 +103,9 @@
             margin-top: 5px !important;
         }
         :lang(km) .stat-value {
-            font-size: clamp(1.4rem, 1.8vw + 1rem, 1.4rem) !important;
+            /* Khmer digits render smaller at the same px — bump the size so they
+               read as prominently as English stat values. */
+            font-size: clamp(1.7rem, 2vw + 1rem, 2.2rem) !important;
         }
 
         /* Apply Khmer font when lang=km is set on <html> */
@@ -119,7 +121,7 @@
             font-weight: 400 !important;
         }
 
-        :lang(km) span {
+        :lang(km) span:not(.km-english) {
             font-size: var(--text-sm);
             font-weight: 400;
 
@@ -127,6 +129,21 @@
 
         :lang(km) .km-english {
             font-weight: 600 !important;
+            /* English text inside Khmer mode should keep the ENGLISH type scale.
+               The :lang(km) block shrinks --text-* for Khmer glyphs, which wrongly
+               shrinks any English runs too — restore the English sizes here so
+               English text in Khmer mode stays readable and matches English mode. */
+            --text-nav:  20px;
+            --text-xs:   14px;
+            --text-sm:   16px;
+            --text-base: 17px;
+            --text-md:   20px;
+            --text-lg:   22px;
+            --text-xl:   24px;
+            --text-2xl:  28px;
+            --title-size: var(--text-md);
+            --font-size: var(--text-base);
+            font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
         }
 
         /* Buttons need auto height so Khmer text doesn't clip */
@@ -146,6 +163,23 @@
 
         /* Smooth language swap fade */
         .lang-fading { opacity: 0 !important; transition: opacity 0.15s ease !important; }
+
+        /* ── Global Khmer font fallback ─────────────────────────────────────────
+           When the page is in Khmer (lang=km on <html>), ensure EVERY element
+           carries the Khmer webfont as a fallback, regardless of inline
+           `font-family:...` styles. Many dashboard views hard-code `Rajdhani`
+           without `var(--font-kh)`, so Khmer glyphs (absent from Rajdhani's
+           charset) would fall back to the OS default — usually tofu boxes.
+
+           Rajdhani stays first so English keeps its design look; Khmer glyphs
+           fall through to Kdam Thmor Pro. `!important` beats inline styles.
+           This mirrors the codebase's own `Rajdhani, var(--font-kh)` convention
+           but applies it globally so no inline style can drop the Khmer fallback.
+        */
+        :lang(km) *:not(.km-english):not(code):not(pre) {
+            font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
+            line-height: var(--lh-kh) !important;
+        }
     </style>
 
     <style>
@@ -489,7 +523,8 @@
         /* ── Stats grid ───────────────────────────────────────────────────────── */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            /* 8 stats → 2 rows of 4 equal columns. Pages with 4 stats → 1 row. */
+            grid-template-columns: repeat(4, 1fr);
             gap: 14px;
             margin-bottom: 24px;
         }
@@ -534,6 +569,11 @@
             font-weight: 700;
             line-height: 1.2;
             white-space: nowrap;
+            /* Money values like "$100K" mix digits and letters — keep them in the
+               same English font stack so the K/M suffix renders identically to the
+               number, even in Khmer mode where the global Khmer font would otherwise
+               size Latin letters differently from digits. */
+            font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
         }
 
         .stat-label {
@@ -559,6 +599,7 @@
 
         .chart-badge {
             font-size: var(--text-sm);
+            font-weight: 700; /* bold in English; :lang(km) override below keeps Khmer at 400 */
             color: rgba(255,255,255,0.35);
             background: rgba(255,255,255,0.05);
             padding: 3px 10px;
@@ -1215,6 +1256,18 @@
                 {{ strtoupper(__('dashboard.nav.deliveryProviders')) }}
             </a>
 
+            <a href="{{ route('dashboard.stock.index') }}"
+               class="nav-item {{ request()->routeIs('dashboard.stock*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                    <path d="M7 21v-6M21 7h-6M7 7h.01M21 21h.01"/>
+                </svg>
+                {{ strtoupper(__('dashboard.nav.stock')) }}
+            </a>
+
             <div class="nav-section-label">{{ __('dashboard.common.catalog') == 'catalog' ? 'Users' : __('dashboard.nav.users') }}</div>
             <a href="{{ route('dashboard.users') }}"
                class="nav-item {{ request()->routeIs('dashboard.users*') ? 'active' : '' }}">
@@ -1477,6 +1530,7 @@
     </div>
 
     @livewireScripts
+
     {{-- ── Sidebar JS ───────────────────────────────────────────────────────── --}}
     <script>
         function openSidebar() {

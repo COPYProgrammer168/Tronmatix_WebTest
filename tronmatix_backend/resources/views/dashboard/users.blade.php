@@ -124,6 +124,18 @@ tbody tr:hover td { background: var(--dark-700); }
     </div>
     @endif
 
+    {{-- "Recently logged in" mode banner (opened from the dashboard stat card) --}}
+    @if($recent ?? false)
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;margin-bottom:16px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);">
+            <span style="font-size: var(--title-size);">🔁</span>
+            <div style="flex:1;font-size: var(--title-size);color:#3B82F6;font-weight:600;letter-spacing:1px;">
+                RECENTLY LOGGED IN — users who logged into the website
+            </div>
+            <a href="{{ route('dashboard.users') }}" style="font-size: var(--title-size);color:var(--text-muted);text-decoration:none;white-space:nowrap;"
+               onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color=''">✕ CLEAR</a>
+        </div>
+    @endif
+
     {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
     <div class="stats-grid users-stats-grid" style="margin-bottom:20px;">
         @foreach(['customer'] as $role)
@@ -219,6 +231,7 @@ tbody tr:hover td { background: var(--dark-700); }
                         <th>TELEGRAM</th>
                         <th>{{ strtoupper(__('dashboard.table.role')) }}</th>
                         <th>{{ strtoupper(__('dashboard.table.joined')) }}</th>
+                        <th>LAST LOGIN</th>
                         {{-- <th style="min-width:200px;">CHANGE ROLE</th> --}}
                     </tr>
                 </thead>
@@ -347,6 +360,10 @@ tbody tr:hover td { background: var(--dark-700); }
 
                         <td style="color:rgba(255,255,255,0.4); font-size: var(--title-size); white-space:nowrap;">
                             {{ $user->created_at->format('d M Y') }}
+                        </td>
+
+                        <td style="color:rgba(59,130,246,0.7); font-size: var(--title-size); white-space:nowrap;">
+                            {{ $user->last_login_at ? $user->last_login_at->format('d M Y H:i') : '—' }}
                         </td>
 
                         {{-- ── CHANGE ROLE (AJAX, no page reload) ──────────────── --}}

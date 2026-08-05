@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::resend
- * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @see app/Http/Controllers/Dashboard/StaffController.php:135
  * @route '/dashboard/staff/invites/{id}/resend'
  */
 export const resend = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ resend.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::resend
- * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @see app/Http/Controllers/Dashboard/StaffController.php:135
  * @route '/dashboard/staff/invites/{id}/resend'
  */
 resend.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ resend.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\Dashboard\StaffController::resend
- * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @see app/Http/Controllers/Dashboard/StaffController.php:135
  * @route '/dashboard/staff/invites/{id}/resend'
  */
 resend.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ resend.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\Dashboard\StaffController::resend
- * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @see app/Http/Controllers/Dashboard/StaffController.php:135
  * @route '/dashboard/staff/invites/{id}/resend'
  */
     const resendForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ resend.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\Dashboard\StaffController::resend
- * @see app/Http/Controllers/Dashboard/StaffController.php:126
+ * @see app/Http/Controllers/Dashboard/StaffController.php:135
  * @route '/dashboard/staff/invites/{id}/resend'
  */
         resendForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

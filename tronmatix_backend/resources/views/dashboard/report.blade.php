@@ -50,7 +50,7 @@
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card :label="__('dashboard.stats.kpiRevenue')" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green">
+        <x-kpi-card :label="__('dashboard.stats.kpiRevenue')" value="{{ compact_number($revenue['current'], '$') }}" :trend="$revenue" color="green">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </x-slot>

@@ -15,6 +15,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/axios'
+import { formatCompact } from '../lib/formatNumber'
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const O = '#F97316'
@@ -412,10 +413,10 @@ function OverviewTab({ setTab }) {
   }, [stats, chartsReady])
 
   const STAT_DEFS = [
-    { key: 'total_orders',   label: 'Total Orders',   deltaKey: 'orders_delta',  color: O, icon: '📦' },
-    { key: 'revenue',        label: 'Revenue',        deltaKey: 'revenue_delta', color: G, icon: '💰' },
-    { key: 'active_users',   label: 'Active Users',   deltaKey: 'users_delta',   color: B, icon: '👥' },
-    { key: 'pending_orders', label: 'Pending Orders', deltaKey: 'pending_delta', color: Y, icon: '⏳' },
+    { key: 'total_orders',   label: 'Total Orders',   deltaKey: 'orders_delta',  color: O, icon: '📦', tab: 'orders' },
+    { key: 'revenue',        label: 'Revenue',        deltaKey: 'revenue_delta', color: G, icon: '💰', tab: 'report' },
+    { key: 'active_users',   label: 'Active Users',   deltaKey: 'users_delta',   color: B, icon: '👥', tab: 'users' },
+    { key: 'pending_orders', label: 'Pending Orders', deltaKey: 'pending_delta', color: Y, icon: '⏳', tab: 'orders' },
   ]
 
   const QUICK_ACTIONS = [
@@ -434,8 +435,9 @@ function OverviewTab({ setTab }) {
           <div key={s.key} style={{
             background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: CARD_RADIUS,
             padding: '20px 20px', display: 'flex', alignItems: 'center', gap: 16,
-            position: 'relative', overflow: 'hidden', transition,
+            position: 'relative', overflow: 'hidden', transition, cursor: 'pointer',
           }}
+            onClick={() => s.tab && setTab(s.tab)}
             onMouseEnter={e => { e.currentTarget.style.borderColor = s.color; e.currentTarget.style.transform = 'translateY(-2px)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.transform = '' }}
           >
@@ -455,7 +457,9 @@ function OverviewTab({ setTab }) {
                 {loading ? (
                   <div style={{ height: 24, width: '60%', background: `${s.color}22`, borderRadius: 5, animation: 'shimmer 1.4s ease-in-out infinite' }} />
                 ) : (
-                  stats?.[s.key] ?? '—'
+                  s.key === 'revenue'
+                    ? formatCompact(parseFloat(String(stats?.revenue ?? '0').replace(/[^0-9.-]/g, '')), '$')
+                    : (stats?.[s.key] ?? '—')
                 )}
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.5px', color: TEXT_MUTED, marginTop: 2 }}>
@@ -1111,8 +1115,8 @@ function BadgePill({ color, label }) {
 // ═════════════════════════════════════════════════════════════════════════════
 // USERS TAB
 // ═════════════════════════════════════════════════════════════════════════════
-function UsersTab() {
-  const { data: users, loading, error, refetch } = useFetch('/api/admin/users')
+function UsersTab({ recentOnly = false }) {
+  const { data: users, loading, error, refetch } = useFetch(recentOnly ? '/api/admin/users?recent=1' : '/api/admin/users')
   const roles = ['all', 'customer']
   const [roleFilter, setRoleFilter] = useState('customer')
   const [search, setSearch] = useState('')
@@ -1129,7 +1133,14 @@ function UsersTab() {
   return (
     <div>
       {/* Role summary chips */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+        {recentOnly && (
+          <button onClick={() => { roleFilter !== 'all' && setRoleFilter('all') }} style={{
+            padding: '4px 12px', borderRadius: 8, border: '1px solid rgba(59,130,246,0.3)',
+            background: 'rgba(59,130,246,0.1)', color: B, fontSize: 11, fontWeight: 700, letterSpacing: '0.5px',
+            cursor: 'pointer',
+          }}>🔁 RECENT LOGINS</button>
+        )}
         <RoleChip label="all" count={users?.length} active={roleFilter === 'all'} onClick={() => setRoleFilter('all')} color={O} />
         <RoleChip label="customer" count={roleCounts.customer} active={roleFilter === 'customer'} onClick={() => setRoleFilter('customer')} color="#9ca3af" />
       </div>
@@ -1487,15 +1498,16 @@ function ReportTab() {
       {/* KPI Cards with trends */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 14, marginBottom: 24 }}>
         {[
-          { label: 'Orders', value: currentOrdersCount.toLocaleString(), delta: calcDelta(currentOrdersCount, prevOrdersCount), color: O, icon: '📦' },
-          { label: 'Revenue', value: '$' + currentRevenue.toLocaleString(), delta: calcDelta(currentRevenue, prevRevenue), color: G, icon: '💰' },
-          { label: 'Active Customers', value: stats?.active_users ?? '—', delta: null, color: B, icon: '👥' },
-          { label: 'Total Products', value: products?.length?.toLocaleString() ?? '—', delta: null, color: P, icon: '🖥️' },
+          { label: 'Orders', value: currentOrdersCount.toLocaleString(), delta: calcDelta(currentOrdersCount, prevOrdersCount), color: O, icon: '📦', onClick: () => setTab('orders') },
+          { label: 'Revenue', value: formatCompact(currentRevenue, '$'), delta: calcDelta(currentRevenue, prevRevenue), color: G, icon: '💰', onClick: () => setTab('report') },
+          { label: 'Active Customers', value: stats?.active_users ?? '—', delta: null, color: B, icon: '👥', onClick: () => { setUsersRecentOnly(true); setTab('users') } },
+          { label: 'Total Products', value: products?.length?.toLocaleString() ?? '—', delta: null, color: P, icon: '🖥️', onClick: () => setTab('products') },
         ].map(s => (
           <div key={s.label} style={{
             background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: CARD_RADIUS,
-            padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, position: 'relative', overflow: 'hidden',
-          }}>
+            padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, position: 'relative', overflow: 'hidden', cursor: 'pointer',
+          }}
+            onClick={s.onClick}>
             <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: s.color, borderRadius: '3px 0 0 3px', opacity: 0.5 }} />
             <div style={{ width: 42, height: 42, background: `${s.color}18`, border: `1px solid ${s.color}33`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{s.icon}</div>
             <div style={{ flex: 1 }}>
@@ -1754,6 +1766,7 @@ function ActivityTab() {
 // ═════════════════════════════════════════════════════════════════════════════
 export default function StaffDashboard() {
   const [tab, setTab] = useState('overview')
+  const [usersRecentOnly, setUsersRecentOnly] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('tronmatix_theme') || 'dark')
   const { user, logout, startHeartbeat } = useAuth()
@@ -1783,7 +1796,7 @@ export default function StaffDashboard() {
     orders:   <OrdersTab />,
     products: <ProductsTab />,
     categories: <CategoriesTab />,
-    users:    <UsersTab />,
+    users:    <UsersTab recentOnly={usersRecentOnly} />,
     delivery: <DeliveryTab />,
     report:   <ReportTab />,
     activity: <ActivityTab />,

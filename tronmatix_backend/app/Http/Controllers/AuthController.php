@@ -123,6 +123,9 @@ class AuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Track last login time so staff can filter "recently logged-in" users.
+        $user->update(['last_login_at' => now()]);
+
         return response()->json([
             'success' => true,
             'user'    => $this->userPayload($user),

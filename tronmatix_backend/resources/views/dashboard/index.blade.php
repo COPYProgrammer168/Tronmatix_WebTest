@@ -12,28 +12,43 @@
     <x-month-selector :month="$month" />
 @endif
 
-{{-- ── Stat Cards ────────────────────────────────────────────────────────────── --}}
+{{-- ──   ────────────────────────────────────────────────────────────── --}}
 <div class="stats-grid">
 
     @if(isset($month) && isset($customers))
-        <x-kpi-card label="{{ __('dashboard.stats.kpiOrders') }}" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange" href="{{ route('dashboard.report') }}">
+        <x-kpi-card label="{{ __('dashboard.stats.kpiOrders') }}" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange" href="{{ route('dashboard.orders', ['today' => 1]) }}">
             <x-slot:icon>
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
             </x-slot:icon>
         </x-kpi-card>
-        <x-kpi-card label="{{ __('dashboard.stats.kpiRevenue') }}" value="${{ number_format($revenue['current'], 2) }}" :trend="$revenue" color="green" href="{{ route('dashboard.report') }}">
+        <x-kpi-card label="{{ __('dashboard.stats.kpiRevenue') }}" value="{{ compact_number($revenue['current'], '$') }}" :trend="$revenue" color="green" href="{{ route('dashboard.report') }}">
             <x-slot:icon>
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </x-slot:icon>
         </x-kpi-card>
-        <x-kpi-card label="{{ __('dashboard.stats.kpiCustomers') }}" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue" href="{{ route('dashboard.report') }}">
+        <x-kpi-card label="{{ __('dashboard.stats.kpiCustomers') }}" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue" href="{{ route('dashboard.users', ['recent' => 1]) }}">
             <x-slot:icon>
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </x-slot:icon>
         </x-kpi-card>
     @endif
 
-    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+        <a href="{{ route('dashboard.stock.index') }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="stat-card" style="cursor:pointer;">
+        <div class="stat-icon" style="background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.2);">
+            <svg fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M4 7V5a1 1 0 011-1h14a1 1 0 011 1v2"/><path d="M4 7h16v14H4z"/><path d="M9 11h6"/></svg>
+        </div>
+        <div>
+            <div class="stat-value">${{ number_format($stats['inventory_value'], 2) }}</div>
+            <div class="stat-label">{{ __('dashboard.stats.inventoryValue') }}</div>
+            @if ($stats['no_cost_products'] > 0)
+                <div style="font-size: var(--title-size); color: rgba(245,158,11,0.7); margin-top:4px;">{{ $stats['no_cost_products'] }} {{ __('dashboard.stats.noCostNote') }}</div>
+            @endif
+        </div>
+    </div>
+    </a>
+
+    <a href="{{ route('dashboard.users') }}" style="text-decoration:none; color:inherit; display:block;">
     <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -49,7 +64,7 @@
     </div>
     </a>
 
-    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <a href="{{ route('dashboard.products') }}" style="text-decoration:none; color:inherit; display:block;">
     <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -63,7 +78,7 @@
     </div>
     </a>
 
-    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <a href="{{ route('dashboard.orders', ['today' => 1]) }}" style="text-decoration:none; color:inherit; display:block;">
     <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -77,7 +92,7 @@
     </div>
     </a>
 
-    <a href="{{ route('dashboard.report') }}" style="text-decoration:none; color:inherit; display:block;">
+    <a href="{{ route('dashboard.orders', ['today' => 1]) }}" style="text-decoration:none; color:inherit; display:block;">
     <div class="stat-card" style="cursor:pointer;">
         <div class="stat-icon">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -90,20 +105,6 @@
         </div>
     </div>
     </a>
-
-    {{-- <div class="stat-card" style="border-color: rgba(168,85,247,0.3);">
-        <div class="stat-icon" style="background:rgba(168,85,247,0.1); border-color:rgba(168,85,247,0.25);">
-            <svg fill="none" stroke="#A855F7" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M7 7h.01M17 17h.01"/>
-                <path d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6z"/>
-                <path stroke-linecap="round" d="M7 17L17 7"/>
-            </svg>
-        </div>
-        <div>
-            <div class="stat-value" style="color:#A855F7;">${{ number_format($stats['total_discount_used']) }}</div>
-            <div class="stat-label">{{ __('dashboard.stats.discountsSaved') }}</div>
-        </div>
-    </div> --}}
 </div>
 
 {{-- ── Row 1: Daily Revenue + Orders for selected month ─────────────────────── --}}
