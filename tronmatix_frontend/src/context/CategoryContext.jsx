@@ -3,7 +3,11 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 
 const CategoryContext = createContext(null);
 
-const API_URL = "/api/categories/tree";
+// Must point at the API base the same way axios.js does. On Render the
+// frontend and backend live on different origins, so a relative URL would
+// hit the frontend and fail. Resolve against VITE_API_URL like lib/axios.js.
+const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const API_URL = `${BASE_URL}/api/categories/tree`;
 
 export function CategoryProvider({ children }) {
   const [categories, setCategories] = useState([]);
