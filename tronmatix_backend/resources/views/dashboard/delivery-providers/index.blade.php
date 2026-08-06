@@ -275,35 +275,50 @@
         const btnText = document.getElementById('btnText');
         const methodField = document.getElementById('methodField');
 
+        // Always start from a clean form
+        form.reset();
+        form.querySelector('input[name="is_active"]').checked = true;
+
         if (provider) {
-            // Edit
+            // ── Edit ──
             modalTitle.textContent = 'EDIT DELIVERY PROVIDER';
             btnText.textContent = '{{ __('dashboard.btn.updateProvider') }}';
             form.action = `/dashboard/delivery-providers/${provider.id}`;
             methodField.innerHTML = '@method('PUT')';
 
-            // Populate fields - this might need more complexity for nested zone fields
-            form.querySelector('input[name="name"]').value = provider.name;
-            form.querySelector('input[name="sort_order"]').value = provider.sort_order;
-            form.querySelector('input[name="is_active"]').checked = provider.is_active;
+            form.querySelector('input[name="name"]').value = provider.name || '';
+            form.querySelector('input[name="sort_order"]').value = provider.sort_order ?? 0;
+            form.querySelector('input[name="is_active"]').checked = !!provider.is_active;
 
-            // ... zones would need similar population, but the partial _form uses PHP logic which might not easily map here without a full re-render or complex JS logic.
-            // A simpler approach: For now, I will redirect to the edit page if complex logic is needed, or just let the user edit through the modal if the form is simple enough.
-            // Actually, the current _form partial relies heavily on PHP helpers ($provider->zones->firstWhere...).
-            // To make this work truly with JS, I should probably return the form via AJAX or rely on the server side re-rendering.
-            // Given the complexity of the form (nested zones), let's stick with the plan but adjust for simplicity if needed.
-            // For now, let's keep the edit button redirecting to the edit page? No, the plan says redesign to modal.
-            // OK, I will keep the redirect for now to avoid breaking existing functionality and will note this as a limitation.
-            window.location.href = `/dashboard/delivery-providers/${provider.id}/edit`;
-            return;
+            // Populate per-zone fee/time sections from the loaded `zones` relation.
+            const zones = (provider.zones || []);
+            ['phnom_penh', 'province'].forEach(function (z) {
+                const zoneRow = zones.find(r => r.zone === z);
+                form.querySelector(`input[name="zone_${z}_enabled"]`).checked = !!zoneRow;
+                form.querySelector(`input[name="zone_${z}_fee"]`).value   = (zoneRow && zoneRow.fee !== null && zoneRow.fee !== undefined) ? zoneRow.fee : '';
+                form.querySelector(`input[name="zone_${z}_time"]`).value  = (zoneRow && zoneRow.estimated_time) ? zoneRow.estimated_time : '';
+                toggleZone(form.querySelector(`input[name="zone_${z}_enabled"]`), z);
+            });
+
+            // Logo — show URL if one exists, else leave file input empty for optional replace
+            const logoUrl = provider.logo_url || '';
+            const logoInput = form.querySelector('input[name="logo_url"]');
+            if (logoInput) {
+                logoInput.value = logoUrl;
+                previewLogoUrl(logoInput);
+            }
         } else {
-            // Create
+            // ── Create ──
             modalTitle.textContent = 'ADD DELIVERY PROVIDER';
             btnText.textContent = '{{ __('dashboard.btn.createProvider') }}';
             form.action = '{{ route('dashboard.delivery-providers.store') }}';
             methodField.innerHTML = '';
-            // Reset form
-            form.reset();
+            ['phnom_penh', 'province'].forEach(function (z) {
+                const cb = form.querySelector(`input[name="zone_${z}_enabled"]`);
+                if (cb) toggleZone(cb, z);
+            });
+            const logoInput = form.querySelector('input[name="logo_url"]');
+            if (logoInput) previewLogoUrl(logoInput);
         }
         modal.classList.add('active');
     }

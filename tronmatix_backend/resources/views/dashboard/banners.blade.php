@@ -88,18 +88,19 @@ function banner_img_url(?string $path): string {
             @endif
 
             {{-- Text overlay --}}
-            <div style="position:relative; z-index:2; text-align:center; padding:12px;">
+            <div style="position:relative; z-index:2; text-align:center; padding:12px; max-width:100%; box-sizing:border-box;">
                 @if($b->badge)
-                    <div style="display:inline-block; background:#F97316; color:#fff; font-size: var(--title-size); font-weight:700;
-                                letter-spacing:1px; border-radius:20px; padding:2px 10px; margin-bottom:6px;">
+                    <div style="display:inline-block; max-width:100%; box-sizing:border-box; background:#F97316; color:#fff; font-size: var(--title-size); font-weight:700;
+                                letter-spacing:1px; border-radius:20px; padding:2px 10px; margin-bottom:6px;
+                                overflow-wrap:break-word; word-break:break-word;">
                         {{ $b->badge }}
                     </div>
                 @endif
-                <div style="font-size: var(--title-size); font-weight:900; color:{{ $b->text_color ?? '#fff' }}; line-height:1.2;">
+                <div style="font-size: var(--title-size); font-weight:900; color:{{ $b->text_color ?? '#fff' }}; line-height:1.2; overflow-wrap:break-word; word-break:break-word;">
                     {{ $b->title }}
                 </div>
                 @if($b->subtitle)
-                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.7); margin-top:3px;">{{ $b->subtitle }}</div>
+                    <div style="font-size: var(--title-size); color:rgba(255,255,255,0.7); margin-top:3px; overflow-wrap:break-word; word-break:break-word; white-space:pre-wrap;">{{ $b->subtitle }}</div>
                 @endif
             </div>
 
@@ -233,10 +234,13 @@ function banner_img_url(?string $path): string {
                     <input type="text" name="title" id="fTitle" class="form-control" required placeholder="e.g. Tronmatix Build PC">
                 </div>
 
-                {{-- Subtitle --}}
+                {{-- Subtitle (textarea: auto-grows with content, supports Khmer line-breaking) --}}
                 <div style="grid-column:1/-1;">
                     <label class="form-label">{{ __('dashboard.banners.subtitle') }}</label>
-                    <input type="text" name="subtitle" id="fSubtitle" class="form-control" placeholder="e.g. RTX 5090 NEW Stock">
+                    <textarea name="subtitle" id="fSubtitle" class="form-control" rows="2"
+                              placeholder="e.g. RTX 5090 NEW Stock"
+                              style="resize:vertical; min-height:56px; overflow-wrap:break-word; word-break:break-word; line-height:1.5;"
+                              oninput="autoGrowSubtitle(this)"></textarea>
                 </div>
 
                 {{-- Badge + Order --}}
@@ -450,6 +454,18 @@ document.getElementById('fTextColor')?.addEventListener('input', function() {
     document.getElementById('fTextColorText').value = this.value
 })
 
+// ── Auto-grow subtitle textarea with its content ─────────────────────────
+function autoGrowSubtitle(el) {
+    if (!el) return
+    el.style.height = 'auto'                     // reset so we can measure
+    el.style.height = Math.max(56, el.scrollHeight) + 'px'  // grow to content, min 56px
+}
+// Grow once the modal fills the subtitle (edit mode) so Khmer text fits from the start
+document.addEventListener('DOMContentLoaded', function () {
+    const sb = document.getElementById('fSubtitle')
+    if (sb) autoGrowSubtitle(sb)
+})
+
 // ── Product map (id → name) ───────────────────────────────────────────────────
 const _allProducts = [{
         id: '',
@@ -517,6 +533,7 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('formMethod').value        = 'PUT'
         document.getElementById('fTitle').value            = title    || ''
         document.getElementById('fSubtitle').value         = subtitle || ''
+        autoGrowSubtitle(document.getElementById('fSubtitle'))
         document.getElementById('fBadge').value            = badge    || ''
         document.getElementById('fProductId').value        = productId || ''
         document.getElementById('productSearch').value      = productName || ''
