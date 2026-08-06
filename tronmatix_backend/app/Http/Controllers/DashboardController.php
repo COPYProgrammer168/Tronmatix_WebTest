@@ -517,13 +517,56 @@ class DashboardController extends Controller
     {
         $order = Order::where('order_id', $order_id)->firstOrFail();
         $request->validate([
-            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
+            'status'               => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
+            'delivery_provider_id' => 'nullable|integer|exists:delivery_providers,id',
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
-        $order->update(['status' => $newStatus]);
+        // Assign a delivery provider when shipping a DELIVERY order (admin picker).
+        if ($newStatus === 'shipped' && $request->filled('delivery_provider_id')) {
+            $order->update(['delivery_provider_id' => (int) $request->input('delivery_provider_id')]);
+        }
+
+        // ── Delivery confirmation flow ────────────────────────────────────────
+        // When staff/courier marks the DELIVERY RUN complete (shipped → delivered)
+        // on a DELIVERY order, we do NOT flip straight to 'delivered'. Instead we
+        // request the customer's confirmation in Telegram ("Confirm Received"),
+        // keep the order at 'shipped', and only set 'delivered' once the customer
+        // taps (confirmDeliveryFromTelegram). Fallback: if the customer has no
+        // Telegram linked (or this is a pickup), proceed straight to delivered.
+        $forceDeliver = (bool) $request->input('force_deliver');
+
+        if (
+            ! $forceDeliver
+            && $oldStatus === 'shipped'
+            && $newStatus === 'delivered'
+            && ! $order->isPickup()
+            && $order->user?->telegram_chat_id
+            && ! $order->delivery_confirmed_at
+        ) {
+            try {
+                app(TelegramBotService::class)->sendDeliveryConfirmationPrompt($order);
+            } catch (\Throwable $e) {
+                Log::warning('[Bot2] Delivery confirmation prompt failed, falling back to delivered: ' . $e->getMessage());
+            }
+
+            // If the prompt was sent, await the customer confirmation.
+            if ($order->fresh()->delivery_confirm_requested_at) {
+                return redirect()
+                    ->route('dashboard.orders.show', $order->order_id)
+                    ->with('success', 'Delivery marked complete — awaiting customer confirmation in Telegram.');
+            }
+            // Else (no chat delivered the prompt) fall through to normal delivered.
+        }
+
+        $updateData = ['status' => $newStatus];
+        if ($newStatus === 'delivered' && !$order->delivery_confirmed_at) {
+            $updateData['delivery_confirmed_at'] = now();
+            $updateData['delivery_confirmed_by'] = 'staff';
+        }
+        $order->update($updateData);
 
         // ── Stock management: cancelling an order puts its stock back via the
         //    ledger. Reverses each not-yet-reversed movement referencing the order.
@@ -546,14 +589,21 @@ class DashboardController extends Controller
         $order->load(['items', 'user']);
 
         // ── Bot 1 — notify admin channel ──────────────────────────────────────
+        $adminAlert = "📋 *Order Status Updated*\n\n" .
+            "📦 Order: `#{$order->order_id}`\n" .
+            "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+            "🔄 {$oldStatus} → *{$newStatus}*\n";
+        if ($newProvider = $order->getDeliveryProviderDetailsAttribute()) {
+            $adminAlert .= "🚚 Provider: {$newProvider['name']}";
+            if (! empty($newProvider['estimated_time'])) {
+                $adminAlert .= " (ETA: {$newProvider['estimated_time']})";
+            }
+            $adminAlert .= "\n";
+        }
+        $adminAlert .= "🕐 " . now()->format('d M Y, H:i');
+
         try {
-            app(TelegramService::class)->sendAlert(
-                "📋 *Order Status Updated*\n\n" .
-                "📦 Order: `#{$order->order_id}`\n" .
-                "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
-                "🔄 {$oldStatus} → *{$newStatus}*\n" .
-                "🕐 " . now()->format('d M Y, H:i')
-            );
+            app(TelegramService::class)->sendAlert($adminAlert);
         } catch (\Throwable $e) {
             Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
         }

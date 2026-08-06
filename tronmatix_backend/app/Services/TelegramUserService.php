@@ -168,6 +168,9 @@ class TelegramUserService
             $slot    = $order->delivery_time_slot ? ' | '.$this->e($order->delivery_time_slot) : '';
             $lines[] = '🗓 Expected delivery: '.$this->e($order->delivery_date).$slot;
         }
+        if ($providerLine = $this->providerLine($order)) {
+            $lines[] = $providerLine;
+        }
         $lines[] = '';
         $lines[] = '📍 Please be ready to receive your order!';
         $lines[] = '🕐 '.$this->ts();
@@ -323,6 +326,25 @@ class TelegramUserService
     // =========================================================================
     //  PRIVATE HELPERS
     // =========================================================================
+
+    /**
+     * One-line delivery provider summary for customer messages:
+     *   🚚 Provider · ETA: 20-40 min   (or "· ETA: will contact" when negotiable)
+     */
+    private function providerLine(Order $order): string
+    {
+        $details = $order->delivery_provider_details;
+        if (! $details || empty($details['name'])) {
+            return '';
+        }
+
+        $line = '🚚 '.$this->e($details['name']);
+        $line .= empty($details['estimated_time'])
+            ? ' · ETA: will contact to schedule'
+            : ' · ETA: '.$this->e($details['estimated_time']);
+
+        return $line;
+    }
 
     private function sendToUser(string $chatId, string $text): bool
     {

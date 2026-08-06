@@ -83,6 +83,7 @@ class TelegramService
                 : null,
             '[🔗 View Order in Dashboard](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
             $scheduleLine,
+            $this->providerLine($order),
             '💳 Payment: ' . ($isPickup && $order->payment_method === 'cash'
                 ? 'CASH AT STORE'
                 : strtoupper($order->payment_method)),
@@ -138,6 +139,39 @@ class TelegramService
         if ($order->user?->telegram_chat_id) {
             $this->send($message, $order->user->telegram_chat_id);
         }
+    }
+
+    /**
+     * Alert the admin/owner that the CUSTOMER confirmed delivery from the
+     * Telegram bot. Distinct from sendDeliveryConfirmed() (admin/staff marking
+     * it delivered) so staff know the customer verified receipt themselves.
+     */
+    public function sendCustomerConfirmDeliveryAlert(Order $order): void
+    {
+        if (!$this->token)
+            return;
+
+        $shipping = $order->shipping;
+        if (is_string($shipping)) {
+            $shipping = json_decode($shipping, true) ?? [];
+        }
+
+        $customerName = $order->user?->username ?? ($shipping['name'] ?? 'Guest');
+        $phone = $shipping['phone'] ?? $order->user?->phone ?? '—';
+
+        $message = implode("\n", [
+            '✅ *Customer Confirmed Delivery*',
+            '',
+            "📦 Order: `#{$order->order_id}`",
+            '👤 Customer: ' . $customerName,
+            '📞 Phone: ' . $phone,
+            '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
+            '',
+            'The customer confirmed receipt directly in Telegram.',
+            '[🔗 View Order](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
+        ]);
+
+        $this->send($message);
     }
 
     /**
@@ -257,6 +291,25 @@ class TelegramService
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * One-line delivery provider summary for ADMIN messages (Bot 1, Markdown).
+     * Returns '' when no provider is assigned.
+     */
+    private function providerLine(Order $order): string
+    {
+        $details = $order->getDeliveryProviderDetailsAttribute();
+        if (! $details || empty($details['name'])) {
+            return '';
+        }
+
+        $line = '🚚 *' . $details['name'] . '*';
+        $line .= empty($details['estimated_time'])
+            ? ' — ETA: will contact to schedule'
+            : ' — ETA: ' . $details['estimated_time'];
+
+        return $line;
+    }
 
     private function send(string $text, ?string $chatId = null): void
     {

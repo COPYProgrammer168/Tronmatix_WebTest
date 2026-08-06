@@ -51,6 +51,8 @@ Route::get('/videos', [VideoController::class, 'index']);
 Route::get('/marquees', [MarqueeController::class, 'index']);
 Route::get('/provinces', [DeliveryController::class, 'provinces']);
 Route::get('/delivery-providers', [DeliveryController::class, 'deliveryProviders']);
+Route::post('/delivery/calculate-fee', [DeliveryController::class, 'calculateFee'])
+    ->middleware('throttle:20,1'); // called as the pin moves on checkout
 
 // Staff product management — gated by staff role middleware inside the protected block later
 

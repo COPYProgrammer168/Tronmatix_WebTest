@@ -14,15 +14,13 @@ class DeliveryProviderController extends Controller
 
     public function index()
     {
-        $providers = DeliveryProvider::with('deliveryZone')->orderBy('sort_order')->get();
-        $zones = DeliveryZone::all();
-        return view('dashboard.delivery-providers.index', compact('providers', 'zones'));
+        $providers = DeliveryProvider::with(['deliveryZone', 'zones'])->orderBy('sort_order')->get();
+        return view('dashboard.delivery-providers.index', compact('providers'));
     }
 
     public function create()
     {
-        $zones = DeliveryZone::all();
-        return view('dashboard.delivery-providers.create', compact('zones'));
+        return view('dashboard.delivery-providers.create');
     }
 
     public function store(Request $request)
@@ -35,15 +33,21 @@ class DeliveryProviderController extends Controller
         $validated['logo']      = $this->resolveLogo($request, null);
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['sort_order']= (int) $request->input('sort_order', 0);
-        DeliveryProvider::create($validated);
+        // Legacy flat fields — left null; per-zone fees live in delivery_provider_zones.
+        $validated['delivery_zone_id'] = null;
+        $validated['fee']              = null;
+        $validated['estimated_time']   = null;
+
+        $provider = DeliveryProvider::create($validated);
+        $this->syncZoneRows($provider, $request);
+
         return redirect()->route('dashboard.delivery-providers.index')->with('success', 'Delivery provider created.');
     }
 
     public function edit(DeliveryProvider $deliveryProvider)
     {
-        $zones = DeliveryZone::all();
-        $deliveryProvider->load('deliveryZone');
-        return view('dashboard.delivery-providers.edit', compact('deliveryProvider', 'zones'));
+        $deliveryProvider->load(['deliveryZone', 'zones']);
+        return view('dashboard.delivery-providers.edit', compact('deliveryProvider'));
     }
 
     public function update(Request $request, DeliveryProvider $deliveryProvider)
@@ -67,8 +71,34 @@ class DeliveryProviderController extends Controller
         }
         $validated['is_active'] = $request->boolean('is_active', $deliveryProvider->is_active);
         $validated['sort_order']= (int) $request->input('sort_order', $deliveryProvider->sort_order);
+        // Leave flat fee/estimated_time untouched (legacy).
+        unset($validated['delivery_zone_id'], $validated['fee'], $validated['estimated_time']);
         $deliveryProvider->update($validated);
+
+        $this->syncZoneRows($deliveryProvider, $request);
+
         return redirect()->route('dashboard.delivery-providers.index')->with('success', 'Delivery provider updated.');
+    }
+
+    // ── Helper: sync per-zone fee/time rows from the form ───────────────────
+    private function syncZoneRows(DeliveryProvider $provider, Request $request): void
+    {
+        foreach (['phnom_penh', 'province'] as $zone) {
+            $enabled = $request->boolean("zone_{$zone}_enabled");
+            $provider->zones()->where('zone', $zone)->delete();
+
+            if ($enabled) {
+                $provider->zones()->create([
+                    'zone'           => $zone,
+                    'fee'            => $request->filled("zone_{$zone}_fee")
+                        ? (float) $request->input("zone_{$zone}_fee")
+                        : null,
+                    'estimated_time' => $request->filled("zone_{$zone}_time")
+                        ? $request->input("zone_{$zone}_time")
+                        : null,
+                ]);
+            }
+        }
     }
 
     public function toggleStatus(DeliveryProvider $deliveryProvider)
@@ -98,15 +128,19 @@ class DeliveryProviderController extends Controller
     private function validateProvider(Request $request, ?DeliveryProvider $provider = null): array
     {
         $validated = $request->validate([
-            'delivery_zone_id' => 'required|exists:delivery_zones,id',
-            'name'             => 'required|string|max:255',
-            'fee'              => 'nullable|numeric|min:0|max:99999999.99',
-            'estimated_time'   => 'nullable|string|max:100',
-            'sort_order'       => 'nullable|integer|min:0',
-            'is_active'        => 'nullable',
-            'logo_file'        => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
-            'logo_url'         => 'nullable|string|max:500',
-            'remove_logo'      => 'nullable|boolean',
+            'name'                    => 'required|string|max:255',
+            'sort_order'              => 'nullable|integer|min:0',
+            'is_active'               => 'nullable',
+            'logo_file'               => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
+            'logo_url'                => 'nullable|string|max:500',
+            'remove_logo'             => 'nullable|boolean',
+            // Per-zone fields
+            'zone_phnom_penh_enabled' => 'nullable|boolean',
+            'zone_phnom_penh_fee'     => 'nullable|numeric|min:0|max:99999999.99',
+            'zone_phnom_penh_time'    => 'nullable|string|max:100',
+            'zone_province_enabled'   => 'nullable|boolean',
+            'zone_province_fee'       => 'nullable|numeric|min:0|max:99999999.99',
+            'zone_province_time'      => 'nullable|string|max:100',
         ]);
         unset($validated['logo_file'], $validated['remove_logo'], $validated['logo_url']);
         return $validated;

@@ -147,7 +147,9 @@
     "items": "ទំនិញ",
     "deliveryLocation": "ទីតាំងរបស់អ្នក",
     "keepIt": "រក្សាទុក",
-    "warrantyLabel": "មានការធានារយះពេល"
+    "warrantyLabel": "មានការធានារយះពេល",
+    "etaEstimate": "ប៉ាន់ស្មាន {time}",
+    "etaFallback": "នឹងទាក់ទងសម្រាប់កំណត់ពេល"
   },
   "profile": {
     "myProfile": "👤 ប្រវត្តិរូបខ្ញុំ",

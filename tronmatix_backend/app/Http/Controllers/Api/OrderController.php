@@ -33,7 +33,7 @@ class OrderController extends Controller
         $user = $request->user();
         $isStaff = $this->isStaff($user);
 
-        $orders = Order::with(['items', 'user', 'location']);
+        $orders = Order::with(['items', 'user', 'location', 'deliveryProvider.zones']);
 
         if (! $isStaff) {
             $orders->where('user_id', $user->id);
@@ -42,9 +42,11 @@ class OrderController extends Controller
         $perPage = min((int) $request->input('per_page', 20), 200);
         $orders = $orders->latest()->paginate($perPage);
 
+        $data = collect($orders->items())->map(fn ($o) => $this->serializeOrder($o));
+
         return response()->json([
             'success' => true,
-            'data' => $orders->items(),
+            'data' => $data,
             'meta' => [
                 'total' => $orders->total(),
                 'current_page' => $orders->currentPage(),
@@ -63,10 +65,24 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
         }
 
+        $order->load(['items', 'user', 'location', 'payments', 'deliveryProvider.zones']);
+
         return response()->json([
             'success' => true,
-            'data' => $order->load(['items', 'user', 'location', 'payments']),
+            'data' => $this->serializeOrder($order),
         ]);
+    }
+
+    /**
+     * Standardize the order shape sent to the frontend, including the
+     * zone-aware delivery provider details (resolved server-side).
+     */
+    private function serializeOrder(Order $order)
+    {
+        $data                             = $order->toArray();
+        $data['delivery_zone']            = $order->delivery_zone;
+        $data['delivery_provider_details']= $order->delivery_provider_details;
+        return $data;
     }
 
     // ── Create order ──────────────────────────────────────────────────────────
@@ -243,6 +259,26 @@ class OrderController extends Controller
 
                 $shippingSnapshot['delivery_phone_verified'] = $validated['delivery_phone_verified'] ?? false;
 
+                // ── Persist the delivery zone (phnom_penh | province) ────────────────
+                // Computed at checkout by the distance-based DeliveryFeeCalculator so the
+                // order stores the zone for zone-aware provider fee/time resolution later.
+                $deliveryZone = null;
+                if (! $isPickup) {
+                    $cLat = $shippingSnapshot['lat'] ?? $validated['delivery_lat'] ?? null;
+                    $cLng = $shippingSnapshot['lng'] ?? $validated['delivery_lng'] ?? null;
+                    if ($cLat !== null && $cLng !== null) {
+                        try {
+                            $feeResult = app(\App\Services\DeliveryFeeCalculator::class)
+                                ->calculate((float) $cLat, (float) $cLng);
+                            $deliveryZone = str_contains(strtolower($feeResult['zone_name'] ?? ''), 'phnom penh')
+                                ? 'phnom_penh'
+                                : 'province';
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::warning('[Order] Delivery zone resolution failed: ' . $e->getMessage());
+                        }
+                    }
+                }
+
                 $order = Order::create([
                     'user_id'            => $user->id,
                     'payment_method'     => $validated['payment_method'],
@@ -256,6 +292,7 @@ class OrderController extends Controller
                     'location_id'        => $resolvedLocationId, // ✅ verified FK
                     'province_id'        => $validated['province_id'] ?? null,
                     'delivery_provider_id' => $validated['delivery_provider_id'] ?? null,
+                    'delivery_zone'      => $deliveryZone, // ✅ persisted zone for zone-aware ETA/fee
                     'shipping'           => $shippingSnapshot,   // ✅ snapshot includes lat/lng
                     // Bakong/KHQR orders start as pending — promoted to confirmed
                     // when payment is verified (CheckPaymentController or webhook).

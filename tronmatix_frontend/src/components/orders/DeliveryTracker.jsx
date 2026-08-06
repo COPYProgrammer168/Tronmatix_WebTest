@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { useLang } from "../../context/LanguageContext";
 // ✅ Fix 1: import the new helpers instead of deleted STATUS_STEPS
-import { getStatusSteps, getStatusLabel } from "./OrderBadges";
+import { getStatusSteps, getStatusLabel, getStatusStepIndex } from "./OrderBadges";
 
 function useNow() {
   const [now, setNow] = useState(() => new Date());
@@ -22,7 +22,8 @@ export default function DeliveryTracker({ status, order, fulfillmentType }) {
   // ✅ Fix 2: pick the correct pipeline based on fulfillment type
   const isPickup    = (fulfillmentType ?? order?.fulfillment_type ?? "delivery") === "pickup";
   const STATUS_STEPS = getStatusSteps(isPickup ? "pickup" : "delivery");
-  const current      = STATUS_STEPS.indexOf(status);
+  // Map the backend status to the 4-step stepper index (spec mapping).
+  const current      = getStatusStepIndex(status, isPickup ? "pickup" : "delivery");
 
   // ✅ Fix 3: labels and icons match the correct pipeline length
   // Delivery: Confirmed / Processing / Shipped / Delivered
@@ -38,6 +39,15 @@ export default function DeliveryTracker({ status, order, fulfillmentType }) {
   const icons = isPickup
     ? ["✅", "📦", "🏪"]
     : ["✅", "⚙️", "🚚", "📦"];
+
+  // ✅ Fix 5: zone-aware delivery provider + ETA shown under the "delivering"
+  // step (delivery only). Resolved server-side into delivery_provider_details.
+  const providerName  = order?.delivery_provider_details?.name || order?.deliveryProvider?.name || null;
+  const estimatedTime = order?.delivery_provider_details?.estimated_time
+    ?? order?.delivery_provider_details?.estimatedTime
+    ?? null;
+  // delivering step index = 2 (delivery pipeline), only meaningful when status is shipped
+  const showProvider = !isPickup && status === "shipped";
 
   // ✅ Fix 4: delivery date note uses pickup-aware labels
   let deliveryNote = null;
@@ -120,6 +130,15 @@ export default function DeliveryTracker({ status, order, fulfillmentType }) {
                 }}
               >
                 {labels[i]}
+                {i === 2 && showProvider && (
+                  <div className="leading-tight mt-0.5" style={{ fontSize: 10, fontWeight: 600, color: dark ? "#9ca3af" : "#6b7280" }}>
+                    {providerName}
+                    <br />
+                    {estimatedTime
+                      ? t("orders.etaEstimate", { time: estimatedTime })
+                      : t("orders.etaFallback")}
+                  </div>
+                )}
               </div>
             </div>
             {i < STATUS_STEPS.length - 1 && (

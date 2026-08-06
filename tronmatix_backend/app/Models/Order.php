@@ -42,10 +42,14 @@ class Order extends Model
         'location_id',
         'province_id',
         'delivery_provider_id',
+        'delivery_zone',         // 'phnom_penh' | 'province' — persisted at checkout
         'shipping',              // JSON snapshot {name, phone, address, city, country, note}
         'delivery_date',
         'delivery_time_slot',
         'delivery_confirmed_at',
+        'delivery_confirm_requested_at',
+        'customer_delivery_note',
+        'delivery_confirmed_by',
         'delivery_lat',
         'delivery_lng',
         'delivery_map_address',
@@ -61,6 +65,7 @@ class Order extends Model
         'total'                => 'float',
         'delivery_date'        => 'date',
         'delivery_confirmed_at'=> 'datetime',
+        'delivery_confirm_requested_at' => 'datetime',
         'delivery_lat'         => 'float',
         'delivery_lng'         => 'float',
     ];
@@ -100,6 +105,38 @@ class Order extends Model
     public function deliveryProvider(): BelongsTo
     {
         return $this->belongsTo(DeliveryProvider::class);
+    }
+
+    /**
+     * The provider's zone-specific fee/time row matching this order's delivery_zone.
+     * Null when no provider, no zone, or the provider has no row for that zone.
+     */
+    public function deliveryProviderZone()
+    {
+        return $this->hasOne(\App\Models\DeliveryProviderZone::class, 'delivery_provider_id', 'delivery_provider_id')
+            ->where('zone', $this->delivery_zone);
+    }
+
+    /**
+     * Zone-specific delivery details for the API: provider name/logo plus the
+     * resolved fee + ETA for this order's delivery_zone.
+     */
+    public function getDeliveryProviderDetailsAttribute(): ?array
+    {
+        $provider = $this->deliveryProvider;
+        if (! $provider) return null;
+
+        $zone = $this->delivery_zone ?? 'phnom_penh';
+        $zd = $provider->zones->firstWhere('zone', $zone);
+
+        return [
+            'id'             => $provider->id,
+            'name'           => $provider->name,
+            'logo_url'       => $provider->logo,
+            'zone'           => $zone,
+            'estimated_time' => $zd?->estimated_time,
+            'fee'            => $zd?->fee,
+        ];
     }
 
     public function activePayment(): HasOne

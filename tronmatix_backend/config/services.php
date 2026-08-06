@@ -93,6 +93,14 @@ return [
         'maps_key' => env('GOOGLE_MAPS_KEY'),
     ],
 
+    // ── Shop origin (used by distance-based delivery fee calculation) ─────────
+    // Near Sovannphumi School, Stop Tep Phan, 14 St 160, Phnom Penh, Cambodia.
+    'shop' => [
+        'origin_lat' => env('SHOP_ORIGIN_LAT', 11.56298),
+        'origin_lng' => env('SHOP_ORIGIN_LNG', 104.899518),
+        'address'    => env('SHOP_ADDRESS', '14 St 160, Phnom Penh, Cambodia (Near Sovannphumi School)'),
+    ],
+
     // ── SMS (phone-OTP password reset) ─────────────────────────────────────────
     // driver: 'twilio' (real SMS) or 'log' (write to security log for dev/testing)
     'sms' => [

@@ -133,7 +133,9 @@
     "items": "ITEMS",
     "deliveryLocation": "DELIVERY LOCATION",
     "keepIt": "Keep it",
-    "warrantyLabel": "WARRANTY"
+    "warrantyLabel": "WARRANTY",
+    "etaEstimate": "≈ {time}",
+    "etaFallback": "Will contact for scheduling"
   },
   "profile": {
     "myProfile": "👤 Profile",

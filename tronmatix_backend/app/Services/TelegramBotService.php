@@ -453,6 +453,30 @@ class TelegramBotService
             return;
         }
 
+        // ── Customer confirms delivery ────────────────────────────────────────
+        // data format: confirm_delivery:{orderId}
+        if (str_starts_with($data, 'confirm_delivery:')) {
+            $orderId = (int) substr($data, strlen('confirm_delivery:'));
+            $result  = $this->confirmDeliveryFromTelegram($chatId, $orderId);
+
+            // Replace the tapped shipped message + confirm button with the
+            // outcome, so the button disappears and can't be tapped twice.
+            if (isset($callback['message']['message_id'])) {
+                $order  = $result['ok'] ? Order::find($orderId) : null;
+                $text   = $result['ok']
+                    ? $this->buildDeliveredConfirmation($order)
+                    : "⚠️ " . htmlspecialchars($result['message'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $this->editMessage($chatId, (int) $callback['message']['message_id'], $text);
+            }
+
+            Log::info('[UserBot] customer confirmed delivery', [
+                'chat_id'  => $chatId,
+                'order_id' => $orderId,
+                'ok'       => $result['ok'],
+            ]);
+            return;
+        }
+
         // ── Regular nav buttons ───────────────────────────────────────────────
         match ($data) {
             'orders' => $this->cmdOrders($chatId),
@@ -549,11 +573,60 @@ class TelegramBotService
             $slot = $order->delivery_time_slot ? ' | ' . $this->e($order->delivery_time_slot) : '';
             $lines[] = '🗓 Expected: ' . $this->e($order->delivery_date) . $slot;
         }
+        if ($providerLine = $this->providerLine($order)) {
+            $lines[] = $providerLine;
+        }
         $lines[] = '';
         $lines[] = '📍 Please be ready to receive your order!';
         $lines[] = '🕐 ' . $this->ts();
 
         $this->send($chatId, implode("\n", $lines), $this->mainKeyboard());
+    }
+
+    /**
+     * Sends the "✅ Confirm Received" button to the customer. This is called when
+     * staff/courier marks the DELIVERY RUN complete (shipped → delivered in the
+     * dashboard) — i.e. the items are physically being delivered NOW, NOT when
+     * the order merely changes to "shipped".
+     *
+     * The order is NOT yet marked delivered: the customer's tap does that via
+     * confirmDeliveryFromTelegram().
+     */
+    public function sendDeliveryConfirmationPrompt(Order $order): void
+    {
+        if (!$chatId = $order->user?->telegram_chat_id)
+            return;
+
+        // Mark that we asked for confirmation (idempotent for re-sends).
+        if (!$order->delivery_confirm_requested_at) {
+            $order->update(['delivery_confirm_requested_at' => now()]);
+        }
+
+        $id = $this->e($order->order_id ?? (string) $order->id);
+        $total = $this->e((string) $order->total);
+
+        $lines = [
+            '🚚 <b>Your delivery is arriving!</b>',
+            '',
+            "📦 Order: <code>#{$id}</code>",
+            "💰 Total: \${$total}",
+            '',
+            '📍 Our driver is delivering your items now.',
+        ];
+
+        if ($providerLine = $this->providerLine($order)) {
+            $lines[] = $providerLine;
+        }
+
+        $lines[] = '';
+        $lines[] = '✅ When you <b>receive your items</b>, tap below to confirm delivery:';
+        $lines[] = '🕐 ' . $this->ts();
+
+        $this->send(
+            $chatId,
+            implode("\n", $lines),
+            $this->deliveryConfirmKeyboard($order)
+        );
     }
 
     public function onOrderDelivered(Order $order): void
@@ -738,6 +811,114 @@ class TelegramBotService
         }
 
         return $kb;
+    }
+
+    /**
+     * One-line "delivery provider" summary for customer-facing messages:
+     *   🚚 Provider · ETA: 20-40 min   (or "· ETA: will contact" when negotiable)
+     * Empty string when no provider is assigned yet.
+     */
+    private function providerLine(Order $order): string
+    {
+        $details = $order->delivery_provider_details;
+        if (! $details || empty($details['name'])) {
+            return '';
+        }
+
+        $line = '🚚 ' . $this->e($details['name']);
+        if (! empty($details['estimated_time'])) {
+            $line .= ' · ETA: ' . $this->e($details['estimated_time']);
+        } else {
+            $line .= ' · ETA: will contact to schedule';
+        }
+
+        return $line;
+    }
+
+    /**
+     * Keyboard shown on the "delivery is arriving" message — lets the customer
+     * confirm receipt in one tap. The button carries the order id so the callback
+     * is specific to that order.
+     */
+    private function deliveryConfirmKeyboard(Order $order): array
+    {
+        return [
+            'inline_keyboard' => [
+                [
+                    ['text' => '✅ Confirm Received', 'callback_data' => 'confirm_delivery:' . $order->id],
+                ],
+            ],
+        ];
+    }
+
+    // =========================================================================
+    //  CUSTOMER CONFIRMS DELIVERY (from the Telegram bot)
+    // =========================================================================
+
+    /**
+     * Handle a customer tapping "Confirm Received" in Telegram.
+     * Marks the order delivered and alerts the admin. The caller is responsible
+     * for replying to the customer (editing the tapped message).
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public function confirmDeliveryFromTelegram(string $chatId, int $orderId): array
+    {
+        $order = Order::with(['user'])->find($orderId);
+
+        if (!$order) {
+            return ['ok' => false, 'message' => 'Order not found.'];
+        }
+
+        // Security: only the owner of the order can confirm it.
+        if ((string) $order->user?->telegram_chat_id !== $chatId) {
+            return ['ok' => false, 'message' => 'This order doesn\'t belong to your account.'];
+        }
+
+        // Idempotent — don't double-confirm, don't un-confirm.
+        if ($order->delivery_confirmed_at) {
+            return ['ok' => false, 'message' => 'Delivery was already confirmed for this order.'];
+        }
+
+        $order->update([
+            'status'                => Order::STATUS_DELIVERED,
+            'delivery_confirmed_at' => now(),
+            'delivery_confirmed_by' => 'customer',
+        ]);
+        $order->load(['items']);
+
+        // Alert the admin/owner channel (Bot 1).
+        try {
+            app(TelegramService::class)->sendCustomerConfirmDeliveryAlert($order);
+        } catch (\Throwable $e) {
+            Log::warning('[Bot1] Customer delivery confirm admin alert failed: ' . $e->getMessage());
+        }
+
+        return ['ok' => true, 'message' => 'delivered'];
+    }
+
+    /**
+     * Friendly confirmation message shown to the customer after (re)tapping confirm.
+     */
+    private function buildDeliveredConfirmation(Order $order, ?string $note = null, bool $already = false): string
+    {
+        $id = $this->e($order->order_id ?? (string) $order->id);
+        $head = $already ? '✅ <b>Already confirmed!</b>' : '🎉 <b>Delivery Confirmed — Thank you!</b>';
+        $lines = [
+            $head,
+            '',
+            "📦 Order <code>#{$id}</code> has been marked as delivered.",
+            '',
+            '💙 We\'re glad your items arrived safely.',
+            '🕐 ' . $this->ts(),
+        ];
+
+        if ($note) {
+            $lines[] = '';
+            $lines[] = '📝 Your note: "' . $this->e($note) . '"';
+        }
+
+        return implode("\n", $lines);
     }
 
     /**

@@ -11,15 +11,43 @@ export const STATUS_COLORS = {
   pending:    { bg: "bg-gray-50",   text: "text-gray-600",   border: "border-gray-200",   dot: "bg-gray-400" },
 };
 
-// Delivery pipeline: confirmed → processing → shipped → delivered
+// Delivery pipeline:  confirmed → processing → shipped → delivered
 export const STATUS_STEPS_DELIVERY = ["confirmed", "processing", "shipped", "delivered"];
 
 // Pickup pipeline: confirmed → processing (ready) → delivered (picked up) — no shipped
 export const STATUS_STEPS_PICKUP = ["confirmed", "processing", "delivered"];
 
+// ── OrderStatusStepper: status → step-index mapping ──────────────────────────
+// The stepper shows 4 named steps (received · preparing · delivering · delivered
+// for delivery; received · preparing · ready_for_pickup · picked_up for pickup).
+// This maps each BACKEND order status to the matching step index. `null` = status
+// hasn't reached the leading step (not shown in the stepper).
+export const STATUS_STEP_MAP = {
+  // delivery: [received, preparing, delivering, delivered]
+  delivery: {
+    confirmed: 0,   // RECEIVED
+    processing: 1,  // PREPARING
+    shipped: 2,     // DELIVERING
+    delivered: 3,   // DELIVERED
+  },
+  // pickup: [received, preparing, ready_for_pickup, picked_up]
+  pickup: {
+    confirmed: 0,   // RECEIVED
+    processing: 1,  // PREPARING
+    delivered: 2,   // READY_FOR_PICKUP (staff marks ready = delivered status)
+    picked_up: 3,   // PICKED_UP (not a backend status; future)
+  },
+};
+
 // Returns the correct steps array based on fulfillment type
 export function getStatusSteps(fulfillmentType) {
   return fulfillmentType === "pickup" ? STATUS_STEPS_PICKUP : STATUS_STEPS_DELIVERY;
+}
+
+// Step-index of the current order status for the 4-step stepper.
+export function getStatusStepIndex(status, fulfillmentType) {
+  const map = fulfillmentType === "pickup" ? STATUS_STEP_MAP.pickup : STATUS_STEP_MAP.delivery;
+  return map[status] ?? 0;
 }
 
 // Human-readable label per status, varies for pickup vs delivery

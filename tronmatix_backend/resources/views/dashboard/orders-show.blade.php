@@ -611,7 +611,27 @@
             $nextAction = $nextActions[$order->status] ?? null;
         @endphp
 
-        @if($nextAction && !$order->delivery_confirmed_at)
+        @if($order->delivery_confirm_requested_at && !$order->delivery_confirmed_at)
+        {{-- Awaiting customer confirmation in Telegram — button is hidden until they confirm or staff forces it. --}}
+        <div class="card" style="border-color:rgba(167,139,250,0.3); background:rgba(167,139,250,0.04);">
+            <div class="card-body" style="text-align:center;">
+                <div style="font-size: var(--title-size); margin-bottom:8px;">⏳</div>
+                <div style="font-weight:700; color:#a78bfa; font-size: var(--title-size); margin-bottom:6px; letter-spacing:1px;">AWAITING CUSTOMER CONFIRMATION</div>
+                <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-bottom:14px;">
+                    Delivery run marked complete. The customer was asked to
+                    <strong style="color:#a78bfa;">Confirm Received</strong> in Telegram.
+                    The order becomes <strong style="color:#22c55e;">Delivered</strong> when they tap it.
+                </div>
+                {{-- Fallback: staff can still force-mark delivered without the customer's tap. --}}
+                <button onclick="openPopup('confirm-delivery-force')" style="
+                    background:#4b5563; color:#fff; font-weight:700;
+                    width:100%; border:none; padding:11px; border-radius:10px; font-size: var(--title-size);
+                    letter-spacing:1px; cursor:pointer; font-family:Rajdhani, var(--font-kh), sans-serif;
+                ">{{ $nextAction['icon'] ?? '📦' }} FORCE MARK DELIVERED</button>
+            </div>
+        </div>
+
+        @elseif($nextAction && !$order->delivery_confirmed_at)
         <div class="card" style="border-color:{{ $nextAction['border'] }}; background:{{ $nextAction['bg'] }};">
             <div class="card-body" style="text-align:center;">
                 <div style="font-size: var(--title-size); margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
@@ -918,6 +938,41 @@
 </div>
 @endif
 
+@if($order->delivery_confirm_requested_at && !$order->delivery_confirmed_at)
+{{-- Force Mark Delivered (fallback when customer hasn't confirmed in Telegram) --}}
+<div id="popup-confirm-delivery-force" class="popup-overlay" onclick="if(event.target===this) closePopup('confirm-delivery-force')">
+    <div class="popup-box" id="popup-confirm-delivery-force-box">
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="
+                width:80px; height:80px; border-radius:50%; margin:0 auto 12px;
+                background:linear-gradient(135deg,#ef4444,#b91c1c);
+                display:flex; align-items:center; justify-content:center;
+                font-size: var(--title-size); box-shadow:0 0 32px rgba(239,68,68,0.35);
+                animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
+            ">📦</div>
+            <div style="font-size: var(--title-size); font-weight:900; color:#ef4444; letter-spacing:2px; font-family:Rajdhani, var(--font-kh), sans-serif;">
+                FORCE MARK DELIVERED
+            </div>
+            <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-top:6px;">
+                Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong> will be set to
+                <strong style="color:#22c55e;">Delivered</strong> WITHOUT the customer confirming in Telegram.
+            </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="closePopup('confirm-delivery-force')" class="popup-btn-cancel">CANCEL</button>
+            <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
+                @csrf @method('PUT')
+                <input type="hidden" name="status" value="delivered">
+                <input type="hidden" name="force_deliver" value="1">
+                <button type="submit" class="popup-btn-confirm" style="background:linear-gradient(135deg,#ef4444,#b91c1c); width:100%;">
+                    📦 YES, MARK DELIVERED
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- Status Change Popups --}}
 @php
     $statusMeta2 = [
@@ -967,6 +1022,50 @@
         @if($key === 'cancelled')
         <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:11px 14px; margin-bottom:16px; font-size: var(--title-size); color:rgba(255,255,255,0.5); display:flex; gap:8px;">
             <span>⚠️</span> <span>Cancellation cannot be undone. Stock will be restored if applicable.</span>
+        </div>
+        @endif
+
+        {{-- Provider picker — only when shipping a DELIVERY order --}}
+        @if($key === 'shipped' && $order->isDelivery())
+        @php
+            $orderZone = $order->delivery_zone ?? 'phnom_penh';
+            $providers = \App\Models\DeliveryProvider::active()->get();
+            $orderProviderId = $order->delivery_provider_id;
+        @endphp
+        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+            <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
+                🚚 ASSIGN DELIVERY PROVIDER <span class="km-english">(Zone: {{ $orderZone }})</span>
+            </div>
+            <select name="delivery_provider_id" id="ship-provider-select" onchange="showShipProviderZone(this)"
+                style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
+                background:rgba(255,255,255,0.05); color:#fff; font-family:Rajdhani, var(--font-kh), sans-serif;
+                font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
+                <option value="">— No provider (assign later) —</option>
+                @foreach($providers as $provider)
+                <option value="{{ $provider->id }}" data-zone="{{ $orderZone }}"
+                    data-fee="{{ $provider->zoneDetails($orderZone)?->fee }}"
+                    data-time="{{ $provider->zoneDetails($orderZone)?->estimated_time }}"
+                    {{ $orderProviderId === $provider->id ? 'selected' : '' }}>
+                    {{ $provider->name }}
+                </option>
+                @endforeach
+            </select>
+            <div id="ship-provider-confirm" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
+                @if($orderProviderId)
+                    @php $p = \App\Models\DeliveryProvider::find($orderProviderId); @endphp
+                    @if($p)
+                        @php $dz = $p->zoneDetails($orderZone); @endphp
+                        <span class="km-english">Selected provider:</span>
+                        <strong style="color:#a78bfa;">{{ $p->name }}</strong>
+                        @if($dz)
+                            · Fee: <strong style="color:#a78bfa;">{{ $dz->fee !== null ? '$'.$dz->fee : 'varies' }}</strong>
+                            · ETA: <strong style="color:#a78bfa;">{{ $dz->estimated_time ?? '—' }}</strong>
+                        @endif
+                    @endif
+                @else
+                    <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
+                @endif
+            </div>
         </div>
         @endif
 
@@ -1267,6 +1366,26 @@ function closePopup(id) {
 
 function openStatusPopup(status)  { openPopup('status-'  + status); }
 function closeStatusPopup(status) { closePopup('status-' + status); }
+
+// Show read-only fee/ETA for the selected provider's zone on the shipped popup.
+function showShipProviderZone(select) {
+    const confirm = document.getElementById('ship-provider-confirm');
+    if (!confirm) return;
+    const opt = select.selectedOptions[0];
+    if (!opt || !opt.value) {
+        confirm.innerHTML = '<span style="color:rgba(255,255,255,0.3)">Select a provider to preview its fee & ETA for this zone.</span>';
+        return;
+    }
+    const zone = opt.dataset.zone || 'phnom_penh';
+    const fee  = opt.dataset.fee;
+    const time = opt.dataset.time;
+    confirm.innerHTML =
+        '<span>Zone: <strong style="color:#a78bfa">' + zone + '</strong></span>' +
+        (fee !== '' && fee !== undefined && fee !== 'null'
+            ? ' · Fee: <strong style="color:#a78bfa">$' + fee + '</strong>'
+            : ' · Fee: <strong style="color:#a78bfa">varies</strong>') +
+        ' · ETA: <strong style="color:#a78bfa">' + (time || '—') + '</strong>';
+}
 
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
