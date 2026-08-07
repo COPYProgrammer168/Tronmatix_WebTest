@@ -15,23 +15,27 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $userId = $request->input('user');
+        $fulfillmentType = $request->input('type'); // delivery | pickup
 
         $orders = Order::with(['user', 'items', 'location', 'discount'])
             ->when($userId, fn($q) => $q->where('user_id', $userId))
+            ->when($fulfillmentType, fn($q) => $q->where('fulfillment_type', $fulfillmentType))
             ->latest()
             ->paginate(20);
 
-        $statusCounts = Order::where(function ($q) use ($userId) {
-            if ($userId) $q->where('user_id', $userId);
-        })->selectRaw('status, COUNT(*) as count')
+        $statusCounts = Order::where(function ($q) use ($userId, $fulfillmentType) {
+                if ($userId) $q->where('user_id', $userId);
+                if ($fulfillmentType) $q->where('fulfillment_type', $fulfillmentType);
+            })->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
         $totalUsers = Order::when($userId, fn($q) => $q->where('user_id', $userId))
+            ->when($fulfillmentType, fn($q) => $q->where('fulfillment_type', $fulfillmentType))
             ->distinct()
             ->count('user_id');
 
-        return view('dashboard.orders', compact('orders', 'statusCounts', 'totalUsers', 'userId'));
+        return view('dashboard.orders', compact('orders', 'statusCounts', 'totalUsers', 'userId', 'fulfillmentType'));
     }
 
     public function show(Order $order)

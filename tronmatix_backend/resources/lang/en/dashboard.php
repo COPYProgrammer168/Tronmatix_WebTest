@@ -601,6 +601,15 @@ return [
         'viewAll' => 'View All',
     ],
 
+    'revenue' => [
+        'pageDesc'      => 'Revenue analytics with period comparison',
+        'range'         => 'Range',
+        'avgOrder'      => 'Avg Order',
+        'windowRevenue' => 'Revenue Trend',
+        'monthlyRevenue'=> 'Monthly Revenue',
+        'compare'       => 'Compare: Current vs Previous',
+    ],
+
     'productsPage' => [
         'title' => 'Products',
         'productsTotal' => 'products total',

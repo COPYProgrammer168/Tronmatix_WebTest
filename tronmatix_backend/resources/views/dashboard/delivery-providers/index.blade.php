@@ -231,14 +231,15 @@
                     </td>
                     <td style="padding:14px 16px; text-align:center;">
                         <div style="display:flex; gap:8px; justify-content:center;">
-                            <button type="button" onclick="openModal(@json($provider))" style="
+                            <button type="button" onclick="openModal({{ Illuminate\Support\Js::from($provider) }})" style="
                                 padding:8px 16px; border-radius:8px; cursor:pointer;
                                 font-size:var(--text-xs); font-weight:700;
                                 background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.2);
                                 transition:all .2s;
                             " onmouseover="this.style.background='rgba(59,130,246,0.18)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">@lang('dashboard.btn.edit')</button>
-                            <form method="POST" action="{{ route('dashboard.delivery-providers.destroy', $provider) }}" style="display:inline;" onsubmit="return confirm('Delete &quot;{{ $provider->name }}&quot;?')">
+                            <form method="POST" action="{{ route('dashboard.delivery-providers.destroy', $provider) }}" style="display:inline;" onsubmit="return confirmDelete(this)">
                                 @csrf @method('DELETE')
+                                <input type="hidden" name="delete_name" value="{{ $provider->name }}">
                                 <button type="submit" style="
                                     padding:8px 16px; border-radius:8px; border:none; cursor:pointer;
                                     font-size:var(--text-xs); font-weight:700;
@@ -321,6 +322,18 @@
             if (logoInput) previewLogoUrl(logoInput);
         }
         modal.classList.add('active');
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('providerModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    // Simple alert-based delete confirmation.
+    function confirmDelete(form) {
+        const input = form && form.querySelector('input[name="delete_name"]');
+        const name = (input && input.value) || 'this provider';
+        return confirm('Delete "' + name + '"?');
     }
 
     function toggleZone(cb, zone) {

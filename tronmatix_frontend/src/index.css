@@ -56,14 +56,26 @@ body.lang-km .font-body {
    CSS variables
 ───────────────────────────────────────────────────────────────────────── */
 :root {
-  --font-en-heading: 'HurstBagod', 'Rajdhani', sans-serif;
-  --font-en-body: 'Rajdhani', sans-serif;
+  --font-en-heading: 'HurstBagod', var(--font-kh-body), 'Rajdhani', sans-serif;
+  --font-en-body: 'Rajdhani', var(--font-kh-body), sans-serif;
   --font-kh-style: 'Kh_Jrung_Thom', 'Khmer OS', 'Khmer OS System', sans-serif;
   --font-kh-heading: 'KantumruyPro', 'Khmer OS', 'Khmer OS System', sans-serif;
   --font-kh-body: 'Kdam Thmor Pro', 'Khmer OS', 'Khmer OS System', sans-serif;
   --lh-kh-body: 1.5;
   --lh-kh-heading: 1.5;
   --lh-kh-btn: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   KHMER FALLBACK IN ENGLISH MODE — activated by body.lang-en
+   When the storefront is in English (body.lang-en), Khmer text anywhere
+   (banners, product names, category names, etc.) still renders in the
+   Khmer webfont instead of falling back to the OS default. Because
+   Kdam Thmor Pro only contains Khmer glyphs, Latin text is unaffected.
+   Monospace (SKUs, codes) and code/pre keep their intended font.
+───────────────────────────────────────────────────────────────────────── */
+body.lang-en *:not(code):not(pre):not([style*="monospace"]) {
+  font-family: 'Rajdhani', var(--font-kh-body), sans-serif !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -80,7 +92,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-en-body);
+  font-family: 'Rajdhani', var(--font-kh-body), sans-serif;
   background: #ffffff;
   color: #111;
   font-size: 18px;

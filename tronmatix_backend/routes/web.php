@@ -230,5 +230,6 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/feedback', [\App\Http\Controllers\Dashboard\FeedbackController::class, 'index'])->name('feedback');
 
         Route::get('/report', [DashboardController::class, 'report'])->name('report');
+        Route::get('/revenue', [DashboardController::class, 'revenue'])->name('revenue');
         Route::get('/stats', [DashboardController::class, 'stats'])->name('stats');
     });

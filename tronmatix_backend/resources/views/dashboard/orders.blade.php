@@ -19,9 +19,15 @@
                 'delivered' => ['label' => 'DELIVERED', 'icon' => '📦', 'color' => '#F97316', 'dark' => '#fff'],
                 'cancelled' => ['label' => 'CANCELLED', 'icon' => '❌', 'color' => '#ef4444', 'dark' => '#fff'],
             ];
+            $typeTabs = [
+                'delivery' => ['label' => 'DELIVERY', 'icon' => '🚚', 'color' => '#a78bfa', 'dark' => '#fff'],
+                'pickup' => ['label' => 'PICKUP', 'icon' => '🏪', 'color' => '#22c55e', 'dark' => '#fff'],
+            ];
             $activeTab = $status ?? 'all';
             $totalAll = $statusCounts->sum() ?? 0;
             $userFilter = $userFilter ?? null;
+            $activeType = $fulfillmentType ?? null;
+            $monthParam = $month ?? null;
         @endphp
 
 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; align-items:center;">
@@ -33,7 +39,7 @@
                     $userParam = $userFilter ? $userFilter->username : null;
                     $href = route(
                         'dashboard.orders',
-                        array_filter(['status' => $isAllTab ? null : $key, 'search' => $search ?: null, 'user' => $userParam]),
+                        array_filter(['status' => $isAllTab ? null : $key, 'search' => $search ?: null, 'user' => $userParam, 'month' => $monthParam]),
                     );
                 @endphp
                 <a href="{{ $href }}" {{ !$isActive ? 'class="order-status-tab-inactive"' : '' }}
@@ -58,32 +64,41 @@
                 </a>
             @endforeach
 
-{{-- Search --}}
-            <form method="GET" action="{{ route('dashboard.orders') }}"
-                style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-                @if ($activeTab && $activeTab !== 'all')
-                    <input type="hidden" name="status" value="{{ $activeTab }}">
-                @endif
-                @if ($userFilter)
-                    <input type="hidden" name="user" value="{{ $userFilter->username }}">
-                @endif
-                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('dashboard.orders.searchPlaceholder') }}"
-                    class="orders-search-input"
-                    style="background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12);
-                   color:#fff; border-radius:10px; padding:8px 16px; font-size: var(--title-size);
-                   font-family:Rajdhani, var(--font-kh), sans-serif; outline:none; width:230px; transition:border-color .2s;"
-                    onfocus="this.style.borderColor='#F97316'" onblur="this.style.borderColor=''" />
-                <button type="submit"
-                    style="background:#F97316; color:#fff; border:none; border-radius:10px;
-                padding:8px 16px; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
-                cursor:pointer; letter-spacing:1px;">SEARCH</button>
-                @if ($search)
-                    <a href="{{ route('dashboard.orders', $activeTab && $activeTab !== 'all' ? ['status' => $activeTab, 'user' => $userParam] : ['user' => $userParam]) }}"
-                        class="orders-clear-btn"
-                        style="background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.5); border:1.5px solid rgba(255,255,255,0.1);
-                border-radius:10px; padding:8px 12px; font-size: var(--title-size); text-decoration:none;">✕</a>
-                @endif
-            </form>
+            {{-- ── Fulfillment type tabs ────────────────────────────────────────────── --}}
+            <div style="display:inline-flex; gap:6px; margin-left:8px;">
+                <a href="{{ route('dashboard.orders', array_filter(['status' => $activeTab !== 'all' ? $activeTab : null, 'search' => $search ?: null, 'user' => $userParam, 'month' => $monthParam, 'type' => null])) }}"
+                   style="display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:30px;
+                          font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--text-sm); font-weight:700;
+                          letter-spacing:1px; text-decoration:none; transition:all 0.2s;
+                          background: {{ !$activeType ? '#F97316' : 'var(--hover-bg)' }};
+                          color:      {{ !$activeType ? '#fff' : 'var(--text-muted)' }};
+                          border: 1.5px solid {{ !$activeType ? '#F97316' : 'var(--border-input)' }};
+                          box-shadow: {{ !$activeType ? '0 0 12px rgba(249,115,22,.45)' : 'none' }};"
+                   onmouseover="this.style.opacity='.82'" onblur="this.style.opacity='1'">
+                    🔀 ALL TYPES
+                </a>
+                @foreach ($typeTabs as $key => $tab)
+                    @php
+                        $isTypeActive = $activeType === $key;
+                        $typeHref = route(
+                            'dashboard.orders',
+                            array_filter(['status' => $activeTab !== 'all' ? $activeTab : null, 'search' => $search ?: null, 'user' => $userParam, 'month' => $monthParam, 'type' => $key]),
+                        );
+                    @endphp
+                    <a href="{{ $typeHref }}" {{ !$isTypeActive ? 'class="order-status-tab-inactive"' : '' }}
+                       style="display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:30px;
+                              font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--text-sm); font-weight:700;
+                              letter-spacing:1px; text-decoration:none; transition:all 0.2s;
+                              background: {{ $isTypeActive ? $tab['color'] : 'var(--hover-bg)' }};
+                              color:      {{ $isTypeActive ? $tab['dark'] : 'var(--text-muted)' }};
+                              border: 1.5px solid {{ $isTypeActive ? $tab['color'] : 'var(--border-input)' }};
+                              box-shadow: {{ $isTypeActive ? '0 0 12px ' . $tab['color'] . '66' : 'none' }};"
+                       onmouseover="this.style.opacity='.82'" onblur="this.style.opacity='1'">
+                        {{ $tab['icon'] }} {{ $tab['label'] }}
+                    </a>
+                @endforeach
+            </div>
+
         </div>
 
         {{-- ── Table ──────────────────────────────────────────────────────────────────── --}}
@@ -101,7 +116,35 @@
                 <span style="color:rgba(255,255,255,0.45); font-size: var(--title-size);">
                     {{ $orders->total() }} result{{ $orders->total() !== 1 ? 's' : '' }}
                 </span>
-                <div class="pagination-top" style="margin-left: auto;">
+                <form method="GET" action="{{ route('dashboard.orders') }}" style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                    @if ($activeTab && $activeTab !== 'all')
+                        <input type="hidden" name="status" value="{{ $activeTab }}">
+                    @endif
+                    @if ($activeType)
+                        <input type="hidden" name="type" value="{{ $activeType }}">
+                    @endif
+                    @if ($userFilter)
+                        <input type="hidden" name="user" value="{{ $userFilter->username }}">
+                    @endif
+                    @if ($monthParam)
+                        <input type="hidden" name="month" value="{{ $monthParam }}">
+                    @endif
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('dashboard.orders.searchPlaceholder') }}"
+                        style="background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.12);
+                               color:#fff; border-radius:10px; padding:6px 14px; font-size: var(--title-size);
+                               font-family:Rajdhani, var(--font-kh), sans-serif; outline:none; width:220px; transition:border-color .2s;"
+                        onfocus="this.style.borderColor='#F97316'" onblur="this.style.borderColor=''" />
+                    <button type="submit"
+                        style="background:#F97316; color:#fff; border:none; border-radius:10px;
+                               padding:6px 14px; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
+                               cursor:pointer; letter-spacing:1px;">SEARCH</button>
+                    @if ($search)
+                        <a href="{{ route('dashboard.orders', array_filter(['status' => $activeTab && $activeTab !== 'all' ? $activeTab : null, 'type' => $activeType ?: null, 'user' => $userParam, 'month' => $monthParam])) }}"
+                            style="background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.5); border:1.5px solid rgba(255,255,255,0.1);
+                                   border-radius:10px; padding:6px 12px; font-size: var(--title-size); text-decoration:none;">✕</a>
+                    @endif
+                </form>
+                <div class="pagination-top" style="margin-left: 12px;">
                     {{ $orders->links('dashboard.pagination') }}
                 </div>
             </div>

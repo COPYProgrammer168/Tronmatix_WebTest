@@ -89,13 +89,11 @@ export default function HomePage() {
   const { dark } = useTheme();
   const { t, isKhmer } = useLang();
 
-  // Font stacks that auto-switch based on language
-  const headingFont = isKhmer
-    ? "Kdam Thmor Pro, Khmer OS, sans-serif"
-    : "HurstBagod, Rajdhani, sans-serif";
-  const bodyFont = isKhmer
-    ? "Kdam Thmor Pro, Khmer OS, sans-serif"
-    : "Rajdhani, sans-serif";
+  // Font stacks that always carry the Khmer webfont as a fallback, so a
+  // Khmer banner title/subtitle renders in Kdam Thmor Pro even in English
+  // mode. Rajdhani/HurstBagod stay first so Latin text keeps its design.
+  const headingFont = "HurstBagod, 'Kdam Thmor Pro', Khmer OS, sans-serif";
+  const bodyFont = "'Rajdhani', 'Kdam Thmor Pro', Khmer OS, sans-serif";
 
   const bg = dark ? "#111827" : "#fff";
   const text = dark ? "#f9fafb" : "#1f2937";

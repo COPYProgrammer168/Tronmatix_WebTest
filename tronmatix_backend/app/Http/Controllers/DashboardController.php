@@ -93,6 +93,175 @@ class DashboardController extends Controller
         return view('dashboard.report', $data);
     }
 
+    // ── Revenue detail (KPI card drill-down) ────────────────────────────────
+    // Shows Revenue with the same KPI-card compare style across 1 month,
+    // 6 months and 1 year, plus a pair of charts.
+    public function revenue(Request $request, MetricComparisonService $comparison)
+    {
+        $month = $request->filled('month')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('month') . '-01')
+            : now();
+
+        // ── KPI cards: current vs previous over each window ─────────────────
+        // 1 month  → current calendar month vs previous calendar month
+        // 6 months → last 6 calendar months vs the 6 before them
+        // 1 year   → last 12 calendar months vs the 12 before them
+        $validRanges = ['1m', '6m', '1y'];
+        $range = in_array($request->input('range'), $validRanges, true)
+            ? $request->input('range')
+            : '1m';
+
+        $baseRev = Order::whereNotIn('status', ['cancelled']);
+
+        $windowStart = fn (int $months) => $month->copy()->startOfMonth()->subMonths($months - 1);
+        $windowEnd   = fn () => $month->copy()->endOfMonth();
+
+        [$curStart, $curEnd, $prevStart, $prevEnd] = match ($range) {
+            '6m' => [
+                $windowStart(6), $windowEnd(),
+                $windowStart(6)->subMonths(6), $month->copy()->startOfMonth()->subMonths(6)->endOfMonth(),
+            ],
+            '1y' => [
+                $windowStart(12), $windowEnd(),
+                $windowStart(12)->subMonths(12), $month->copy()->startOfMonth()->subMonths(12)->endOfMonth(),
+            ],
+            default => [
+                $month->copy()->startOfMonth(), $month->copy()->endOfMonth(),
+                $month->copy()->subMonth()->startOfMonth(), $month->copy()->subMonth()->endOfMonth(),
+            ],
+        };
+
+        $revenue = $this->periodCompare(
+            clone $baseRev, 'created_at',
+            $curStart, $curEnd, $prevStart, $prevEnd, 'sum', 'total'
+        );
+        $orders = $this->periodCompare(
+            Order::query(), 'created_at',
+            $curStart, $curEnd, $prevStart, $prevEnd, 'count'
+        );
+        $avgOrder = $this->periodCompare(
+            clone $baseRev, 'created_at',
+            $curStart, $curEnd, $prevStart, $prevEnd, 'avg', 'total'
+        );
+        $customers = $this->periodCompare(
+            User::query(), 'created_at',
+            $curStart, $curEnd, $prevStart, $prevEnd, 'count'
+        );
+
+        // ── Charts ──────────────────────────────────────────────────────────
+        // Chart 1 — revenue (line) + orders (bar) across the selected window.
+        // Both summed per day so they can share a time axis at any granularity.
+        $seriesStart = $curStart->copy();
+        $seriesEnd   = $curEnd->copy();
+        $windowRows = (clone $baseRev)
+            ->select(
+                DB::raw($this->dateFormatExpr('created_at', 'Y-m-d') . ' as day_key'),
+                DB::raw('SUM(total) as revenue'),
+                DB::raw('COUNT(*) as orders')
+            )
+            ->whereBetween('created_at', [$seriesStart, $seriesEnd])
+            ->groupBy('day_key')->orderBy('day_key')
+            ->get()->keyBy('day_key');
+
+        $windowLabels = $windowRevenue = $windowOrders = [];
+        if ($range === '1m') {
+            // Daily granularity for the current month. Only include days that
+            // actually have revenue or orders — empty days are skipped.
+            for ($d = $curStart->copy(); $d->lte($curEnd); $d->addDay()) {
+                $found = $windowRows->get($d->toDateString());
+                $rev = $found ? round((float) $found->revenue, 2) : 0;
+                $cnt = $found ? (int) $found->orders : 0;
+                if ($rev <= 0 && $cnt <= 0) continue;
+                $windowLabels[] = $d->format('j M');
+                $windowRevenue[] = $rev;
+                $windowOrders[]  = $cnt;
+            }
+        } else {
+            // Monthly granularity for 6m / 1y. Skip months with no activity.
+            for ($i = 0; $i < ($range === '6m' ? 6 : 12); $i++) {
+                $m = $curStart->copy()->addMonths($i);
+                $found = $windowRows->filter(fn ($row, $key) => str_starts_with($key, $m->format('Y-m')))->values();
+                $rev = $found->sum(fn ($row) => (float) $row->revenue);
+                $cnt = $found->sum(fn ($row) => (int) $row->orders);
+                if ($rev <= 0 && $cnt <= 0) continue;
+                $windowLabels[] = $m->format('M Y');
+                $windowRevenue[] = $rev;
+                $windowOrders[]  = $cnt;
+            }
+        }
+
+        // ── Compare chart ───────────────────────────────────────────────────
+        // Grouped bars: each period (day for 1m, month for 6m/1y) of the
+        // current window vs the matching period one window earlier, so the
+        // user can see day-by-day / month-by-month growth at a glance.
+        $compareLabels = $compareCurrent = $comparePrevious = [];
+        $shiftBy = $range === '1m' ? '1 month' : ($range === '6m' ? '6 months' : '1 year');
+
+        // Previous-window rows: shift the whole window back and aggregate the same way.
+        $prevRows = (clone $baseRev)
+            ->select(
+                DB::raw($this->dateFormatExpr('created_at', 'Y-m-d') . ' as day_key'),
+                DB::raw('SUM(total) as revenue')
+            )
+            ->whereBetween('created_at', [$curStart->copy()->subMonths($range === '1m' ? 1 : ($range === '6m' ? 6 : 12)), $curEnd->copy()->subMonths($range === '1m' ? 1 : ($range === '6m' ? 6 : 12))])
+            ->groupBy('day_key')->orderBy('day_key')
+            ->get()->keyBy('day_key');
+
+        if ($range === '1m') {
+            // Daily granularity — pair each current day with the same day last month.
+            for ($d = $curStart->copy(); $d->lte($curEnd); $d->addDay()) {
+                $cur = $windowRows->get($d->toDateString());
+                $prev = $prevRows->get($d->copy()->subMonth()->toDateString());
+                $curRev = $cur ? round((float) $cur->revenue, 2) : 0;
+                $prevRev = $prev ? round((float) $prev->revenue, 2) : 0;
+                if ($curRev <= 0 && $prevRev <= 0) continue;
+                $compareLabels[] = $d->format('j M');
+                $compareCurrent[] = $curRev;
+                $comparePrevious[] = $prevRev;
+            }
+        } else {
+            // Monthly granularity — pair each current month with the same month a window earlier.
+            for ($i = 0; $i < ($range === '6m' ? 6 : 12); $i++) {
+                $m = $curStart->copy()->addMonths($i);
+                $cur = $windowRows->filter(fn ($row, $key) => str_starts_with($key, $m->format('Y-m')))->values();
+                $pm = $m->copy()->subMonths($range === '6m' ? 6 : 12);
+                $prev = $prevRows->filter(fn ($row, $key) => str_starts_with($key, $pm->format('Y-m')))->values();
+                $curRev = $cur->sum(fn ($row) => (float) $row->revenue);
+                $prevRev = $prev->sum(fn ($row) => (float) $row->revenue);
+                if ($curRev <= 0 && $prevRev <= 0) continue;
+                $compareLabels[] = $m->format('M y');
+                $compareCurrent[] = $curRev;
+                $comparePrevious[] = $prevRev;
+            }
+        }
+
+        // Chart 2 — last 12 months monthly revenue (line).
+        $monthlySalesLabels = $monthlySalesRevenue = [];
+        $salesRows12 = (clone $baseRev)
+            ->select(
+                DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as month_key'),
+                DB::raw('SUM(total) as revenue')
+            )
+            ->where('created_at', '>=', Carbon::now()->subMonths(11)->startOfMonth())
+            ->groupBy('month_key')->orderBy('month_key')
+            ->get()->keyBy('month_key');
+
+        for ($i = 11; $i >= 0; $i--) {
+            $date  = Carbon::now()->subMonths($i);
+            $key   = $date->format('Y-m');
+            $found = $salesRows12->get($key);
+            $monthlySalesLabels[] = $date->format('M Y');
+            $monthlySalesRevenue[] = $found ? round((float) $found->revenue, 2) : 0;
+        }
+
+        return view('dashboard.revenue', compact(
+            'month', 'range', 'revenue', 'orders', 'avgOrder', 'customers',
+            'windowLabels', 'windowRevenue', 'windowOrders',
+            'compareLabels', 'compareCurrent', 'comparePrevious',
+            'monthlySalesLabels', 'monthlySalesRevenue'
+        ));
+    }
+
     /**
      * Return [currentStart, currentEnd, prevStart, prevEnd] Carbon dates for a
      * period relative to the reference month. For 'about' (all-time) the current
@@ -457,11 +626,21 @@ class DashboardController extends Controller
         $search = trim($request->input('search', ''));
         $userIdentifier = $request->input('user');
         $today = $request->boolean('today');
+        $fulfillmentType = $request->input('type'); // delivery | pickup
+        $month = $request->input('month');
 
         $query = Order::with(['user', 'items', 'location'])->latest();
 
         if ($today) {
             $query->whereDate('created_at', today());
+        }
+        if ($month) {
+            try {
+                $m = Carbon::createFromFormat('Y-m', $month);
+                $query->whereBetween('created_at', [$m->copy()->startOfMonth(), $m->copy()->endOfMonth()]);
+            } catch (\Throwable $e) {
+                // invalid month — ignore
+            }
         }
         if ($userIdentifier) {
             $user = User::where('username', $userIdentifier)
@@ -470,6 +649,9 @@ class DashboardController extends Controller
             if ($user) {
                 $query->where('user_id', $user->id);
             }
+        }
+        if ($fulfillmentType) {
+            $query->where('fulfillment_type', $fulfillmentType);
         }
         if ($status && $status !== 'all') {
             $query->where('status', $status);
@@ -492,7 +674,13 @@ class DashboardController extends Controller
             if ($user) {
                 $q->where('user_id', $user->id);
             }
-        });
+        })->when($fulfillmentType, fn($q) => $q->where('fulfillment_type', $fulfillmentType))
+          ->when($month, function ($q) use ($month) {
+              try {
+                  $m = Carbon::createFromFormat('Y-m', $month);
+                  $q->whereBetween('created_at', [$m->copy()->startOfMonth(), $m->copy()->endOfMonth()]);
+              } catch (\Throwable $e) {}
+          });
 
         $statusCounts = $baseQuery
             ->selectRaw('status, COUNT(*) as total')
@@ -502,7 +690,7 @@ class DashboardController extends Controller
             ->orWhere('email', $userIdentifier)
             ->first();
 
-        return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search', 'userFilter', 'today'));
+        return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search', 'userFilter', 'today', 'fulfillmentType', 'month'));
     }
 
     public function showOrder($order_id)

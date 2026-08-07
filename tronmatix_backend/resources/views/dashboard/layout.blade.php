@@ -180,6 +180,15 @@
             font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
             line-height: var(--lh-kh) !important;
         }
+
+        /* ── Global Khmer fallback — active in BOTH English & Khmer modes ────
+           Same logic as the :lang(km) block above, but not gated on lang, so a
+           Khmer string inside an English-mode page still renders in Kdam Thmor
+           Pro. Excludes monospace (SKUs, codes, invite URLs) and code/pre so
+           those keep their intended font. !important beats inline styles.        */
+        *:not(.km-english):not(code):not(pre):not([style*="monospace"]) {
+            font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
+        }
     </style>
 
     <style>
