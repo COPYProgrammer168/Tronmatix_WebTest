@@ -530,7 +530,7 @@ export default function Navbar({ onAuthOpen }) {
         }} />
         <span style={{
           position: 'relative', flex: 1, textAlign: 'center',
-          fontSize: 11, fontWeight: 800, letterSpacing: 0.5,
+          fontSize: 13, fontWeight: 800, letterSpacing: 0.5,
           color: isKhmer ? 'rgba(156,163,175,1)' : '#ffffff',
           fontFamily: 'Rajdhani, sans-serif',
           transition: 'color 0.2s', zIndex: 1, padding: '0 4px', userSelect: 'none',

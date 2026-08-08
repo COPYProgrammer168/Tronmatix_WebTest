@@ -101,6 +101,18 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   ENGLISH MODE — base font boost
+   Khmer mode stays at its tuned 18px (body.lang-km forces 18px !important
+   below). English uses the condensed Rajdhani font, which renders visibly
+   smaller than the tall Khmer glyphs, so we raise the base to 20px in
+   English. All rem-based Tailwind utilities (text-sm, text-base, ...) scale
+   with the root, so the whole English UI reads larger.
+───────────────────────────────────────────────────────────────────────── */
+body.lang-en {
+  font-size: 20px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    KHMER MODE — activated by body.lang-km (set by LanguageContext)
 ───────────────────────────────────────────────────────────────────────── */
 body.lang-km {
@@ -407,18 +419,18 @@ body.lang-km footer * {
 ───────────────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .product-card-title {
-    font-size: 15px !important;
-    line-height: 1.2 !important;
+    font-size: 17px !important;
+    line-height: 1.25 !important;
     min-height: 2.2em !important;
   }
 
   .product-card-price {
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   .product-card-cta {
-    font-size: 12px !important;
-    height: 36px !important;
+    font-size: 14px !important;
+    height: 38px !important;
     letter-spacing: 0.5px !important;
   }
 

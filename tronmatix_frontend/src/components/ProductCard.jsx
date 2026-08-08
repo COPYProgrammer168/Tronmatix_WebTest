@@ -97,7 +97,7 @@ function AddToCartBtn({
       style={{
         fontFamily: `${btnFont} !important`,
         fontWeight: 700,
-        fontSize: 15,
+        fontSize: 16,
         letterSpacing: 1,
         height: 42,
         background: bgColor,
@@ -473,7 +473,7 @@ export default function ProductCard({ product }) {
             style={{
               color: hovered ? "#F97316" : text,
               letterSpacing: isKhmer ? 0 : undefined,
-              fontSize: isKhmer ? 18 : 20,
+              fontSize: isKhmer ? 18 : 22,
               lineHeight: 1.25,
               minHeight: "2.5em",
               display: "-webkit-box",
@@ -488,7 +488,7 @@ export default function ProductCard({ product }) {
             <p
               className="mb-2"
               style={{
-                fontSize: isKhmer ? 13 : 15,
+                fontSize: isKhmer ? 13 : 16,
                 fontWeight: isKhmer ? 500 : 600,
                 color: text,
                 opacity: 0.6,
@@ -570,7 +570,7 @@ export default function ProductCard({ product }) {
             to={`/product/${product.slug || product.id}`}
             className="product-card-cta mt-auto w-full font-bold rounded transition-all duration-200 flex items-center justify-center gap-2"
             style={{
-              fontSize: 15,
+              fontSize: 16,
               height: 42,
               background: hovered ? "#F97316" : "#111827",
               color: "#fff",

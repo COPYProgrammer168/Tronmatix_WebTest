@@ -432,7 +432,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 z-10 hidden lg:flex items-center px-12 pointer-events-none">
                   <div className="max-w-6xl pl-20 text-white pointer-events-auto">
                     {banner.badge && (
-                      <div className="inline-block px-3 py-1 mb-3 text-xs font-black tracking-widest text-orange-500 bg-white/95 rounded-full">
+                      <div className="inline-block px-3 py-1 mb-3 text-sm font-black tracking-widest text-orange-500 bg-white/95 rounded-full">
                         {banner.badge}
                       </div>
                     )}
@@ -573,8 +573,8 @@ export default function HomePage() {
                   background: "rgba(249,115,22,0.12)",
                   color: "#F97316",
                   border: "1px solid rgba(249,115,22,0.3)",
-                  fontSize: 11,
-                  height: 26,
+                  fontSize: 13,
+                  height: 28,
                   lineHeight: 1,
                   whiteSpace: "nowrap",
                 }}
