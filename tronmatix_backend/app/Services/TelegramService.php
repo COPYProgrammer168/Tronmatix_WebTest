@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Http;
 class TelegramService
 {
     private string $token;
-
     private string $chatId;
-
     private string $apiBase;
 
     public function __construct()
@@ -22,65 +20,144 @@ class TelegramService
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    /** Send a new-order receipt to all admin chat IDs. */
+    /**
+     * Send a new-order receipt to all admin chat IDs.
+     * Clearly shows PICKUP vs DELIVERY so staff know what to do.
+     */
     public function sendReceipt(Order $order): void
     {
-        if (! $this->token) {
+        if (!$this->token)
             return;
-        }
 
         $shipping = $order->shipping;
         if (is_string($shipping)) {
             $shipping = json_decode($shipping, true) ?? [];
         }
 
+        $isPickup = $order->isPickup();
+
         $itemLines = $order->items->map(function ($item) {
             $lineTotal = round($item->price * $item->qty, 2);
-
-            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}";
+            $warranty = '';
+            if ($item->warranty_start && $item->warranty_end) {
+                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
+                    . ' - ' . $item->warranty_end->format('d.m.Y');
+            }
+            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
         })->join("\n");
+
+        if ($isPickup) {
+            $fulfillmentLine = '🏪 *STORE PICKUP* — customer will come to collect';
+            $contactLine = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
+            $phoneLine = '📞 Phone: ' . ($shipping['phone'] ?? '—');
+            $addressLine = null;
+        } else {
+            $fulfillmentLine = '🚚 *DELIVERY*';
+            $contactLine = '👤 Customer: ' . ($order->user?->username ?? 'Guest');
+            $phoneLine = '📞 Phone: ' . ($shipping['phone'] ?? '—');
+            $locationParts = array_filter([
+                $shipping['address'] ?? '—',
+                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['province'] ?? null,
+            ], fn($v) => !empty($v));
+            $addressLine = '📍 Address: ' . implode(', ', $locationParts);
+        }
+
+        $scheduleLine = null;
+        if ($order->delivery_date) {
+            $dateLabel = $isPickup ? '🗓 Preferred Pickup' : '🗓 Delivery';
+            $scheduleLine = $dateLabel . ': ' . $order->delivery_date
+                . ($order->delivery_time_slot ? ' | ' . $order->delivery_time_slot : '');
+        }
 
         $lines = array_filter([
             '🛒 *New Order Placed!*',
             '',
             "📦 Order: `#{$order->order_id}`",
-            '👤 Customer: '.($order->user?->username ?? 'Guest'),
-            '📞 Phone: '.($shipping['phone'] ?? '—'),
-            '📍 Address: '.($shipping['address'] ?? '—').($shipping['city'] ? ', '.$shipping['city'] : ''),
-            $order->delivery_date
-                ? "🗓 Delivery: {$order->delivery_date}".($order->delivery_time_slot ? " | {$order->delivery_time_slot}" : '')
+            $fulfillmentLine,
+            $contactLine,
+            $phoneLine,
+            $addressLine,
+            ($order->shipping['lat'] ?? null) && ($order->shipping['lng'] ?? null)
+                ? '[📍 Open in Google Maps](https://www.google.com/maps/search/?api=1&query=' . $order->shipping['lat'] . ',' . $order->shipping['lng'] . ')'
                 : null,
-            '💳 Payment: '.strtoupper($order->payment_method),
+            '[🔗 View Order in Dashboard](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
+            $scheduleLine,
+            $this->providerLine($order),
+            '💳 Payment: ' . ($isPickup && $order->payment_method === 'cash'
+                ? 'CASH AT STORE'
+                : strtoupper($order->payment_method)),
             '',
             '*Items:*',
             $itemLines,
             '',
             "💰 Subtotal: \${$order->subtotal}",
-            $order->discount_amount > 0
-                ? "🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"
-                : null,
+            $order->discount_amount > 0 ? (function () use ($order) {
+                $lines = ["🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"];
+                $d = \App\Models\Discount::find($order->discount_id);
+                if ($d) {
+                    if ($d->product_id) {
+                        $prod = \App\Models\Product::find($d->product_id);
+                        $lines[] = '   📌 Product: '.($prod ? $prod->name : '#'.$d->product_id);
+                    } elseif (!empty($d->categories)) {
+                        $lines[] = '   📌 Categories: '.implode(', ', $d->categories);
+                    } else {
+                        $lines[] = '   📌 Sitewide (all items)';
+                    }
+                    $lines[] = '   🔑 '.($d->type === 'percentage' ? $d->value.'% OFF' : '$'.$d->value.' OFF');
+                }
+                return implode("\n", $lines);
+            })() : null,
             "✅ *Total: \${$order->total}*",
             '',
-            '🕐 '.$order->created_at->format('d M Y, H:i'),
-        ], fn ($line) => $line !== null);
+            '🕐 ' . $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
+        ], fn($line) => $line !== null);
 
         $this->send(implode("\n", $lines));
     }
 
-    /** Notify when admin confirms delivery. */
+    /** Notify when admin confirms delivery / pickup. */
     public function sendDeliveryConfirmed(Order $order): void
     {
-        if (! $this->token) {
+        if (!$this->token)
             return;
+
+        $shipping = $order->shipping;
+        if (is_string($shipping)) {
+            $shipping = json_decode($shipping, true) ?? [];
         }
 
-        $message = implode("\n", [
-            '✅ *Delivery Confirmed!*',
+        $isPickup = $order->isPickup();
+        $verb = $isPickup ? 'Picked Up' : 'Delivered';
+        $icon = $isPickup ? '🏪' : '📦';
+
+        $lines = [
+            "{$icon} *Order {$verb}!*",
             '',
-            "📦 Order `#{$order->order_id}` has been delivered.",
-            '👤 Customer: '.($order->user?->username ?? 'Guest'),
-            '🕐 Confirmed: '.now()->format('d M Y, H:i'),
-        ]);
+            "📦 Order `#{$order->order_id}` has been {$verb}.",
+            '👤 Customer: ' . ($order->user?->username ?? 'Guest'),
+        ];
+
+        // Delivery orders: surface who delivered it and where.
+        if (! $isPickup) {
+            $locationParts = array_filter([
+                $shipping['address'] ?? null,
+                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['province'] ?? null,
+            ], fn($v) => !empty($v));
+            if ($locationParts) {
+                $lines[] = '📍 ' . implode(', ', $locationParts);
+            }
+            if ($providerLine = $this->providerLine($order)) {
+                $lines[] = $providerLine;
+            }
+        } else {
+            $lines[] = '🏪 Store pickup';
+        }
+
+        $lines[] = '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
+
+        $message = implode("\n", $lines);
 
         $this->send($message);
 
@@ -89,38 +166,176 @@ class TelegramService
         }
     }
 
-    /** Payment confirmed via ABA webhook — notify admin. */
-    public function sendPaymentConfirmed(Order $order, string $apv): void
+    /**
+     * Alert the admin/owner that the CUSTOMER confirmed delivery from the
+     * Telegram bot. Distinct from sendDeliveryConfirmed() (admin/staff marking
+     * it delivered) so staff know the customer verified receipt themselves.
+     */
+    public function sendCustomerConfirmDeliveryAlert(Order $order): void
     {
-        if (! $this->token) {
+        if (!$this->token)
             return;
+
+        $shipping = $order->shipping;
+        if (is_string($shipping)) {
+            $shipping = json_decode($shipping, true) ?? [];
         }
 
+        $customerName = $order->user?->username ?? ($shipping['name'] ?? 'Guest');
+        $phone = $shipping['phone'] ?? $order->user?->phone ?? '—';
+
         $message = implode("\n", [
-            '💳 *ABA BAKONG Payment Received!*',
+            '✅ *Customer Confirmed Delivery*',
             '',
             "📦 Order: `#{$order->order_id}`",
-            "💰 Amount: \${$order->total}",
-            "🔑 APV: {$apv}",
-            '👤 Customer: '.($order->user?->username ?? 'Guest'),
-            '🕐 '.now()->format('d M Y, H:i'),
+            '👤 Customer: ' . $customerName,
+            '📞 Phone: ' . $phone,
+            '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
+            '',
+            'The customer confirmed receipt directly in Telegram.',
+            '[🔗 View Order](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
         ]);
 
         $this->send($message);
     }
 
+    /**
+     * Payment confirmed via ABA BAKONG QR — notify admin with full order details.
+     * Called from CheckPaymentController after PayWay confirms the transaction.
+     */
+    public function sendPaymentConfirmed(Order $order, string $apv): void
+    {
+        if (!$this->token)
+            return;
+
+        // Eager-load items if not already loaded
+        if (!$order->relationLoaded('items')) {
+            $order->load('items');
+        }
+
+        $isPickup = $order->isPickup();
+        $fulfillment = $isPickup ? '🏪 STORE PICKUP' : '🚚 DELIVERY';
+
+        $itemLines = $order->items->map(function ($item) {
+            $lineTotal = number_format($item->price * $item->qty, 2);
+            $warranty = '';
+            if ($item->warranty_start && $item->warranty_end) {
+                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
+                    . ' - ' . $item->warranty_end->format('d.m.Y');
+            }
+            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
+        })->join("\n");
+
+        $shipping = $order->shipping;
+        if (is_string($shipping)) {
+            $shipping = json_decode($shipping, true) ?? [];
+        }
+        $shippingPhone = $shipping['phone'] ?? '';
+        $shippingName  = $shipping['name'] ?? '';
+
+        $locationParts = array_filter([
+            $shipping['address'] ?? null,
+            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['province'] ?? null,
+        ], fn($v) => !empty($v));
+
+        $lines = array_filter([
+            '✅ *ABA BAKONG Payment Confirmed!*',
+            '',
+            "📦 Order: `#{$order->order_id}`",
+            '👤 Customer: ' . ($shippingName ?: $order->user?->username ?? 'Guest'),
+            '📞 Phone: ' . ($shippingPhone ?: $order->user?->phone ?? '—'),
+            $fulfillment,
+            !empty($locationParts) ? '📍 ' . implode(', ', $locationParts) : null,
+            $order->delivery_date
+            ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': ' . $order->delivery_date
+            . ($order->delivery_time_slot ? ' | ' . $order->delivery_time_slot : '')
+            : null,
+            '',
+            '*Items Paid:*',
+            $itemLines,
+            '',
+            ($order->subtotal && (float) $order->subtotal !== (float) $order->total)
+            ? "💰 Subtotal: \${$order->subtotal}"
+            : null,
+            ($order->discount_amount ?? 0) > 0 ? (function () use ($order) {
+                $lines = ["🏷 Discount ({$order->discount_code}): −\${$order->discount_amount}"];
+                $d = \App\Models\Discount::find($order->discount_id);
+                if ($d) {
+                    if ($d->product_id) {
+                        $prod = \App\Models\Product::find($d->product_id);
+                        $lines[] = '   📌 Product: '.($prod ? $prod->name : '#'.$d->product_id);
+                    } elseif (!empty($d->categories)) {
+                        $lines[] = '   📌 Categories: '.implode(', ', $d->categories);
+                    } else {
+                        $lines[] = '   📌 Sitewide (all items)';
+                    }
+                    $lines[] = '   🔑 '.($d->type === 'percentage' ? $d->value.'% OFF' : '$'.$d->value.' OFF');
+                }
+                return implode("\n", $lines);
+            })() : null,
+            "✅ *Total Paid: \${$order->total} USD*",
+            "🔑 APV: `{$apv}`",
+            '',
+            '🕐 ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
+        ], fn($l) => $l !== null);
+
+        $this->send(implode("\n", $lines));
+    }
+
     /** Send a plain text alert (for generic events). */
     public function sendAlert(string $text): void
     {
-        if (! $this->token) {
+        if (!$this->token)
             return;
-        }
         $this->send($text);
+    }
+
+    /** Notify admin when customer phone is missing from an order. */
+    public function sendPhoneMissingAdminAlert(Order $order): void
+    {
+        if (!$this->token) return;
+
+        $message = "⚠️ *Missing Customer Phone Number*\n\n" .
+                   "📦 Order: `{$order->order_id}`\n" .
+                   "👤 Customer: " . ($order->user?->username ?? 'Guest') . "\n\n" .
+                   "Please contact the customer to get their phone number.";
+
+        $this->send($message);
+    }
+
+    /**
+     * sendMessage() alias — several controllers called ->sendMessage() which
+     * didn't exist, causing PHP0418 "Call to unknown method" fatal errors.
+     */
+    public function sendMessage(string $text, ?string $chatId = null): void
+    {
+        if (!$this->token)
+            return;
+        $this->send($text, $chatId);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
-    /** Send a Markdown message to one or all configured chat IDs. */
+    /**
+     * One-line delivery provider summary for ADMIN messages (Bot 1, Markdown).
+     * Returns '' when no provider is assigned.
+     */
+    private function providerLine(Order $order): string
+    {
+        $details = $order->getDeliveryProviderDetailsAttribute();
+        if (! $details || empty($details['name'])) {
+            return '';
+        }
+
+        $line = '🚚 *' . $details['name'] . '*';
+        $line .= empty($details['estimated_time'])
+            ? ' — ETA: will contact to schedule'
+            : ' — ETA: ' . $details['estimated_time'];
+
+        return $line;
+    }
+
     private function send(string $text, ?string $chatId = null): void
     {
         $targets = $chatId
@@ -137,15 +352,14 @@ class TelegramService
                         'parse_mode' => 'Markdown',
                     ]);
 
-                if (! $res->successful()) {
+                if (!$res->successful()) {
                     \Illuminate\Support\Facades\Log::error(
-                        'Telegram API error: '.$res->status().' — '.$res->body()
+                        'Telegram API error: ' . $res->status() . ' — ' . $res->body()
                     );
                 }
             } catch (\Throwable $e) {
-                // Log but don't crash — Telegram failure must never break order flow
                 \Illuminate\Support\Facades\Log::warning(
-                    "Telegram send failed (chat_id={$target}): ".$e->getMessage()
+                    "Telegram send failed (chat_id={$target}): " . $e->getMessage()
                 );
             }
         }

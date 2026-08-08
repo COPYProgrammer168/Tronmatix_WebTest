@@ -117,5 +117,9 @@
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
         "resources/js/**/*.tsx"
+    ],
+    "exclude": [
+        "**/*.blade.php",
+        "node_modules"
     ]
 }

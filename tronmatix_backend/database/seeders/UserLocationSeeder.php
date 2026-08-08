@@ -24,6 +24,8 @@ class UserLocationSeeder extends Seeder
     private array $cities = [
         'Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville',
         'Kampong Cham', 'Kampot', 'Kratie', 'Pursat', 'Takeo', 'Prey Veng',
+        'Svay Rieng', 'Stung Treng', 'Pailin', 'Kep', 'Koh Kong',
+        'Kampong Speu', 'Kampong Chhnang', 'Kampong Thom', 'Oddar Meanchey', 'Banteay Meanchey'
     ];
 
     private array $streets = [
@@ -38,6 +40,21 @@ class UserLocationSeeder extends Seeder
         'Kampuchea Krom Blvd, 15 January',
         'St. 1003, Dangkao',
     ];
+
+    private function generateKhmerPhoneNumber(): string
+    {
+        $prefixes = ['010', '011', '012', '015', '016', '017', '018', '061', '066', '067', '068', '069', '070', '076', '077', '078', '081', '084', '085', '086', '087', '088', '089', '090', '092', '093', '095', '096', '097', '098', '099'];
+        $prefix = $prefixes[array_rand($prefixes)];
+        
+        // Generate 6 or 7 digits after prefix
+        $length = (strlen($prefix) == 3) ? rand(6, 7) : 6;
+        $number = '';
+        for ($i = 0; $i < $length; $i++) {
+            $number .= rand(0, 9);
+        }
+        
+        return $prefix . ' ' . substr($number, 0, 3) . ' ' . substr($number, 3);
+    }
 
     public function run(): void
     {
@@ -67,7 +84,7 @@ class UserLocationSeeder extends Seeder
                 UserLocation::create([
                     'user_id' => $user->id,
                     'name' => $name,
-                    'phone' => '0'.rand(10, 19).' '.rand(100, 999).' '.rand(100, 999),
+                    'phone' => $this->generateKhmerPhoneNumber(),
                     'address' => $this->streets[array_rand($this->streets)],
                     'city' => $city,
                     'country' => 'Cambodia',

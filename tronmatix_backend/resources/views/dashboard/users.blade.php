@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/users.blade.php --}}
 @extends('dashboard.layout')
-@section('title', 'USERS')
+@section('title', strtoupper(__('dashboard.nav.users')))
 
 @push('styles')
 <style>
@@ -12,30 +12,34 @@
 
 /* ── Inline role select ──────────────────────────────────────────────────── */
 .role-select {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--dark-700);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: var(--title-size);
     font-weight: 600;
     padding: 5px 10px;
     cursor: pointer;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, color 0.2s;
 }
 .role-select:hover { border-color: var(--orange); }
 .role-select:focus { border-color: var(--orange); }
+/* Role color per selected value */
+.role-select[data-role="customer"] { color: #9CA3AF; border-color: rgba(156,163,175,0.3); }
+/* Option colors in dropdown list */
+.role-select option[value="customer"] { color: #9CA3AF; background: var(--dark-900); }
 
 /* ── Filter tabs ─────────────────────────────────────────────────────────── */
 .filter-tab {
     padding: 6px 14px;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--border);
     background: transparent;
-    color: rgba(255,255,255,0.5);
+    color: var(--text-muted);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: var(--title-size);
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -48,24 +52,24 @@
 }
 .filter-tab:hover               { border-color: var(--orange); color: var(--orange); }
 .filter-tab.active              { background: rgba(249,115,22,0.12); border-color: var(--orange); color: var(--orange); }
-.count-pill                     { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 1px 8px; font-size: 11px; }
+.count-pill                     { background: var(--dark-700); border-radius: 20px; padding: 1px 8px; font-size: var(--title-size); }
 .filter-tab.active .count-pill  { background: rgba(249,115,22,0.2); }
 
 /* ── Search ──────────────────────────────────────────────────────────────── */
 .search-input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark-700);
+    border: 1px solid var(--border);
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 15px;
+    font-size: var(--title-size);
     padding: 8px 16px 8px 38px;
     outline: none;
     width: 230px;
     transition: border-color 0.2s;
 }
 .search-input:focus             { border-color: var(--orange); }
-.search-input::placeholder      { color: rgba(255,255,255,0.25); }
+.search-input::placeholder      { color: var(--text-muted); }
 
 /* ── VIP progress bar ────────────────────────────────────────────────────── */
 .vip-bar-fill {
@@ -77,17 +81,17 @@
 }
 
 /* ── Table hover ─────────────────────────────────────────────────────────── */
-tbody tr:hover td { background: rgba(255,255,255,0.02); }
+tbody tr:hover td { background: var(--dark-700); }
 
 /* ── Flash toast ─────────────────────────────────────────────────────────── */
 .flash-toast {
     position: fixed; bottom: 28px; right: 28px; z-index: 9999;
     display: flex; align-items: center; gap: 10px;
-    background: #18181b; border: 1px solid rgba(255,255,255,0.1);
+    background: var(--dark-800); border: 1px solid var(--border);
     border-radius: 12px; padding: 12px 18px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600;
-    color: #fff; opacity: 0; transform: translateY(8px);
+    font-family: 'Rajdhani', sans-serif; font-size: var(--title-size); font-weight: 600;
+    color: var(--text-primary); opacity: 0; transform: translateY(8px);
     transition: opacity 0.25s, transform 0.25s;
     pointer-events: none;
 }
@@ -99,342 +103,499 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 @section('content')
 
-@php
-    use App\Models\AdminSetting;
-    $_pRole = Auth::guard('admin')->user()?->role ?? 'viewer';
-    $_pFeat = 'users';
-    $_pKey  = "perm_{$_pRole}_{$_pFeat}";
-    $_pDef  = [
-        'admin_dashboard'=>'1','admin_products'=>'1','admin_orders'=>'1',
-        'admin_orders_edit'=>'1','admin_users'=>'1','admin_discounts'=>'1',
-        'admin_settings'=>'1','admin_staff'=>'1',
-        'editor_dashboard'=>'1','editor_products'=>'1','editor_orders'=>'1',
-        'editor_orders_edit'=>'0','editor_users'=>'0','editor_discounts'=>'1',
-        'editor_settings'=>'0','editor_staff'=>'0',
-        'viewer_dashboard'=>'1','viewer_products'=>'0','viewer_orders'=>'1',
-        'viewer_orders_edit'=>'0','viewer_users'=>'0','viewer_discounts'=>'0',
-        'viewer_settings'=>'0','viewer_staff'=>'0',
-    ];
-    $_pAccess = $_pRole === 'superadmin'
-        || (AdminSetting::get($_pKey, $_pDef["{$_pRole}_{$_pFeat}"] ?? '0') === '1');
-    $_pRoleMeta = [
-        'superadmin'=>['color'=>'#F97316','icon'=>'👑','label'=>'Super Admin'],
-        'admin'     =>['color'=>'#F97316','icon'=>'🛡️','label'=>'Admin'],
-        'editor'    =>['color'=>'#3b82f6','icon'=>'✏️', 'label'=>'Editor'],
-        'viewer'    =>['color'=>'#a78bfa','icon'=>'👁️', 'label'=>'Viewer'],
-    ];
-    $_pRM = $_pRoleMeta[$_pRole] ?? $_pRoleMeta['viewer'];
-    $_pAllFeats = ['dashboard'=>'📊','products'=>'📦','orders'=>'📋',
-                   'orders_edit'=>'✏️','users'=>'👥','discounts'=>'🏷️',
-                   'settings'=>'⚙️','staff'=>'🛡️'];
-@endphp
+@include('dashboard._permission_check', ['feature' => 'users'])
+@php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
+@if(!$_permDenied)
+    @php
+        $roleMap     = ['all' => 'All', 'customer' => 'Customer'];
+        $roleIcons   = ['customer' => '👤'];
+        $currentRole = request('role', 'all');
+        $totalUsers  = array_sum($roleCounts ?? []);
+    @endphp
 
-@if(!$_pAccess)
-{{-- ══════════════════ ACCESS DENIED ══════════════════════════════════════ --}}
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-     min-height:60vh;text-align:center;padding:40px 20px;font-family:Rajdhani,sans-serif;
-     animation:fadeUp .45s ease both;">
-    <div style="width:96px;height:96px;border-radius:28px;margin-bottom:28px;
-         background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.25);
-         display:flex;align-items:center;justify-content:center;font-size:46px;
-         box-shadow:0 0 60px rgba(239,68,68,0.12);animation:lockPulse 2.5s ease-in-out infinite;">🔒</div>
-    <div style="font-size:30px;font-weight:900;letter-spacing:3px;color:#ef4444;margin-bottom:8px;">ACCESS DENIED</div>
-    <div style="font-size:14px;color:rgba(255,255,255,0.35);margin-bottom:32px;max-width:380px;line-height:1.6;">
-        Your role does not have permission to access this module.<br>
-        Contact a <span style="color:#F97316;font-weight:700;">Super Admin</span> to request access.
+    {{-- Flash message (from redirect()->back()->with('success', ...)) --}}
+    @if(session('success'))
+    <div class="flash-toast success show" id="flashToast">
+        ✅ {{ session('success') }}
     </div>
-    <div style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:16px;
-         margin-bottom:32px;background:{{ $_pRM['color'] }}12;border:1.5px solid {{ $_pRM['color'] }}40;">
-        <span style="font-size:22px;">{{ $_pRM['icon'] }}</span>
-        <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">YOUR ROLE</div>
-            <div style="font-size:16px;font-weight:800;color:{{ $_pRM['color'] }};letter-spacing:1px;">{{ strtoupper($_pRM['label']) }}</div>
-        </div>
-        <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
-        <div style="text-align:left;">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;font-weight:700;">MODULE</div>
-            <div style="font-size:16px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:1px;">{{ strtoupper(str_replace('_',' ','users')) }}</div>
-        </div>
+    @elseif(session('error'))
+    <div class="flash-toast error show" id="flashToast">
+        ❌ {{ session('error') }}
     </div>
-    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-         border-radius:16px;padding:20px 24px;margin-bottom:32px;max-width:480px;width:100%;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:2px;font-weight:700;margin-bottom:16px;text-align:left;">YOUR ACCESS OVERVIEW</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-            @foreach($_pAllFeats as $_fKey => $_fIcon)
-            @php
-                $_fPKey = "perm_{$_pRole}_{$_fKey}";
-                $_fHas  = $_pRole === 'superadmin' || (AdminSetting::get($_fPKey, $_pDef["{$_pRole}_{$_fKey}"] ?? '0') === '1');
-                $_fActive = ($_fKey === 'users');
-            @endphp
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:10px;
-                 background:{{ $_fActive ? 'rgba(239,68,68,0.10)' : ($_fHas ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)') }};
-                 border:1px solid {{ $_fActive ? 'rgba(239,68,68,0.3)' : ($_fHas ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') }};">
-                <span style="font-size:18px;{{ !$_fHas ? 'opacity:0.3;' : '' }}">{{ $_fIcon }}</span>
-                <span style="font-size:9px;letter-spacing:1px;font-weight:700;
-                    color:{{ $_fActive ? '#ef4444' : ($_fHas ? '#22c55e' : 'rgba(255,255,255,0.2)') }};">
-                    {{ $_fHas ? '✓' : '✗' }}
-                </span>
+    @endif
+
+    {{-- "Recently logged in" mode banner (opened from the dashboard stat card) --}}
+    @if($recent ?? false)
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;margin-bottom:16px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);">
+            <span style="font-size: var(--title-size);">🔁</span>
+            <div style="flex:1;font-size: var(--title-size);color:#3B82F6;font-weight:600;letter-spacing:1px;">
+                RECENTLY LOGGED IN — users who logged into the website
             </div>
-            @endforeach
-        </div>
-    </div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <a href="{{ route('dashboard.index') }}" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;background:#F97316;color:#fff;
-           font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(249,115,22,0.3);"
-           onmouseover="this.style.background='#fb923c'" onmouseout="this.style.background='#F97316'">
-            🏠 GO TO DASHBOARD
-        </a>
-        <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:8px;
-           padding:12px 24px;border-radius:12px;text-decoration:none;
-           background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
-           color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;letter-spacing:1px;"
-           onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ← GO BACK
-        </a>
-    </div>
-</div>
-<style>
-@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-@keyframes lockPulse { 0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.08)} 50%{box-shadow:0 0 60px rgba(239,68,68,0.22)} }
-</style>
-@else
-
-
-
-@php
-    $roleMap     = ['all' => 'All', 'customer' => 'Customer', 'vip' => 'VIP', 'reseller' => 'Reseller', 'banned' => 'Banned'];
-    $roleIcons   = ['customer' => '👤', 'vip' => '⭐', 'reseller' => '🏪', 'banned' => '🚫'];
-    $currentRole = request('role', 'all');
-    $totalUsers  = array_sum($roleCounts ?? []);
-@endphp
-
-{{-- Flash message (from redirect()->back()->with('success', ...)) --}}
-@if(session('success'))
-<div class="flash-toast success show" id="flashToast">
-    ✅ {{ session('success') }}
-</div>
-@elseif(session('error'))
-<div class="flash-toast error show" id="flashToast">
-    ❌ {{ session('error') }}
-</div>
-@endif
-
-{{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
-<div class="stats-grid" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
-    @foreach(['customer','vip','reseller','banned'] as $role)
-    <div class="stat-card">
-        <div class="stat-icon"><span style="font-size:20px;">{{ $roleIcons[$role] }}</span></div>
-        <div>
-            <div class="stat-value">{{ $roleCounts[$role] ?? 0 }}</div>
-            <div class="stat-label">{{ strtoupper($role) }}</div>
-        </div>
-    </div>
-    @endforeach
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-            </svg>
-        </div>
-        <div>
-            <div class="stat-value">{{ $totalUsers }}</div>
-            <div class="stat-label">TOTAL</div>
-        </div>
-    </div>
-</div>
-
-{{-- ── Main card ─────────────────────────────────────────────────────────────── --}}
-<div class="card">
-    <div class="card-header" style="flex-wrap:wrap; gap:12px;">
-
-        {{-- Role filter tabs --}}
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            @foreach($roleMap as $key => $label)
-                @php
-                    $count    = $key === 'all' ? $totalUsers : ($roleCounts[$key] ?? 0);
-                    $isActive = $currentRole === $key;
-                    $params   = array_merge(request()->only('search'), ['role' => $key]);
-                @endphp
-                <a href="{{ route('dashboard.users', $params) }}"
-                   class="filter-tab {{ $isActive ? 'active' : '' }}">
-                    {{ $label }}<span class="count-pill">{{ $count }}</span>
-                </a>
-            @endforeach
-        </div>
-
-        {{-- Search --}}
-        <form method="GET" action="{{ route('dashboard.users') }}" style="position:relative; margin-left:auto;">
-            @if(request('role'))
-                <input type="hidden" name="role" value="{{ request('role') }}">
-            @endif
-            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:rgba(255,255,255,0.3)"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <input type="text" name="search" class="search-input"
-                   placeholder="Search username, email..."
-                   value="{{ request('search') }}" />
-        </form>
-    </div>
-
-    {{-- ── Table ───────────────────────────────────────────────────────────── --}}
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>USERNAME</th>
-                    <th>EMAIL</th>
-                    <th>PHONE</th>
-                    <th>ORDERS</th>
-                    <th>SPENT</th>
-                    <th>2FA</th>
-                    <th>ROLE</th>
-                    <th>JOINED</th>
-                    <th style="min-width:200px;">CHANGE ROLE</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($users as $user)
-                <tr id="user-row-{{ $user->id }}">
-
-                    {{-- ID --}}
-                    <td style="color:rgba(255,255,255,0.3); font-size:12px;">{{ $user->id }}</td>
-
-                    {{-- Avatar + username --}}
-                    <td>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="
-                                width:34px; height:34px; border-radius:50%; flex-shrink:0;
-                                background:linear-gradient(135deg,#F97316,#ea580c);
-                                display:flex; align-items:center; justify-content:center;
-                                font-weight:800; font-size:13px; color:#fff;">
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
-                            </div>
-                            <div>
-                                <div style="font-weight:700; font-size:15px;">{{ $user->username }}</div>
-                                @if($user->name && $user->name !== $user->username)
-                                    <div style="font-size:11px; color:rgba(255,255,255,0.3);">{{ $user->name }}</div>
-                                @endif
-                            </div>
-                        </div>
-                    </td>
-
-                    <td style="color:rgba(255,255,255,0.5); font-size:14px;">{{ $user->email ?? '—' }}</td>
-                    <td style="color:rgba(255,255,255,0.5); font-size:14px;">{{ $user->phone ?? '—' }}</td>
-
-                    {{-- Orders --}}
-                    <td>
-                        <span class="badge {{ $user->orders_count > 0 ? 'badge-orange' : 'badge-gray' }}">
-                            {{ $user->orders_count }}
-                        </span>
-                    </td>
-
-                    {{-- Total spent + VIP progress ─────────────────────── --}}
-                    @php
-                        $spent    = (float) ($user->total_spent ?? 0);
-                        $vipGoal  = 1000;
-                        $pct      = min(100, round(($spent / $vipGoal) * 100));
-                        $isVip    = ($user->role ?? 'customer') === 'vip';
-                    @endphp
-                    <td style="min-width:120px;">
-                        <div style="font-weight:700; font-size:14px; color:{{ $spent >= $vipGoal ? '#F97316' : '#fff' }};">
-                            ${{ number_format($spent, 0) }}
-                        </div>
-                        @if(! $isVip)
-                        <div style="margin-top:5px; position:relative;">
-                            <div style="height:4px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden;">
-                                <div style="
-                                    height:100%; border-radius:4px;
-                                    width:{{ $pct }}%;
-                                    background:{{ $pct >= 100 ? '#F97316' : 'linear-gradient(90deg,#F97316,#fb923c)' }};
-                                    transition:width 0.6s ease;
-                                "></div>
-                            </div>
-                            <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-top:3px; letter-spacing:0.5px;">
-                                ${{ number_format($spent, 0) }} / $1,000 VIP
-                            </div>
-                        </div>
-                        @else
-                        <div style="font-size:10px; color:#F97316; margin-top:3px; letter-spacing:1px; font-weight:700;">
-                            ⭐ VIP MEMBER
-                        </div>
-                        @endif
-                    </td>
-
-                    {{-- 2FA --}}
-                    <td>
-                        @if($user->two_factor_enabled)
-                            <span class="badge badge-paid">ON</span>
-                        @else
-                            <span class="badge badge-gray">OFF</span>
-                        @endif
-                    </td>
-
-                    {{-- Current role badge --}}
-                    <td>
-                        <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
-                              id="role-badge-{{ $user->id }}"
-                              style="font-size:12px; letter-spacing:1px;">
-                            {{ strtoupper(\App\Models\User::ROLE_LABELS[$user->role ?? 'customer'] ?? 'CUSTOMER') }}
-                        </span>
-                    </td>
-
-                    <td style="color:rgba(255,255,255,0.4); font-size:12px; white-space:nowrap;">
-                        {{ $user->created_at->format('d M Y') }}
-                    </td>
-
-                    {{-- ── CHANGE ROLE (AJAX, no page reload) ──────────────── --}}
-                    <td>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <select class="role-select" id="role-select-{{ $user->id }}"
-                                    data-user="{{ $user->id }}"
-                                    data-current="{{ $user->role ?? 'customer' }}">
-                                @foreach(\App\Models\User::ROLES as $role)
-                                    <option value="{{ $role }}"
-                                        {{ ($user->role ?? 'customer') === $role ? 'selected' : '' }}>
-                                        {{ $roleIcons[$role] ?? '' }}
-                                        {{ \App\Models\User::ROLE_LABELS[$role] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button
-                                type="button"
-                                onclick="applyRole({{ $user->id }}, '{{ $user->username }}')"
-                                id="role-btn-{{ $user->id }}"
-                                class="btn btn-sm btn-outline"
-                                style="padding:5px 14px; font-size:12px; white-space:nowrap; letter-spacing:1px;">
-                                APPLY
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="10" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
-                        <div style="font-size:32px; margin-bottom:10px;">👥</div>
-                        No users found
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    {{-- Pagination --}}
-    @if($users->hasPages())
-        <div style="padding:16px 20px; border-top:1px solid rgba(255,255,255,0.07);">
-            {{ $users->links('dashboard.pagination') }}
+            <a href="{{ route('dashboard.users') }}" style="font-size: var(--title-size);color:var(--text-muted);text-decoration:none;white-space:nowrap;"
+               onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color=''">✕ CLEAR</a>
         </div>
     @endif
-</div>
 
-{{-- ── Toast element (for AJAX feedback) ──────────────────────────────────── --}}
-<div class="flash-toast" id="ajaxToast"></div>
+    {{-- ── Stats strip ──────────────────────────────────────────────────────────── --}}
+    <div class="stats-grid users-stats-grid" style="margin-bottom:20px;">
+        @foreach(['customer'] as $role)
+        <div class="stat-card">
+            <div class="stat-icon"><span style="font-size: var(--title-size);">{{ $roleIcons[$role] }}</span></div>
+            <div>
+                <div class="stat-value">{{ $roleCounts[$role] ?? 0 }}</div>
+                <div class="stat-label">{{ strtoupper($role) }}</div>
+            </div>
+        </div>
+        @endforeach
+        @php $vipCount = $roleCounts['vip'] ?? 0; @endphp
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.25);background:rgba(249,115,22,0.06);">
+            <div class="stat-icon" style="background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.3);">
+                <span style="font-size: var(--title-size);">⭐</span>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#F97316;">{{ $vipCount }}</div>
+                <div class="stat-label" style="color:#F97316;">VIP</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+            </div>
+            <div>
+                <div class="stat-value">{{ $totalUsers }}</div>
+                <div class="stat-label">TOTAL</div>
+            </div>
+        </div>
+        @php $telegramCount = \App\Models\User::whereNotNull('telegram_chat_id')->count(); @endphp
+        <div class="stat-card" style="border-color:rgba(34,158,217,0.25);background:rgba(34,158,217,0.06);">
+            <div class="stat-icon" style="background:rgba(34,158,217,0.15);border-color:rgba(34,158,217,0.3);padding:5px;">
+                <svg viewBox="0 0 256 256" style="width:24px;height:24px;" preserveAspectRatio="xMidYMid"><defs><linearGradient id="tg_s" x1="50%" x2="50%" y1="0%" y2="100%"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs><path fill="url(#tg_s)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.038 128.038 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51 0-33.934-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0Z"/><path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z"/></svg>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#229ED9;">{{ $telegramCount }}</div>
+                <div class="stat-label" style="color:#229ED9;">TELEGRAM</div>
+            </div>
+        </div>
+    </div>
 
+    {{-- ── Main card ─────────────────────────────────────────────────────────────── --}}
+    <div class="card">
+        <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+
+            {{-- Role filter tabs (VIP disabled — all VIPs shown as Customer) --}}
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                @foreach($roleMap as $key => $label)
+                    @php
+                        $count    = $key === 'all' ? $totalUsers : ($roleCounts[$key] ?? 0);
+                        $isActive = $currentRole === $key;
+                        $params   = array_merge(request()->only('search'), ['role' => $key]);
+                    @endphp
+                    <a href="{{ route('dashboard.users', $params) }}"
+                       class="filter-tab {{ $isActive ? 'active' : '' }}">
+                        {{ $label }}<span class="count-pill">{{ $count }}</span>
+                    </a>
+                @endforeach
+            </div>
+
+            {{-- Search --}}
+            <form id="searchForm" method="GET" action="{{ route('dashboard.users') }}" style="position:relative; margin-left:auto;">
+                @if(request('role'))
+                    <input type="hidden" name="role" value="{{ request('role') }}">
+                @endif
+                <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:rgba(255,255,255,0.3)"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" id="searchInput" name="search" class="search-input"
+                       placeholder="{{ __('dashboard.users.searchName') }}"
+                       value="{{ request('search') }}" />
+            </form>
+        </div>
+
+        {{-- ── Table ───────────────────────────────────────────────────────────── --}}
+        <div class="table-wrap">
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>{{ strtoupper(__('dashboard.table.username')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.email')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.phone')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.stats.kpiOrders')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.spent')) }}</th>
+                        <th>{{ __('dashboard.users.twoFactor') }}</th>
+                        <th>TELEGRAM</th>
+                        <th>{{ strtoupper(__('dashboard.table.role')) }}</th>
+                        <th>{{ strtoupper(__('dashboard.table.joined')) }}</th>
+                        <th>LAST LOGIN</th>
+                        {{-- <th style="min-width:200px;">CHANGE ROLE</th> --}}
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($users as $user)
+                    <tr id="user-row-{{ $user->id }}" class="user-row">
+                        <td class="user-id" style="color:rgba(255,255,255,0.3); font-size: var(--title-size);">{{ $user->id }}</td>
+                        <td class="user-info">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                @php
+                                    $userAvatar = $user->avatar
+                                        ? (Str::startsWith($user->avatar, ['http://','https://'])
+                                            ? $user->avatar
+                                            : asset('storage/' . $user->avatar))
+                                        : null;
+                                @endphp
+                                <div style="width:36px; height:36px; border-radius:50%; flex-shrink:0; overflow:hidden;
+                                            border:1.5px solid rgba(249,115,22,0.3); position:relative;">
+                                    @if($userAvatar)
+                                        <img src="{{ $userAvatar }}" alt="{{ $user->username }}"
+                                             style="width:100%; height:100%; object-fit:cover; display:block;"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                        <div style="display:none; width:100%; height:100%;
+                                                    background:linear-gradient(135deg,#F97316,#ea580c);
+                                                    align-items:center; justify-content:center;
+                                                    font-weight:800; font-size: var(--title-size); color:#fff; position:absolute; inset:0;">
+                                            {{ strtoupper(substr($user->username, 0, 1)) }}
+                                        </div>
+                                    @else
+                                        <div style="width:100%; height:100%;
+                                                    background:linear-gradient(135deg,#F97316,#ea580c);
+                                                    display:flex; align-items:center; justify-content:center;
+                                                    font-weight:800; font-size: var(--title-size); color:#fff;">
+                                            {{ strtoupper(substr($user->username, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <div class="user-username" style="font-weight:700; font-size: var(--title-size); cursor:pointer; display:inline-flex; align-items:center; gap:6px;"
+                                         onclick="openUserInfo({{ $user->id }}, @js($user->username), @js($user->name ?? ''), @js($user->email ?? ''), @js($user->phone ?? ''), @js($user->avatar ?? ''), @js($user->role ?? 'customer'), @js($user->created_at->format('d M Y')), {{ $user->orders_count ?? 0 }}, {{ (float)($user->orders_sum_total ?? $user->total_spent ?? 0) }}, {{ $user->two_factor_enabled ? 'true' : 'false' }}, @js($user->telegram_chat_id ? '@'.($user->telegram_username ?? 'connected') : ''))"
+                                         onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
+                                        {{ $user->username }}
+                                        @if(($user->role ?? 'customer') === 'vip')
+                                            <span style="font-size:10px; font-weight:800; color:#fff; background:#F97316; padding:1px 6px; border-radius:3px; white-space:nowrap; line-height:1.2;">⭐ VIP</span>
+                                        @endif
+                                    </div>
+                                    @if($user->name && $user->name !== $user->username)
+                                        <div class="user-name" style="font-size: var(--title-size); color:rgba(255,255,255,0.3);">{{ $user->name }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="user-email" style="color:rgba(255,255,255,0.5); font-size: var(--title-size);">{{ $user->email ?? '—' }}</td>
+                        <td class="user-phone" style="color:rgba(255,255,255,0.5); font-size: var(--title-size);">{{ $user->phone ?? '—' }}</td>
+                        {{-- ... rest of table ... --}}
+
+                        {{-- Orders --}}
+                        <td>
+                            <span class="badge {{ $user->orders_count > 0 ? 'badge-orange' : 'badge-gray' }}">
+                                {{ $user->orders_count }}
+                            </span>
+                        </td>
+
+                        {{-- Total spent + VIP progress ─────────────────────── --}}
+                        @php
+                            $spent = (float) ($user->orders_sum_total ?? $user->total_spent ?? 0);
+                            $vipGoal  = $vipGoal ?? 5000;
+                            $pct      = min(100, round(($spent / $vipGoal) * 100));
+                            $isVip    = ($user->role ?? 'customer') === 'vip';
+                        @endphp
+                        <td style="min-width:120px;">
+                            <div style="font-weight:700; font-size: var(--title-size); color:{{ $spent >= $vipGoal ? '#F97316' : '#fff' }};">
+                                ${{ number_format($spent, 0) }}
+                            </div>
+                            @if(! $isVip)
+                            <div style="margin-top:5px; position:relative;">
+                                <div style="height:4px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden;">
+                                    <div style="
+                                        height:100%; border-radius:4px;
+                                        width:{{ $pct }}%;
+                                        background:{{ $pct >= 100 ? '#F97316' : 'linear-gradient(90deg,#F97316,#fb923c)' }};
+                                        transition:width 0.6s ease;
+                                    "></div>
+                                </div>
+                                <div style="font-size: var(--text-md); color:rgba(255,255,255,0.3); margin-top:3px; letter-spacing:0.5px;">
+                                     ${{ number_format($spent, 0) }} / ${{ number_format($vipGoal, 0) }} VIP
+                                </div>
+                            </div>
+                            @else
+                            <div style="font-size: var(--text-sm); color:#F97316; margin-top:3px; letter-spacing:1px; font-weight:700;">
+                                ⭐ VIP CUSTOMER
+                            </div>
+                            @endif
+                        </td>
+
+                        {{-- 2FA --}}
+                        <td>
+                            @if($user->two_factor_enabled)
+                                <span class="badge badge-paid">ON</span>
+                            @else
+                                <span class="badge badge-gray">OFF</span>
+                            @endif
+                        </td>
+
+                        {{-- Telegram --}}
+                        <td>
+                            @if($user->telegram_chat_id)
+                                <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size: var(--title-size);font-weight:700;background:rgba(34,158,217,0.15);border:1px solid rgba(34,158,217,0.3);color:#229ED9;" title="{{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}">
+                                    <svg width="16" height="16" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid"><defs><linearGradient id="telegram__a" x1="50%" x2="50%" y1="0%" y2="100%"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs><path fill="url(#telegram__a)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.038 128.038 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51 0-33.934-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0Z"/><path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z"/></svg>
+                                    {{ $user->telegram_username ? '@'.$user->telegram_username : 'Connected' }}
+                                </span>
+                            @else
+                                <span style="font-size: var(--title-size);color:rgba(255,255,255,0.25);">—</span>
+                            @endif
+                        </td>
+
+                        {{-- Current role badge --}}
+                        <td>
+                            <span class="badge role-badge-{{ $user->role ?? 'customer' }}"
+                                  id="role-badge-{{ $user->id }}"
+                                  style="font-size: var(--title-size); letter-spacing:1px;">
+                                {{ strtoupper(\App\Models\User::ROLE_LABELS[$user->role ?? 'customer'] ?? 'CUSTOMER') }}
+                            </span>
+                        </td>
+
+                        <td style="color:rgba(255,255,255,0.4); font-size: var(--title-size); white-space:nowrap;">
+                            {{ $user->created_at->format('d M Y') }}
+                        </td>
+
+                        <td style="color:rgba(59,130,246,0.7); font-size: var(--title-size); white-space:nowrap;">
+                            {{ $user->last_login_at ? $user->last_login_at->format('d M Y H:i') : '—' }}
+                        </td>
+
+                        {{-- ── CHANGE ROLE (AJAX, no page reload) ──────────────── --}}
+                        {{-- <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <select class="role-select" id="role-select-{{ $user->id }}"
+                                        data-user="{{ $user->id }}"
+                                        data-current="{{ $user->role ?? 'customer' }}"
+                                        data-role="{{ $user->role ?? 'customer' }}"
+                                        onchange="this.dataset.role=this.value">
+                                    <option value="customer" {{ ($user->role ?? 'customer') === 'customer' ? 'selected' : '' }}>
+                                        👤 Customer
+                                    </option>
+                                </select>
+                                <button
+                                    type="button"
+                                    onclick="applyRole({{ $user->id }}, '{{ $user->username }}')"
+                                    id="role-btn-{{ $user->id }}"
+                                    class="btn btn-sm btn-outline"
+                                    style="padding:5px 14px; font-size: var(--title-size); white-space:nowrap; letter-spacing:1px;">
+                                    APPLY
+                                </button>
+                            </div>
+                        </td> --}}
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="11" style="text-align:center; color:rgba(255,255,255,0.3); padding:50px;">
+                            <div style="font-size: var(--title-size); margin-bottom:10px;">👥</div>
+                            No users found
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        @if($users->hasPages())
+            <div style="padding:16px 20px; border-top:1px solid rgba(255,255,255,0.07);">
+                {{ $users->links('dashboard.pagination') }}
+            </div>
+        @endif
+    </div>
+
+    {{-- ── Toast element (for AJAX feedback) ──────────────────────────────────── --}}
+    <div class="flash-toast" id="ajaxToast"></div>
+
+
+    {{-- ── User Info Modal ───────────────────────────────────────────────────────── --}}
+    <div id="user-info-modal" style="display:none; position:fixed; inset:0; z-index:9999;
+        background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);
+        align-items:center; justify-content:center; padding:16px;">
+        <style>
+            #user-info-card {
+                background: var(--card-bg, #1a1a1a);
+                color: var(--text-color, #ffffff);
+            }
+            [data-theme='light'] #user-info-card {
+                background: #ffffff;
+                color: #1a1a1a;
+            }
+            #user-info-card .info-label { color: var(--muted-text, rgba(255,255,255,0.35)); }
+            [data-theme='light'] #user-info-card .info-label { color: rgba(0,0,0,0.4); }
+            #user-info-card .info-value { color: var(--text-color, #ffffff); }
+            [data-theme='light'] #user-info-card .info-value { color: #1a1a1a; }
+            #user-info-card .grid-box {
+                background: var(--input-bg, rgba(255,255,255,0.03));
+                border: 1px solid var(--border-color, rgba(255,255,255,0.07));
+            }
+            [data-theme='light'] #user-info-card .grid-box {
+                background: rgba(0,0,0,0.03);
+                border: 1px solid rgba(0,0,0,0.1);
+            }
+        </style>
+        <div id="user-info-card" style="width:100%; max-width:440px; border-radius:20px; overflow:hidden;
+            animation:uiModalIn .3s cubic-bezier(0.34,1.2,0.64,1);
+            font-family:Rajdhani,sans-serif;">
+            {{-- Header --}}
+            <div style="padding:24px 24px 0; display:flex; align-items:center; justify-content:space-between;">
+                <div class="info-label" style="font-size: var(--title-size); font-weight:800; letter-spacing:2px;">USER INFORMATION</div>
+                <button onclick="closeUserInfo()"
+                    style="width:32px; height:32px; border-radius:8px; background:rgba(128,128,128,0.1);
+                           border:1px solid rgba(128,128,128,0.2);
+                           font-size: var(--title-size); cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">✕</button>
+            </div>
+
+            {{-- Avatar + name --}}
+            <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+                <div id="ui-avatar-wrap" style="width:72px; height:72px; border-radius:50%; overflow:hidden; flex-shrink:0;
+                    border:2.5px solid #F97316; box-shadow:0 0 0 3px rgba(249,115,22,0.15);">
+                </div>
+                <div>
+                    <div id="ui-username" class="info-value" style="font-size: var(--title-size); font-weight:900; letter-spacing:1px;"></div>
+                    <div id="ui-name" class="info-label" style="font-size: var(--title-size); margin-top:2px;"></div>
+                    <div id="ui-role-badge" style="margin-top:6px;"></div>
+                </div>
+            </div>
+
+            {{-- Info grid --}}
+            <div style="padding:0 24px 8px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">EMAIL</div>
+                    <div id="ui-email" class="info-value" style="font-size: var(--title-size); font-weight:600; word-break:break-all;"></div>
+                </div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">PHONE</div>
+                    <div id="ui-phone" class="info-value" style="font-size: var(--title-size); font-weight:600;"></div>
+                </div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">ORDERS</div>
+                    <div id="ui-orders" style="font-size: var(--title-size); font-weight:900;"></div>
+                </div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.totalSpent')) }}</div>
+                    <div id="ui-spent" style="font-size: var(--title-size); font-weight:900;"></div>
+                </div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.table.joined')) }}</div>
+                    <div id="ui-joined" class="info-value" style="font-size: var(--title-size); font-weight:600;"></div>
+                </div>
+                <div class="grid-box" style="border-radius:10px; padding:12px;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ strtoupper(__('dashboard.users.twoFactor')) }}</div>
+                    <div id="ui-2fa" class="info-value" style="font-size: var(--title-size); font-weight:700;"></div>
+                </div>
+                <div class="grid-box" style="border-radius:10px; padding:12px; grid-column:span 2;">
+                    <div class="info-label" style="font-size: var(--title-size); letter-spacing:2px; font-weight:700; margin-bottom:4px;">{{ __('dashboard.table.name') }}</div>
+                    <div id="ui-telegram" class="info-value" style="font-size: var(--title-size); font-weight:700;"></div>
+                </div>
+            </div>
+
+            <div id="ui-vip-wrap" style="padding:0 24px 20px;">
+                <div style="background:rgba(249,115,22,0.06); border:1px dashed rgba(249,115,22,0.25); border-radius:10px; padding:12px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <div style="font-size: var(--title-size); color:#F97316; font-weight:700; letter-spacing:1px;">⭐ VIP PROGRESS</div>
+                        <div id="ui-vip-pct" style="font-size: var(--title-size); color:rgba(255,255,255,0.4); font-weight:600;"></div>
+                    </div>
+                    <div style="height:6px; border-radius:6px; background:rgba(255,255,255,0.08); overflow:hidden;">
+                        <div id="ui-vip-bar" style="height:100%; border-radius:6px; background:linear-gradient(90deg,#F97316,#fb923c); transition:width 0.6s ease;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Footer button --}}
+            <div style="padding:0 24px 24px;">
+                <a id="ui-view-orders-btn" href="#"
+                    style="display:block; text-align:center; padding:11px; border-radius:10px;
+                           background:linear-gradient(135deg,#F97316,#ea580c); color:#fff;
+                           font-size: var(--title-size); font-weight:800; letter-spacing:1px; text-decoration:none;
+                           box-shadow:0 4px 16px rgba(249,115,22,0.3); transition:opacity .2s;"
+                    onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                    📦 VIEW ORDERS
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    @keyframes uiModalIn { from { opacity:0; transform:scale(.93) translateY(16px); } to { opacity:1; transform:none; } }
+    </style>
+
+    <script>
+    const ROLE_COLORS = {
+        customer: { bg:'rgba(156,163,175,0.15)', color:'#9CA3AF', border:'rgba(156,163,175,0.3)', label:'CUSTOMER' },
+        vip:      { bg:'rgba(249,115,22,0.15)',  color:'#F97316', border:'rgba(249,115,22,0.4)',  label:'⭐ VIP' },
+    };
+
+    function openUserInfo(id, username, name, email, phone, avatar, role, joined, orders, spent, twofa, telegram) {
+        const modal = document.getElementById('user-info-modal');
+        modal.style.display = 'flex';
+
+        // Avatar
+        const avatarWrap = document.getElementById('ui-avatar-wrap');
+        const initial = (username || '?').charAt(0).toUpperCase();
+        if (avatar) {
+            avatarWrap.innerHTML = `<img src="${avatar}" alt="${username}"
+                style="width:100%;height:100%;object-fit:cover;display:block;"
+                onerror="this.style.display='none';this.nextSibling.style.display='flex'" />
+                <div style="display:none;width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
+                    align-items:center;justify-content:center;font-weight:900;font-size: var(--title-size);color:#fff;">${initial}</div>`;
+        } else {
+            avatarWrap.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#F97316,#ea580c);
+                display:flex;align-items:center;justify-content:center;font-weight:900;font-size: var(--title-size);color:#fff;">${initial}</div>`;
+        }
+
+        // Basic info
+        document.getElementById('ui-username').textContent = username;
+        document.getElementById('ui-name').textContent = (name && name !== username) ? name : '';
+        document.getElementById('ui-email').textContent = email || '—';
+        document.getElementById('ui-phone').textContent = phone || '—';
+        document.getElementById('ui-orders').textContent = orders;
+
+        // Format spent to 2 decimal places to avoid truncation
+        const formattedSpent = parseFloat(spent).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('ui-spent').textContent = '$' + formattedSpent;
+
+        document.getElementById('ui-joined').textContent = joined;
+        document.getElementById('ui-2fa').innerHTML = twofa
+            ? '<span style="color:#22c55e;">✓ ENABLED</span>'
+            : '<span style="color:rgba(255,255,255,0.3);">— OFF</span>';
+        document.getElementById('ui-telegram').innerHTML = telegram
+            ? '<span style="display:inline-flex;align-items:center;gap:4px;color:#229ED9;"><svg width="16" height="16" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid"><defs><linearGradient id="tg_u" x1="50%" x2="50%" y1="0%" y2="100%"><stop offset="0%" stop-color="#2AABEE"/><stop offset="100%" stop-color="#229ED9"/></linearGradient></defs><path fill="url(#tg_u)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.038 128.038 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51 0-33.934-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0Z"/><path fill="#FFF" d="M57.94 126.648c37.32-16.256 62.2-26.974 74.64-32.152 35.56-14.786 42.94-17.354 47.76-17.441 1.06-.017 3.42.245 4.96 1.49 1.28 1.05 1.64 2.47 1.82 3.467.16.996.38 3.266.2 5.038-1.92 20.24-10.26 69.356-14.5 92.026-1.78 9.592-5.32 12.808-8.74 13.122-7.44.684-13.08-4.912-20.28-9.63-11.26-7.386-17.62-11.982-28.56-19.188-12.64-8.328-4.44-12.906 2.76-20.386 1.88-1.958 34.64-31.748 35.26-34.45.08-.338.16-1.598-.6-2.262-.74-.666-1.84-.438-2.64-.258-1.14.256-19.12 12.152-54 35.686-5.1 3.508-9.72 5.218-13.88 5.128-4.56-.098-13.36-2.584-19.9-4.708-8-2.606-14.38-3.984-13.82-8.41.28-2.304 3.46-4.662 9.52-7.072Z"/></svg> ' + telegram + '</span>'
+            : '<span style="color:rgba(255,255,255,0.3);">— Not connected</span>';
+
+        // Role badge
+        const rm = ROLE_COLORS[role] || ROLE_COLORS.customer;
+        document.getElementById('ui-role-badge').innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;
+            padding:4px 12px;border-radius:20px;font-size: var(--title-size);font-weight:800;letter-spacing:1px;
+            background:${rm.bg};color:${rm.color};border:1px solid ${rm.border};">${rm.label}</span>`;
+
+        // VIP progress — VIP role is disabled, show progress for all non-customers
+        const vipGoal = {{ $vipGoal ?? 5000 }};
+        const spentNum = parseFloat(spent) || 0;
+        const pct = Math.min(100, Math.round((spentNum / vipGoal) * 100));
+        const vipWrap = document.getElementById('ui-vip-wrap');
+        vipWrap.style.display = 'block';
+        document.getElementById('ui-vip-bar').style.width = pct + '%';
+        document.getElementById('ui-vip-pct').textContent = pct + '% · $' + vipGoal + ' goal';
+
+// View orders link
+        document.getElementById('ui-view-orders-btn').href = `/dashboard/orders?user=${username}`;
+    }
+
+    function closeUserInfo() {
+        document.getElementById('user-info-modal').style.display = 'none';
+    }
+    document.getElementById('user-info-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeUserInfo();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUserInfo(); });
+    </script>
 @endif
 @endsection
 
@@ -443,14 +604,10 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 const ROLE_BADGE_CLASS = {
     customer : 'role-badge-customer',
     vip      : 'role-badge-vip',
-    reseller : 'role-badge-reseller',
-    banned   : 'role-badge-banned',
 };
 const ROLE_LABEL = {
     customer : 'CUSTOMER',
     vip      : 'VIP',
-    reseller : 'RESELLER',
-    banned   : 'BANNED',
 };
 
 // ── CSRF — read from meta tag added to layout <head> ─────────────────────
@@ -468,8 +625,8 @@ let toastTimer;
 function showToast(msg, type = 'success') {
     const el = document.getElementById('ajaxToast');
     el.innerHTML = (type === 'success'
-        ? '<span style="color:#22c55e;font-size:16px;">✓</span> '
-        : '<span style="color:#ef4444;font-size:16px;">✕</span> ') + msg;
+        ? '<span style="color:#22c55e;font-size: var(--title-size);">✓</span> '
+        : '<span style="color:#ef4444;font-size: var(--title-size);">✕</span> ') + msg;
     el.className = `flash-toast ${type} show`;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 3400);
@@ -536,7 +693,7 @@ async function applyRole(userId, username) {
             setTimeout(() => {
                 badge.className   = `badge ${ROLE_BADGE_CLASS[newRole]}`;
                 badge.textContent = ROLE_LABEL[newRole];
-                badge.style.cssText += '; font-size:12px; letter-spacing:1px; transform:scale(1.15); opacity:1; transition:all 0.2s ease;';
+                badge.style.cssText += '; font-size: var(--title-size); letter-spacing:1px; transform:scale(1.15); opacity:1; transition:all 0.2s ease;';
                 setTimeout(() => badge.style.transform = 'scale(1)', 200);
             }, 150);
 
@@ -545,6 +702,7 @@ async function applyRole(userId, username) {
             setTimeout(() => row.style.background = '', 1200);
 
             select.dataset.current = newRole;
+            select.dataset.role = newRole;
             // Reset button to checkmark briefly then back to APPLY
             btn.innerHTML  = '✓';
             btn.style.color = '#22c55e';
@@ -575,19 +733,34 @@ async function applyRole(userId, username) {
     }
 }
 
-// ── Auto-hide server-side flash ───────────────────────────────────────────
+{{-- ── Auto-hide server-side flash ─────────────────────────────────────────── --}}
 const serverToast = document.getElementById('flashToast');
 if (serverToast) setTimeout(() => serverToast.classList.remove('show'), 3500);
-</script>
 
-<style>
-@keyframes spin  { to { transform: rotate(360deg); } }
-@keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20%     { transform: translateX(-5px); }
-    40%     { transform: translateX(5px); }
-    60%     { transform: translateX(-4px); }
-    80%     { transform: translateX(4px); }
-}
-</style>
+{{-- ── Real-time Search ────────────────────────────────────────────────────── --}}
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const searchTerm = this.value;
+    const role = new URLSearchParams(window.location.search).get('role') || 'all';
+
+    searchTimeout = setTimeout(() => {
+        fetch(`{{ route('dashboard.users') }}?search=${encodeURIComponent(searchTerm)}&role=${encodeURIComponent(role)}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTableBody = doc.getElementById('userTable').querySelector('tbody');
+            document.getElementById('userTable').querySelector('tbody').innerHTML = newTableBody.innerHTML;
+
+            // Update URL for consistency without page reload
+            const newUrl = `{{ route('dashboard.users') }}?search=${encodeURIComponent(searchTerm)}&role=${encodeURIComponent(role)}`;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        })
+        .catch(err => console.error('Search failed:', err));
+    }, 300); // 300ms debounce
+});
+</script>
 @endpush

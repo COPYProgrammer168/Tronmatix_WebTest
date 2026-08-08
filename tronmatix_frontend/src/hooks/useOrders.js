@@ -91,43 +91,94 @@ export default function useOrders() {
     const w = window.open("", "_blank", "width=720,height=960");
     const items = order.items || order.order_items || [];
     const discount = Number(order.discount_amount) || 0;
+
+    // Legacy Receipt Format (SHOP COPY)
+    const shopReceipt = `
+      <div class="legacy-receipt">
+        <div class="brand">TRONMATIX COMPUTER</div>
+        <div class="subtitle">SHOP - ORDER RECEIPT</div>
+        <div class="info-row"><span>Order ID</span><span style="color:#F97316;font-family:monospace">#${order.order_id || order.id}</span></div>
+        <div class="info-row"><span>Date</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</span></div>
+        <div class="info-row"><span>Customer</span><span>${(order.shipping || order.location)?.name || "—"}</span></div>
+        <div class="info-row"><span>Phone</span><span>${(order.shipping || order.location)?.phone || "—"}</span></div>
+        <div class="info-row"><span>Address</span><span>${(order.shipping || order.location)?.address || ""}${(order.shipping || order.location)?.city ? ", " + (order.shipping || order.location).city : ""}</span></div>
+        <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? "💵 Cash on Delivery" : "📱 ABA BAKONG KHQR"} ${order.payment_status === 'paid' ? '<span style="background:#dcfce7;color:#15803d;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:700;">✅ PAID</span>' : ''}</span></div>
+        ${discount > 0 ? `<div class="info-row"><span>Discount</span><span style="color:#16a34a">${order.discount_code || "—"} — −$${discount.toFixed(2)}</span></div>` : ""}
+        <table border="1" style="width:100%; border-collapse:collapse; margin:20px 0;">
+          <thead><tr style="background:#f9fafb;"><th>ITEM</th><th>QTY</th><th>UNIT</th><th>TOTAL</th></tr></thead>
+          <tbody>${items.map((i) => `<tr>
+            <td>${i.name || i.product?.name || "—"}${ (i.warranty_start && i.warranty_end) ? `<br><small style="color:#F97316">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</small>` : ""}</td>
+            <td style="text-align:center">×${i.qty}</td>
+            <td style="text-align:right">$${Number(i.price || i.unit_price || 0).toFixed(2)}</td>
+            <td style="text-align:right">$${(Number(i.price || i.unit_price || 0) * i.qty).toFixed(2)}</td>
+          </tr>`).join("")}</tbody>
+          <tfoot>
+            <tr><td colspan="3" style="text-align:right">Subtotal</td><td style="text-align:right">$${Number(order.subtotal || order.total).toFixed(2)}</td></tr>
+            ${discount > 0 ? `<tr class="discount-row"><td colspan="3" style="text-align:right">🏷 Discount</td><td style="text-align:right">−$${discount.toFixed(2)}</td></tr>` : ""}
+            <tr class="total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right">$${Number(order.total).toFixed(2)}</td></tr>
+          </tfoot>
+        </table>
+        <div class="footer">THANK YOU FOR SHOPPING AT TRONMATIX COMPUTER</div>
+      </div>
+      <div style="page-break-after: always;"></div>
+    `;
+
+    // Thermal Receipt Format (CUSTOMER COPY)
+    const customerReceipt = `
+      <div class="thermal-receipt">
+        <div class="brand">TRONMATIX</div>
+        <div class="subtitle">CUSTOMER</div>
+        <div class="info-row"><span>ID:</span><span>#${order.order_id || order.id}</span></div>
+        <div class="info-row"><span>Date:</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB")}</span></div>
+        <div class="separator"></div>
+        <table>
+          <tbody>
+            ${items.map((i) => `
+              <tr>
+                <td class="item-name">${i.name || i.product?.name || "—"}${ (i.warranty_start && i.warranty_end) ? `<br><small style="font-size:9px">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</small>` : ""}</td>
+                <td class="item-qty">x${i.qty}</td>
+                <td class="item-total">$${(Number(i.price || i.unit_price || 0) * i.qty).toFixed(2)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+        <div class="separator"></div>
+        <div class="info-row"><span>SUBTOTAL</span><span>$${Number(order.subtotal || order.total).toFixed(2)}</span></div>
+        ${discount > 0 ? `<div class="info-row"><span>DISCOUNT</span><span>-$${discount.toFixed(2)}</span></div>` : ""}
+        <div class="info-row total-row"><span>TOTAL</span><span>$${Number(order.total).toFixed(2)}</span></div>
+        <div class="separator"></div>
+        <div class="footer">*** THANK YOU ***</div>
+      </div>
+    `;
+
     w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Receipt #${order.order_id || order.id}</title>
       <style>
-        *{box-sizing:border-box}
-        body{font-family:Arial,sans-serif;padding:32px;color:#111;max-width:680px;margin:0 auto}
-        .brand{font-size:24px;font-weight:900;letter-spacing:3px;color:#F97316}
-        .subtitle{color:#666;font-size:12px;margin:2px 0 20px;letter-spacing:2px}
-        .info-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
-        .info-row span:first-child{color:#666} .info-row span:last-child{font-weight:600}
-        table{width:100%;border-collapse:collapse;margin:20px 0}
-        thead th{background:#f9fafb;font-size:12px;text-align:left;padding:10px 8px;border-bottom:2px solid #e5e7eb;letter-spacing:1px}
-        tbody td{padding:9px 8px;border-bottom:1px solid #f5f5f5;font-size:13px}
-        tfoot td{padding:8px;font-weight:700;font-size:14px}
-        .discount-row td{color:#16a34a}
-        .total-row td{font-size:18px;font-weight:900;color:#F97316;padding-top:12px}
-        .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:28px;border-top:1px solid #eee;padding-top:16px;letter-spacing:1px}
-        @media print{body{padding:16px}}
+        .legacy-receipt { font-family:Arial,sans-serif; padding:32px; color:#111; max-width:680px; margin:0 auto; }
+        .legacy-receipt .brand { font-size:24px; font-weight:900; letter-spacing:3px; color:#F97316; }
+        .legacy-receipt .subtitle { color:#666; font-size:12px; margin-bottom:20px; }
+        .legacy-receipt .info-row { display:flex; justify-content:space-between; padding:5px 0; font-size:13px; }
+        .legacy-receipt table { width:100%; border-collapse:collapse; margin:20px 0; }
+        .legacy-receipt thead th { background:#f9fafb; padding:8px; font-size:12px; text-align:left; }
+        .legacy-receipt tbody td { padding:8px; border-bottom:1px solid #eee; font-size:13px; }
+        .legacy-receipt tfoot td { padding:8px; font-weight:bold; }
+        
+        .thermal-receipt { font-family:'Courier New',Courier,monospace; padding:10px; color:#000; width:300px; margin:0 auto; }
+        .thermal-receipt .brand { font-size:20px; font-weight:900; text-align:center; }
+        .thermal-receipt .subtitle { text-align:center; font-size:12px; margin-bottom:15px; }
+        .thermal-receipt .info-row { display:flex; justify-content:space-between; font-size:12px; }
+        .thermal-receipt .separator { border-top:1px dashed #000; margin:10px 0; }
+        .thermal-receipt table { width:100%; }
+        .thermal-receipt .item-name { width:60%; font-size:12px; }
+        .thermal-receipt .item-qty { text-align:center; width:10%; font-size:12px; }
+        .thermal-receipt .item-total { text-align:right; width:30%; font-size:12px; }
+        .thermal-receipt .total-row { font-weight:900; border-top:1px dashed #000; }
+        .thermal-receipt .footer { text-align:center; font-size:10px; margin-top:20px; }
+        
+        @media print { body { width:100%; padding:0; } }
       </style></head><body>
-      <div class="brand">TRONMATIX COMPUTER</div>
-      <div class="subtitle">ORDER RECEIPT</div>
-      <div class="info-row"><span>Order ID</span><span style="color:#F97316;font-family:monospace">#${order.order_id || order.id}</span></div>
-      <div class="info-row"><span>Date</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</span></div>
-      <div class="info-row"><span>Customer</span><span>${(order.shipping || order.location)?.name || "—"}</span></div>
-      <div class="info-row"><span>Phone</span><span>${(order.shipping || order.location)?.phone || "—"}</span></div>
-      <div class="info-row"><span>Address</span><span>${(order.shipping || order.location)?.address || ""}${(order.shipping || order.location)?.city ? ", " + (order.shipping || order.location).city : ""}</span></div>
-      <div class="info-row"><span>Payment</span><span>${order.payment_method === "cash" ? "💵 Cash on Delivery" : "📱 ABA BAKONG KHQR"}</span></div>
-      ${discount > 0 ? `<div class="info-row"><span>Discount</span><span style="color:#16a34a">${order.discount_code || "—"} — −$${discount.toFixed(2)}</span></div>` : ""}
-      <table>
-        <thead><tr><th>ITEM</th><th style="text-align:center">QTY</th><th style="text-align:right">UNIT</th><th style="text-align:right">TOTAL</th></tr></thead>
-        <tbody>${items.map((i) => `<tr><td>${i.name || i.product?.name || "—"}</td><td style="text-align:center">×${i.qty}</td><td style="text-align:right">$${Number(i.price || i.unit_price || 0).toFixed(2)}</td><td style="text-align:right">$${(Number(i.price || i.unit_price || 0) * i.qty).toFixed(2)}</td></tr>`).join("")}</tbody>
-        <tfoot>
-          <tr><td colspan="3" style="text-align:right;color:#666">Subtotal</td><td style="text-align:right">$${Number(order.subtotal || order.total).toFixed(2)}</td></tr>
-          ${discount > 0 ? `<tr class="discount-row"><td colspan="3" style="text-align:right">🏷 Discount</td><td style="text-align:right">−$${discount.toFixed(2)}</td></tr>` : ""}
-          <tr class="total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right">$${Number(order.total).toFixed(2)}</td></tr>
-        </tfoot>
-      </table>
-      <div class="footer">THANK YOU FOR SHOPPING AT TRONMATIX COMPUTER</div>
+      ${shopReceipt}
+      ${customerReceipt}
     </body></html>`);
     w.document.close();
     setTimeout(() => w.print(), 600);

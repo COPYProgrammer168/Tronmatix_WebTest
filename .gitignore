@@ -28,6 +28,7 @@ tronmatix_backend/storage/framework/cache/
 tronmatix_backend/storage/framework/sessions/
 tronmatix_backend/storage/framework/views/
 tronmatix_backend/bootstrap/cache/
+tronmatix_backend/storage/app/backups/
 tronmatix_backend/public/storage/
 tronmatix_backend/public/hot
 tronmatix_backend/public/build/
@@ -44,11 +45,4 @@ tronmatix_frontend/yarn-error.log
 
 # Optional extras (uncomment if needed)
 # tronmatix_frontend/build/              # only if you changed outDir to 'build'
-# .vercel
-# .netlify
-# vercel.json
-<<<<<<< HEAD
 # netlify.toml
-=======
-# netlify.toml
->>>>>>> 96a88df4f11841d8bafeff0939c8580ec525cd84

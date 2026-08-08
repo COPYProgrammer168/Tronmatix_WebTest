@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminSetting;
+use App\Models\MarqueeMessage;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StaffRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,8 +20,9 @@ class SettingsController extends Controller
         // FIX [3]: AdminSetting::allMap() — camelCase, not all_map()
         $settings = AdminSetting::allMap();
         $counts = $this->liveCounts($settings);
+        $marqueeMessages = MarqueeMessage::orderBy('order')->get(['id','route','text_en','text_kh','is_active','order']);
 
-        return view('dashboard.settings', compact('settings', 'counts'));
+        return view('dashboard.settings', compact('settings', 'counts', 'marqueeMessages'));
     }
 
     // ── Save settings ─────────────────────────────────────────────────────────
@@ -74,37 +78,86 @@ class SettingsController extends Controller
     // ── Notifications JSON (polled by topbar bell) ────────────────────────────
     public function notifications()
     {
-        // FIX [3]: allMap() not all_map()
-        $settings = AdminSetting::allMap();
+        $settings  = AdminSetting::allMap();
         $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
+        $admin     = Auth::guard('admin')->user();
+        $isSuperAdmin = $admin && $admin->role === 'superadmin';
 
         $alerts = [];
 
+        // ── Staff access requests — superadmin only ───────────────────────────
+        if ($isSuperAdmin) {
+            $pendingRequests = StaffRequest::pending()
+                ->orderByDesc('created_at')
+                ->take(10)
+                ->get();
+
+            foreach ($pendingRequests as $req) {
+                $alerts[] = [
+                    'id'              => 'staff_request_' . $req->id,
+                    'type'            => 'staff_request',
+                    'icon'            => '👤',
+                    'color'           => '#a78bfa',
+                    'font'            => 'ACCESS REQUEST — ' . strtoupper($req->name),
+                    'title'           => 'ACCESS REQUEST — ' . strtoupper($req->name),
+                    'body'            => $req->email . ' · wants ' . strtoupper($req->requested_role) . ' · ' . $req->created_at->diffForHumans(),
+                    'url'             => route('dashboard.staff'),
+                    'request_id'      => $req->id,
+                    'request_name'    => $req->name,
+                    'request_role'    => $req->requested_role,
+                    'request_email'   => $req->email,
+                    'request_message' => $req->message,
+                    'actionable'      => true,
+                ];
+            }
+        }
+
         if (AdminSetting::enabled('notif_low_stock')) {
-            // FIX [4]: use Product::lowStock() scope instead of inline hardcoded query
             $count = Product::lowStock()->count();
             if ($count > 0) {
                 $alerts[] = [
-                    'type' => 'low_stock',
-                    'icon' => '🟠',
+                    'id'    => 'low_stock_' . $count,
+                    'type'  => 'low_stock',
+                    'icon'  => '🟠',
                     'color' => '#F97316',
+                    'font'  => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
                     'title' => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
-                    'body' => "Stock at or below {$threshold} units",
-                    'url' => route('dashboard.products'),
+                    'body'  => "Stock at or below {$threshold} units",
+                    'url'   => route('dashboard.products'),
                 ];
             }
         }
 
         if (AdminSetting::enabled('notif_new_order')) {
-            $count = Order::where('status', 'pending')->whereDate('created_at', today())->count();
-            if ($count > 0) {
+            $newOrders = Order::where('status', 'pending')
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->orderByDesc('created_at')
+                ->take(5)->get();
+
+            foreach ($newOrders as $order) {
                 $alerts[] = [
-                    'type' => 'new_order',
-                    'icon' => '📦',
+                    'id'    => 'new_order_' . $order->id,
+                    'type'  => 'new_order',
+                    'icon'  => '🛒',
                     'color' => '#eab308',
-                    'title' => "{$count} New Order".($count > 1 ? 's' : '').' Today',
-                    'body' => 'Pending orders waiting for confirmation',
-                    'url' => route('dashboard.orders', ['status' => 'pending']),
+                    'font'  => 'NEW ORDER #' . ($order->order_id ?? $order->id),
+                    'title' => 'NEW ORDER #' . ($order->order_id ?? $order->id),
+                    'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->created_at->diffForHumans(),
+                    'url'   => route('dashboard.orders.show', $order->order_id),
+                ];
+            }
+
+            $todayCount = Order::where('status', 'pending')->whereDate('created_at', today())->count();
+            if ($todayCount > 0 && $newOrders->isEmpty()) {
+                $alerts[] = [
+                    'id'    => 'pending_today_' . today()->format('Ymd'),
+                    'type'  => 'new_order',
+                    'icon'  => '📦',
+                    'color' => '#eab308',
+                    'font'  => "{$todayCount} Pending Order".($todayCount > 1 ? 's' : '').' Today',
+                    'title' => "{$todayCount} Pending Order".($todayCount > 1 ? 's' : '').' Today',
+                    'body'  => 'Waiting for confirmation',
+                    'url'   => route('dashboard.orders', ['status' => 'pending']),
                 ];
             }
         }
@@ -116,31 +169,83 @@ class SettingsController extends Controller
                 ->count();
             if ($count > 0) {
                 $alerts[] = [
-                    'type' => 'pending_payment',
-                    'icon' => '📱',
+                    'id'    => 'pending_payment_' . $count,
+                    'type'  => 'pending_payment',
+                    'icon'  => '📱',
                     'color' => '#3b82f6',
+                    'font'  => "{$count} Awaiting KHQR Payment",
                     'title' => "{$count} Awaiting KHQR Payment",
-                    'body' => 'ABA BAKONG payments not yet confirmed',
-                    'url' => route('dashboard.orders'),
+                    'body'  => 'ABA BAKONG payments not yet confirmed',
+                    'url'   => route('dashboard.orders'),
+                ];
+            }
+
+            $manualPending = Order::where('payment_status', 'manual_pending')
+                ->where('updated_at', '>=', now()->subMinutes(60))
+                ->orderByDesc('updated_at')->take(3)->get();
+            foreach ($manualPending as $order) {
+                $alerts[] = [
+                    'id'    => 'manual_' . $order->id,
+                    'type'  => 'manual_payment',
+                    'icon'  => '⏳',
+                    'color' => '#f59e0b',
+                    'font'  => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
+                    'title' => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
+                    'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' claims payment sent',
+                    'url'   => route('dashboard.orders.show', $order->order_id),
                 ];
             }
         }
 
         if (AdminSetting::enabled('notif_qr_confirmed')) {
-            $count = Order::where('payment_status', 'paid')
+            $paidOrders = Order::where('payment_status', 'paid')
                 ->where('payment_method', 'bakong')
-                ->whereDate('updated_at', today())
-                ->count();
-            if ($count > 0) {
+                ->where('updated_at', '>=', now()->subMinutes(30))
+                ->orderByDesc('updated_at')->take(5)->get();
+
+            foreach ($paidOrders as $order) {
                 $alerts[] = [
-                    'type' => 'qr_confirmed',
-                    'icon' => '✅',
+                    'id'    => 'paid_' . $order->id,
+                    'type'  => 'qr_confirmed',
+                    'icon'  => '💳',
                     'color' => '#22c55e',
-                    'title' => "{$count} KHQR Payment".($count > 1 ? 's' : '').' Confirmed Today',
-                    'body' => 'ABA BAKONG auto-confirmed today',
-                    'url' => route('dashboard.orders'),
+                    'font'  => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
+                    'title' => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
+                    'body'  => '$' . number_format($order->total, 2) . ' paid via KHQR · ' . $order->updated_at->diffForHumans(),
+                    'url'   => route('dashboard.orders.show', $order->order_id),
                 ];
             }
+
+            $todayPaid = Order::where('payment_status', 'paid')->where('payment_method', 'bakong')->whereDate('updated_at', today())->count();
+            if ($todayPaid > 0 && $paidOrders->isEmpty()) {
+                $alerts[] = [
+                    'id'    => 'qr_today_' . today()->format('Ymd'),
+                    'type'  => 'qr_confirmed',
+                    'icon'  => '✅',
+                    'color' => '#22c55e',
+                    'font'  => "{$todayPaid} KHQR Payment".($todayPaid > 1 ? 's' : '').' Confirmed Today',
+                    'title' => "{$todayPaid} KHQR Payment".($todayPaid > 1 ? 's' : '').' Confirmed Today',
+                    'body'  => 'ABA BAKONG auto-confirmed',
+                    'url'   => route('dashboard.orders'),
+                ];
+            }
+        }
+
+        // Cancelled orders (last 60 min) — always show
+        $cancelledOrders = Order::where('status', 'cancelled')
+            ->where('updated_at', '>=', now()->subMinutes(60))
+            ->orderByDesc('updated_at')->take(3)->get();
+        foreach ($cancelledOrders as $order) {
+            $alerts[] = [
+                'id'    => 'cancelled_' . $order->id,
+                'type'  => 'cancelled',
+                'icon'  => '❌',
+                'color' => '#ef4444',
+                'font'  => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
+                'title' => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
+                'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->updated_at->diffForHumans(),
+                'url'   => route('dashboard.orders'),
+            ];
         }
 
         if (AdminSetting::enabled('notif_delivery_confirm')) {
@@ -149,12 +254,14 @@ class SettingsController extends Controller
                 ->count();
             if ($count > 0) {
                 $alerts[] = [
-                    'type' => 'delivery',
-                    'icon' => '🚚',
+                    'id'    => 'delivery_' . today()->format('Ymd'),
+                    'type'  => 'delivery',
+                    'icon'  => '🚚',
                     'color' => '#a78bfa',
+                    'font'  => "{$count} Deliver".($count > 1 ? 'ies' : 'y').' Confirmed Today',
                     'title' => "{$count} Deliver".($count > 1 ? 'ies' : 'y').' Confirmed Today',
-                    'body' => 'Orders marked as delivered',
-                    'url' => route('dashboard.orders', ['status' => 'delivered']),
+                    'body'  => 'Orders marked as delivered',
+                    'url'   => route('dashboard.orders', ['status' => 'delivered']),
                 ];
             }
         }
@@ -186,8 +293,8 @@ class SettingsController extends Controller
             'Access denied.'
         );
 
-        $roles = ['admin', 'editor', 'viewer'];
-        $features = ['dashboard', 'products', 'orders', 'orders_edit', 'users', 'discounts', 'settings', 'staff'];
+        $roles = ['admin', 'editor', 'seller', 'developer', 'delivery'];
+        $features = ['dashboard', 'products', 'orders', 'orders_edit', 'users', 'discounts', 'report', 'settings', 'staff'];
 
         $permsToSave = [];
 
@@ -206,5 +313,123 @@ class SettingsController extends Controller
 
         return redirect()->route('dashboard.settings')
             ->with('success', 'Permissions saved successfully.');
+    }
+
+    public function resetVipRoles(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        abort_unless(
+            in_array($admin->role, ['admin', 'superadmin']),
+            403,
+            'Access denied.'
+        );
+
+        $vipGoal = (float) AdminSetting::get('vip_threshold', 5000);
+
+        $updated = User::where('role', 'vip')
+            ->where(function ($query) use ($vipGoal) {
+                // No non-cancelled orders at all
+                $query->whereDoesntHave('orders', function ($q) {
+                    $q->whereNotIn('status', [Order::STATUS_CANCELLED]);
+                })
+                // Total spent from non-cancelled orders < threshold
+                ->orWhereIn('id', function ($sub) use ($vipGoal) {
+                    $sub->select('user_id')
+                        ->from('orders')
+                        ->whereNotIn('status', [Order::STATUS_CANCELLED])
+                        ->whereColumn('orders.user_id', 'users.id')
+                        ->groupBy('user_id')
+                        ->havingRaw('SUM(total) < ?', [$vipGoal]);
+                });
+            })
+            ->update(['role' => 'customer']);
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', "VIP roles reset: {$updated} users demoted to customer.");
+    }
+
+    // ── Marquee messages CRUD ──────────────────────────────────────────────────
+
+    public function marquees(Request $request)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $messages = \App\Models\MarqueeMessage::orderBy('order')->get(['id','route','text_en','text_kh','is_active','order']);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $messages]);
+        }
+
+        return view('dashboard.settings', array_merge(
+            $this->show()->getData(),
+            ['marqueeMessages' => $messages]
+        ));
+    }
+
+    public function storeMarquee(Request $request)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $request->validate([
+            'route'      => 'nullable|string|max:100',
+            'text_en'    => 'required|string|max:500',
+            'text_kh'    => 'required|string|max:500',
+            'is_active'  => 'boolean',
+            'order'      => 'nullable|integer|min:0',
+        ]);
+
+        \App\Models\MarqueeMessage::create([
+            'route'     => $request->input('route') ?: null,
+            'text_en'   => $request->input('text_en'),
+            'text_kh'   => $request->input('text_kh'),
+            'is_active' => $request->boolean('is_active', true),
+            'order'     => (int) ($request->input('order', 0)),
+        ]);
+
+        return redirect()->route('dashboard.settings.marquees')->with('success', 'Marquee message created.');
+    }
+
+    public function updateMarquee(Request $request, $id)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $message = \App\Models\MarqueeMessage::findOrFail($id);
+
+        $request->validate([
+            'route'      => 'nullable|string|max:100',
+            'text_en'    => 'required|string|max:500',
+            'text_kh'    => 'required|string|max:500',
+            'is_active'  => 'boolean',
+            'order'      => 'nullable|integer|min:0',
+        ]);
+
+        $message->update([
+            'route'     => $request->input('route') ?: null,
+            'text_en'   => $request->input('text_en'),
+            'text_kh'   => $request->input('text_kh'),
+            'is_active' => $request->boolean('is_active', true),
+            'order'     => (int) ($request->input('order', 0)),
+        ]);
+
+        return redirect()->route('dashboard.settings.marquees')->with('success', 'Marquee message updated.');
+    }
+
+    public function destroyMarquee(Request $request, $id)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+        abort_unless($admin && in_array($admin->role, ['admin','superadmin']), 403);
+
+        $message = \App\Models\MarqueeMessage::findOrFail($id);
+        $message->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('dashboard.settings.marquees')->with('success', 'Marquee message deleted.');
     }
 }

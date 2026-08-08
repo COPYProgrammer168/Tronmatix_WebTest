@@ -12,50 +12,62 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     // ── Valid order statuses ──────────────────────────────────────────────────
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_CONFIRMED = 'confirmed';
-
+    public const STATUS_PENDING    = 'pending';
+    public const STATUS_CONFIRMED  = 'confirmed';
     public const STATUS_PROCESSING = 'processing';
+    public const STATUS_SHIPPED    = 'shipped';
+    public const STATUS_DELIVERED  = 'delivered';
+    public const STATUS_CANCELLED  = 'cancelled';
 
-    public const STATUS_SHIPPED = 'shipped';
-
-    public const STATUS_DELIVERED = 'delivered';
-
-    public const STATUS_CANCELLED = 'cancelled';
+    // ── Valid fulfillment types ───────────────────────────────────────────────
+    public const FULFILLMENT_DELIVERY = 'delivery';
+    public const FULFILLMENT_PICKUP   = 'pickup';
 
     // ── Mass assignable ───────────────────────────────────────────────────────
     protected $fillable = [
         'order_id',
         'user_id',
         'status',
+        'fulfillment_type',      // ← NEW: 'delivery' | 'pickup'
         'payment_method',
         'payment_status',
         'payment_ref',
         'subtotal',
-        'discount_id',          // FK → discounts
+        'discount_id',
         'discount_code',
         'discount_amount',
         'delivery',
         'tax',
         'total',
-        'location_id',          // FIX [1]: FK → user_locations — was missing
-        'shipping',             // JSON snapshot {name, phone, address, city, country, note}
+        'location_id',
+        'province_id',
+        'delivery_provider_id',
+        'delivery_zone',         // 'phnom_penh' | 'province' — persisted at checkout
+        'shipping',              // JSON snapshot {name, phone, address, city, country, note}
         'delivery_date',
         'delivery_time_slot',
         'delivery_confirmed_at',
+        'delivery_confirm_requested_at',
+        'customer_delivery_note',
+        'delivery_confirmed_by',
+        'delivery_lat',
+        'delivery_lng',
+        'delivery_map_address',
     ];
 
     // ── Casts ─────────────────────────────────────────────────────────────────
     protected $casts = [
-        'shipping' => 'array',
-        'subtotal' => 'float',
-        'discount_amount' => 'float',
-        'delivery' => 'float',
-        'tax' => 'float',
-        'total' => 'float',
-        'delivery_date' => 'date',
-        'delivery_confirmed_at' => 'datetime',
+        'shipping'             => 'array',
+        'subtotal'             => 'float',
+        'discount_amount'      => 'float',
+        'delivery'             => 'float',
+        'tax'                  => 'float',
+        'total'                => 'float',
+        'delivery_date'        => 'date',
+        'delivery_confirmed_at'=> 'datetime',
+        'delivery_confirm_requested_at' => 'datetime',
+        'delivery_lat'         => 'float',
+        'delivery_lng'         => 'float',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────
@@ -75,19 +87,58 @@ class Order extends Model
         return $this->hasMany(Payment::class)->latest();
     }
 
-    // FIX [2]: discount() relationship — DiscountController uses $order->discount
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
     }
 
-    // FIX [3]: location() relationship — order-show blade uses $order->location
     public function location(): BelongsTo
     {
         return $this->belongsTo(UserLocation::class, 'location_id');
     }
 
-    // FIX [4]: activePayment() — used by payment controllers to get current payment
+    public function province(): BelongsTo
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function deliveryProvider(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryProvider::class);
+    }
+
+    /**
+     * The provider's zone-specific fee/time row matching this order's delivery_zone.
+     * Null when no provider, no zone, or the provider has no row for that zone.
+     */
+    public function deliveryProviderZone()
+    {
+        return $this->hasOne(\App\Models\DeliveryProviderZone::class, 'delivery_provider_id', 'delivery_provider_id')
+            ->where('zone', $this->delivery_zone);
+    }
+
+    /**
+     * Zone-specific delivery details for the API: provider name/logo plus the
+     * resolved fee + ETA for this order's delivery_zone.
+     */
+    public function getDeliveryProviderDetailsAttribute(): ?array
+    {
+        $provider = $this->deliveryProvider;
+        if (! $provider) return null;
+
+        $zone = $this->delivery_zone ?? 'phnom_penh';
+        $zd = $provider->zones->firstWhere('zone', $zone);
+
+        return [
+            'id'             => $provider->id,
+            'name'           => $provider->name,
+            'logo_url'       => $provider->logo,
+            'zone'           => $zone,
+            'estimated_time' => $zd?->estimated_time,
+            'fee'            => $zd?->fee,
+        ];
+    }
+
     public function activePayment(): HasOne
     {
         return $this->hasOne(Payment::class)->whereNotIn('status', [
@@ -108,10 +159,9 @@ class Order extends Model
     {
         parent::boot();
 
-        // Auto-generate readable order_id on create
         static::creating(function (Order $order) {
             if (empty($order->order_id)) {
-                $order->order_id = 'TRX-'.strtoupper(substr(uniqid(), -8));
+                $order->order_id = 'TRX-' . strtoupper(substr(uniqid(), -8));
             }
             if (empty($order->status)) {
                 $order->status = self::STATUS_CONFIRMED;
@@ -119,32 +169,62 @@ class Order extends Model
             if (empty($order->payment_status)) {
                 $order->payment_status = 'pending';
             }
+            // Default fulfillment_type to 'delivery' if not set
+            if (empty($order->fulfillment_type)) {
+                $order->fulfillment_type = self::FULFILLMENT_DELIVERY;
+            }
         });
 
-        // FIX [5]: VIP threshold now reads from AdminSetting instead of hardcoded 1000
         static::saved(function (Order $order) {
-            if (! $order->user_id) {
-                return;
-            }
+            if (! $order->user_id) return;
 
             $user = User::find($order->user_id);
-            if (! $user || $user->role !== 'customer') {
-                return;
-            }
+            if (! $user || ! in_array($user->role, ['customer', 'vip'])) return;
 
             $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
 
             $totalSpent = static::where('user_id', $order->user_id)
                 ->whereNotIn('status', [self::STATUS_CANCELLED])
+                ->where('payment_status', 'paid')
                 ->sum('total');
 
-            if ($totalSpent >= $vipThreshold) {
+            if ($user->role === 'customer' && $totalSpent >= $vipThreshold) {
                 $user->update(['role' => 'vip']);
+            } elseif ($user->role === 'vip' && $totalSpent < $vipThreshold) {
+                $user->update(['role' => 'customer']);
+            }
+        });
+
+        static::deleted(function (Order $order) {
+            if (! $order->user_id) return;
+
+            $user = User::find($order->user_id);
+            if (! $user || ! in_array($user->role, ['customer', 'vip'])) return;
+
+            $vipThreshold = (float) AdminSetting::get('vip_threshold', 1000);
+
+            $totalSpent = static::where('user_id', $order->user_id)
+                ->whereNotIn('status', [self::STATUS_CANCELLED])
+                ->where('payment_status', 'paid')
+                ->sum('total');
+
+            if ($user->role === 'vip' && $totalSpent < $vipThreshold) {
+                $user->update(['role' => 'customer']);
             }
         });
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    public function isPickup(): bool
+    {
+        return ($this->fulfillment_type ?? self::FULFILLMENT_DELIVERY) === self::FULFILLMENT_PICKUP;
+    }
+
+    public function isDelivery(): bool
+    {
+        return ! $this->isPickup();
+    }
 
     public function isDelivered(): bool
     {
@@ -171,7 +251,6 @@ class Order extends Model
         return $this->payment_status === 'paid';
     }
 
-    /** Total quantity of items in this order */
     public function totalQty(): int
     {
         return $this->items->sum('qty');
@@ -181,13 +260,13 @@ class Order extends Model
     public function statusBadge(): array
     {
         return match ($this->status) {
-            self::STATUS_PENDING => ['label' => '⏳ PENDING',    'color' => '#eab308'],
-            self::STATUS_CONFIRMED => ['label' => '✅ CONFIRMED',  'color' => '#3b82f6'],
+            self::STATUS_PENDING    => ['label' => '⏳ PENDING',    'color' => '#eab308'],
+            self::STATUS_CONFIRMED  => ['label' => '✅ CONFIRMED',  'color' => '#3b82f6'],
             self::STATUS_PROCESSING => ['label' => '⚙️ PROCESSING', 'color' => '#8b5cf6'],
-            self::STATUS_SHIPPED => ['label' => '🚚 SHIPPED',    'color' => '#F97316'],
-            self::STATUS_DELIVERED => ['label' => '📦 DELIVERED',  'color' => '#22c55e'],
-            self::STATUS_CANCELLED => ['label' => '❌ CANCELLED',  'color' => '#ef4444'],
-            default => ['label' => strtoupper($this->status), 'color' => '#fff'],
+            self::STATUS_SHIPPED    => ['label' => '🚚 SHIPPED',    'color' => '#F97316'],
+            self::STATUS_DELIVERED  => ['label' => '📦 DELIVERED',  'color' => '#22c55e'],
+            self::STATUS_CANCELLED  => ['label' => '❌ CANCELLED',  'color' => '#ef4444'],
+            default                 => ['label' => strtoupper($this->status), 'color' => '#fff'],
         };
     }
 }

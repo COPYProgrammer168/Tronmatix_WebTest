@@ -1,0 +1,302 @@
+import { useState, useEffect, useCallback } from 'react'
+import axiosClient from '../../lib/axios'
+import { useLang } from '../../context/LanguageContext'
+import telegramIcon from '../../assets/telegram.svg'
+
+const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || ''
+
+export default function TelegramConnect({ user, dark, onUpdate, notify }) {
+  const { t, isKhmer } = useLang()
+  const tgFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
+  const [status,     setStatus]     = useState(null)
+  const [loading,    setLoading]    = useState(true)
+  const [busy, setbusy] = useState(false)
+  const [testSent,   setTestSent]   = useState(false)
+  const [widgetKey,  setWidgetKey]  = useState(0)
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false)
+
+  const c = {
+    card:       dark ? '#111827' : '#F9FAFB',
+    cardBorder: dark ? '#1F2937' : '#F3F4F6',
+    text:       dark ? '#F9FAFB' : '#111827',
+    muted:      dark ? '#9CA3AF' : '#6B7280',
+  }
+
+  const fetchStatus = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
+    try {
+      const res = await axiosClient.get('/api/telegram/status')
+      setStatus(res.data?.data ?? null)
+    } catch { setStatus(null) }
+    finally { if (!silent) setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchStatus() }, [fetchStatus])
+
+  const handleDisconnect = async () => {
+    setbusy(true)
+    try {
+      await axiosClient.post('/api/telegram/disconnect')
+      notify('Telegram disconnected.', 'success')
+      setTestSent(false)
+      setShowDisconnectModal(false) 
+      setWidgetKey(k => k + 1)   // force widget re-inject after disconnect
+      await fetchStatus(true)
+      onUpdate?.({ telegram_connected: false })
+    } catch { notify('Failed to disconnect.', 'error') }
+    finally { setbusy(false) }
+  }
+
+  const handleTest = async () => {
+    setbusy(true)
+    try {
+      const res = await axiosClient.post('/api/telegram/test-message')
+      if (res.data?.success) {
+        setTestSent(true)
+        notify('Test message sent! 📨', 'success')
+        setTimeout(() => setTestSent(false), 4000)
+      } else notify(res.data?.message || 'Failed.', 'error')
+    } catch { notify('Failed.', 'error') }
+    finally { setbusy(false) }
+  }
+
+  return (
+    <div style={{ border: `1px solid ${c.cardBorder}`, borderRadius: 14, background: c.card, overflow: 'hidden', marginTop: 20 }}>
+      {/* Disconnect Modal */}
+      {showDisconnectModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'fadeIn 0.2s' }}>
+          <div style={{ background: c.card, padding: 24, borderRadius: 16, width: '100%', maxWidth: 320, textAlign: 'center', animation: 'scaleUp 0.3s cubic-bezier(0.34,1.56,0.64,1)', border: `1px solid ${c.cardBorder}` }}>
+            <div style={{ fontSize: 24, marginBottom: 12 }}>⚠️</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: c.text, marginBottom: 8 }}>{isKhmer ? t('telegram.confirmDisconnect') : 'Disconnect Telegram?'}</div>
+            <div style={{ fontSize: 13, color: c.muted, marginBottom: 20 }}>{isKhmer ? t('telegram.confirmDesc') : 'You will stop receiving notifications.'}</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowDisconnectModal(false)} style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: dark ? '#374151' : '#E5E7EB', color: c.text, fontWeight: 700, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleDisconnect} style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#EF4444', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Disconnect</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${c.cardBorder}`, background: dark ? '#0F172A' : '#FFFFFF' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <img src={telegramIcon} alt="Telegram" style={{ width: '60%', height: '60%' }} />
+        </div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, color: c.text, fontFamily: tgFont }}>{isKhmer ? t('telegram.title') : 'TELEGRAM NOTIFICATIONS'}</div>
+          <div style={{ fontSize: 12, color: c.muted, marginTop: 1, fontFamily: tgFont, }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
+        </div>
+        <div style={{ marginLeft: 'auto' }}>
+          {loading
+            ? <span style={{ fontSize: 11, fontWeight: 700, color: c.muted, background: dark ? '#1F2937' : '#F3F4F6', padding: '4px 10px', borderRadius: 20 }}>{isKhmer ? t('common.loading') : 'LOADING...'}</span>
+            : <StatusBadge connected={!!status?.connected} isKhmer={isKhmer} t={t} />
+          }
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ fontFamily: tgFont, padding: '18px 20px' }}>
+        {loading ? <Skeleton dark={dark} /> : status?.connected
+          ? <ConnectedView status={status} dark={dark} c={c} busy={busy} testSent={testSent} onDisconnect={() => setShowDisconnectModal(true)} onTest={handleTest} isKhmer={isKhmer} t={t} />
+          : <NotConnectedView
+              dark={dark} c={c} busy={busy} isKhmer={isKhmer} t={t}
+              notify={notify}
+              onUpdate={onUpdate}
+              fetchStatus={fetchStatus}
+            />
+        }
+      </div>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      `}</style>
+    </div>
+  )
+}
+
+function NotConnectedView({ dark, c, busy, notify, isKhmer = false, t = (k) => k, onUpdate, fetchStatus }) {
+  return (
+    <div style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif', color: c.text }}>
+      <p style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
+        {isKhmer ? t('telegram.connectDesc') : 'Connect your Telegram to receive real-time order updates, receipts, shipping alerts, and delivery confirmations.'}
+      </p>
+
+      {/* Why connect */}
+      <div style={{ padding: '12px 14px', borderRadius: 10, marginBottom: 16, background: dark ? 'rgba(34,153,221,0.07)' : 'rgba(34,153,221,0.05)', border: '1px dashed rgba(34,153,221,0.25)' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#229ED9', letterSpacing: isKhmer ? 0 : 2, marginBottom: 8 }}>{isKhmer ? t('telegram.whyConnect') : 'WHY CONNECT?'}</div>
+        {(isKhmer
+          ? [t('telegram.benefit1'), t('telegram.benefit2'), t('telegram.benefit3'), t('telegram.benefit4')]
+          : ['🔔 Instant notifications — no app refresh needed', '🧾 Automatic order receipts after checkout', '🚚 Shipping & delivery alerts', '🔒 Secure — we only send, never read your messages'])
+          .map(b => <div key={b} style={{ fontSize: 12, color: c.text, marginBottom: 5, fontWeight: 600 }}>{b}</div>)}
+      </div>
+
+      {/* Widget */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <div style={{ fontSize: 11, color: c.muted, fontWeight: 600, letterSpacing: isKhmer ? 0 : 1, marginBottom: 4 }}>{isKhmer ? t('telegram.clickToConnect') : 'CLICK BELOW TO CONNECT'}</div>
+
+        <ConnectBotButton
+            busy={busy}
+            dark={dark}
+            c={c}
+            isKhmer={isKhmer}
+            t={t}
+            onConnected={async () => {
+              notify('Telegram connected! ✅', 'success')
+              await fetchStatus(true)
+              onUpdate?.({ telegram_connected: true })
+            }}
+            notify={notify}
+          />
+      </div>
+    </div>
+  )
+}
+
+function ConnectBotButton({ busy, dark, c, isKhmer, t, onConnected, notify }) {
+  const [tgUrl,    setTgUrl]    = useState(null)
+  const [polling,  setPolling]  = useState(false)
+  const [waiting,  setWaiting]  = useState(false)
+
+  const handleClick = async () => {
+    if (busy || polling) return
+    let token, url
+    try {
+      const res = await axiosClient.post('/api/telegram/generate-token')
+      if (!res.data?.success) { notify('Failed to generate link.', 'error'); return }
+      token = res.data.token
+      url   = `https://t.me/${BOT_USERNAME}?start=${token}`
+      setTgUrl(url)
+    } catch { notify('Failed to generate link.', 'error'); return }
+
+    const tgWindow = window.open(url, '_blank')
+    if (!tgWindow) {
+      return { success: false, message: 'Popup blocked. Please allow popups and try again.' }
+    }
+
+    setWaiting(true)
+    setPolling(true)
+
+    const startTime = Date.now()
+    const poll = setInterval(async () => {
+      if (Date.now() - startTime > 180_000) {
+        clearInterval(poll)
+        setPolling(false)
+        setWaiting(false)
+        notify('Connection timed out. Please try again.', 'error')
+        return
+      }
+      try {
+        const res = await axiosClient.get('/api/telegram/status')
+        if (res.data?.data?.connected) {
+          clearInterval(poll)
+          setPolling(false)
+          setWaiting(false)
+          setTgUrl(null)
+          onConnected()
+        }
+      } catch { /* ignore network hiccups */ }
+    }, 3000)
+  }
+
+  if (waiting) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '12px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#229ED9', fontFamily: 'Rajdhani,sans-serif' }}>
+          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#229ED9', animation: 'pulse 1.2s infinite' }} />
+          Waiting for confirmation in Telegram...
+        </div>
+        <p style={{ fontSize: 11, color: c.muted, textAlign: 'center', margin: 0 }}>
+          Open your Telegram app and tap <b>✅ Confirm Connect</b>
+        </p>
+        {tgUrl && (
+          <a href={tgUrl} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, color: '#229ED9', fontWeight: 700, textDecoration: 'underline' }}>
+            Re-open Telegram →
+          </a>
+        )}
+        <button onClick={() => { setWaiting(false); setPolling(false); setTgUrl(null) }}
+          style={{ fontSize: 12, color: c.muted, background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <button onClick={handleClick} disabled={busy || polling}
+        style={{ width: '100%', padding: '9px 0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#229ED9', border: 'none', color: '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: (busy || polling) ? 'default' : 'pointer', opacity: (busy || polling) ? 0.5 : 1, marginTop: 8 }}>
+        <img src={telegramIcon} alt="Telegram" style={{ width: 16, height: 16 }} />
+        {isKhmer ? t('telegram.connectBot') : 'Connect via Telegram'}
+      </button>
+      <p style={{ fontSize: 10, color: c.muted, textAlign: 'center', margin: '4px 0 0' }}>
+        {isKhmer ? t('telegram.switchHint') : 'Opens Telegram — tap Confirm to link your account'}
+      </p>
+    </>
+  )
+}
+
+function ConnectedView({ status, dark, c, busy, testSent, onDisconnect, onTest, isKhmer = false, t = (k) => k }) {
+  const tgFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
+  const connectedAt = status.connected_at
+    ? new Date(status.connected_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 10, background: dark ? 'rgba(34,197,94,0.07)' : 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', marginBottom: 14 }}>
+        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#229ED9,#0088cc)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src={telegramIcon} alt="Telegram" style={{ width: '60%', height: '60%' }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: c.text, fontFamily: 'Rajdhani,sans-serif' }}>
+            {status.telegram_username ? `@${status.telegram_username}` : 'Telegram Account'}
+          </div>
+          {connectedAt && <div style={{ fontSize: 12, color: c.muted, marginTop: 1 }}>{isKhmer ? `${t('telegram.connectedSince')} ${connectedAt}` : `Connected since ${connectedAt}`}</div>}
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(34,197,94,0.12)', padding: '3px 10px', borderRadius: 20,}}>{isKhmer ? t('telegram.active') : 'ACTIVE'}</div>
+      </div>
+      
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: c.muted, letterSpacing: isKhmer ? 0 : 2, marginBottom: 8 }}>{isKhmer ? t('telegram.youllReceive') : "YOU'LL RECEIVE"}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {(isKhmer
+            ? [['🧾',t('telegram.notif1')],['✅',t('telegram.notif2')],['🚚',t('telegram.notif3')],['🎉',t('telegram.notif4')],['🚫',t('telegram.notif5')],['💳',t('telegram.notif6')]]
+            : [['🧾','Order receipts'],['✅','Order confirmed'],['🚚','Shipped alerts'],['🎉','Delivery confirmation'],['🚫','Cancellation updates'],['💳','Payment status']])
+            .map(([icon, label]) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: c.text }}>
+                <span>{icon}</span><span style={{ fontWeight: 600 }}>{label}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      <div style={{ fontFamily: tgFont, display: 'flex', gap: 8 }}>
+        <button onClick={onTest} disabled={busy} style={{ flex: 1, padding: '10px 0', borderRadius: 10, background: testSent ? 'rgba(34,197,94,0.1)' : 'linear-gradient(135deg,#229ED9,#0088cc)', border: testSent ? '1px solid rgba(34,197,94,0.3)' : 'none', color: testSent ? '#16A34A' : '#fff', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}>
+          {testSent ? `✅ ${isKhmer ? t('telegram.sent') : 'SENT!'}` : busy ? '...' : `📨 ${isKhmer ? t('telegram.testMessage') : 'TEST MESSAGE'}`}
+        </button>
+        <button onClick={onDisconnect} disabled={busy} style={{ padding: '10px 16px', borderRadius: 10, background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', fontFamily: 'Rajdhani,sans-serif', fontSize: 13, fontWeight: 700, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1 }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+          {isKhmer ? t('telegram.disconnect') : 'DISCONNECT'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function StatusBadge({ connected, isKhmer = false, t = (k) => k }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: isKhmer ? 0 : 1, background: connected ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.08)', border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.25)'}`, color: connected ? '#16A34A' : '#DC2626', fontFamily: isKhmer ? 'Kdam Thmor Pro,sans-serif' : 'Rajdhani,sans-serif' }}>
+      <span style={{ fontSize: 8 }}>●</span>
+      {connected ? (isKhmer ? t('telegram.connected') : 'CONNECTED ✅') : (isKhmer ? t('telegram.notConnected') : 'NOT CONNECTED ❌')}
+    </div>
+  )
+}
+
+function Skeleton({ dark }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {[80, 100, 60].map(w => <div key={w} style={{ height: 14, width: `${w}%`, borderRadius: 7, background: dark ? '#1F2937' : '#F3F4F6' }} />)}
+    </div>
+  )
+}

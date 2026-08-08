@@ -16,11 +16,15 @@ class OrderItem extends Model
         'price',
         'qty',
         'image',
+        'warranty_start',
+        'warranty_end',
     ];
 
     protected $casts = [
         'price' => 'float',
         'qty' => 'integer',
+        'warranty_start' => 'date',
+        'warranty_end' => 'date',
     ];
 
     public function order(): BelongsTo
