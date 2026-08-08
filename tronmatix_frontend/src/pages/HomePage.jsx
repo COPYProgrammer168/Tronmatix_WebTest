@@ -376,9 +376,9 @@ export default function HomePage() {
             const detailLink = banner.product_id
               ? `/product/${banner.product_slug ?? banner.product_id}`
               : banner.link ||
-              (banner.category
-                ? `/category/${banner.category.toLowerCase()}`
-                : `/category/search?q=${encodeURIComponent((banner.title || "").replace("\n", " "))}`);
+                (banner.category
+                  ? `/category/${banner.category.toLowerCase()}`
+                  : `/category/search?q=${encodeURIComponent((banner.title || "").replace("\n", " "))}`);
 
             return (
               <div
@@ -391,6 +391,27 @@ export default function HomePage() {
                   className="absolute inset-0"
                   style={{ background: hasMedia ? "#000" : bgColor }}
                 />
+
+                {/* ── Blurred backdrop fill ─────────────────────────────────
+                     .banner-wrap has a fixed, very wide box ratio, but
+                     uploaded banners (e.g. a vendor-supplied promo graphic)
+                     can be any ratio. object-contain below guarantees the
+                     full banner is always visible with nothing cropped —
+                     this layer just fills the leftover top/bottom or
+                     left/right space with a soft blur of the same image
+                     instead of leaving hard black bars. ─────────────────── */}
+                {imgUrl && !hasVideo && (
+                  <img
+                    src={imgUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{
+                      filter: "blur(60px) brightness(0.55)",
+                      transform: "scale(1.2)",
+                    }}
+                  />
+                )}
 
                 {/* ── Media ──────────────────────────────────────────────── */}
                 {hasVideo && banner.video_type === "upload" && videoSrc && (
@@ -408,19 +429,13 @@ export default function HomePage() {
                   <img
                     src={imgUrl}
                     alt={banner.title}
-                    className="absolute inset-0 w-full h-full object-cover banner-media"
-                    style={{ opacity: hasVideo ? 0.25 : 1 }}
+                    className="absolute inset-0 w-full h-full banner-media"
+                    style={{
+                      objectFit: "contain",
+                      opacity: hasVideo ? 0.25 : 1,
+                    }}
                   />
                 )}
-
-                {/* ── Gradient overlay (Desktop only) ─────────────────────────────────── */}
-                <div
-                  className="absolute inset-0 hidden lg:block"
-                  style={{
-                    background:
-                      "linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.10) 100%)",
-                  }}
-                />
 
                 <Link
                   to={detailLink}
@@ -428,44 +443,65 @@ export default function HomePage() {
                   style={{ display: "block" }}
                 />
 
-                {/* ── Banner Content (Desktop only) ──────────────────────────────────── */}
-                <div className="absolute inset-0 z-10 hidden lg:flex items-center px-12 pointer-events-none">
-                  <div className="max-w-6xl pl-20 text-white pointer-events-auto">
-                    {banner.badge && (
-                      <div className="inline-block px-3 py-1 mb-3 text-xs font-black tracking-widest text-orange-500 bg-white/95 rounded-full">
-                        {banner.badge}
-                      </div>
-                    )}
-                    <h2
-                      className="mb-3 font-black tracking-tighter banner-title"
+                {/* ── Gradient overlay + Banner Content (Desktop only) ───────
+                     Only rendered when the banner actually has CMS title
+                     text. A banner whose image is already a complete,
+                     finished design (logo, product list, CTA all baked in —
+                     like a vendor promo banner) shouldn't get a second
+                     title/subtitle/button and a darkening gradient drawn
+                     on top of it; that's what was duplicating the text and
+                     dimming the graphic. Leave `title` empty in the CMS for
+                     this kind of banner and this block auto-skips. ──────── */}
+                {banner.title && banner.title.trim() && (
+                  <>
+                    <div
+                      className="absolute inset-0 hidden lg:block"
                       style={{
-                        fontFamily: headingFont,
-                        fontSize: isKhmer ? "clamp(36px, 4vw, 50px)" : "clamp(50px, 5vw, 60px)",
-                        lineHeight: isKhmer ? 1.35 : 1.1,
-                        fontWeight: 500,
-                        letterSpacing: .5,
+                        background:
+                          "linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.10) 100%)",
                       }}
-                    >
-                      {banner.title.split("\n").map((line, i) => (
-                        <div key={i}>{line}</div>
-                      ))}
-                    </h2>
-                    <p
-                      className="mb-10 font-semibold opacity-90 tracking-tighte "
-                      style={{ fontSize: "clamp(16px, 2vw, 24px)" }}
-                    >
-                      {banner.subtitle}
-                    </p>
-                    <Link
-                      to={detailLink}
-                      className="px-8 py-3 font-black text-white transition-transform bg-primary rounded-xl hover:scale-105"
-                    >
-                      {isKhmer
-                        ? "មើលផលិតផល"
-                        : t("home.viewProduct") || "VIEW PRODUCT"}
-                    </Link>
-                  </div>
-                </div>
+                    />
+                    <div className="absolute inset-0 z-10 hidden lg:flex items-center px-12 pointer-events-none">
+                      <div className="max-w-6xl pl-20 text-white pointer-events-auto">
+                        {banner.badge && (
+                          <div className="inline-block px-3 py-1 mb-3 text-xs font-black tracking-widest text-orange-500 bg-white/95 rounded-full">
+                            {banner.badge}
+                          </div>
+                        )}
+                        <h2
+                          className="mb-3 font-black tracking-tighter banner-title"
+                          style={{
+                            fontFamily: headingFont,
+                            fontSize: isKhmer
+                              ? "clamp(36px, 4vw, 30px)"
+                              : "clamp(50px, 5vw, 40px)",
+                            lineHeight: isKhmer ? 1.35 : 1.1,
+                            fontWeight: 600,
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          {banner.title.split("\n").map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))}
+                        </h2>
+                        <p
+                          className="mb-10 font-semibold opacity-90 tracking-tighte "
+                          style={{ fontSize: "clamp(16px, 2vw, 24px)" }}
+                        >
+                          {banner.subtitle}
+                        </p>
+                        <Link
+                          to={detailLink}
+                          className="px-8 py-3 font-black text-white transition-transform bg-primary rounded-xl hover:scale-105"
+                        >
+                          {isKhmer
+                            ? "មើលផលិតផល"
+                            : t("home.viewProduct") || "VIEW PRODUCT"}
+                        </Link>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}
@@ -588,7 +624,9 @@ export default function HomePage() {
                 className="text-primary font-bold hover:underline whitespace-nowrap"
                 style={{
                   fontFamily: bodyFont,
-                  fontSize: isKhmer ? "clamp(12px, 1.5vw, 15px)" : "clamp(14px, 1.5vw, 16px)",
+                  fontSize: isKhmer
+                    ? "clamp(12px, 1.5vw, 15px)"
+                    : "clamp(14px, 1.5vw, 16px)",
                 }}
               >
                 {isKhmer ? "មើលផលិតផលថ្មី" : "View All New Product"} →
@@ -648,7 +686,8 @@ export default function HomePage() {
                 style={{
                   width: "calc(100% - 5px)",
                   background: headerL,
-                  clipPath: "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)",
+                  clipPath:
+                    "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)",
                 }}
               />
 
@@ -660,7 +699,8 @@ export default function HomePage() {
                     fontFamily: headingFont,
                     fontSize: 22,
                     letterSpacing: isKhmer ? 0 : 2,
-                    clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+                    clipPath:
+                      "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
                   }}
                 >
                   {cat}
@@ -727,35 +767,49 @@ export default function HomePage() {
                   className="cat-swiper !pb-7"
                 >
                   {isLoading
-                    ? Array(6).fill(null).map((_, i) => (
-                      <SwiperSlide key={i} style={{ width: 210 }}>
-                        <div className="rounded-xl skeleton-shimmer" style={{
-                          width: 210, aspectRatio: "1 / 1",
-                          "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                          "--sk-shine": dark ? "#374151" : "#e9eaec",
-                        }} />
-                      </SwiperSlide>
-                    ))
+                    ? Array(6)
+                        .fill(null)
+                        .map((_, i) => (
+                          <SwiperSlide key={i} style={{ width: 210 }}>
+                            <div
+                              className="rounded-xl skeleton-shimmer"
+                              style={{
+                                width: 210,
+                                aspectRatio: "1 / 1",
+                                "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                                "--sk-shine": dark ? "#374151" : "#e9eaec",
+                              }}
+                            />
+                          </SwiperSlide>
+                        ))
                     : catItems.map((p, i) => (
-                      <SwiperSlide key={p.id || i} style={{ width: 210 }}>
-                        <ProductCard product={p} />
-                      </SwiperSlide>
-                    ))}
+                        <SwiperSlide key={p.id || i} style={{ width: 210 }}>
+                          <ProductCard product={p} />
+                        </SwiperSlide>
+                      ))}
                 </Swiper>
 
                 {/* Mobile: horizontal scroll — 2 columns per view, up to 10 cards */}
                 <div className="cat-mobile-scroll">
                   {isLoading
-                    ? Array(10).fill(null).map((_, i) => (
-                      <div key={i} className="rounded-xl skeleton-shimmer" style={{
-                        aspectRatio: "1 / 1",
-                        "--sk-base": dark ? "#1f2937" : "#f3f4f6",
-                        "--sk-shine": dark ? "#374151" : "#e9eaec",
-                      }} />
-                    ))
-                    : catItems.slice(0, 10).map((p, i) => (
-                      <ProductCard key={p.id || i} product={p} />
-                    ))}
+                    ? Array(10)
+                        .fill(null)
+                        .map((_, i) => (
+                          <div
+                            key={i}
+                            className="rounded-xl skeleton-shimmer"
+                            style={{
+                              aspectRatio: "1 / 1",
+                              "--sk-base": dark ? "#1f2937" : "#f3f4f6",
+                              "--sk-shine": dark ? "#374151" : "#e9eaec",
+                            }}
+                          />
+                        ))
+                    : catItems
+                        .slice(0, 10)
+                        .map((p, i) => (
+                          <ProductCard key={p.id || i} product={p} />
+                        ))}
                 </div>
               </>
             )}
@@ -880,7 +934,11 @@ function VideoCard({ video, isKhmer, dark }) {
   // which then falls through to the upload-frame poster or text placeholder.
   const thumb = resolveImage(video.thumbnail) || getYouTubeThumbnail(video);
   const wrapped = video.product_id
-    ? (children) => <Link to={`/product/${video.product_slug ?? video.product_id}`}>{children}</Link>
+    ? (children) => (
+        <Link to={`/product/${video.product_slug ?? video.product_id}`}>
+          {children}
+        </Link>
+      )
     : null;
 
   const typeConfig = getVideoTypeConfig(video);
