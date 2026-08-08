@@ -34,7 +34,8 @@ export default function Step1DeliveryInfo({
   const confirmationRef                   = useRef(null)
   const verifierRef                       = useRef(null)
 
-  // ── Delivery requires name + phone + address; pickup only name + phone ──
+  // ── Delivery requires name + phone + address + a map pin; pickup only name + phone ──
+  // The map pin lives outside `location` (separate state), so handle it specially.
   const requiredFields = isPickup
     ? [
         { key: "name",  label: "Full Name" },
@@ -44,8 +45,11 @@ export default function Step1DeliveryInfo({
         { key: "name",    label: "Full Name" },
         { key: "phone",   label: "Phone" },
         { key: "address", label: "Address" },
+        { key: "mapPin",  label: "Pin Location on Map" },
       ]
-  const missingFields = requiredFields.filter((f) => !location[f]?.trim())
+  const getValue = (key) => (key === "mapPin" ? mapPin?.lat : location[key])
+  const missingFields = requiredFields.filter((f) => !getValue(f.key))
+  const missingMapPin = !isPickup && !mapPin?.lat
   const canProceed    = missingFields.length === 0
   const [saving,   setSaving]   = useState(false)
   const [saved,    setSaved]    = useState(false)
@@ -320,22 +324,22 @@ export default function Step1DeliveryInfo({
             />
           )}
 
-          {/* Map pin picker */}
+          {/* Map pin picker — required for delivery */}
           <div>
             <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>
-              {isKhmer ? t("locations.mapPin") : "PIN LOCATION ON MAP (optional)"}
+              {isKhmer ? t("locations.mapPin") : "PIN LOCATION ON MAP *"}
             </label>
             <button type="button" onClick={() => setShowMapPicker(true)}
               className="w-full rounded-lg px-4 py-2.5 text-left transition-colors"
               style={{
-                border: mapPin?.lat ? '1.5px solid #22c55e' : `1px dashed ${c.inputBorder}`,
+                border: mapPin?.lat ? '1.5px solid #22c55e' : (missingMapPin ? '1.5px solid #EF4444' : `1px dashed ${c.inputBorder}`),
                 background: mapPin?.lat ? 'rgba(34,197,94,0.06)' : c.inputBg,
                 color: mapPin?.lat ? '#22c55e' : c.textSub,
                 fontFamily: 'Rajdhani, sans-serif', fontSize: 14, fontWeight: 700, cursor: 'pointer',
               }}>
               {mapPin?.lat
                 ? `✅ Pinned: ${mapPin.address ? mapPin.address.slice(0,40)+'...' : `${Number(mapPin.lat).toFixed(5)}, ${Number(mapPin.lng).toFixed(5)}`}`
-                : (isKhmer ? '📍 ចុចដើម្បីកំណត់ទីតាំង (ឬស្វែងរក/បិទភ្ជាប់តំណ)' : '📍 Pin location (or search/paste link)')
+                : (isKhmer ? '📍 ចុចដើម្បីកំណត់ទីតាំង (ឬស្វែងរក/បិទភ្ជាប់តំណ) *' : '📍 Pin location (or search/paste link) *')
               }
             </button>
             {mapPin?.lat && (

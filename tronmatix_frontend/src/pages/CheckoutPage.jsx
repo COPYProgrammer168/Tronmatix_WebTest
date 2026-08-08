@@ -144,14 +144,14 @@ export default function CheckoutPage() {
   }
 
   const placeOrder = async () => {
-    // ── Hard guard: a Delivery order must have a name, phone and address.
+    // ── Hard guard: a Delivery order must have a name, phone, address and a map pin.
     //    Re-check here (not just on step 1) so the user can't bypass the
     //    step-1 gate by going back and clearing a field before PLACE ORDER.
-    if (!isPickup && (!location?.name?.trim() || !location?.phone?.trim() || !location?.address?.trim())) {
+    if (!isPickup && (!location?.name?.trim() || !location?.phone?.trim() || !location?.address?.trim() || !mapPin?.lat)) {
       setStep(1)
       Swal.fire({
         title: isKhmer ? "ព័ត៌មានដឹកជញ្ជូនមិនពេញលេញ" : "Missing delivery info",
-        text: isKhmer ? "ការដឹកជញ្ជូនតម្រូវឱ្យមានឈ្មោះ លេខទូរស័ព្ទ និងអាសយដ្ឋាន។" : "Delivery requires a name, phone and address.",
+        text: isKhmer ? "ការដឹកជញ្ជូនតម្រូវឱ្យមានឈ្មោះ លេខទូរស័ព្ទ អាសយដ្ឋាន និងទីតាំងនៅលើផែនទី។" : "Delivery requires a name, phone, address and a Pin Location on Map.",
         icon: "warning",
         confirmButtonColor: "#F97316",
       })
