@@ -398,6 +398,11 @@
                                                      background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.3); color:#a78bfa;">
                                             🚚 DELIVERY
                                         </span>
+                                        @if ($order->isDelivery() && $order->deliveryProvider?->name)
+                                            <div style="font-size:var(--text-xs); font-weight:600; margin-top:3px; color:#a78bfa;">
+                                                🚚 {{ $order->deliveryProvider->name }}
+                                            </div>
+                                        @endif
                                     @endif
                                     @if ($order->delivery_date)
                                         <div

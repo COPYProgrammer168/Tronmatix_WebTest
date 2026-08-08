@@ -257,15 +257,16 @@ export default function HomePage() {
   .banner-video::-webkit-media-controls-overlay-play-button { display: none !important; }
   .banner-video { -webkit-appearance: none; }
 
-  /* ── Responsive banner height ───────────────────────────────────── */
+  /* ── Responsive banner height ───────────────────────────────────────────
+     16 / 9 matches the actual banner exports (~1376x768) so object-contain
+     has little to no leftover width to letterbox. The old scheme used a
+     much flatter box (16/6 down to 16/7) tuned for full-bleed object-cover
+     photography — with object-contain that shape just creates a big empty
+     gap next to any image that isn't that exact ratio, which is what was
+     showing up next to this banner. One ratio now covers desktop through
+     tablet; only mobile still needs its own rule below. ───────────────── */
   .banner-wrap {
-    aspect-ratio: 16 / 6;        /* desktop */
-  }
-  @media (max-width: 1440px) {
-    .banner-wrap { aspect-ratio: 16 / 7; } /* macbook/large laptop */
-  }
-  @media (max-width: 1024px) {
-    .banner-wrap { aspect-ratio: 16 / 9; } /* tablet/iPad */
+    aspect-ratio: 16 / 9;
   }
 
   @media (max-width: 640px) {
@@ -473,10 +474,10 @@ export default function HomePage() {
                           style={{
                             fontFamily: headingFont,
                             fontSize: isKhmer
-                              ? "clamp(36px, 4vw, 30px)"
-                              : "clamp(50px, 5vw, 40px)",
+                              ? "clamp(36px, 4vw, 50px)"
+                              : "clamp(50px, 5vw, 60px)",
                             lineHeight: isKhmer ? 1.35 : 1.1,
-                            fontWeight: 600,
+                            fontWeight: 500,
                             letterSpacing: 0.5,
                           }}
                         >

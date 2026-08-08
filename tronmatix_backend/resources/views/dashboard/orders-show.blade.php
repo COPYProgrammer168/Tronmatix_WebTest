@@ -105,6 +105,13 @@
                             background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">
                             🚚 DELIVERY
                         </span>
+                        @if($order->isDelivery() && $order->deliveryProvider?->name)
+                            <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                                border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
+                                background:rgba(167,139,250,0.06);border:1px dashed rgba(167,139,250,0.4);color:#a78bfa;">
+                                🚚 {{ $order->deliveryProvider->name }}
+                            </span>
+                        @endif
                     @endif
                     <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
                         border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
@@ -146,6 +153,23 @@
                         <div style="font-weight:700; color:#F97316;">
                             🗓 {{ \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') }}
                             @if($order->delivery_time_slot) · {{ $order->delivery_time_slot }} @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($order->isDelivery())
+                    <div>
+                        <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">DELIVERY PROVIDER</div>
+                        <div style="font-weight:700; color:#a78bfa;">
+                            @if($order->deliveryProvider)
+                                🚚 {{ $order->deliveryProvider->name }}
+                                @php $dpZone = $order->getDeliveryProviderDetailsAttribute(); @endphp
+                                @if(!empty($dpZone['estimated_time']))
+                                    · ETA: {{ $dpZone['estimated_time'] }}
+                                @endif
+                            @else
+                                <span style="color:rgba(255,255,255,0.35);">—</span>
+                            @endif
                         </div>
                     </div>
                     @endif
@@ -415,6 +439,20 @@
                         <div>
                             <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NOTE</div>
                             <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic; word-break: break-word;">{{ $note }}</div>
+                        </div>
+                    </div>
+                    @if($order->isDelivery() && $order->deliveryProvider)
+                    <div style="display:flex; align-items:flex-start; gap:10px; {{ !$note ? 'margin-top:14px;' : '' }}">
+                        <span style="font-size: var(--title-size);">🚚</span>
+                        <div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">DELIVERY PROVIDER</div>
+                            <div style="font-weight:700; color:#a78bfa; font-size: var(--title-size);">
+                                {{ $order->deliveryProvider->name }}
+                                @php $dyZone = $order->getDeliveryProviderDetailsAttribute(); @endphp
+                                @if(!empty($dyZone['estimated_time']))
+                                    <span style="color:rgba(167,139,250,0.55);"> · ETA: {{ $dyZone['estimated_time'] }}</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                     @endif
@@ -847,6 +885,21 @@
                         </div>
                     </div>
                     @endif
+                    @if($order->isDelivery() && $order->deliveryProvider)
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size: var(--title-size);">🚚</span>
+                        <div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">DELIVERY PROVIDER</div>
+                            <div style="font-weight:700; color:#a78bfa; font-size: var(--title-size);">
+                                {{ $order->deliveryProvider->name }}
+                                @php $dyZone2 = $order->getDeliveryProviderDetailsAttribute(); @endphp
+                                @if(!empty($dyZone2['estimated_time']))
+                                    <span style="color:rgba(167,139,250,0.55);"> · ETA: {{ $dyZone2['estimated_time'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -924,6 +977,35 @@
             </div>
         </div>
 
+        {{-- Provider picker — required when the smart action targets DELIVERED --}}
+        @if($nextAction['status'] === 'delivered' && $order->isDelivery() && !$order->deliveryProvider)
+        @php
+            $nextZone  = $order->delivery_zone ?? 'phnom_penh';
+            $providers = \App\Models\DeliveryProvider::active()->get();
+        @endphp
+        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.45); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+            <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
+                🚚 DELIVERY PROVIDER (REQUIRED) <span class="km-english">(Zone: {{ $nextZone }})</span>
+            </div>
+            <select name="delivery_provider_id" id="ship-provider-select-next" onchange="showShipProviderZone(this, 'ship-provider-confirm-next')"
+                style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
+                background:rgba(255,255,255,0.05); color:var(--text-main); font-family:Rajdhani, var(--font-kh), sans-serif;
+                font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
+                <option value="">— Select a delivery provider —</option>
+                @foreach($providers as $nextProvider)
+                <option value="{{ $nextProvider->id }}" data-zone="{{ $nextZone }}"
+                    data-fee="{{ $nextProvider->zoneDetails($nextZone)?->fee }}"
+                    data-time="{{ $nextProvider->zoneDetails($nextZone)?->estimated_time }}">
+                    {{ $nextProvider->name }}
+                </option>
+                @endforeach
+            </select>
+            <div id="ship-provider-confirm-next" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
+                <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
+            </div>
+        </div>
+        @endif
+
         <div style="display:flex; gap:10px;">
             <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
             <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
@@ -958,6 +1040,33 @@
                 <strong style="color:#22c55e;">Delivered</strong> WITHOUT the customer confirming in Telegram.
             </div>
         </div>
+        @if($order->isDelivery() && !$order->deliveryProvider)
+        @php
+            $forceZone  = $order->delivery_zone ?? 'phnom_penh';
+            $providers  = \App\Models\DeliveryProvider::active()->get();
+        @endphp
+        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.45); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+            <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
+                🚚 DELIVERY PROVIDER (REQUIRED) <span class="km-english">(Zone: {{ $forceZone }})</span>
+            </div>
+            <select name="delivery_provider_id" id="ship-provider-select-force" onchange="showShipProviderZone(this, 'ship-provider-confirm-force')"
+                style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
+                background:rgba(255,255,255,0.05); color:var(--text-main); font-family:Rajdhani, var(--font-kh), sans-serif;
+                font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
+                <option value="">— Select a delivery provider —</option>
+                @foreach($providers as $forceProvider)
+                <option value="{{ $forceProvider->id }}" data-zone="{{ $forceZone }}"
+                    data-fee="{{ $forceProvider->zoneDetails($forceZone)?->fee }}"
+                    data-time="{{ $forceProvider->zoneDetails($forceZone)?->estimated_time }}">
+                    {{ $forceProvider->name }}
+                </option>
+                @endforeach
+            </select>
+            <div id="ship-provider-confirm-force" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
+                <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
+            </div>
+        </div>
+        @endif
         <div style="display:flex; gap:10px;">
             <button onclick="closePopup('confirm-delivery-force')" class="popup-btn-cancel">CANCEL</button>
             <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
@@ -1025,20 +1134,21 @@
         </div>
         @endif
 
-        {{-- Provider picker — only when shipping a DELIVERY order --}}
-        @if($key === 'shipped' && $order->isDelivery())
+        {{-- Provider picker — shipping OR delivering a DELIVERY order --}}
+        @if(($key === 'shipped' || $key === 'delivered') && $order->isDelivery())
         @php
             $orderZone = $order->delivery_zone ?? 'phnom_penh';
             $providers = \App\Models\DeliveryProvider::active()->get();
             $orderProviderId = $order->delivery_provider_id;
+            $provRequire = $key === 'delivered';
         @endphp
-        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2); border-radius:12px; padding:14px 16px; margin-bottom:16px; {{ $provRequire ? 'border-color:rgba(167,139,250,0.45);' : '' }}">
             <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
-                🚚 ASSIGN DELIVERY PROVIDER <span class="km-english">(Zone: {{ $orderZone }})</span>
+                🚚 {{ $provRequire ? 'DELIVERY PROVIDER (REQUIRED TO CONFIRM)' : 'ASSIGN DELIVERY PROVIDER' }} <span class="km-english">(Zone: {{ $orderZone }})</span>
             </div>
-            <select name="delivery_provider_id" id="ship-provider-select" onchange="showShipProviderZone(this)"
+            <select name="delivery_provider_id" id="ship-provider-select-{{ $key }}" onchange="showShipProviderZone(this, 'ship-provider-confirm-{{ $key }}')"
                 style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
-                background:rgba(255,255,255,0.05); color:#fff; font-family:Rajdhani, var(--font-kh), sans-serif;
+                background:rgba(255,255,255,0.05); color:var(--text-main); font-family:Rajdhani, var(--font-kh), sans-serif;
                 font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
                 <option value="">— No provider (assign later) —</option>
                 @foreach($providers as $provider)
@@ -1050,7 +1160,7 @@
                 </option>
                 @endforeach
             </select>
-            <div id="ship-provider-confirm" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
+            <div id="ship-provider-confirm-{{ $key }}" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
                 @if($orderProviderId)
                     @php $p = \App\Models\DeliveryProvider::find($orderProviderId); @endphp
                     @if($p)
@@ -1066,6 +1176,11 @@
                     <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
                 @endif
             </div>
+            @if($provRequire)
+            <div style="font-size: var(--title-size); color:#F97316; font-weight:700; margin-top:4px;" class="km-english">
+                ⚠ Choosing the provider first is required to mark this order delivered.
+            </div>
+            @endif
         </div>
         @endif
 
@@ -1367,9 +1482,10 @@ function closePopup(id) {
 function openStatusPopup(status)  { openPopup('status-'  + status); }
 function closeStatusPopup(status) { closePopup('status-' + status); }
 
-// Show read-only fee/ETA for the selected provider's zone on the shipped popup.
-function showShipProviderZone(select) {
-    const confirm = document.getElementById('ship-provider-confirm');
+// Show read-only fee/ETA for the selected provider's zone on the shipped/delivered popup.
+// targetId lets shipped + delivered popups each update their own preview box.
+function showShipProviderZone(select, targetId) {
+    const confirm = document.getElementById(targetId || 'ship-provider-confirm');
     if (!confirm) return;
     const opt = select.selectedOptions[0];
     if (!opt || !opt.value) {

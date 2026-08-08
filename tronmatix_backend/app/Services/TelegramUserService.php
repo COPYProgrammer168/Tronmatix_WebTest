@@ -184,13 +184,33 @@ class TelegramUserService
         $id    = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
 
-        $this->sendToUser($tgId, implode("\n", [
+        $lines = [
             '🎉 <b>Order Delivered!</b>', '',
             "📦 Order <code>#{$id}</code> has been delivered.",
-            "💰 Total paid: \${$total}", '',
-            '💙 Thank you for shopping with us! We hope you love your order.',
-            '🕐 '.$this->ts(),
-        ]));
+            "💰 Total paid: \${$total}",
+        ];
+
+        // Delivery: tell the customer who delivered it and where.
+        if ($order->isDelivery()) {
+            $shipping = $order->shipping ?? [];
+            $parts = array_filter([
+                $shipping['address'] ?? null,
+                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['province'] ?? null,
+            ], fn($v) => !empty($v));
+            if (!empty($parts)) {
+                $lines[] = '📍 Deliver to: '.$this->e(implode(', ', $parts));
+            }
+            if ($providerLine = $this->providerLine($order)) {
+                $lines[] = $providerLine;
+            }
+        }
+
+        $lines[] = '';
+        $lines[] = '💙 Thank you for shopping with us! We hope you love your order.';
+        $lines[] = '🕐 '.$this->ts();
+
+        $this->sendToUser($tgId, implode("\n", $lines));
     }
 
     public function onOrderCancelled(Order $order): void

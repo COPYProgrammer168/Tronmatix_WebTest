@@ -636,15 +636,34 @@ class TelegramBotService
         $id = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
 
-        $this->send($chatId, implode("\n", [
+        $lines = [
             '🎉 <b>Order Delivered!</b>',
             '',
             "📦 Order <code>#{$id}</code> has been delivered.",
             "💰 Total paid: \${$total}",
-            '',
-            '💙 Thank you for shopping with us!',
-            '🕐 ' . $this->ts(),
-        ]), $this->mainKeyboard());
+        ];
+
+        // Delivery: tell the customer who delivered it and where.
+        if ($order->isDelivery()) {
+            $shipping = $order->shipping ?? [];
+            $parts = array_filter([
+                $shipping['address'] ?? null,
+                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['province'] ?? null,
+            ], fn($v) => !empty($v));
+            if (!empty($parts)) {
+                $lines[] = '📍 Deliver to: ' . $this->e(implode(', ', $parts));
+            }
+            if ($providerLine = $this->providerLine($order)) {
+                $lines[] = $providerLine;
+            }
+        }
+
+        $lines[] = '';
+        $lines[] = '💙 Thank you for shopping with us!';
+        $lines[] = '🕐 ' . $this->ts();
+
+        $this->send($chatId, implode("\n", $lines), $this->mainKeyboard());
     }
 
     public function onOrderCancelled(Order $order): void
@@ -908,10 +927,16 @@ class TelegramBotService
             $head,
             '',
             "📦 Order <code>#{$id}</code> has been marked as delivered.",
-            '',
-            '💙 We\'re glad your items arrived safely.',
-            '🕐 ' . $this->ts(),
         ];
+
+        // Delivery: surface the provider that brought it (matches the delivered message).
+        if ($order->isDelivery() && ($providerLine = $this->providerLine($order))) {
+            $lines[] = $providerLine;
+        }
+
+        $lines[] = '';
+        $lines[] = '💙 We\'re glad your items arrived safely.';
+        $lines[] = '🕐 ' . $this->ts();
 
         if ($note) {
             $lines[] = '';

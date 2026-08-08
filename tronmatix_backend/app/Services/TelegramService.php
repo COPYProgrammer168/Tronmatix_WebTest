@@ -122,17 +122,42 @@ class TelegramService
         if (!$this->token)
             return;
 
+        $shipping = $order->shipping;
+        if (is_string($shipping)) {
+            $shipping = json_decode($shipping, true) ?? [];
+        }
+
         $isPickup = $order->isPickup();
         $verb = $isPickup ? 'Picked Up' : 'Delivered';
         $icon = $isPickup ? '🏪' : '📦';
 
-        $message = implode("\n", [
+        $lines = [
             "{$icon} *Order {$verb}!*",
             '',
             "📦 Order `#{$order->order_id}` has been {$verb}.",
             '👤 Customer: ' . ($order->user?->username ?? 'Guest'),
-            '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
-        ]);
+        ];
+
+        // Delivery orders: surface who delivered it and where.
+        if (! $isPickup) {
+            $locationParts = array_filter([
+                $shipping['address'] ?? null,
+                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['province'] ?? null,
+            ], fn($v) => !empty($v));
+            if ($locationParts) {
+                $lines[] = '📍 ' . implode(', ', $locationParts);
+            }
+            if ($providerLine = $this->providerLine($order)) {
+                $lines[] = $providerLine;
+            }
+        } else {
+            $lines[] = '🏪 Store pickup';
+        }
+
+        $lines[] = '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
+
+        $message = implode("\n", $lines);
 
         $this->send($message);
 

@@ -34,9 +34,19 @@ export default function Step1DeliveryInfo({
   const confirmationRef                   = useRef(null)
   const verifierRef                       = useRef(null)
 
-  const canProceed = isPickup
-    ? (location.name && location.phone)
-    : (location.name && location.phone && location.address)
+  // ── Delivery requires name + phone + address; pickup only name + phone ──
+  const requiredFields = isPickup
+    ? [
+        { key: "name",  label: "Full Name" },
+        { key: "phone", label: "Phone" },
+      ]
+    : [
+        { key: "name",    label: "Full Name" },
+        { key: "phone",   label: "Phone" },
+        { key: "address", label: "Address" },
+      ]
+  const missingFields = requiredFields.filter((f) => !location[f]?.trim())
+  const canProceed    = missingFields.length === 0
   const [saving,   setSaving]   = useState(false)
   const [saved,    setSaved]    = useState(false)
   const [saveErr,  setSaveErr]  = useState(null)
@@ -290,6 +300,12 @@ export default function Step1DeliveryInfo({
               className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
               style={inputStyle} {...focusHandlers}
             />
+            {missingFields.length > 0 && (
+              <p style={{ fontSize: 12, color: "#EF4444", marginTop: 5, fontWeight: 600 }}>
+                ⚠ {isKhmer ? "សូមបំពេញ: " : "Please fill in: "}
+                {missingFields.map((f) => f.label).join(", ")}
+              </p>
+            )}
           </div>
 
           {/* City / Province — replaced with ProvinceSelect */}

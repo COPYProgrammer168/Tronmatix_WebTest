@@ -629,7 +629,7 @@ class DashboardController extends Controller
         $fulfillmentType = $request->input('type'); // delivery | pickup
         $month = $request->input('month');
 
-        $query = Order::with(['user', 'items', 'location'])->latest();
+        $query = Order::with(['user', 'items', 'location', 'deliveryProvider'])->latest();
 
         if ($today) {
             $query->whereDate('created_at', today());
@@ -696,7 +696,7 @@ class DashboardController extends Controller
     public function showOrder($order_id)
     {
         $order = Order::where('order_id', $order_id)->firstOrFail();
-        $order->load(['user', 'items.product', 'location']); // FIX [3]
+        $order->load(['user', 'items.product', 'location', 'deliveryProvider.zones']); // FIX [3]
 
         return view('dashboard.orders-show', compact('order'));
     }
@@ -712,9 +712,19 @@ class DashboardController extends Controller
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
-        // Assign a delivery provider when shipping a DELIVERY order (admin picker).
-        if ($newStatus === 'shipped' && $request->filled('delivery_provider_id')) {
+        // Assign a delivery provider when shipping (or delivering) a DELIVERY order.
+        if (($newStatus === 'shipped' || $newStatus === 'delivered') && $request->filled('delivery_provider_id')) {
             $order->update(['delivery_provider_id' => (int) $request->input('delivery_provider_id')]);
+        }
+
+        // ── A DELIVERY order cannot be marked delivered without a provider ──
+        // Consider a provider set either via this request OR already on the order.
+        // Before the confirmation-prompt block so a provider is required for
+        // both paths (Telegram tap-path and force-deliver fallback).
+        if ($newStatus === 'delivered' && $order->isDelivery() && ! $request->filled('delivery_provider_id') && ! $order->delivery_provider_id) {
+            return redirect()
+                ->route('dashboard.orders.show', $order->order_id)
+                ->with('error', 'Choose a delivery provider before marking this order delivered.');
         }
 
         // ── Delivery confirmation flow ────────────────────────────────────────

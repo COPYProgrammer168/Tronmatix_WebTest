@@ -144,6 +144,20 @@ export default function CheckoutPage() {
   }
 
   const placeOrder = async () => {
+    // ── Hard guard: a Delivery order must have a name, phone and address.
+    //    Re-check here (not just on step 1) so the user can't bypass the
+    //    step-1 gate by going back and clearing a field before PLACE ORDER.
+    if (!isPickup && (!location?.name?.trim() || !location?.phone?.trim() || !location?.address?.trim())) {
+      setStep(1)
+      Swal.fire({
+        title: isKhmer ? "ព័ត៌មានដឹកជញ្ជូនមិនពេញលេញ" : "Missing delivery info",
+        text: isKhmer ? "ការដឹកជញ្ជូនតម្រូវឱ្យមានឈ្មោះ លេខទូរស័ព្ទ និងអាសយដ្ឋាន។" : "Delivery requires a name, phone and address.",
+        icon: "warning",
+        confirmButtonColor: "#F97316",
+      })
+      return
+    }
+
     // For pickup: use store address in summary, skip delivery address validation
     const deliverTo = isPickup
       ? `🏪 Store Pickup`

@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -142,6 +143,30 @@ class OrderController extends Controller
             $discountCode = $discount->code;
         }
 
+        // ── Validate delivery location (pickup doesn't need an address) ──────
+        // Done BEFORE the transaction so a missing address surfaces as a clean
+        // 422 under errors.location.address (not the generic errors.items catch).
+        $preFulfillment = $validated['fulfillment_type'] ?? 'delivery';
+        if ($preFulfillment !== 'pickup') {
+            $preAddress = trim((string) ($validated['location']['address'] ?? ''));
+
+            if (! empty($validated['location_id'])) {
+                // Saved-location delivery — check the saved record's address.
+                $savedLoc = \App\Models\UserLocation::where('user_id', $user->id)
+                    ->find($validated['location_id']);
+                if (! $savedLoc || empty(trim((string) ($savedLoc->address ?? '')))) {
+                    throw ValidationException::withMessages([
+                        'location.address' => 'Delivery address is required for delivery orders.',
+                    ]);
+                }
+            } elseif ($preAddress === '') {
+                // Manual delivery — the payload must carry an address.
+                throw ValidationException::withMessages([
+                    'location.address' => 'Delivery address is required for delivery orders.',
+                ]);
+            }
+        }
+
         try {
             $order = DB::transaction(function () use ($validated, $user, $discount, $discountCode) {
 
@@ -205,7 +230,9 @@ class OrderController extends Controller
                 $isPickup        = $fulfillmentType === 'pickup';
 
                 // ── Validate delivery address (pickup doesn't need one) ────────────────
-                if (! $isPickup && empty($validated['location']['address'])) {
+                // Common path already caught pre-transaction as errors.location.address;
+                // this is a belt-and-suspenders guard for edge cases.
+                if (! $isPickup && empty(trim((string) ($validated['location']['address'] ?? '')))) {
                     throw new \RuntimeException('Delivery address is required for delivery orders.');
                 }
 
