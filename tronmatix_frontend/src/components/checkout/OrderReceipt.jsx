@@ -2,6 +2,7 @@
 import { useCallback } from "react"
 import { useLang } from "../../context/LanguageContext"
 import { useNavigate } from "react-router-dom"
+import { getStatusStepIndex } from "../../components/orders/OrderBadges"
 import logo from "../../assets/logo.png"
 
 // For DELIVERY orders: full pipeline
@@ -19,7 +20,7 @@ const PICKUP_STEPS = [
   { key: "delivered",  label: "Picked Up",  icon: "🏪" },
 ]
 
-export default function OrderReceipt({ order, deliveryStatus }) {
+export default function OrderReceipt({ order }) {
   const navigate = useNavigate()
   const { t, isKhmer } = useLang()
   const receiptFont = isKhmer ? "Kh_Jrung_Thom, Khmer OS, sans-serif" : "Rajdhani, sans-serif"
@@ -27,6 +28,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
 
   const isPickup = (order.fulfillment_type ?? "delivery") === "pickup"
   const STATUS_STEPS = isPickup ? PICKUP_STEPS : DELIVERY_STEPS
+  const currentStep = getStatusStepIndex(order.status, order.fulfillment_type ?? "delivery")
 
   const snapDiscount = Number(order._discountAmount || order.discount_amount || 0)
   const snapCode     = order._discountCode || order.discount_code || ""
@@ -172,17 +174,17 @@ export default function OrderReceipt({ order, deliveryStatus }) {
               <div key={s.key} className="flex items-center flex-1 min-w-0">
                 <div className="flex flex-col items-center flex-1">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-content text-lg border-2 ${
-                    i <= deliveryStatus ? "border-primary bg-orange-50" : "border-gray-200 bg-gray-50"
+                    i <= currentStep ? "border-primary bg-orange-50" : "border-gray-200 bg-gray-50"
                   }`} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {s.icon}
                   </div>
-                  <div className={`mt-1 text-center font-bold ${i <= deliveryStatus ? "text-primary" : "text-gray-300"}`}
+                  <div className={`mt-1 text-center font-bold ${i <= currentStep ? "text-primary" : "text-gray-300"}`}
                     style={{ fontSize: isKhmer ? 13 : 16, letterSpacing: 0.5 }}>
                     {s.label}
                   </div>
                 </div>
                 {i < STATUS_STEPS.length - 1 && (
-                  <div className={`h-1 flex-1 mx-1 rounded ${i < deliveryStatus ? "bg-primary" : "bg-gray-200"}`} />
+                  <div className={`h-1 flex-1 mx-1 rounded ${i < currentStep ? "bg-primary" : "bg-gray-200"}`} />
                 )}
               </div>
             ))}
@@ -252,7 +254,9 @@ export default function OrderReceipt({ order, deliveryStatus }) {
                   <div className="text-green-600" style={{ fontSize: 13 }}>
                     {order.payment_method === "cash"
                       ? "Please pay when you arrive at the store"
-                      : "Payment confirmed via KHQR"}
+                      : order.payment_status === 'paid'
+                        ? "Payment confirmed via KHQR"
+                        : "Awaiting KHQR payment confirmation…"}
                   </div>
                 </div>
               </div>
@@ -318,7 +322,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
               <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center" style={{ fontSize: 26 }}>📱</div>
               <div>
                 <div className="font-black text-blue-700" style={{ fontSize: 17 }}>ABA BAKONG KHQR</div>
-                {deliveryStatus >= 1 ? (
+                {order.payment_status === 'paid' ? (
                   <div className="text-green-600 font-bold" style={{ fontSize: 13 }}>✅ Payment confirmed</div>
                 ) : (
                   <div className="text-blue-600" style={{ fontSize: 13 }}>Awaiting payment confirmation…</div>

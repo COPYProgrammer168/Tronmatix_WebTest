@@ -89,8 +89,8 @@
         :lang(km) tbody td {
             font-family: var(--font-kh) !important;
             line-height: var(--lh-kh);
-            font-size: var(--text-md) !important;
-            font-weight: 400 !important;
+            font-size: var(--text-lg) !important;
+            font-weight: 500 !important;
         }
         :lang(km) h1, :lang(km) h2, :lang(km) h3, :lang(km) h4, :lang(km) h5, :lang(km) h6,
         :lang(km) .card-font {
@@ -1106,7 +1106,7 @@
             .table-wrap    { overflow-x: auto; -webkit-overflow-scrolling: touch; }
             table          { font-size: 14px; min-width: 860px; }
             thead th       { padding: 11px 12px; font-size: 13px; white-space: nowrap; }
-            tbody td       { padding: 11px 12px; font-size: 14px; }
+            tbody td       { padding: 11px 12px; font-size: 15px; }
 
             /* disable sticky cols so horizontal scroll works freely */
             thead th:first-child, tbody td:first-child,

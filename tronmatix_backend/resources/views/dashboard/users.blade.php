@@ -221,13 +221,13 @@ tbody tr:hover td { background: var(--dark-700); }
             <table id="userTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        {{-- <th>ID</th> --}}
                         <th>{{ strtoupper(__('dashboard.table.username')) }}</th>
                         <th>{{ strtoupper(__('dashboard.table.email')) }}</th>
                         <th>{{ strtoupper(__('dashboard.table.phone')) }}</th>
                         <th>{{ strtoupper(__('dashboard.stats.kpiOrders')) }}</th>
                         <th>{{ strtoupper(__('dashboard.table.spent')) }}</th>
-                        <th>{{ __('dashboard.users.twoFactor') }}</th>
+                        <th>2FA</th>
                         <th>TELEGRAM</th>
                         <th>{{ strtoupper(__('dashboard.table.role')) }}</th>
                         <th>{{ strtoupper(__('dashboard.table.joined')) }}</th>
@@ -238,7 +238,7 @@ tbody tr:hover td { background: var(--dark-700); }
                 <tbody>
                     @forelse($users as $user)
                     <tr id="user-row-{{ $user->id }}" class="user-row">
-                        <td class="user-id" style="color:rgba(255,255,255,0.3); font-size: var(--title-size);">{{ $user->id }}</td>
+                        {{-- <td class="user-id" style="color:rgba(255,255,255,0.3); font-size: var(--title-size);">{{ $user->id }}</td> --}}
                         <td class="user-info">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 @php

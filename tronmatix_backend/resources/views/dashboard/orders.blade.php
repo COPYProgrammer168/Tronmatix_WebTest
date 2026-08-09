@@ -219,17 +219,17 @@
                                 {{-- SHIPPING TO --}}
                                 <td>
                                     <div
-                                        style="font-weight:700; color:var(--text); font-size:var(--text-sm); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
+                                        style="font-weight:700; color:var(--text); font-size:var(--text-md); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
                                         {{ $shipName }}
                                     </div>
                                     @if ($shipCity)
-                                        <div style="font-size:var(--text-xs); color:var(--text-muted); margin-top:1px;">
+                                        <div style="font-size:var(--text-md); color:var(--text-muted); margin-top:1px; white-space:nowrap; ">
                                             📍 {{ $shipCity }}
                                         </div>
                                     @endif
                                     @if ($shipPhone)
                                         <div
-                                            style="font-size:var(--text-xs); color:#F97316; margin-top:1px; font-weight:600;">
+                                            style="font-size:var(--text-md); color:#F97316; margin-top:1px; font-weight:600;">
                                             {{ $shipPhone }}
                                         </div>
                                     @endif
@@ -277,7 +277,7 @@
                                 </td>
 
                                 {{-- SUBTOTAL --}}
-                                <td style="font-weight:600; white-space:nowrap;">
+                                <td className="price-number" id="price-number" style="font-weight:600; white-space:nowrap;">
                                     ${{ number_format($order->subtotal ?? $order->total, 2) }}
                                 </td>
 
@@ -315,7 +315,7 @@
                                 </td>
 
                                 {{-- TOTAL --}}
-                                <td style="color:#F97316; font-weight:700; white-space:nowrap;">
+                                <td className="price-number" id="price-number" style="color:#F97316; font-weight:700; white-space:nowrap;">
                                     ${{ number_format($order->total, 2) }}
                                 </td>
 
@@ -374,10 +374,10 @@
 
                                 {{-- ORDER DATE --}}
                                 <td style="white-space:nowrap;">
-                                    <div style="color:var(--text); font-weight:600; font-size:var(--text-xs);">
+                                    <div style="color:var(--text); font-weight:600; font-size:var(--text-base);">
                                         {{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y') }}
                                     </div>
-                                    <div style="color:var(--text-muted); font-size:var(--text-xs); margin-top:1px;">
+                                    <div style="color:var(--text-muted); font-size:var(--text-sm); margin-top:1px;">
                                         🕐 {{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('H:i') }}
                                     </div>
                                 </td>

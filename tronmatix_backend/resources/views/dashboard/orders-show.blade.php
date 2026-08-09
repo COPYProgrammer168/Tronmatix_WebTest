@@ -16,9 +16,6 @@
     $_pRole = $user?->role ?? 'editor';
 @endphp
 
-
-
-
 {{-- ── Floating flash toasts (fixed-position, page-specific) ───────────────── --}}
 @if(session('success'))
 <div id="flash-success" style="
@@ -702,15 +699,7 @@
         </div>
         @endif
 
-        {{-- Update Status — only for roles with orders_edit permission --}}
-        @php
-            $_editRole = $_pRole ?? (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor';
-            $_editKey  = "perm_{$_editRole}_orders_edit";
-            $_editDefs = \App\Models\AdminSetting::getDefaults();
-            $_canEdit  = $_editRole === 'superadmin'
-                || (\App\Models\AdminSetting::get($_editKey, $_editDefs["{$_editRole}_orders_edit"] ?? '0') === '1');
-        @endphp
-        @if($_canEdit)
+        {{-- Update Status — always shown in the right column --}}
         <div class="card">
             <div class="card-header">
                 <span class="card-title km-english">UPDATE STATUS</span>
@@ -767,7 +756,6 @@
                 </div>
             </div>
         </div>
-        @endif {{-- orders_edit permission --}}
 
         {{-- Payment Verification Card — visible if order status is pending and payment is not paid --}}
         @if($order->status === 'pending' && ($order->payment_status ?? 'pending') !== 'paid')

@@ -877,7 +877,7 @@
             </div>
 
             {{-- ── VIP MANAGEMENT ──────────────────────────────────────────────────────── --}}
-            <div class="card" style="margin-top:20px;">
+            {{-- <div class="card" style="margin-top:20px;">
                 <div class="card-header">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div class="s-icon-box"
@@ -922,7 +922,7 @@
                         </form>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
         </div>
 

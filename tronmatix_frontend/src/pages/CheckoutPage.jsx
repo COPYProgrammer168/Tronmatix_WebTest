@@ -16,6 +16,7 @@ import Step2Payment         from "../components/checkout/Step2Payment"
 import OrderReceipt         from "../components/checkout/OrderReceipt"
 import LocationPickerModal  from "../components/checkout/LocationPickerModal"
 import BakongQRPanel        from "../components/orders/BakongQRPanel"
+import { getStatusStepIndex } from "../components/orders/OrderBadges"
 
 const STEPS = ["Delivery Info", "Payment"]
 
@@ -158,6 +159,10 @@ export default function CheckoutPage() {
       return
     }
 
+    const isOutOfPhnomPenh = !isPickup && !!selectedProvince &&
+      !/phnom penh|phnompenh/i.test(selectedProvince?.name_en || selectedProvince?.name || '')
+    const effectivePayMethod = isOutOfPhnomPenh ? 'bakong' : payMethod
+
     // For pickup: use store address in summary, skip delivery address validation
     const deliverTo = isPickup
       ? `🏪 Store Pickup`
@@ -169,7 +174,7 @@ export default function CheckoutPage() {
     const summaryHtml = `<div style="text-align:left;line-height:1.8;font-size:1rem;color:#1f2937;padding:0 12px;">
       <strong>Fulfillment:</strong> ${isPickup ? "🏪 Store Pickup" : "🚚 Delivery"}<br>
       <strong>Total:</strong> $${finalTotal.toFixed(2)}${discountAmount > 0 ? ` <span style="color:#16a34a">(−$${discountAmount.toFixed(2)} discount)</span>` : ""}<br>
-      <strong>Payment:</strong> ${payMethod === "cash" ? "Cash on Delivery" : "ABA BAKONG KHQR"}<br>
+      <strong>Payment:</strong> ${effectivePayMethod === "cash" ? "Cash on Delivery" : "ABA BAKONG KHQR"}<br>
       <strong>${isPickup ? "Pickup by" : "Deliver to"}:</strong> ${deliverTo}<br>
       <span style="color:#6b7280">${deliverAddr}</span>
       ${delivery.date ? `<br><span style="color:#F97316">📅 ${delivery.date}${delivery.timeSlot ? " · " + delivery.timeSlot : ""}</span>` : ""}
@@ -204,7 +209,7 @@ export default function CheckoutPage() {
           ? { name: location.name || user?.username || "", phone: location.phone || "", address: STORE_ADDRESS, city: "", note: "" }
           : location,
         location_id: isPickup ? null : (locationId || null),
-        payment_method: payMethod,
+        payment_method: effectivePayMethod,
         subtotal,
         discount_code: discount?.code || null,
         discount_amount: discountAmount > 0 ? discountAmount : null,
@@ -221,22 +226,27 @@ export default function CheckoutPage() {
       })
 
       const orderData = {
-        ...res.data, items, location, payment_method: payMethod, total: finalTotal, subtotal,
+        ...res.data, items, location, payment_method: effectivePayMethod, total: finalTotal, subtotal,
+        discount_amount: discountAmount > 0 ? discountAmount : null,
+        discount_code: discount?.code || null,
         _discountAmount: discountAmount, _discountCode: discount?.code || null,
         _discountType: discount?.type || null, _discountValue: discount?.value || null,
         delivery_date: delivery.date || null, delivery_time_slot: delivery.timeSlot || null,
         fulfillment_type: fulfillment,
       }
 
-      if (payMethod === "bakong") {
+      const initialDeliveryStatus = getStatusStepIndex(res.data.status, fulfillment) ?? 0
+      setDeliveryStatus(initialDeliveryStatus)
+
+      if (effectivePayMethod === "bakong") {
         setOrder(orderData)
         setShowQrModal(true)
       } else {
         clearCheckoutStorage(); 
-        clearCart(); removeDiscount(); setOrder(orderData); setDeliveryStatus(0)
+        clearCart(); removeDiscount(); setOrder(orderData); 
         setStep(3)
         // Only show alert if NOT bakong, as Bakong has its own success screen
-        if (payMethod !== "bakong") {
+        if (effectivePayMethod !== "bakong") {
           Swal.fire({
             title: isPickup ? "Order Placed! 🏪" : "Order Placed! 🎉",
             text: isPickup
@@ -255,7 +265,7 @@ export default function CheckoutPage() {
     } finally { setLoading(false) }
   }
 
-  if (step === 3 && order) return <OrderReceipt order={order} deliveryStatus={deliveryStatus} />
+  if (step === 3 && order) return <OrderReceipt order={order} />
 
   const bg               = dark ? '#111827' : '#fff'
   const text             = dark ? '#f9fafb' : '#1f2937'
@@ -700,9 +710,9 @@ export default function CheckoutPage() {
                 clearCheckoutStorage();
                 clearCart();
                 removeDiscount();
+                setOrder(prev => ({ ...prev, payment_status: "paid" }))
                 setTimeout(() => {
                   setShowQrModal(false);
-                  setDeliveryStatus(1);
                   setStep(3);
                 }, 1800);
               }}
