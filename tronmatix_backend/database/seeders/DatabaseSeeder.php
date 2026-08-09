@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             // AdminSeeder::class,
             // StaffSeeder::class,
             // UserSeeder::class,
-            CustomerSeeder::class,
+            // CustomerSeeder::class,
             UserLocationSeeder::class,
             DiscountSeeder::class,
             CategorySeeder::class,

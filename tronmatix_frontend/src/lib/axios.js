@@ -4,8 +4,6 @@ const isProd = import.meta.env.PROD
 
 const VITE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
-console.log('DEBUG: VITE_API_URL:', import.meta.env.VITE_API_URL);
-
 const baseURL = VITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 if (isProd && !baseURL) {

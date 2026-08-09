@@ -12,6 +12,18 @@ class DiscountSeeder extends Seeder
 {
     public function run(): void
     {
+        // ── Idempotency guard ─────────────────────────────────────────────────
+        // DatabaseSeeder only truncates on a truly EMPTY database (or SEED_FRESH=1).
+        // On Render/production the DB usually already has users, so truncation is
+        // skipped and previously-seeded discounts persist. Inserting random codes
+        // again then collides with discounts_code_unique → seeder fails.
+        // If discounts already exist, keep them — do NOT clobber real production
+        // codes or re-insert random ones.
+        if (DB::table('discounts')->exists()) {
+            $this->command->warn('⚠️  DiscountSeeder: discounts already exist — skipping (idempotent).');
+            return;
+        }
+
         $now = Carbon::now();
         $discounts = [];
 

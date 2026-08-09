@@ -15,7 +15,6 @@ function resolveImage(path) {
   if (!path) return null;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   const url = LARAVEL_URL + (path.startsWith("/") ? path : "/" + path);
-  console.log('resolveImage:', { path, url });
   return url;
 }
 

@@ -433,6 +433,12 @@ class AuthController extends Controller
     // phone number, and reset the password directly (phone proves ownership).
     public function resetByPhone(Request $request, FirebaseAuthService $firebase)
     {
+        // PHONE-OTP RESET IS CLOSED (Firebase billing not enabled). Kept so it
+        // can be re-enabled later — returning a disabled message instead.
+        return response()->json([
+            'message' => 'Phone-based password reset is currently disabled. Please use the email reset link.',
+        ], 422);
+
         $request->validate([
             'id_token'              => ['required', 'string'],
             'password'              => $this->passwordRules(),

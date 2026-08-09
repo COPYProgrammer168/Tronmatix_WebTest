@@ -230,8 +230,10 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
     }
 
     if (isForgot) {
+      // Phone-OTP reset is closed (requires Firebase billing). Always use email.
       if (forgotMethod === 'phone') {
-        await handlePhoneReset()
+        setForgotMethod('email')
+        setError(isKhmer ? 'សូមប្រើអ៊ីមែលដើម្បីកំណត់ពាក្យសម្ងាត់ឡើងវិញ' : 'Please use email to reset your password.')
         return
       }
       if (!f.email)             { setError('Please enter your email address.'); return }
@@ -644,8 +646,10 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
           )}
         </div>
 
-        {/* Forgot method toggle */}
-        {isForgot && (
+        {/* Forgot method toggle — PHONE OTP IS CLOSED (billing not enabled).
+        The email-only forgot-password flow is used. Kept commented so the
+        phone path can be re-enabled later without rewriting it. */}
+        {/* {isForgot && (
           <div className="flex justify-center mt-3">
             <button type="button" onClick={() => { setForgotMethod(forgotMethod === 'email' ? 'phone' : 'email'); setError(''); setSuccess(''); setForgotSuccess(false) }}
               className="font-semibold hover:underline"
@@ -655,7 +659,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
                 : (isKhmer ? '✉️ ប្រើអ៊ីមែលជំនួស' : '✉️ Use email instead')}
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Forgot link */}
         {/* {isLogin && (
