@@ -11,7 +11,8 @@
             <div class="form-grid-2">
                 <div class="form-group">
                     <label class="form-label">{{ __('dashboard.stock.selectProductLabel') }}</label>
-                    <select name="product_id" class="form-control" required>
+                    <input type="text" id="productSearch" class="form-control" placeholder="Search products..." style="margin-bottom:8px;">
+                    <select name="product_id" id="productSelect" class="form-control" required>
                         <option value="" disabled selected>{{ __('dashboard.stock.selectProduct') }}</option>
                         @foreach (\App\Models\Product::orderBy('name')->get() as $opt)
                             <option value="{{ $opt->id }}" {{ old('product_id') == $opt->id ? 'selected' : '' }}>{{ $opt->name }} ({{ $opt->current_stock }} {{ __('dashboard.stock.units') }})</option>
@@ -37,3 +38,25 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('productSearch');
+    const select = document.getElementById('productSelect');
+    if (!searchInput || !select) return;
+
+    searchInput.addEventListener('input', function () {
+        const term = this.value.toLowerCase();
+        const options = select.querySelectorAll('option');
+        let firstVisible = null;
+        options.forEach(function (opt) {
+            const text = opt.textContent.toLowerCase();
+            const match = text.includes(term);
+            opt.style.display = match ? '' : 'none';
+            if (match && !firstVisible && opt.value) firstVisible = opt;
+        });
+        if (firstVisible) select.value = firstVisible.value;
+        else if (!term) select.value = '';
+    });
+});
+</script>

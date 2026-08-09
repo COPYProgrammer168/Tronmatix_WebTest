@@ -25,6 +25,10 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
   const [cooldown, setCooldown]   = useState(false)
   const [pwStrength, setPwStrength] = useState({ score: 0, hints: [] })
   const [socialLoading, setSocialLoading] = useState(null) // 'google' | 'telegram'
+  const [rememberMe, setRememberMe] = useState(() => {
+    try { return localStorage.getItem('tronmatix_remember_me') !== 'false' } catch { return true }
+  })
+  const [forgotSuccess, setForgotSuccess] = useState(false)
 
   // ── Forgot-password method toggle: email | phone (Firebase OTP) ──────────
   const [forgotMethod, setForgotMethod] = useState('email')
@@ -122,6 +126,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
     setSuccess('')
     setPwStrength({ score: 0, hints: [] })
     setForgotMethod('email')
+    setForgotSuccess(false)
     resetPhoneFlow()
     onSwitch(newMode)
   }
@@ -137,6 +142,24 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
       document.head.appendChild(s)
     }
   }, [showSocial])
+
+  // ── Pre-fill login from remembered session ────────────────────────────────
+  useEffect(() => {
+    if (!isLogin) return
+    try {
+      const raw = localStorage.getItem('tronmatix_user')
+      if (raw) {
+        const cached = JSON.parse(raw)
+        if (cached?.username && !form.usernameOrEmail) {
+          setForm(prev => ({ ...prev, usernameOrEmail: cached.username }))
+        }
+      }
+    } catch {}
+  }, [isLogin])
+
+  useEffect(() => {
+    localStorage.setItem('tronmatix_remember_me', rememberMe ? 'true' : 'false')
+  }, [rememberMe])
 
   // ── Google Login ──────────────────────────────────────────────────────────
   const handleGoogleLogin = () => {
@@ -162,14 +185,12 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
           return
         }
 
-        //Use googleLogin from AuthContext — clean, centralized, handles is_new_user
-        const res = await googleLogin(tokenResponse.access_token)
+        const res = await googleLogin(tokenResponse.access_token, rememberMe)
 
         setSocialLoading(null)
 
         if (res.success) {
           setSuccess('Signed in with Google!')
-          // Close modal after brief delay — ProfileSetupModal shows if isNewUser
           setTimeout(onClose, 600)
         } else {
           setError(res.message)
@@ -216,11 +237,15 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
       if (!f.email)             { setError('Please enter your email address.'); return }
       if (!validEmail(f.email)) { setError('Please enter a valid email address.'); return }
       const res = await forgotPassword(f.email)
-      if (res.success) { setSuccess(res.message); setCooldownSecs(0) }
-      else {
+      if (res.success) {
+        setSuccess(res.message)
+        setCooldownSecs(0)
+        setForgotSuccess(true)
+        setForm(prev => ({ ...prev, email: '' }))
+      } else {
         setError(res.message)
         recordFailure()
-        const secs = res.banSeconds || res.cooldownSeconds || 0
+        const secs = Math.min(res.banSeconds || res.cooldownSeconds || 0, 60)
         if (secs > 0) { setCooldownSecs(secs); startCooldown(secs) }
       }
       return
@@ -228,7 +253,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
 
     if (isLogin) {
       if (!f.usernameOrEmail || !f.password) { setError('Please fill all fields.'); return }
-      const res = await login(f.usernameOrEmail, f.password)
+      const res = await login(f.usernameOrEmail, f.password, rememberMe)
       if (res.success) { setSuccess('Login successful!'); setTimeout(onClose, 800) }
       else { setError(res.message); recordFailure() }
       return
@@ -493,6 +518,17 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
                 value={form.password} onChange={handle}
                 autoComplete="current-password"
                 style={inputStyle} {...focusHandlers} />
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer" style={{ fontSize: 14, color: c.textMuted }}>
+                  <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+                  <span>{isKhmer ? 'ចងចាំខ្ញុំ' : 'Remember me'}</span>
+                </label>
+                <button onClick={() => handleSwitch('forgot')}
+                  className="font-semibold hover:underline"
+                  style={{ fontSize: 14, color: '#F97316' }}>
+                  {isKhmer ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
+                </button>
+              </div>
             </>
           )}
 
@@ -553,12 +589,29 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
            </>
          )}
 
-         {isForgot && forgotMethod === 'email' && (
-            <input name="email" type="email" placeholder={isKhmer ? 'អ៊ីមែលរបស់អ្នក' : 'Your email address'}
-              value={form.email} onChange={handle}
-              autoComplete="email"
-              style={inputStyle} {...focusHandlers} />
-          )}
+          {isForgot && forgotMethod === 'email' && !forgotSuccess && (
+             <input name="email" type="email" placeholder={isKhmer ? 'អ៊ីមែលរបស់អ្នក' : 'Your email address'}
+               value={form.email} onChange={handle}
+               autoComplete="email"
+               style={inputStyle} {...focusHandlers} />
+           )}
+
+           {isForgot && forgotMethod === 'email' && forgotSuccess && (
+             <div style={{ textAlign: 'center', padding: '16px 0' }}>
+               <div style={{ fontSize: 40, marginBottom: 10 }}>📧</div>
+               <p style={{ fontSize: 15, fontWeight: 800, color: '#16a34a', marginBottom: 6 }}>
+                 {isKhmer ? 'សំបុត្រកំណត់ពាក្យសម្ងាត់ត្រូវបានផ្ញើ!' : 'Reset link sent!'}
+               </p>
+               <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 16, lineHeight: 1.5 }}>
+                 {isKhmer ? 'សូមពិនិត្យមើលអ៊ីមែលរបស់អ្នក និងធ្វើតាមតំណនៅក្នុងសំបុត្រ។' : 'Please check your email and follow the link inside the message.'}
+               </p>
+               <button type="button" onClick={() => { handleSwitch('login'); setForgotSuccess(false) }}
+                 className="w-full rounded-full py-3 font-bold"
+                 style={{ background: '#F97316', color: '#fff', border: 'none', fontSize: 15, fontFamily: authFont }}>
+                 {isKhmer ? '← ត្រឡប់ទៅចូលគណនី' : '← Back to Login'}
+               </button>
+             </div>
+           )}
 
           {isForgot && forgotMethod === 'phone' && phoneStep === 'phone' && (
             <div>
@@ -594,7 +647,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
         {/* Forgot method toggle */}
         {isForgot && (
           <div className="flex justify-center mt-3">
-            <button type="button" onClick={() => { setForgotMethod(forgotMethod === 'email' ? 'phone' : 'email'); setError(''); setSuccess('') }}
+            <button type="button" onClick={() => { setForgotMethod(forgotMethod === 'email' ? 'phone' : 'email'); setError(''); setSuccess(''); setForgotSuccess(false) }}
               className="font-semibold hover:underline"
               style={{ fontSize: 13, color: '#0088cc' }}>
               {forgotMethod === 'email'
@@ -605,7 +658,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
         )}
 
         {/* Forgot link */}
-        {isLogin && (
+        {/* {isLogin && (
           <div className="flex justify-end mt-2">
             <button onClick={() => handleSwitch('forgot')}
               className="font-semibold hover:underline"
@@ -613,7 +666,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
               {isKhmer ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Messages */}
         {error   && (
@@ -631,7 +684,7 @@ export default function AuthModal({ mode, resetToken, resetEmail, onClose, onSwi
         {/* Submit */}
         <button
           onClick={submit}
-          disabled={loading || cooldown || cooldownSecs > 0}
+          disabled={loading || cooldown || cooldownSecs > 0 || forgotSuccess}
           className="w-full mt-5 rounded-full py-3 font-bold transition-all shadow disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             fontFamily: authFont, fontSize: 18,

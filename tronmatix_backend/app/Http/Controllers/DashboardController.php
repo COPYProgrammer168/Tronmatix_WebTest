@@ -629,7 +629,7 @@ class DashboardController extends Controller
         $fulfillmentType = $request->input('type'); // delivery | pickup
         $month = $request->input('month');
 
-        $query = Order::with(['user', 'items', 'location', 'deliveryProvider'])->latest();
+        $query = Order::with(['user', 'items', 'location', 'deliveryProvider'])->orderBy('id', 'desc');
 
         if ($today) {
             $query->whereDate('created_at', today());

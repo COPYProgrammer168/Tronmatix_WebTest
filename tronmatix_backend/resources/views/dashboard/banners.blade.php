@@ -363,8 +363,9 @@ function banner_img_url(?string $path): string {
 
                         <p style="color:rgba(255,255,255,0.3); font-size: var(--title-size); margin-top:6px;">
                             {{ __('dashboard.banners.imageFormat') }}
-                        </p>
-                    </div>
+                            <div style="margin-top:4px; font-weight:700; color:#F97316;">Recommended size: 1920x720 pixels</div>
+                            </p>
+                            </div>
                 </div>
 
                 {{-- ─── VIDEO ─────────────────────────────────────────────── --}}

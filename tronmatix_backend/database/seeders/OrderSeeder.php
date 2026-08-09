@@ -82,6 +82,7 @@ class OrderSeeder extends Seeder
         $users = User::with('locations')->get();
         $products = Product::all();
         $discounts = \App\Models\Discount::where('is_active', true)->get();
+        $deliveryProviders = \App\Models\DeliveryProvider::active()->get();
 
         if ($discounts->isEmpty()) {
             $this->command->warn('⚠️  No active discounts found — check DiscountSeeder.');
@@ -95,10 +96,9 @@ class OrderSeeder extends Seeder
             // ── Create orders spread across ALL of 2026 ─────────────────────
             // Every month of the year gets a share so the year-long charts show
             // data across Jan–Dec 2026 (current month included).
-            $orderCount = 200;
+            $orderCount = 100;
 
             for ($i = 0; $i < $orderCount; $i++) {
-                // ... rest of the loop remains the same
             // Random month in 2026, random day within that month.
             $orderDate = Carbon::create(
                 2026,
@@ -116,6 +116,7 @@ class OrderSeeder extends Seeder
             $mapLoc = null;
             $city = 'Phnom Penh';
             $shippingAddress = null;
+            $deliveryProviderId = null;
 
             if ($isDelivery && $locations->isNotEmpty()) {
                 // Use user's saved location if available
@@ -134,6 +135,9 @@ class OrderSeeder extends Seeder
                     'country' => 'Cambodia',
                     'note'    => $savedLoc->note,
                 ];
+                if ($deliveryProviders->isNotEmpty()) {
+                    $deliveryProviderId = $deliveryProviders->random()->id;
+                }
             } elseif ($isDelivery) {
                 // Fall back to random map location
                 $randLoc = $this->mapLocations[array_rand($this->mapLocations)];
@@ -153,6 +157,9 @@ class OrderSeeder extends Seeder
                     'country' => 'Cambodia',
                     'note'    => rand(0, 1) ? 'Call before delivery' : null,
                 ];
+                if ($deliveryProviders->isNotEmpty()) {
+                    $deliveryProviderId = $deliveryProviders->random()->id;
+                }
             } else {
                 // Pickup — no location needed
                 $city = $this->cities()[array_rand($this->cities())];
@@ -204,6 +211,7 @@ class OrderSeeder extends Seeder
                 'payment_method'     => $this->payments[array_rand($this->payments)],
                 'payment_status'     => rand(0, 10) > 1 ? 'paid' : 'pending',
                 'status'             => $this->weightedRandom($this->statuses, $this->statusWeights),
+                'delivery_provider_id' => $deliveryProviderId,
                 'subtotal'           => $subtotal,
                 'discount_id'        => $discount?->id,
                 'discount_code'      => $discount?->code,

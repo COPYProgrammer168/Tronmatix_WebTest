@@ -36,8 +36,8 @@ php artisan migrate --force || echo "⚠️ migrate failed — check DB"
 # DatabaseSeeder is now idempotent: it only truncates + re-seeds when the DB is
 # empty (first deploy). On subsequent deploys it skips the destructive truncate,
 # so real data is preserved. Requires --force in production APP_ENV.
-# echo ">>> Seeding Database (idempotent)..."
-# php artisan db:seed --force || echo "⚠️ DatabaseSeeder failed"
+echo ">>> Seeding Database (idempotent)..."
+php artisan db:seed --force || echo "⚠️ DatabaseSeeder failed"
 
 # echo ">>> Seeding provinces..."
 # php artisan db:seed --class=ProvinceSeeder --force || echo "⚠️ ProvinceSeeder failed"

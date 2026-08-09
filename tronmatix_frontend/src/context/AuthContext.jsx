@@ -26,7 +26,7 @@ function sanitizeUser(user) {
 
 function loadCachedUser() {
   try {
-    const raw = localStorage.getItem(USER_KEY)
+    const raw = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY)
     return raw ? JSON.parse(raw) : null
   } catch { return null }
 }
@@ -35,6 +35,12 @@ function saveUser(user) {
   const safe = sanitizeUser(user)
   if (safe) localStorage.setItem(USER_KEY, JSON.stringify(safe))
   else      localStorage.removeItem(USER_KEY)
+}
+
+function saveUserSession(user) {
+  const safe = sanitizeUser(user)
+  if (safe) sessionStorage.setItem(USER_KEY, JSON.stringify(safe))
+  else      sessionStorage.removeItem(USER_KEY)
 }
 
 function extractUser(responseData) {
@@ -53,22 +59,25 @@ export function AuthProvider({ children }) {
 
   const tokenRef = useRef(token)
 
-  const applyToken = useCallback((t) => {
+  const applyToken = useCallback((t, remember = true) => {
     tokenRef.current = t
     if (t) {
-      localStorage.setItem(TOKEN_KEY, t)
+      if (remember) localStorage.setItem(TOKEN_KEY, t)
+      else         sessionStorage.setItem(TOKEN_KEY, t)
       api.defaults.headers.common['Authorization'] = `Bearer ${t}`
     } else {
       localStorage.removeItem(TOKEN_KEY)
+      sessionStorage.removeItem(TOKEN_KEY)
       delete api.defaults.headers.common['Authorization']
     }
     setToken(t)
   }, [])
 
-  const applyUser = useCallback((u) => {
+  const applyUser = useCallback((u, remember = true) => {
     const merged = u ? sanitizeUser({ ...loadCachedUser(), ...u }) : null
     setUser(merged)
-    saveUser(merged)
+    if (remember) saveUser(merged)
+    else         saveUserSession(merged)
   }, [])
 
   const clearSession = useCallback(() => {
@@ -79,7 +88,7 @@ export function AuthProvider({ children }) {
 
   // ── Restore session on mount ──────────────────────────────────────────────
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY)
+    const storedToken = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
 
     if (!storedToken) { setReady(true); return }
 
@@ -88,9 +97,6 @@ export function AuthProvider({ children }) {
     api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
     tokenRef.current = storedToken
 
-    // Portal-aware restore: staff/dev tokens authenticate against the staff
-    // table, so the customer /api/auth/me (users table) would 401. /api/portal/me
-    // returns the correct payload for customers, staff and developers alike.
     api.get('/api/portal/me')
       .then(res => {
         const fresh = extractUser(res.data)
@@ -124,15 +130,15 @@ export function AuthProvider({ children }) {
   }, [applyUser])
 
   // ── LOGIN ─────────────────────────────────────────────────────────────────
-  const login = useCallback(async (usernameOrEmail, password) => {
+  const login = useCallback(async (usernameOrEmail, password, remember = true) => {
     setLoading(true)
     try {
       const res = await api.post('/api/auth/login', { username: usernameOrEmail, password })
       const t = res.data?.token ?? res.data?.data?.token
       const u = extractUser(res.data)
       if (!t || !u) throw new Error('Unexpected login response shape')
-      applyToken(t)
-      applyUser(u)
+      applyToken(t, remember)
+      applyUser(u, remember)
       return { success: true }
     } catch (e) {
       const data = e.response?.data
@@ -145,15 +151,15 @@ export function AuthProvider({ children }) {
     }
   }, [applyToken, applyUser])
 
-  const staffLogin = useCallback(async (email, password) => {
+  const staffLogin = useCallback(async (email, password, remember = true) => {
     setLoading(true)
     try {
       const res = await api.post('/api/staff/login', { email, password })
       const t = res.data?.token
       const u = res.data?.user
       if (!t || !u) throw new Error('Unexpected staff login response')
-      applyToken(t)
-      applyUser(u)
+      applyToken(t, remember)
+      applyUser(u, remember)
       return { success: true }
     } catch (e) {
       const data = e.response?.data
@@ -165,15 +171,15 @@ export function AuthProvider({ children }) {
     }
   }, [applyToken, applyUser])
 
-  const devLogin = useCallback(async (email, password, dev_key) => {
+  const devLogin = useCallback(async (email, password, dev_key, remember = true) => {
     setLoading(true)
     try {
       const res = await api.post('/api/dev/login', { email, password, dev_key })
       const t = res.data?.token
       const u = res.data?.user
       if (!t || !u) throw new Error('Unexpected dev login response')
-      applyToken(t)
-      applyUser(u)
+      applyToken(t, remember)
+      applyUser(u, remember)
       return { success: true }
     } catch (e) {
       const data = e.response?.data
@@ -208,15 +214,15 @@ export function AuthProvider({ children }) {
   }, [])
 
   // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────
-  const googleLogin = useCallback(async (accessToken) => {
+  const googleLogin = useCallback(async (accessToken, remember = true) => {
     setLoading(true)
     try {
       const res = await api.post('/api/auth/google', { access_token: accessToken })
       const t = res.data?.token
       const u = res.data?.user
       if (!t || !u) throw new Error('Unexpected Google response shape')
-      applyToken(t)
-      applyUser(u)
+      applyToken(t, remember)
+      applyUser(u, remember)
       return { success: true }
     } catch (e) {
       const msg = e.response?.data?.message || 'Google sign-in failed. Please try again.'
