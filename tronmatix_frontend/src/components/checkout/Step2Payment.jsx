@@ -1,4 +1,5 @@
 // src/components/checkout/Step2Payment.jsx
+import { useEffect } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { useLang } from "../../context/LanguageContext"
 import DiscountInput from "../DiscountInput"
@@ -42,6 +43,14 @@ export default function Step2Payment({
 
   // Auto-switch to bakong when a non-PhnomPenh province is selected
   const effectivePayMethod = isOutOfPhnomPenh ? 'bakong' : payMethod
+
+  // Keep the parent (CheckoutPage) payMethod in sync so the order is actually
+  // submitted as KHQR for inter-province delivery — not just shown as selected.
+  useEffect(() => {
+    if (isOutOfPhnomPenh && payMethod !== 'bakong') {
+      onPayMethod('bakong')
+    }
+  }, [isOutOfPhnomPenh, payMethod, onPayMethod])
 
   const TELEGRAM_URL = "https://t.me/+VZScFi_U95PsFk0M"
 
