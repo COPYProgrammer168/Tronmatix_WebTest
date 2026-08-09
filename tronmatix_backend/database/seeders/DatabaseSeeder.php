@@ -16,8 +16,8 @@ class DatabaseSeeder extends Seeder
         // This lets `php artisan db:seed` run safely on Render/production without
         // wiping real users, orders, etc. on every deploy. Pass SEED_FRESH=1 to
         // force a full truncate + reseed (e.g. `SEED_FRESH=1 php artisan db:seed`).
-        // $forceFresh = (bool) env('SEED_FRESH', false);
-        // $alreadySeeded = \App\Models\User::count() > 0;
+        $forceFresh = (bool) env('SEED_FRESH', false);
+        $alreadySeeded = \App\Models\User::count() > 0;
 
         if ($forceFresh || ! $alreadySeeded) {
             Schema::disableForeignKeyConstraints();
@@ -31,8 +31,8 @@ class DatabaseSeeder extends Seeder
             DB::table('categories')->truncate();
             DB::table('discounts')->truncate();
             DB::table('user_locations')->truncate();
-            // DB::table('staff')->truncate();
-            // DB::table('users')->truncate();
+            DB::table('staff')->truncate();
+            DB::table('users')->truncate();
 
             Schema::enableForeignKeyConstraints();
 
@@ -45,8 +45,8 @@ class DatabaseSeeder extends Seeder
         // ── Run seeders in dependency order ───────────────────────────────────
         $this->call([
             // AdminSeeder::class,
-            // StaffSeeder::class,
-            // UserSeeder::class,
+            StaffSeeder::class,
+            UserSeeder::class,
             CustomerSeeder::class,
             UserLocationSeeder::class,
             DiscountSeeder::class,
