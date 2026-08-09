@@ -144,6 +144,7 @@ class GenerateKhqrController extends Controller
         $amount = round((float) $order->total, 2);
         $amountStr = number_format($amount, 2, '.', ''); // e.g. "0.79" not "0.7900..."
         $items = $this->encodeItems($order);
+        $itemsCount = $order->items->count();
         $firstName = $user->name ?? $user->username ?? '';
         $lastName = '';
         $email = $user->email ?? '';
@@ -221,7 +222,7 @@ class GenerateKhqrController extends Controller
             'merchant_id' => $merchantId,
             'tran_id'     => $tranId,
             'amount'      => $amountStr,
-            'items_count' => count($items),
+            'items_count' => $itemsCount,
             'payload_len' => strlen(json_encode($payload)),
         ]);
 

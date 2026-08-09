@@ -140,8 +140,10 @@ Route::middleware(['auth:sanctum', 'not_banned', 'throttle:60,1'])->group(functi
         Route::post('/orders/{order}/staff-confirm-delivery', [OrderController::class, 'staffConfirmDelivery']);
     });
 
-    // Payment — tightly rate limited (10/min) to prevent abuse/payment brute-force
-    Route::middleware('throttle:10,1')->group(function () {
+    // Payment — throttle bypassed so QR generation/regeneration and the 4s
+    // verify poller are effectively unlimited (auth:sanctum + not_banned still
+    // apply). Throttle middleware is stripped to neutralize the group's 60/min.
+    Route::withoutMiddleware('throttle:60,1')->group(function () {
         Route::post('/payment/generate-qr', [GenerateKhqrController::class, 'generate']);
         Route::post('/payment/verify', [CheckPaymentController::class, 'verify']);
         Route::post('/payment/confirm-manual', [CheckPaymentController::class, 'confirmManual']);

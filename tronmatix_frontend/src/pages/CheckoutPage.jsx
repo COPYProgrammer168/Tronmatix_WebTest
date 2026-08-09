@@ -266,141 +266,257 @@ export default function CheckoutPage() {
   const pillBg           = dark ? '#1f2937' : '#f3f4f6'
 
   return (
-    <div className="max-w-[800px] mx-auto px-4 py-8" style={{ background: bg, minHeight: '60vh' }}>
-      <h1 className="font-black mb-2" style={{ fontSize: 30, color: text }}>{t("checkout.title")}</h1>
+    <div
+      className="max-w-[800px] mx-auto px-4 py-3"
+      style={{ background: bg, minHeight: "60vh" }}
+    >
+      <h1
+        className="font-black uppercase checkout-title mb-2"
+        style={{
+          fontSize: isKhmer ? 30 : 35,
+          color: text,
+          fontFamily: isKhmer
+            ? "KantumruyPro, sans-serif"
+            : "HurstBagod, sans-serif",
+        }}
+      >
+        {t("checkout.title")}
+      </h1>
 
       {/* ── Fulfillment type pill toggle — only on step 1 ─────────────────── */}
       {step === 1 && (
-      <div className="mb-6">
-        <p className="font-bold mb-3" style={{ fontSize: 13, letterSpacing: isKhmer ? 0 : 2, color: subText }}>
-          {t("checkout.fulfillmentType")}
-        </p>
-        <div className="flex gap-3 flex-wrap">
-          {[
-            { value: "delivery", label: t("checkout.fulfillDelivery"),  desc: t("checkout.fulfillDeliveryDesc") },
-            { value: "pickup",   label: t("checkout.fulfillPickup"),    desc: t("checkout.fulfillPickupDesc") },
-          ].map(({ value, label, desc }) => {
-            const active = fulfillment === value
-            return (
-              <button
-                key={value}
-                onClick={() => setFulfillment(value)}
+        <div className="mb-6">
+          <p
+            className="font-bold mb-3"
+            style={{
+              fontSize: 17,
+              letterSpacing: isKhmer ? 0 : 2,
+              color: subText,
+            }}
+          >
+            {t("checkout.fulfillmentType")}
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            {[
+              {
+                value: "delivery",
+                label: t("checkout.fulfillDelivery"),
+                desc: t("checkout.fulfillDeliveryDesc"),
+              },
+              {
+                value: "pickup",
+                label: t("checkout.fulfillPickup"),
+                desc: t("checkout.fulfillPickupDesc"),
+              },
+            ].map(({ value, label, desc }) => {
+              const active = fulfillment === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => setFulfillment(value)}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 2,
+                    padding: "12px 20px",
+                    borderRadius: 999,
+                    border: `2px solid ${active ? "#F97316" : borderCol}`,
+                    background: active
+                      ? dark
+                        ? "rgba(249,115,22,0.12)"
+                        : "rgba(249,115,22,0.06)"
+                      : pillBg,
+                    color: active ? "#F97316" : subText,
+                    fontWeight: 700,
+                    fontSize: 20,
+                    fontFamily: isKhmer
+                      ? "KantumruyPro, sans-serif"
+                      : "Rajdhani, sans-serif",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    boxShadow: active
+                      ? "0 0 0 3px rgba(249,115,22,0.15)"
+                      : "none",
+                  }}
+                >
+                  <span>{label}</span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: active ? "rgba(249,115,22,0.7)" : subText,
+                      letterSpacing: 0,
+                    }}
+                  >
+                    {desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Pickup info banner + store map ──────────────────────────────── */}
+          {isPickup && (
+            <div
+              className="mt-4 rounded-2xl overflow-hidden"
+              style={{
+                border: `1px solid ${dark ? "rgba(249,115,22,0.3)" : "rgba(249,115,22,0.25)"}`,
+                background: dark ? "#111827" : "#fff",
+              }}
+            >
+              {/* Info row */}
+              <div
+                className="flex items-start gap-3 p-4"
                 style={{
-                  display: "flex", flexDirection: "column", alignItems: "flex-start",
-                  gap: 2, padding: "12px 20px", borderRadius: 999,
-                  border: `2px solid ${active ? '#F97316' : borderCol}`,
-                  background: active ? (dark ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.06)') : pillBg,
-                  color: active ? '#F97316' : subText,
-                  fontWeight: 700, fontSize: 15,
-                  fontFamily: isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif",
-                  cursor: "pointer", transition: "all 0.2s",
-                  boxShadow: active ? '0 0 0 3px rgba(249,115,22,0.15)' : 'none',
+                  background: dark
+                    ? "rgba(249,115,22,0.08)"
+                    : "rgba(249,115,22,0.05)",
                 }}
               >
-                <span>{label}</span>
-                <span style={{ fontSize: 11, fontWeight: 500, color: active ? 'rgba(249,115,22,0.7)' : subText, letterSpacing: 0 }}>{desc}</span>
-              </button>
-            )
-          })}
-        </div>
+                <span style={{ fontSize: 26, flexShrink: 0 }}>🏪</span>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="font-black"
+                    style={{
+                      fontSize: 15,
+                      color: "#F97316",
+                      letterSpacing: isKhmer ? 0 : 0.5,
+                    }}
+                  >
+                    {t("checkout.storePickupTitle")}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: subText,
+                      marginTop: 3,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    📍 {STORE_ADDRESS}
+                  </p>
+                  <p style={{ fontSize: 12, color: subText, marginTop: 4 }}>
+                    {t("checkout.storePickupHint")}
+                  </p>
+                  {/* Hours */}
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: dark ? "#4ade80" : "#16a34a",
+                      marginTop: 6,
+                      fontWeight: 700,
+                    }}
+                  >
+                    🕗 Mon–Sun · 08:30 – 18:00
+                  </p>
+                </div>
+              </div>
 
-        {/* ── Pickup info banner + store map ──────────────────────────────── */}
-        {isPickup && (
-          <div className="mt-4 rounded-2xl overflow-hidden"
-            style={{ border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.25)'}`, background: dark ? '#111827' : '#fff' }}>
+              {/* Static Google Map embed */}
+              <div style={{ position: "relative", width: "100%", height: 220 }}>
+                <iframe
+                  title="Tronmatix Store Location"
+                  width="100%"
+                  height="220"
+                  style={{ border: 0, display: "block" }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://www.google.com/maps?q=${STORE_LAT},${STORE_LNG}&z=17&output=embed`}
+                />
+                {dark && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      pointerEvents: "none",
+                      background: "rgba(0,0,0,0.15)",
+                    }}
+                  />
+                )}
+              </div>
 
-            {/* Info row */}
-            <div className="flex items-start gap-3 p-4"
-              style={{ background: dark ? 'rgba(249,115,22,0.08)' : 'rgba(249,115,22,0.05)' }}>
-              <span style={{ fontSize: 26, flexShrink: 0 }}>🏪</span>
-              <div className="flex-1 min-w-0">
-                <p className="font-black" style={{ fontSize: 15, color: '#F97316', letterSpacing: isKhmer ? 0 : 0.5 }}>
-                  {t("checkout.storePickupTitle")}
-                </p>
-                <p style={{ fontSize: 13, color: subText, marginTop: 3, lineHeight: 1.5 }}>
-                  📍 {STORE_ADDRESS}
-                </p>
-                <p style={{ fontSize: 12, color: subText, marginTop: 4 }}>
-                  {t("checkout.storePickupHint")}
-                </p>
-                {/* Hours */}
-                <p style={{ fontSize: 12, color: dark ? '#4ade80' : '#16a34a', marginTop: 6, fontWeight: 700 }}>
-                  🕗 Mon–Sun · 08:30 – 18:00
-                </p>
+              {/* Open in Maps button */}
+              <div
+                className="px-4 py-3 flex items-center justify-between flex-wrap gap-2"
+                style={{
+                  borderTop: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "#f3f4f6"}`,
+                }}
+              >
+                <span style={{ fontSize: 12, color: subText }}>
+                  📞 096 733 3725 / 077 711 126
+                </span>
+                <a
+                  href={STORE_MAPS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "7px 16px",
+                    borderRadius: 999,
+                    background: "#F97316",
+                    color: "#fff",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: isKhmer
+                      ? "Kh-Koulen, sans-serif"
+                      : "Rajdhani, sans-serif",
+                    textDecoration: "none",
+                    letterSpacing: isKhmer ? 0 : 0.5,
+                    boxShadow: "0 2px 10px rgba(249,115,22,0.35)",
+                    flexShrink: 0,
+                  }}
+                >
+                  🗺️ {isKhmer ? "បើក Google Maps" : "Open in Google Maps"}
+                </a>
               </div>
             </div>
-
-            {/* Static Google Map embed */}
-            <div style={{ position: 'relative', width: '100%', height: 220 }}>
-              <iframe
-                title="Tronmatix Store Location"
-                width="100%"
-                height="220"
-                style={{ border: 0, display: 'block' }}
-                loading="lazy"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                src={`https://www.google.com/maps?q=${STORE_LAT},${STORE_LNG}&z=17&output=embed`}
-              />
-              {dark && (
-                <div style={{
-                  position: 'absolute', inset: 0, pointerEvents: 'none',
-                  background: 'rgba(0,0,0,0.15)',
-                }} />
-              )}
-            </div>
-
-            {/* Open in Maps button */}
-            <div className="px-4 py-3 flex items-center justify-between flex-wrap gap-2"
-              style={{ borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.07)' : '#f3f4f6'}` }}>
-              <span style={{ fontSize: 12, color: subText }}>
-                📞 096 733 3725 / 077 711 126
-              </span>
-              <a
-                href={STORE_MAPS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '7px 16px', borderRadius: 999,
-                  background: '#F97316', color: '#fff',
-                  fontSize: 13, fontWeight: 700,
-                  fontFamily: isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif",
-                  textDecoration: 'none', letterSpacing: isKhmer ? 0 : 0.5,
-                  boxShadow: '0 2px 10px rgba(249,115,22,0.35)',
-                  flexShrink: 0,
-                }}
-              >
-                🗺️ {isKhmer ? "បើក Google Maps" : "Open in Google Maps"}
-              </a>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       )}
 
       {/* ── Step 2: compact fulfillment summary (no map, no iframe) ─────────── */}
       {step === 2 && (
-        <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl"
+        <div
+          className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl"
           style={{
             background: isPickup
-              ? (dark ? 'rgba(34,197,94,0.07)' : '#f0fdf4')
-              : (dark ? 'rgba(167,139,250,0.07)' : '#faf5ff'),
-            border: `1px solid ${isPickup
-              ? (dark ? 'rgba(34,197,94,0.25)' : '#bbf7d0')
-              : (dark ? 'rgba(167,139,250,0.25)' : '#e9d5ff')}`,
-          }}>
-          <span style={{ fontSize: 20 }}>{isPickup ? '🏪' : '🚚'}</span>
+              ? dark
+                ? "rgba(34,197,94,0.07)"
+                : "#f0fdf4"
+              : dark
+                ? "rgba(167,139,250,0.07)"
+                : "#faf5ff",
+            border: `1px solid ${
+              isPickup
+                ? dark
+                  ? "rgba(34,197,94,0.25)"
+                  : "#bbf7d0"
+                : dark
+                  ? "rgba(167,139,250,0.25)"
+                  : "#e9d5ff"
+            }`,
+          }}
+        >
+          <span style={{ fontSize: 20 }}>{isPickup ? "🏪" : "🚚"}</span>
           <div className="flex-1">
-            <span className="font-bold" style={{
-              fontSize: 14,
-              color: isPickup ? '#22c55e' : '#a78bfa',
-            }}>
-              {isPickup ? t("checkout.fulfillPickup") : t("checkout.fulfillDelivery")}
+            <span
+              className="font-bold"
+              style={{
+                fontSize: 14,
+                color: isPickup ? "#22c55e" : "#a78bfa",
+              }}
+            >
+              {isPickup
+                ? t("checkout.fulfillPickup")
+                : t("checkout.fulfillDelivery")}
             </span>
             {isPickup && (
               <span style={{ fontSize: 12, color: subText, marginLeft: 8 }}>
-                {STORE_ADDRESS.split(',')[0]}
+                {STORE_ADDRESS.split(",")[0]}
               </span>
             )}
           </div>
@@ -408,15 +524,26 @@ export default function CheckoutPage() {
           <button
             onClick={() => setStep(1)}
             style={{
-              fontSize: 12, fontWeight: 700, color: '#F97316',
-              background: 'none', border: '1.5px solid rgba(249,115,22,0.4)',
-              borderRadius: 999, padding: '4px 14px', cursor: 'pointer',
-              fontFamily: isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#F97316",
+              background: "none",
+              border: "1.5px solid rgba(249,115,22,0.4)",
+              borderRadius: 999,
+              padding: "4px 14px",
+              cursor: "pointer",
+              fontFamily: isKhmer
+                ? "Kh-Koulen, sans-serif"
+                : "Rajdhani, sans-serif",
               letterSpacing: isKhmer ? 0 : 0.5,
-              transition: 'all 0.15s',
+              transition: "all 0.15s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(249,115,22,0.1)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'none' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(249,115,22,0.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "none";
+            }}
           >
             ✏️ {isKhmer ? "ផ្លាស់ប្តូរ" : "Change"}
           </button>
@@ -427,19 +554,40 @@ export default function CheckoutPage() {
       <div className="flex items-center gap-0 mb-8">
         {STEPS.map((s, i) => (
           <div key={s} className="flex items-center">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all"
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all"
               style={{
                 fontSize: 14,
-                background: step === i+1 ? '#F97316' : step > i+1 ? '#22c55e' : stepInactive,
-                color: step === i+1 ? '#fff' : step > i+1 ? '#fff' : stepInactiveText,
-              }}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center font-black" style={{ fontSize: 12 }}>
-                {step > i+1 ? '✓' : i+1}
+                background:
+                  step === i + 1
+                    ? "#F97316"
+                    : step > i + 1
+                      ? "#22c55e"
+                      : stepInactive,
+                color:
+                  step === i + 1
+                    ? "#fff"
+                    : step > i + 1
+                      ? "#fff"
+                      : stepInactiveText,
+              }}
+            >
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center font-black"
+                style={{ fontSize: 12 }}
+              >
+                {step > i + 1 ? "✓" : i + 1}
               </div>
               {s}
             </div>
             {i < STEPS.length - 1 && (
-              <div className="w-8 h-1 mx-1" style={{ background: step > i+1 ? '#F97316' : dark ? '#374151' : '#e5e7eb' }} />
+              <div
+                className="w-8 h-1 mx-1"
+                style={{
+                  background:
+                    step > i + 1 ? "#F97316" : dark ? "#374151" : "#e5e7eb",
+                }}
+              />
             )}
           </div>
         ))}
@@ -447,18 +595,23 @@ export default function CheckoutPage() {
 
       {step === 1 && (
         <Step1DeliveryInfo
-          location={location} onChange={handleLocation}
-          delivery={delivery} onDeliveryChange={setDelivery}
-          saveAddr={saveAddr} onSaveAddr={setSaveAddr}
-          savedLocations={savedLocations} onPickLocation={() => setShowLocPicker(true)}
-          mapPin={mapPin} onMapPin={setMapPin}
+          location={location}
+          onChange={handleLocation}
+          delivery={delivery}
+          onDeliveryChange={setDelivery}
+          saveAddr={saveAddr}
+          onSaveAddr={setSaveAddr}
+          savedLocations={savedLocations}
+          onPickLocation={() => setShowLocPicker(true)}
+          mapPin={mapPin}
+          onMapPin={setMapPin}
           onSaveToProfile={user ? handleSaveToProfile : undefined}
           onNext={() => setStep(2)}
           isPickup={isPickup}
           // NEW: province / provider
           onProvinceSelect={(prov) => {
-            setSelectedProvince(prov)
-            setSelectedProviderId(null) // reset provider when province changes
+            setSelectedProvince(prov);
+            setSelectedProviderId(null); // reset provider when province changes
           }}
           selectedProvince={selectedProvince}
           onProviderSelect={(prov) => setSelectedProviderId(prov.id)}
@@ -469,15 +622,25 @@ export default function CheckoutPage() {
       )}
 
       {showLocPicker && !isPickup && (
-        <LocationPickerModal locations={savedLocations} onSelect={handleSelectSavedLocation} onClose={() => setShowLocPicker(false)} />
+        <LocationPickerModal
+          locations={savedLocations}
+          onSelect={handleSelectSavedLocation}
+          onClose={() => setShowLocPicker(false)}
+        />
       )}
 
       {step === 2 && (
         <Step2Payment
-          payMethod={payMethod} onPayMethod={setPayMethod}
-          items={items} subtotal={subtotal} discountAmount={discountAmount}
-          discount={discount} finalTotal={finalTotal} loading={loading}
-          onBack={() => setStep(1)} onPlace={placeOrder}
+          payMethod={payMethod}
+          onPayMethod={setPayMethod}
+          items={items}
+          subtotal={subtotal}
+          discountAmount={discountAmount}
+          discount={discount}
+          finalTotal={finalTotal}
+          loading={loading}
+          onBack={() => setStep(1)}
+          onPlace={placeOrder}
           isPickup={isPickup}
           selectedProvince={selectedProvince}
         />
@@ -485,41 +648,65 @@ export default function CheckoutPage() {
 
       {/* KHQR modal */}
       {showQrModal && order && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full overflow-hidden"
-            style={{ maxWidth: 380, animation: "fadeInScale .2s ease", maxHeight: "92vh", overflowY: "auto" }}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full overflow-hidden"
+            style={{
+              maxWidth: 440,
+              animation: "fadeInScale .2s ease",
+              maxHeight: "92vh",
+              overflowY: "auto",
+            }}
+          >
             <div className="flex justify-end px-4 pt-3 pb-0">
-              <button onClick={async () => {
-                const result = await Swal.fire({
-                  title: "Leave payment?",
-                  text: "Your order is placed but payment is still pending. You can pay later from your Orders page.",
-                  icon: "warning",
-                  showCancelButton: true,
-                  confirmButtonColor: "#F97316",
-                  cancelButtonColor: "#6b7280",
-                  confirmButtonText: "Yes, pay later",
-                  cancelButtonText: "Stay and pay now",
-                })
-                if (result.isConfirmed) {
-                  clearCheckoutStorage();
-                  clearCart();
-                  removeDiscount();
-                  setShowQrModal(false);
-                  setDeliveryStatus(0);
-                  setStep(3);
-                }
-              }}
+              <button
+                onClick={async () => {
+                  const result = await Swal.fire({
+                    title: "Leave payment?",
+                    text: "Your order is placed but payment is still pending. You can pay later from your Orders page.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#F97316",
+                    cancelButtonColor: "#6b7280",
+                    confirmButtonText: "Yes, pay later",
+                    cancelButtonText: "Stay and pay now",
+                  });
+                  if (result.isConfirmed) {
+                    clearCheckoutStorage();
+                    clearCart();
+                    removeDiscount();
+                    setShowQrModal(false);
+                    setDeliveryStatus(0);
+                    setStep(3);
+                  }
+                }}
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold transition-colors"
-                title="Close">✕</button>
+                title="Close"
+              >
+                ✕
+              </button>
             </div>
-            <BakongQRPanel orderId={order.id ?? order.order_id ?? order.data?.id} total={order.total}
+            <BakongQRPanel
+              orderId={order.id ?? order.order_id ?? order.data?.id}
+              total={order.total}
+              subtotal={order.subtotal}
+              discountAmount={order.discount_amount}
+              discountCode={order.discount_code}
+              items={order.items}
               onPaid={() => {
                 clearCheckoutStorage();
                 clearCart();
                 removeDiscount();
-                setTimeout(() => { setShowQrModal(false); setDeliveryStatus(1); setStep(3) }, 1800)
-              }} />
+                setTimeout(() => {
+                  setShowQrModal(false);
+                  setDeliveryStatus(1);
+                  setStep(3);
+                }, 1800);
+              }}
+            />
           </div>
           <style>{`@keyframes fadeInScale { from { opacity:0; transform:scale(.93) translateY(20px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>
         </div>
@@ -529,12 +716,12 @@ export default function CheckoutPage() {
         <AuthModal
           mode={authMode}
           onClose={() => {
-            setShowAuthModal(false)
-            if (!user) pendingOrderAfterLogin.current = false
+            setShowAuthModal(false);
+            if (!user) pendingOrderAfterLogin.current = false;
           }}
           onSwitch={setAuthMode}
         />
       )}
     </div>
-  )
+  );
 }

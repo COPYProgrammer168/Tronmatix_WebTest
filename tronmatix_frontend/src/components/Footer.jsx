@@ -60,6 +60,7 @@ function PhoneIcon({ className, ...props }) {
 /* ── Scroll-to-top button ────────────────────────────────────────────── */
 function ScrollToTopBtn() {
   const { cartOpen } = useCart();
+  const location = useLocation();
   const [visible, setVisible] = useState(false);
   const { isVisible: bottomNavVisible } = useBottomNavVisible();
   const { isMobileMenuOpen, isLoginModalOpen } = useMobileMenu();
@@ -75,8 +76,14 @@ function ScrollToTopBtn() {
 
   // Visibility — hidden when at the top of the page on ALL breakpoints so the
   // button disappears after it scrolls you back to the top. Also hidden while
-  // the login/register modal is open (on both mobile and desktop).
-  const show = visible && !cartOpen && !isMobileMenuOpen && !isLoginModalOpen;
+  // the login/register modal is open (on both mobile and desktop). Shown ONLY
+  // on the homepage — hidden on every other page.
+  const show =
+    location.pathname === "/" &&
+    visible &&
+    !cartOpen &&
+    !isMobileMenuOpen &&
+    !isLoginModalOpen;
 
   // Position: bottom-20 only when BottomNav (mobile-only) is visible; desktop
   // always sits at the normal bottom-6 offset.

@@ -9,15 +9,19 @@ import TelegramConnect from './TelegramConnect'
 // NOTE: khFont/khBodyFont/isKhmer/dark defined inside component below
 // inputStyle is now a factory called inside the component with dark context
 const getLabelStyleProfile = (isKhmer) => ({
-  display: 'block', fontSize: isKhmer ? 11 : 13, fontWeight: isKhmer ? 400 : 700, letterSpacing: isKhmer ? 0 : 2,
-  fontFamily: isKhmer ? 'Kh-Koulen, sans-serif' : 'Rajdhani, sans-serif',
-  color: '#9CA3AF', marginBottom: 8,
-  textTransform: isKhmer ? 'none' : 'uppercase',
-})
+  display: "block",
+  fontSize: isKhmer ? 13 : 13,
+  fontWeight: isKhmer ? 400 : 700,
+  letterSpacing: isKhmer ? 0 : 2,
+  fontFamily: isKhmer ? "KantumruyPro, sans-serif" : "Rajdhani, sans-serif",
+  color: "#4f5153",
+  marginBottom: 8,
+  textTransform: isKhmer ? "none" : "uppercase",
+});
 
 const getInputStyle = (hasError, editable = true, dark = false) => ({
   width: '100%', boxSizing: 'border-box',
-  padding: '12px 16px', borderRadius: 10, outline: 'none',
+  padding: '12px 16px', borderRadius: 10, outline: 'none', fontWeight: 600,
   border: hasError
     ? '1.5px solid #EF4444'
     : `1.5px solid ${dark ? '#374151' : '#E5E7EB'}`,
@@ -43,7 +47,9 @@ const fmt = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, m
 export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify, dark }) {
   const { t, isKhmer } = useLang()
   const { refreshUser } = useAuth()
-  const khFont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'Rajdhani,sans-serif'
+  const khFont = isKhmer
+    ? "Kh_Jrung_Thom, Khmer OS, sans-serif"
+    : "HurstBagod,sans-serif";
   const khBodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif'
   // Bind context-aware helpers
   const labelStyle = getLabelStyleProfile(isKhmer)
@@ -127,8 +133,8 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <div>
-          <h2 style={{ fontSize: isKhmer ? 20 : 22, fontWeight: isKhmer ? 400 : 800, letterSpacing: isKhmer ? 0 : 1, margin: 0, fontFamily: khFont }}>{isKhmer ? t('profile.personalInfo') : 'Personal Information'}</h2>
-          <div style={{ fontSize: isKhmer ? 14 : 15, color: '#9CA3AF', marginTop: 4, fontFamily: khBodyFont }}>{isKhmer ? t('profile.manageAccount') : 'Manage your account details'}</div>
+          <h2 className="uppercase" style={{ fontSize: isKhmer ? 20 : 22, fontWeight: isKhmer ? 400 : 600, letterSpacing: isKhmer ? 0 : 1, margin: 0, fontFamily: khFont }}>{isKhmer ? t('profile.personalInfo') : 'Personal Information'}</h2>
+          <div style={{ fontSize: isKhmer ? 14 : 15, color: '#9CA3AF', marginTop: 4, fontFamily: khBodyFont, fontWeight: '600' }}>{isKhmer ? t('profile.manageAccount') : 'Manage your account details'}</div>
         </div>
         {!editing ? (
           <button onClick={() => setEditing(true)} style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA', borderRadius: 10, padding: '8px 20px', cursor: 'pointer', fontFamily: khFont, fontSize: 14, fontWeight: isKhmer ? 400 : 700, letterSpacing: isKhmer ? 0 : 1 }}>{isKhmer ? t('profile.edit') : '✏️ EDIT'}</button>
@@ -205,13 +211,13 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 26 }}>{s.icon}</span>
             <div>
-              <div style={{ fontSize: isKhmer ? 10 : 12, letterSpacing: 2, color: '#9CA3AF', fontWeight: isKhmer ? 400 : 700 }}>ACCOUNT ROLE</div>
-              <div style={{ fontSize: 18, fontWeight: isKhmer ? 400 : 800, color: s.color, fontFamily: 'Rajdhani,sans-serif', letterSpacing: 1 }}>{s.label}</div>
+              <div style={{ fontSize: isKhmer ? 10 : 15, letterSpacing: 2, color: '#9CA3AF', fontWeight: isKhmer ? 400 : 700 }}>ACCOUNT ROLE</div>
+              <div style={{ fontSize: 18, fontWeight: isKhmer ? 400 : 800, color: s.color, fontFamily: khBodyFont, letterSpacing: 1 }}>{s.label}</div>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: isKhmer ? 12 : 13, color: s.color, fontWeight: 600, opacity: 0.8 }}>{s.note}</div>
-            {totalSpent !== null && <div style={{ fontSize: 13, fontWeight: isKhmer ? 400 : 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} spent</div>}
+            <div style={{ fontSize: isKhmer ? 12 : 15, color: s.color, fontWeight: 600, opacity: 0.8 }}>{s.note}</div>
+            {totalSpent !== null && <div style={{ fontSize: 18, fontWeight: isKhmer ? 400 : 700, color: '#374151', marginTop: 2 }}>{fmt(spent)} spent</div>}
           </div>
         </div>
 
@@ -254,7 +260,7 @@ export default function ProfileTab({ user, totalSpent, VIP_GOAL, onSaved, notify
         ].map(({ label, value }) => (
           <div key={label} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: isKhmer ? 10 : 12, letterSpacing: 2, color: '#9CA3AF', fontWeight: isKhmer ? 400 : 700 }}>{label}</div>
-            <div style={{ fontSize: isKhmer ? 15 : 16, fontWeight: isKhmer ? 400 : 700, color: dark ? '#f9fafb' : '#374151', marginTop: 4 }}>{value}</div>
+            <div style={{ fontSize: isKhmer ? 15 : 20, fontWeight: isKhmer ? 400 : 700, color: dark ? '#f9fafb' : '#374151', marginTop: 4 }}>{value}</div>
           </div>
         ))}
       </div>

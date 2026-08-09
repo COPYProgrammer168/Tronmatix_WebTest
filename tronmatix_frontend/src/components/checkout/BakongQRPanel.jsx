@@ -9,16 +9,27 @@ import { QRCodeSVG } from "qrcode.react";
 
 // ── QR display ────────────────────────────────────────────────────────────────
 function QRDisplay({ qrData }) {
+  const boxStyle = {
+    width: "100%",
+    maxWidth: 440,
+    aspectRatio: "1 / 1",
+    margin: "0 auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#fff",
+  };
+
   if (qrData?.qr_image) {
     const src = qrData.qr_image.startsWith("data:")
       ? qrData.qr_image
       : `data:image/png;base64,${qrData.qr_image}`;
     return (
-      <div style={{ lineHeight: 0 }}>
+      <div style={boxStyle}>
         <img
           src={src}
           alt="KHQR Payment Code"
-          style={{ display: "block", width: "100%", height: "auto" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </div>
     );
@@ -26,14 +37,14 @@ function QRDisplay({ qrData }) {
   // Fallback: raw qr_code string → vector SVG (no image from PayWay)
   if (qrData?.qr_code) {
     return (
-      <div style={{ padding: 12 }}>
+      <div style={boxStyle}>
         <QRCodeSVG
           value={qrData.qr_code}
-          size={260}
+          size={360}
           level="H"
           bgColor="#ffffff"
           fgColor="#1a1a1a"
-          style={{ display: "block", width: "auto", height: "auto" }}
+          style={{ display: "block" }}
         />
       </div>
     );
@@ -41,7 +52,7 @@ function QRDisplay({ qrData }) {
   return (
     <div
       style={{
-        height: 180,
+        height: 360,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -53,7 +64,15 @@ function QRDisplay({ qrData }) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function BakongQRPanel({ orderId, total, onPaid }) {
+export default function BakongQRPanel({
+  orderId,
+  total,
+  subtotal,
+  discountAmount,
+  discountCode,
+  items,
+  onPaid,
+}) {
   const { t, isKhmer } = useLang();
 
   const [qrData, setQrData] = useState(null);
@@ -256,7 +275,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
         padding: 16,
       }}
     >
-      <div style={{ width: "auto", maxWidth: 360, position: "relative" }}>
+      <div style={{ width: "auto", maxWidth: 1080, position: "relative" }}>
         {/* ── Error banner ─────────────────────────────────────────────────── */}
         {error && (
           <div
@@ -267,7 +286,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               borderRadius: 12,
               padding: "10px 16px",
               marginBottom: 12,
-              fontSize: isKhmer ? 13 : 14,
+              fontSize: 13,
               textAlign: "center",
               fontWeight: 500,
             }}
@@ -360,10 +379,10 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                       margin: "0 auto 16px",
                     }}
                   />
-                  <p style={{ color: "#6b7280", fontSize: isKhmer ? 14 : 15 }}>
+                  <p style={{ color: "#6b7280", fontSize: 14 }}>
                     {isKhmer ? t("qr.generating") : "Generating QR Code..."}
                   </p>
-                  <p style={{ color: "#9ca3af", fontSize: isKhmer ? 12 : 13, marginTop: 4 }}>
+                  <p style={{ color: "#9ca3af", fontSize: 12, marginTop: 4 }}>
                     Connecting to ABA PayWay...
                   </p>
                 </>
@@ -438,111 +457,143 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {/* PENDING STATE — Professional KHQR template                        */}
+        {/* PENDING STATE — summary card (left) + unboxed QR (right)           */}
         {/* ══════════════════════════════════════════════════════════════════ */}
         {paymentStatus === "pending" && qrData && (
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 24,
-              overflow: "hidden",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)",
-            }}
-          >
-            {/* Header */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "20px 24px 12px",
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: 800, color: "#111827", fontSize: 16 }}>
-                  Scan to Pay
-                </div>
-                <div style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#F97316",
-                  marginTop: 4,
-                  textShadow: "0 0 8px rgba(249,115,22,0.5), 0 0 20px rgba(249,115,22,0.3)",
-                  letterSpacing: "0.5px",
-                }}>
-                  ⚡ {qrData?.merchant_name || "TronmatixComputer"}
-                </div>
-                <div style={{ fontSize: isKhmer ? 10 : 11, color: "#9ca3af", marginTop: 1 }}>
-                  tronmatix.com
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 14 }}>⏱</span>
-                <span style={{ fontWeight: 900, fontSize: 16, fontFamily: "monospace", color: "#C8102E" }}>
-                  {countdown || "--:--"}
-                </span>
-              </div>
-            </div>
-
-            {/* QR Image - The Core Asset */}
-            <div style={{ padding: "0 20px 20px" }}>
-              <QRDisplay qrData={qrData} />
-            </div>
-
-            {/* Footer */}
-            <div
-              style={{
-                background: "#f9fafb",
-                padding: "20px 24px",
-                textAlign: "center",
-                borderTop: "1px solid #f3f4f6",
-              }}
-            >
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: isKhmer ? 13 : 14, color: "#4b5563", marginBottom: 4 }}>
-                  Scan with ABA Mobile or any KHQR app
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite" }} />
-                  <span style={{ fontSize: isKhmer ? 12 : 13, color: "#6b7280" }}>
-                    Auto-checking payment...
+          <div>
+            <div className="khqr-pending-grid">
+              {/* Left: unboxed QR */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 0" }}>
+                <QRDisplay qrData={qrData} />
+                <div style={{ marginTop: 16, fontSize: 13, color: "#6b7280" }}>
+                  Time:{" "}
+                  <span style={{ fontWeight: 700, color: "#C8102E", fontFamily: "monospace" }}>
+                    {countdown || "--:--"}
                   </span>
                 </div>
               </div>
 
+              {/* Right: summary card */}
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 16,
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                  padding: 20,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "#111827" }}>
+                      Payment summary
+                    </div>
+                    <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>
+                      Order #{orderId}
+                    </div>
+                  </div>
+                  <span style={{ background: "#fef9c3", color: "#a16207", fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "3px 10px" }}>
+                    Pending
+                  </span>
+                </div>
+
+                {qrData?.merchant_name && (
+                  <>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: 0.5, marginBottom: 4 }}>
+                      MERCHANT
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color: "#F97316",
+                        marginBottom: 16,
+                        letterSpacing: "0.5px",
+                        textShadow: "0 0 8px rgba(249,115,22,0.5), 0 0 20px rgba(249,115,22,0.3)",
+                      }}
+                    >
+                      {qrData.merchant_name}
+                    </div>
+                  </>
+                )}
+
+                {Array.isArray(items) && items.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: 0.5, marginBottom: 6 }}>
+                      ITEMS
+                    </div>
+                    {items.map((item, idx) => {
+                      const itemName = item.name || item.product?.name || item.product_name || "Item";
+                      const itemQty = Number(item.qty || item.quantity || 1);
+                      const itemPrice = Number(item.price ?? item.unit_price ?? 0);
+                      return (
+                        <div key={item.id ?? idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#374151", marginBottom: 5 }}>
+                          <span style={{ flex: "1 1 auto", lineHeight: 1.35 }}>
+                            {itemName}
+                            <span style={{ color: "#9ca3af" }}> × {itemQty}</span>
+                          </span>
+                          <span style={{ flex: "0 0 auto", fontWeight: 600, color: "#111827" }}>
+                            ${(itemPrice * itemQty).toFixed(2)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 12 }}>
+                  {Number(discountAmount) > 0 && (
+                    <>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#6b7280", marginBottom: 6 }}>
+                        <span>Subtotal</span>
+                        <span>${Number(subtotal ?? total).toFixed(2)}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#16a34a", marginBottom: 6 }}>
+                        <span>Discount{discountCode ? ` (${discountCode})` : ""}</span>
+                        <span>−${Number(discountAmount).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 8, borderTop: "1px solid #f3f4f6" }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>
+                      {isKhmer ? t("qr.totalToPay") : "Total"}
+                    </span>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: "#111827" }}>
+                      ${Number(total ?? qrData?.amount ?? 0).toFixed(2)}{" "}
+                      <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 500 }}>USD</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #f3f4f6" }}>
+                  {["Open ABA Mobile or any KHQR app", "Scan the QR code on the left", "Enter amount & confirm payment"].map((step, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, fontSize: 12, color: "#6b7280", marginBottom: 6 }}>
+                      <span style={{ fontWeight: 700, color: "#9ca3af" }}>{i + 1}.</span>
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#16a34a", fontWeight: 600 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite" }} />
+                  Auto-checking payment...
+                </div>
+              </div>
+            </div>
+
+            {/* Footer actions */}
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: 10 }} className="sm:flex-row">
               {qrData.abapay_deeplink && (
                 <a
                   href={qrData.abapay_deeplink}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    padding: "12px",
-                    background: "#003082",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    borderRadius: 12,
-                    textDecoration: "none",
-                    marginBottom: 10,
-                  }}
+                  style={{ flex: "1 1 auto", padding: 12, background: "#003082", color: "#fff", fontWeight: 700, fontSize: 13, borderRadius: 12, textDecoration: "none", textAlign: "center" }}
                 >
                   📱 Open in ABA Mobile
                 </a>
               )}
-
               <button
                 onClick={handleManualConfirm}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "#f9fafb",
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  border: "1.5px solid #e5e7eb",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                }}
+                style={{ flex: "1 1 auto", padding: 12, background: "#fff", color: "#374151", fontWeight: 600, fontSize: 13, border: "1.5px solid #e5e7eb", borderRadius: 12, cursor: "pointer" }}
               >
                 I already paid – notify admin
               </button>
@@ -672,7 +723,7 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {/* PAID STATE — Celebratory Animation                              */}
+        {/* PAID STATE — celebratory confirmation animation                   */}
         {/* ══════════════════════════════════════════════════════════════════ */}
         {paymentStatus === "paid" && (
           <div
@@ -681,10 +732,9 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
               borderRadius: 20,
               overflow: "hidden",
               boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-              animation: "fadeInUp 0.5s ease-out",
             }}
           >
-            {/* Green header with check animation */}
+            {/* Green gradient header with animated checkmark + confetti */}
             <div
               style={{
                 background: "linear-gradient(135deg, #16a34a, #22c55e)",
@@ -694,7 +744,6 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
                 overflow: "hidden",
               }}
             >
-              {/* Animated circles in background */}
               <div className="confetti-circle c1" />
               <div className="confetti-circle c2" />
               <div className="confetti-circle c3" />
@@ -837,6 +886,23 @@ export default function BakongQRPanel({ orderId, total, onPaid }) {
 
         {/* ── Keyframe animations ───────────────────────────────────────────── */}
         <style>{`
+          /* KHQR pending-state grid — deterministic layout, no Tailwind
+             arbitrary-value classes (avoids this project's JIT-purge issue).
+             Stacks by default; 2 equal columns at md+ (both tracks minmax(0,1fr)
+             so they shrink to the actual modal width instead of overflowing). */
+          .khqr-pending-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+          }
+          @media (min-width: 768px) {
+            .khqr-pending-grid {
+              display: grid;
+              grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+              align-items: start;
+              gap: 32px;
+            }
+          }
           @keyframes spin {
             to { transform: rotate(360deg); }
           }

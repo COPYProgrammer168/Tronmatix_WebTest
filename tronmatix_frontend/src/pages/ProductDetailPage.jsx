@@ -49,6 +49,7 @@ export default function ProductDetailPage() {
   const { dark } = useTheme();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { discount, getItemDiscounts, bestDiscountForItem } = useDiscount();
+  const { t, isKhmer } = useLang();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -150,7 +151,6 @@ export default function ProductDetailPage() {
   const textCol = dark ? "#f9fafb" : "#1f2937";
   const subCol = dark ? "#9ca3af" : "#6b7280";
 
-  const { t, isKhmer } = useLang();
   const headingFont = isKhmer
     ? "Kh_Jrung_Thom, Khmer OS, sans-serif"
     : "HurstBagod, Rajdhani, sans-serif";

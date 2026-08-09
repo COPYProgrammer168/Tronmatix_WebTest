@@ -74,7 +74,7 @@ body.lang-km .font-body {
    Kdam Thmor Pro only contains Khmer glyphs, Latin text is unaffected.
    Monospace (SKUs, codes) and code/pre keep their intended font.
 ───────────────────────────────────────────────────────────────────────── */
-body.lang-en *:not(code):not(pre):not([style*="monospace"]) {
+body.lang-en *:not(code):not(pre):not([style*="monospace"]):not([style*="HurstBagod"]):not([style*="Rajdhani"]) {
   font-family: 'Rajdhani', var(--font-kh-body), sans-serif !important;
 }
 
@@ -142,7 +142,7 @@ body.lang-km .banner-title,
 body.lang-km h2.banner-title {
   font-family: var(--font-kh-heading) !important;
   letter-spacing: 0 !important;
-  font-size: clamp(36px, 4vw, 60px) !important;
+  font-size: clamp(36px, 4vw, 50px) !important;
   line-height: 1 !important;
 }
 
@@ -157,7 +157,7 @@ body.lang-km h5,
 body.lang-km h6 {
   font-family: var(--font-kh-heading) !important;
   line-height: var(--lh-kh-heading) !important;
-  font-size: clamp(1.1em, 1.5vw + 1em, 1.3em) !important;
+  font-size: clamp(1.1em, 1.5vw + 1em, 1.9em) !important;
 }
 
 /* Elements with inline Rajdhani/HurstBagod/Kh_Jrung_Thom → switch to Khmer heading font */

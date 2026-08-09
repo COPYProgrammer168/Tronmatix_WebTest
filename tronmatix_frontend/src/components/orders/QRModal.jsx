@@ -33,7 +33,7 @@ export default function QRModal({ order, onClose, onPaid }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
         style={{ animation: "popIn 0.2s cubic-bezier(0.34,1.56,0.64,1)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -64,48 +64,15 @@ export default function QRModal({ order, onClose, onPaid }) {
           </div>
         </div>
 
-        {/* ── Order summary ──────────────────────────────────────────────── */}
-        <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
-          {/* Subtotal — only when discount exists */}
-          {Number(order.discount_amount) > 0 && (
-            <div
-              className="flex justify-between mb-1"
-              style={{ fontSize: 13, color: "#6b7280" }}
-            >
-              <span>Subtotal</span>
-              <span>${Number(order.subtotal ?? order.total).toFixed(2)}</span>
-            </div>
-          )}
-          {/* Discount */}
-          {Number(order.discount_amount) > 0 && (
-            <div
-              className="flex justify-between mb-1 font-bold"
-              style={{ fontSize: 13, color: "#16a34a" }}
-            >
-              <span>
-                🏷 Discount
-                {order.discount_code ? ` (${order.discount_code})` : ""}
-              </span>
-              <span>−${Number(order.discount_amount).toFixed(2)}</span>
-            </div>
-          )}
-          {/* Total */}
-          <div
-            className="flex justify-between font-black"
-            style={{ fontSize: 16, color: "#111827" }}
-          >
-            <span>Total to Pay</span>
-            <span style={{ color: "#C8102E" }}>
-              ${Number(order.total).toFixed(2)}
-            </span>
-          </div>
-        </div>
-
         {/* ── BakongQRPanel ──────────────────────────────────────────────── */}
         <div>
           <BakongQRPanel
             orderId={order.id ?? order.order_id}
             total={order.total}
+            subtotal={order.subtotal}
+            discountAmount={order.discount_amount}
+            discountCode={order.discount_code}
+            items={order.items}
             onPaid={handlePaid}
           />
         </div>

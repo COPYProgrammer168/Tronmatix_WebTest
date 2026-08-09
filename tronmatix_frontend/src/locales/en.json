@@ -13,9 +13,9 @@
     "search": "Search products...",
     "login": "Login",
     "register": "Register",
-    "myProfile": "My Profile",
-    "myOrders": "My Orders",
-    "myFavorites": "My Favorites",
+    "myProfile": "PROFILE",
+    "myOrders": "ORDERS",
+    "myFavorites": "Bookmark",
     "logout": "Logout",
     "logoutConfirmTitle": "Log Out?",
     "logoutConfirmMessage": "Are you sure you want to log out of your account?",
@@ -100,7 +100,7 @@
     "noProviders": "No delivery providers available for this province."
   },
   "favorites": {
-    "title": "MY FAVORITES",
+    "title": "BOOKMARK",
     "empty": "No favorites yet",
     "emptyHint": "Click the Bookmark icon on any product to save it here",
     "browse": "Browse Products",

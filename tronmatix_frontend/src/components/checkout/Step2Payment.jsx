@@ -137,7 +137,7 @@ export default function Step2Payment({
       </div>
 
       {/* Telegram chat button — always visible, highlighted when KHQR is selected */}
-      <a
+      {/* <a
         href={TELEGRAM_URL}
         target="_blank"
         rel="noopener noreferrer"
@@ -175,7 +175,7 @@ export default function Step2Payment({
         }}>
           {isKhmer ? 'ចូលជាមួយ' : 'OPEN CHAT'}
         </div>
-      </a>
+      </a> */}
 
       {/* KHQR info banner */}
       {payMethod === "bakong" && (
@@ -202,10 +202,10 @@ export default function Step2Payment({
         className="rounded-xl p-5 mb-6"
         style={{ background: c.summaryBg, border: `1px solid ${c.summaryBorder}` }}
       >
-        <h3 className="font-black mb-4" style={{ fontSize: 15, color: c.summaryHead }}>
+        <h2 className="font-black mb-4" style={{ fontSize: 15, color: c.summaryHead }}>
           {isKhmer ? t("checkout.orderSummary") : "Order Summary"}
           {isPickup && <span className="ml-2 text-green-400 font-bold" style={{ fontSize: isKhmer ? 12 : 13 }}>🏪 {isKhmer ? t("checkout.fulfillPickup") : "PICKUP"}</span>}
-        </h3>
+        </h2>
         <div className="space-y-2 mb-3">
           {items.map((item) => (
             <div key={item.id} className="flex justify-between" style={{ fontSize: 14 }}>

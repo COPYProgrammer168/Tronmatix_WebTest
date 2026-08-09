@@ -141,7 +141,7 @@ class TelegramUserService
         if (is_string($shipping)) $shipping = json_decode($shipping, true) ?? [];
         $locationParts = array_filter([
             $shipping['address'] ?? null,
-            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['city'] ?? ($shipping['province'] ?? null),
             $shipping['province'] ?? null,
         ], fn($v) => !empty($v));
 
@@ -195,7 +195,7 @@ class TelegramUserService
             $shipping = $order->shipping ?? [];
             $parts = array_filter([
                 $shipping['address'] ?? null,
-                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['city'] ?? ($shipping['province'] ?? null),
                 $shipping['province'] ?? null,
             ], fn($v) => !empty($v));
             if (!empty($parts)) {
@@ -278,7 +278,7 @@ class TelegramUserService
         if (is_string($shipping)) $shipping = json_decode($shipping, true) ?? [];
         $locationParts = array_filter([
             $shipping['address'] ?? null,
-            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['city'] ?? ($shipping['province'] ?? null),
             $shipping['province'] ?? null,
         ], fn($v) => !empty($v));
 
@@ -405,7 +405,7 @@ class TelegramUserService
         $id       = $this->e($order->order_id ?? (string) $order->id);
         $locationParts = array_filter([
             $shipping['address'] ?? null,
-            $shipping['city'] ?: ($shipping['province'] ?: null),
+            $shipping['city'] ?? ($shipping['province'] ?? null),
             $shipping['province'] ?? null,
         ], fn($v) => !empty($v));
         $address  = $this->e(!empty($locationParts) ? implode(', ', $locationParts) : '—');

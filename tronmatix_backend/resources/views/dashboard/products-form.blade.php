@@ -168,28 +168,6 @@
                                 required />
                         </div>
 
-                        {{-- SKU (read-only preview on create, immutable on edit) --}}
-                        <div class="form-group">
-                            <label class="form-label">SKU</label>
-                            @if ($product && $product->sku)
-                                <input type="text" value="{{ $product->sku }}" readonly
-                                    class="form-control"
-                                    title="SKU is permanent and cannot be changed after creation" />
-                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:6px;">
-                                    SKU is permanent and cannot be changed after creation.
-                                </div>
-                            @else
-                                <input type="text" id="skuPreview" readonly
-                                    class="form-control"
-                                    value="{{ old('sku', \App\Services\SkuGenerator::preview(old('category', ''))) }}"
-                                    style="font-family:monospace;"
-                                    placeholder="Auto-generated on save" />
-                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:6px;">
-                                    Auto-generated when you save. Preview updates as you pick a category.
-                                </div>
-                            @endif
-                        </div>
-
                         {{-- Caption --}}
                         <div class="form-group">
                             <label class="form-label">Caption</label>
@@ -199,8 +177,8 @@
                                 placeholder="e.g. G SKILL TRIDENT Z DDR5 32GB 6000MHZ" />
                         </div>
 
-                        {{-- Category + Brand --}}
-                        <div class="form-grid-2">
+                        {{-- Category + Brand + SKU --}}
+                        <div class="form-grid-3">
                             <div class="form-group" style="font-size: var(--title-size);">
                                 <label class="form-label">{{ __('dashboard.form.category') }}</label>
                                 <select name="category" id="categorySelect" class="form-control" required>
@@ -244,6 +222,27 @@
                                     <option value="">— Select PC Part Brand —</option>
                                 </select>
                             </div>
+                            {{-- SKU (read-only preview on create, immutable on edit) --}}
+                        <div class="form-group">
+                            <label class="form-label">SKU</label>
+                            @if ($product && $product->sku)
+                                <input type="text" value="{{ $product->sku }}" readonly
+                                    class="form-control"
+                                    title="SKU is permanent and cannot be changed after creation" />
+                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:6px;">
+                                    SKU is permanent and cannot be changed after creation.
+                                </div>
+                            @else
+                                <input type="text" id="skuPreview" readonly
+                                    class="form-control"
+                                    value="{{ old('sku', \App\Services\SkuGenerator::preview(old('category', ''))) }}"
+                                    style="font-family:monospace;"
+                                    placeholder="Auto-generated on save" />
+                                <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:6px;">
+                                    Auto-generated when you save. Preview updates as you pick a category.
+                                </div>
+                            @endif
+                        </div>
 
                             <script>
                                 const categorySelect = document.getElementById('categorySelect');
@@ -334,7 +333,7 @@
                         </div>
 
 
-                        {{-- Price + Stock + Rating --}}
+                        {{-- Price + Stock + Warranty --}}
                         <div class="form-grid-3 px-10">
                             <div class="form-group">
                                 <label class="form-label">{{ __('dashboard.form.price') }}</label>

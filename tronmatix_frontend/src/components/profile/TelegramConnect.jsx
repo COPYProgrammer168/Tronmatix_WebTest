@@ -83,8 +83,8 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
             <img src={telegramIcon} alt="Telegram" style={{ width: '60%', height: '60%' }} />
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, color: c.text, fontFamily: tgFont }}>{isKhmer ? t('telegram.title') : 'TELEGRAM NOTIFICATIONS'}</div>
-          <div style={{ fontSize: 12, color: c.muted, marginTop: 1, fontFamily: tgFont, }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: isKhmer ? 0 : 1, color: c.text, fontFamily: tgFont }}>{isKhmer ? t('telegram.title') : 'TELEGRAM NOTIFICATIONS'}</div>
+          <div style={{ fontSize: 15, color: c.muted, marginTop: 1, fontFamily: tgFont, fontWeight: '600' }}>{isKhmer ? t('telegram.subtitle') : 'Get order updates directly in Telegram'}</div>
         </div>
         <div style={{ marginLeft: 'auto' }}>
           {loading
@@ -117,17 +117,17 @@ export default function TelegramConnect({ user, dark, onUpdate, notify }) {
 function NotConnectedView({ dark, c, busy, notify, isKhmer = false, t = (k) => k, onUpdate, fetchStatus }) {
   return (
     <div style={{ fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani,sans-serif', color: c.text }}>
-      <p style={{ fontSize: 13, color: c.muted, lineHeight: 1.6, margin: '0 0 16px' }}>
+      <p style={{ fontSize: 16, color: c.muted, lineHeight: 1.6, margin: '0 0 16px', fontWeight: 700, }}>
         {isKhmer ? t('telegram.connectDesc') : 'Connect your Telegram to receive real-time order updates, receipts, shipping alerts, and delivery confirmations.'}
       </p>
 
       {/* Why connect */}
       <div style={{ padding: '12px 14px', borderRadius: 10, marginBottom: 16, background: dark ? 'rgba(34,153,221,0.07)' : 'rgba(34,153,221,0.05)', border: '1px dashed rgba(34,153,221,0.25)' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#229ED9', letterSpacing: isKhmer ? 0 : 2, marginBottom: 8 }}>{isKhmer ? t('telegram.whyConnect') : 'WHY CONNECT?'}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#229ED9', letterSpacing: isKhmer ? 0 : 2, marginBottom: 8 }}>{isKhmer ? t('telegram.whyConnect') : 'WHY CONNECT?'}</div>
         {(isKhmer
           ? [t('telegram.benefit1'), t('telegram.benefit2'), t('telegram.benefit3'), t('telegram.benefit4')]
           : ['🔔 Instant notifications — no app refresh needed', '🧾 Automatic order receipts after checkout', '🚚 Shipping & delivery alerts', '🔒 Secure — we only send, never read your messages'])
-          .map(b => <div key={b} style={{ fontSize: 12, color: c.text, marginBottom: 5, fontWeight: 600 }}>{b}</div>)}
+          .map(b => <div key={b} style={{ fontSize: 16, color: c.text, marginBottom: 5, fontWeight: 600 }}>{b}</div>)}
       </div>
 
       {/* Widget */}

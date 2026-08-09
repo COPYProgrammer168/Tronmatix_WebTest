@@ -110,14 +110,14 @@ export default function OrderReceipt({ order, deliveryStatus }) {
             <h2 className="font-black tracking-widest" style={{ fontFamily: "HurstBagod, Rajdhani, sans-serif", fontSize: 19 }}>
               TRONMATIX COMPUTER
             </h2>
-            <span className="inline-block mt-1 bg-orange-50 border border-primary text-primary rounded-full px-3 py-0.5" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>
+            <span className="inline-block mt-1 bg-orange-50 border border-primary text-primary rounded-full px-3 py-0.5 font-semibold" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>
               ORDER RECEIPT
             </span>
           </div>
           <div className="ml-auto text-right">
-            <div className="text-gray-400" style={{ fontSize: isKhmer ? 12 : 13, letterSpacing: 1 }}>ORDER ID</div>
-            <div className="font-black text-primary" style={{ fontSize: 18 }}>#{order.order_id || order.id}</div>
-            <div className="text-gray-400" style={{ fontSize: isKhmer ? 12 : 13 }}>
+            <div className="text-gray-400 font-semibold" style={{ fontSize: isKhmer ? 12 : 16, letterSpacing: 1 }}>ORDER ID</div>
+            <div className="font-black text-primary" style={{ fontSize: 22 }}>#{order.order_id || order.id}</div>
+            <div className="text-gray-400 font-semibold" style={{ fontSize: isKhmer ? 12 : 16 }}>
               {new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
             </div>
           </div>
@@ -126,11 +126,11 @@ export default function OrderReceipt({ order, deliveryStatus }) {
         {/* Fulfillment type badge */}
         <div className="px-6 pt-4 pb-0">
           {isPickup ? (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-green-700 border border-green-200 bg-green-50" style={{ fontSize: 13 }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-green-700 border border-green-200 bg-green-50" style={{ fontSize: 18 }}>
               🏪 STORE PICKUP — please bring your Order ID
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-purple-700 border border-purple-200 bg-purple-50" style={{ fontSize: 13 }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-purple-700 border border-purple-200 bg-purple-50" style={{ fontSize: 18 }}>
               🚚 HOME DELIVERY
             </div>
           )}
@@ -158,15 +158,15 @@ export default function OrderReceipt({ order, deliveryStatus }) {
             ...(order.location?.note ? [["Note", order.location.note]] : []),
           ].map(([k, v]) => (
             <div key={k} className="px-6 py-3 border-b border-gray-50">
-              <div className="text-gray-400 font-semibold" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 1 }}>{k.toUpperCase()}</div>
-              <div className="font-bold text-gray-800" style={{ fontSize: 14 }}>{v || "—"}</div>
+              <div className="text-gray-400 font-semibold" style={{ fontSize: isKhmer ? 13 : 18, letterSpacing: 1 }}>{k.toUpperCase()}</div>
+              <div className="font-bold text-gray-800" style={{ fontSize: 18 }}>{v || "—"}</div>
             </div>
           ))}
         </div>
 
         {/* Status timeline */}
         <div className="px-6 py-5 border-b border-gray-100">
-          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>ORDER STATUS</div>
+          <div className="text-gray-700 font-bold mb-3" style={{ fontSize: isKhmer ? 11 : 17, letterSpacing: 2 }}>ORDER STATUS</div>
           <div className="flex items-center">
             {STATUS_STEPS.map((s, i) => (
               <div key={s.key} className="flex items-center flex-1 min-w-0">
@@ -177,7 +177,7 @@ export default function OrderReceipt({ order, deliveryStatus }) {
                     {s.icon}
                   </div>
                   <div className={`mt-1 text-center font-bold ${i <= deliveryStatus ? "text-primary" : "text-gray-300"}`}
-                    style={{ fontSize: isKhmer ? 10 : 11, letterSpacing: 0.5 }}>
+                    style={{ fontSize: isKhmer ? 13 : 16, letterSpacing: 0.5 }}>
                     {s.label}
                   </div>
                 </div>
@@ -191,12 +191,12 @@ export default function OrderReceipt({ order, deliveryStatus }) {
 
         {/* Items table */}
         <div className="px-6 py-4 border-b border-gray-100">
-          <div className="text-gray-400 font-bold mb-3" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 2 }}>ORDER ITEMS</div>
-          <table className="w-full" style={{ borderCollapse: "collapse", fontSize: 14 }}>
+          <div className="text-gray-700 font-bold mb-3" style={{ fontSize: isKhmer ? 14 : 18, letterSpacing: 2 }}>ORDER ITEMS</div>
+          <table className="w-full" style={{ borderCollapse: "collapse", fontSize: 18 }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #f0f0f0" }}>
                 {["ITEM", "QTY", "UNIT", "TOTAL"].map((h) => (
-                  <th key={h} className="text-left pb-2 text-gray-400 font-bold" style={{ fontSize: isKhmer ? 11 : 13, letterSpacing: 1 }}>{h}</th>
+                  <th key={h} className="text-left pb-2 text-gray-400 font-bold" style={{ fontSize: isKhmer ? 11 : 17, letterSpacing: 1 }}>{h}</th>
                 ))}
               </tr>
             </thead>

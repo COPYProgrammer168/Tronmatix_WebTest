@@ -16,7 +16,7 @@ export default function CartSlider() {
   const itemsRef = useRef(null)
   const prevCountRef = useRef(0)
   const { t, isKhmer } = useLang()
-  const khfont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
+  const khfont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, sans-serif'
   const bodyFont = isKhmer
     ? "Kdam Thmor Pro, sans-serif"
     : "Rajdhani, sans-serif";

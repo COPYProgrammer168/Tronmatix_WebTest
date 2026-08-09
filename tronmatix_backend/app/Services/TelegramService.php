@@ -57,7 +57,7 @@ class TelegramService
             $phoneLine = '📞 Phone: ' . ($shipping['phone'] ?? '—');
             $locationParts = array_filter([
                 $shipping['address'] ?? '—',
-                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['city'] ?? ($shipping['province'] ?? null),
                 $shipping['province'] ?? null,
             ], fn($v) => !empty($v));
             $addressLine = '📍 Address: ' . implode(', ', $locationParts);
@@ -142,7 +142,7 @@ class TelegramService
         if (! $isPickup) {
             $locationParts = array_filter([
                 $shipping['address'] ?? null,
-                $shipping['city'] ?: ($shipping['province'] ?: null),
+                $shipping['city'] ?? ($shipping['province'] ?? null),
                 $shipping['province'] ?? null,
             ], fn($v) => !empty($v));
             if ($locationParts) {

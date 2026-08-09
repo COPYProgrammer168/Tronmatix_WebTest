@@ -83,10 +83,10 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
 
   if (loading) return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label, fontFamily: font }}>
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 18, color: c.label, fontFamily: font }}>
         {isKhmer ? t("locations.province") : "Province *"}
       </label>
-      <div style={{ padding: "10px 14px", borderRadius: 8, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
+      <div style={{ padding: "10px 14px", borderRadius: 8, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 20 }}>
         ⏳ {isKhmer ? t("locations.loading") : "Loading provinces..."}
       </div>
     </div>
@@ -117,12 +117,12 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
           onChange={(e) => { setSearch(e.target.value); if (!open) setOpen(true); if (selected) { setSelected(null); onSelect?.(null) } }}
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
-          placeholder={isKhmer ? t("locations.searchProvince") || "ស្វែងរកខេត្ត..." : "Select or search province..."}
+          placeholder={isKhmer ? t("locations.searchProvince") || "ស្វែងរកខេត្ត/ក្រុង..." : "Select or search province/City..."}
         style={{
           width: "100%", padding: "10px 14px", borderRadius: 8,
           border: `1px solid ${selected ? "#F97316" : c.inputBorder}`,
           background: c.inputBg, color: c.inputText,
-          fontFamily: font, fontSize: 14, outline: "none",
+          fontFamily: font, fontSize: 17, outline: "none",
           boxSizing: "border-box", paddingRight: 36,
         }}
         onFocus={(e) => { e.target.style.borderColor = "#F97316" }}

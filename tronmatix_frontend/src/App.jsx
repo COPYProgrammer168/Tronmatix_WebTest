@@ -40,6 +40,7 @@ const OrdersPage        = lazy(() => import("./pages/OrdersPage"));
 const FavoritesPage     = lazy(() => import("./pages/FavoritesPage"));
 const UserProfilePage   = lazy(() => import("./pages/UserProfilePage"));
 const ContactPage       = lazy(() => import("./pages/ContactPage"));
+const AdminRedirect     = lazy(() => import("./pages/AdminRedirect"));
 
 function PageSpinner() {
   return (
@@ -136,7 +137,7 @@ function AppContent() {
             <Route path="/cart"                    element={<CartPage />} />
             <Route path="/checkout"                element={<CheckoutPage />} />
             <Route path="/orders"                  element={<OrdersPage />} />
-            <Route path="/favorites"               element={<FavoritesPage />} />
+            <Route path="/bookmark"               element={<FavoritesPage />} />
             <Route path="/category/:category"          element={<CategoryPage />} />
             <Route path="/category/:category/:main"    element={<CategoryPage />} />
             <Route path="/category/:category/:main/:sub" element={<CategoryPage />} />
@@ -146,6 +147,7 @@ function AppContent() {
             <Route path="/profile"                 element={<UserProfilePage />} />
             <Route path="/staff/login"             element={<StaffLoginPage />} />
             <Route path="/dev/login"               element={<DevLoginPage />} />
+            <Route path="/admin"                   element={<AdminRedirect />} />
             <Route
               path="/staff/dashboard"
               element={

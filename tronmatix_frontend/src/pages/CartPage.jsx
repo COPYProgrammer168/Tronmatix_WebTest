@@ -43,8 +43,8 @@ export default function CartPage() {
             </div>
           ) : (
             <>
-              <div className="text-right text-sm mb-4" style={{ color: textSub }}>
-                <span style={{ fontSize: 18 }}>{t('cart.deliverTo')}</span><br/>
+              <div className="text-right text-sm font-bold mb-4" style={{ color: textSub }}>
+                <span style={{ fontSize: 21 }}>{t('cart.deliverTo')}</span><br/>
                 {savedLocation?.address ? (
                   <span className="font-semibold" style={{ fontSize: 18, color: textMain }}>
                     {savedLocation.address}{savedLocation.city ? ', ' + savedLocation.city : ''}
@@ -66,14 +66,14 @@ export default function CartPage() {
                     onError={e => { e.target.src = '/placeholder.png' }}
                   />
                   <div className="flex-1">
-                    <p className="font-bold text-sm"
+                    <p className="font-bold text-sm "
                       style={{ fontFamily: headingFont, fontSize: 18, color: textMain }}>
                       {item.name}
                     </p>
                     {getItemDiscounts(item).map((d, di) => (
                       <span key={di} style={{
                         fontSize: 12, borderRadius: 20, padding: '3px 10px',
-                        fontWeight: 800, letterSpacing: 1,
+                        fontWeight: 700, letterSpacing: 1,
                         display: 'inline-flex', alignItems: 'center', gap: 4,
                         background: d.badge_config?.bg || (d.source === 'public' ? 'rgba(124,58,237,0.85)' : '#F97316'),
                         color: d.badge_config?.color || '#fff',
@@ -129,7 +129,7 @@ export default function CartPage() {
             <div className="rounded-lg p-5" style={{ border: `1px solid ${border}`, background: cardBg }}>
               <div className="flex justify-between mb-3 pb-3" style={{ borderBottom: `1px solid ${border}` }}>
                 <span className="font-bold" style={{ fontSize: 20, color: textMain }}>{t('cart.summary')}</span>
-                <span style={{ fontSize: 20, color: textSub }}>
+                <span className="font-bold" style={{ fontSize: 20, color: textSub }}>
                   {t('cart.totalItem')} {items.reduce((s, i) => s + i.qty, 0)}
                 </span>
               </div>
@@ -140,7 +140,7 @@ export default function CartPage() {
                   // { labelKey: 'cart.tax',      val: '$0.00' },
                 ].map(({ labelKey, val }) => (
                   <div key={labelKey} className="flex justify-between">
-                    <span style={{ fontSize: 20, color: textSub }}>{t(labelKey)}</span>
+                    <span className="font-bold" style={{ fontSize: 20, color: textSub }}>{t(labelKey)}</span>
                     <span className="font-bold" style={{ fontSize: 20, color: textMain }}>{val}</span>
                   </div>
                 ))}
@@ -174,8 +174,8 @@ export default function CartPage() {
                 </span>
               </div>
               <button onClick={() => navigate('/checkout')}
-                className="w-full text-center text-primary font-bold py-2 border border-primary rounded hover:bg-primary hover:text-white transition-colors"
-                style={{ fontFamily: headingFont, letterSpacing: isKhmer ? 0 : 1 }}>
+                className="w-full text-center text-primary font-bold py-2 border uppercase border-primary rounded hover:bg-primary hover:text-white transition-colors"
+                style={{ fontFamily: bodyFont, letterSpacing: isKhmer ? 0 : 1 }}>
                 {t('cart.checkOut')}
               </button>
             </div>

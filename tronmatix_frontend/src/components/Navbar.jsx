@@ -344,9 +344,6 @@ export default function Navbar({ onAuthOpen }) {
         sub = mainItems
       }
 
-      // TABLE / CHAIR (and any single-main category) whose only sub is the
-      // "GENERAL" placeholder should surface its brands directly — matching
-      // the live site where brands appear as top-level dropdown items.
       if (
         sub.length === 1 &&
         typeof sub[0] === 'object' &&
@@ -403,7 +400,7 @@ export default function Navbar({ onAuthOpen }) {
     'pc-parts': 'pcParts',
     'hot-item': 'hotItem',
     'accessory': 'accessory',
-    'table-chair': 'tableChair',
+    'table-/-chair': 'tableChair',
   }
 
   const NAV_LABEL_KEYS = useMemo(() => {
@@ -594,7 +591,7 @@ export default function Navbar({ onAuthOpen }) {
         ) : user ? (
           <>
             <UserAvatar size={10} fontSize={16} />
-            <span className="font-bold truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 64 }}>
+            <span className="font-bold truncate" style={{ fontSize: 15, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
               {user.username || user.name || 'User'}
             </span>
           </>
@@ -618,8 +615,8 @@ export default function Navbar({ onAuthOpen }) {
             { labelKey: 'nav.myOrders', icon: '📦', path: '/orders' },
           ].map(({ labelKey, icon, path }) => (
             <button key={path}
-              className="w-full flex items-center gap-2 px-4 py-2 transition-colors text-left"
-              style={{ fontFamily: navbFont, fontSize: 15, color: textColor }}
+              className="w-full flex font-bold items-center gap-2 px-4 py-2 transition-colors text-left"
+              style={{ fontFamily: navbFont, fontSize: 17, color: textColor }}
               onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
               onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
               onClick={() => { setUserMenu(false); navigate(path) }}>
@@ -629,8 +626,8 @@ export default function Navbar({ onAuthOpen }) {
           <hr style={{ borderColor: ddBorder, margin: '4px 0' }} />
           <button
             onClick={() => { setUserMenu(false); setLogoutOpen(true) }}
-            className="w-full text-left px-4 py-2 text-red-500 transition-colors"
-            style={{ fontFamily: navFont, fontSize: 15 }}
+            className="w-full text-left px-4 font-bold py-2 text-red-500 transition-colors"
+            style={{ fontFamily: navFont, fontSize: 17 }}
             onMouseEnter={e => e.currentTarget.style.background = ddHover}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             🚪 {t('nav.logout')}
@@ -685,7 +682,7 @@ export default function Navbar({ onAuthOpen }) {
                         <Link
                           to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
                           className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
-                          style={{ fontFamily: navbFont, fontSize: isKhmer ? 18 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                          style={{ fontFamily: navbFont, fontSize: isKhmer ? 17 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
                           onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null); setHoveredNav(null) }}>
                           {t(NAV_LABEL_KEYS[item.label] || item.label)}
                           {item.sub && !error && (
@@ -710,7 +707,7 @@ export default function Navbar({ onAuthOpen }) {
                 <LanguageToggle />
               </div>
 
-              <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
+              <IconBtn onClick={() => navigate('/bookmark')} className="hidden md:flex" style={{ color: textColor }}>
                 <svg className="w-5 h-5"
                   fill={favorites.length > 0 ? '#F97316' : 'none'}
                   stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
@@ -745,7 +742,7 @@ export default function Navbar({ onAuthOpen }) {
                   {user ? (
                     <>
                       <UserAvatar size={9} fontSize={15} />
-                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 13, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 60 }}>
+                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 16, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
                         {user.username || user.name}
                       </span>
                     </>
@@ -766,7 +763,7 @@ export default function Navbar({ onAuthOpen }) {
                     ].map(({ labelKey, icon, path }) => (
                       <button key={path}
                         className="w-full flex items-center gap-2 px-3 py-2 font-semibold transition-colors text-left"
-                        style={{ fontFamily: navbFont, fontSize: 14, color: textColor }}
+                        style={{ fontFamily: navbFont, fontSize: 17, color: textColor }}
                         onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; e.currentTarget.style.background = ddHover }}
                         onMouseLeave={e => { e.currentTarget.style.color = textColor; e.currentTarget.style.background = 'transparent' }}
                         onClick={() => { setUserMenu(false); navigate(path) }}>
@@ -777,7 +774,7 @@ export default function Navbar({ onAuthOpen }) {
                     <button
                       onClick={() => { setUserMenu(false); setLogoutOpen(true) }}
                       className="w-full text-left px-3 py-2 text-red-500 font-semibold"
-                      style={{ fontFamily: navFont, fontSize: 14 }}
+                      style={{ fontFamily: navFont, fontSize: 17 }}
                       onMouseEnter={e => e.currentTarget.style.background = ddHover}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       🚪 {t('nav.logout')}
@@ -861,7 +858,7 @@ export default function Navbar({ onAuthOpen }) {
                   <LanguageToggle />
                 </div>
 
-                <IconBtn onClick={() => navigate('/favorites')} className="hidden md:flex" style={{ color: textColor }}>
+                <IconBtn onClick={() => navigate('/bookmark')} className="hidden md:flex" style={{ color: textColor }}>
                   <svg className="w-6 h-6"
                     fill={favorites.length > 0 ? '#F97316' : 'none'}
                     stroke={favorites.length > 0 ? '#F97316' : 'currentColor'}
@@ -1259,11 +1256,11 @@ export default function Navbar({ onAuthOpen }) {
                   {[
                     { to: '/profile', labelKey: 'nav.myProfile', icon: '👤' },
                     { to: '/orders', labelKey: 'nav.myOrders', icon: '📦' },
-                    { to: '/favorites', label: 'Bookmark', icon: '🔖' },
+                    { to: '/bookmark', label: 'Bookmark', icon: '🔖' },
                   ].map(({ to, labelKey, label, icon }) => (
                     <Link key={to} to={to} onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 rounded-lg font-bold"
-                      style={{ fontFamily: navbFont, fontSize: 14, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
+                      style={{ fontFamily: navbFont, fontSize: 18, color: textColor, border: `1px solid ${drawerBorder}`, transition: 'background 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.background = ddHover}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       {icon} {t(labelKey ?? label)}

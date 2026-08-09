@@ -22,7 +22,9 @@ export default function Step1DeliveryInfo({
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
-  const step1Font = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif"
+  const step1Font = isKhmer
+    ? "KantumruyPro, sans-serif"
+    : "HurstBagod, sans-serif";
   const [showMapPicker, setShowMapPicker] = useState(false)
 
   // ── Standalone phone verification (Firebase OTP) — not tied to account ──
@@ -74,7 +76,7 @@ export default function Step1DeliveryInfo({
   }
 
   const inputStyle = {
-    fontSize: 15,
+    fontSize: isKhmer ? 16 : 20,
     background: c.inputBg,
     border: `1px solid ${c.inputBorder}`,
     color: c.inputText,
@@ -190,7 +192,7 @@ export default function Step1DeliveryInfo({
 
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-black" style={{ fontSize: 20, color: c.heading }}>
+        <h2 className="font-black" style={{ fontSize: 25, color: c.heading, }}>
           {isPickup
             ? (isKhmer ? t("checkout.yourInfo") : "Your Contact Info")
             : (isKhmer ? t("checkout.deliveryInfo") : "Delivery Information")}
@@ -199,7 +201,7 @@ export default function Step1DeliveryInfo({
           <button
             onClick={onPickLocation}
             className="flex items-center gap-1.5 text-sm font-bold text-white bg-primary hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors"
-            style={{ fontFamily: step1Font, letterSpacing: isKhmer ? 0 : 1 }}
+            style={{ fontFamily: step1Font}}
           >
             📍 {isKhmer ? t("checkout.myLocations") : `My Locations (${savedLocations.length})`}
           </button>
@@ -221,10 +223,10 @@ export default function Step1DeliveryInfo({
       {/* Name + Phone */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>Full Name *</label>
+          <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 18, color: c.label }}>Full Name *</label>
           <input
             name="name" value={location.name} onChange={onChange} placeholder="Your name"
-            className="checkout-input w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
+            className="checkout-input font-semibold w-full rounded-lg px-4 py-2.5 focus:outline-none transition-colors"
             style={inputStyle} {...focusHandlers}
           />
         </div>
@@ -297,7 +299,7 @@ export default function Step1DeliveryInfo({
         <>
           {/* Address */}
           <div>
-            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>{isKhmer ? t("checkout.address") : "Address *"}</label>
+            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 18, color: c.label }}>{isKhmer ? t("checkout.address") : "Address *"}</label>
             <input
               name="address" value={location.address} onChange={onChange}
               placeholder="Street / Village / Commune"
@@ -326,7 +328,7 @@ export default function Step1DeliveryInfo({
 
           {/* Map pin picker — required for delivery */}
           <div>
-            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label }}>
+            <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 18, color: c.label }}>
               {isKhmer ? t("locations.mapPin") : "PIN LOCATION ON MAP *"}
             </label>
             <button type="button" onClick={() => setShowMapPicker(true)}
@@ -335,7 +337,7 @@ export default function Step1DeliveryInfo({
                 border: mapPin?.lat ? '1.5px solid #22c55e' : (missingMapPin ? '1.5px solid #EF4444' : `1px dashed ${c.inputBorder}`),
                 background: mapPin?.lat ? 'rgba(34,197,94,0.06)' : c.inputBg,
                 color: mapPin?.lat ? '#22c55e' : c.textSub,
-                fontFamily: 'Rajdhani, sans-serif', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, cursor: 'pointer',
               }}>
               {mapPin?.lat
                 ? `✅ Pinned: ${mapPin.address ? mapPin.address.slice(0,40)+'...' : `${Number(mapPin.lat).toFixed(5)}, ${Number(mapPin.lng).toFixed(5)}`}`
@@ -366,7 +368,7 @@ export default function Step1DeliveryInfo({
 
       {/* Note */}
       <div>
-        <label className="block font-bold mb-1" style={{ fontSize: 13, color: c.label }}>
+        <label className="block font-bold mb-1" style={{ fontSize: 18, color: c.label }}>
           {isKhmer ? t("checkout.note") : (isPickup ? "Note (optional)" : "Delivery Note (optional)")}
         </label>
         <textarea
