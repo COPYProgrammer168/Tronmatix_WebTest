@@ -54,6 +54,7 @@ export default function ProductDetailPage() {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
+  const [imgPaused, setImgPaused] = useState(false);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -94,6 +95,29 @@ export default function ProductDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // ── Auto-play image slideshow ────────────────────────────────────────────
+  // Loops through the product images with a smooth crossfade, pausing on
+  // hover/manual interaction. Only runs when more than one image exists.
+  useEffect(() => {
+    const imgCount = (() => {
+      const imgs = product?.images?.length
+        ? product.images
+        : product?.image
+          ? [product.image]
+          : [];
+      return imgs.length;
+    })();
+
+    if (imgCount <= 1) return;
+    if (imgPaused) return;
+
+    const timer = setInterval(() => {
+      setImgIdx((i) => (i + 1) % imgCount);
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [product, imgPaused]);
+
   if (loading)
     return (
       <div className="flex justify-center py-20">
@@ -122,7 +146,7 @@ export default function ProductDetailPage() {
     : product.image
       ? [product.image]
       : [null];
-  const images = rawImages.map((img) => resolveImage(img));
+  const images = rawImages.map((img) => resolveImage(img)).filter(Boolean);
   const inStock = (product.stock ?? 99) > 0;
   const isAskPrice = isSymbolPrice(product.price) || !inStock;
   const telegramLink = `https://t.me/KJ_Jen?text=${encodeURIComponent("Hello, I would like to ask about the price of: " + product.name)}`;
@@ -151,12 +175,11 @@ export default function ProductDetailPage() {
   const textCol = dark ? "#f9fafb" : "#1f2937";
   const subCol = dark ? "#9ca3af" : "#6b7280";
 
-  const headingFont = isKhmer
-    ? "Kh_Jrung_Thom, Khmer OS, sans-serif"
-    : "HurstBagod, Rajdhani, sans-serif";
-  const bodyFont = isKhmer
-    ? "Kdam Thmor Pro, sans-serif"
-    : "Rajdhani, sans-serif";
+  // Hybrid font stacks: Latin glyphs use the English font, Khmer glyphs fall
+  // through to Kdam Thmor Pro — so whichever script appears in either mode
+  // still renders correctly (Khmer text in EN mode, English text in KM mode).
+  const headingFont = "HurstBagod, 'Kdam Thmor Pro', 'Khmer OS', sans-serif";
+  const bodyFont = "'Rajdhani', 'Kdam Thmor Pro', 'Khmer OS', sans-serif";
 
   return (
     <div
@@ -221,17 +244,25 @@ export default function ProductDetailPage() {
           <div
             className="relative flex items-center justify-center rounded-xl overflow-hidden"
             style={{ height: 300, background: dark ? "#111827" : "#fff" }}
+            onMouseEnter={() => setImgPaused(true)}
+            onMouseLeave={() => setImgPaused(false)}
           >
-            {images[imgIdx] ? (
+            {/* Crossfade stack: every image renders, the active one fades in */}
+            {images.map((img, i) => (
               <img
-                src={images[imgIdx]}
+                key={i}
+                src={img}
                 alt={product.name}
-                className="max-h-72 max-w-full object-contain transition-opacity duration-300"
+                loading={i === 0 ? "eager" : "lazy"}
+                className="absolute inset-0 w-full h-full object-contain transition-opacity duration-700"
+                style={{ opacity: i === imgIdx ? 1 : 0 }}
                 onError={(e) => {
                   e.target.style.display = "none";
                 }}
               />
-            ) : (
+            ))}
+
+            {images.length === 0 && (
               <div
                 className="flex flex-col items-center"
                 style={{ color: subCol }}
@@ -256,15 +287,19 @@ export default function ProductDetailPage() {
             {images.length > 1 && (
               <>
                 <button
-                  onClick={() => setImgIdx((i) => Math.max(0, i - 1))}
+                  onClick={() => {
+                    setImgPaused(true);
+                    setImgIdx((i) => Math.max(0, i - 1));
+                  }}
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow hover:text-primary text-xl z-10"
                 >
                   ‹
                 </button>
                 <button
-                  onClick={() =>
-                    setImgIdx((i) => Math.min(images.length - 1, i + 1))
-                  }
+                  onClick={() => {
+                    setImgPaused(true);
+                    setImgIdx((i) => Math.min(images.length - 1, i + 1));
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow hover:text-primary text-xl z-10"
                 >
                   ›
@@ -279,7 +314,10 @@ export default function ProductDetailPage() {
               {images.map((img, i) => (
                 <button
                   key={i}
-                  onClick={() => setImgIdx(i)}
+                  onClick={() => {
+                    setImgPaused(true);
+                    setImgIdx(i);
+                  }}
                   className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden bg-white transition-all ${imgIdx === i ? "border-primary" : "border-gray-200 opacity-60 hover:opacity-100"}`}
                 >
                   {img ? (
@@ -580,7 +618,7 @@ export default function ProductDetailPage() {
                   className={`flex-1 font-bold py-3 px-8 rounded-lg transition-all text-white flex items-center justify-center gap-2
                     ${inStock ? (added ? "bg-green-500" : "bg-primary hover:bg-orange-600 hover:scale-[1.02]") : "bg-gray-300 cursor-not-allowed"}`}
                   style={{
-                    fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : bodyFont,
+                    fontFamily: bodyFont,
                     fontSize: 16,
                     letterSpacing: isKhmer ? 0 : 1,
                     fontWeight: 800,
@@ -602,8 +640,8 @@ export default function ProductDetailPage() {
                   title={isKhmer ? 'សាកសួរព័ត៏មានបន្ថែម' : 'Ask for more information on Telegram'}
                   style={{
                     background: '#0088cc',
-                    fontFamily: isKhmer ? 'Kdam Thmor Pro, sans-serif' : bodyFont,
-                    fontSize: isKhmer ? 15 : 15,
+                    fontFamily: bodyFont,
+                    fontSize: 15,
                     letterSpacing: isKhmer ? 0 : 0.5,
                     fontWeight: 700,
                     whiteSpace: 'nowrap',
@@ -680,7 +718,7 @@ export default function ProductDetailPage() {
               letterSpacing: isKhmer ? 0 : 1.5,
               background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
               color: "#fff",
-              fontFamily: "HurstBagod, 'KantumruyPro', 'Khmer OS', sans-serif",
+              fontFamily: headingFont,
               borderBottom: "3px solid #c2410c",
             }}
           >

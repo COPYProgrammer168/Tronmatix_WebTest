@@ -39,6 +39,7 @@ Route::post('/auth/reset-by-phone', [AuthController::class, 'resetByPhone']);
 // Social auth — public (returns token + is_new_user flag)
 Route::post('/auth/google', [GoogleAuthController::class, 'handleCallback']);
 Route::post('/auth/telegram', [TelegramAuthController::class, 'handleCallback']);
+Route::post('/auth/telegram/mini-app', [TelegramAuthController::class, 'handleMiniApp']);
 Route::post('/auth/telegram-generate-token', [TelegramAuthController::class, 'generateLoginToken']);
 Route::get('/auth/telegram-status',          [TelegramAuthController::class, 'checkLoginToken']);
 

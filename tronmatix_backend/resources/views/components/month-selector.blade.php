@@ -1,4 +1,4 @@
-@props(['month'])
+@props(['month', 'label' => 'Period:', 'margin' => true])
 
 @php
     $prev = \Carbon\Carbon::parse($month->format('Y-m').'-01')->subMonth();
@@ -6,10 +6,12 @@
     $isFuture = $next->isFuture();
 @endphp
 
-<div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-    <div style="font-size: var(--title-size); font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase;">
-        Period:
-    </div>
+<div style="display:flex; align-items:center; gap:10px; {{ $margin ? 'margin-bottom:20px;' : '' }}">
+    @if($label)
+        <div style="font-size: var(--title-size); font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase;">
+            {{ $label }}
+        </div>
+    @endif
     <a href="{{ request()->url() }}?month={{ $prev->format('Y-m') }}"
        style="padding:5px 10px; border-radius:6px; border:1px solid var(--border-input);
               background:var(--surface-2); color:var(--text-muted); text-decoration:none;

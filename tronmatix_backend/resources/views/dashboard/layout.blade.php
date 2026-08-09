@@ -418,7 +418,7 @@
 
         :lang(en) .topbar-title {
             font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
-            font-size: var(--text-2xl) !important;
+            font-size: var(--text-lg) !important;
             font-weight: 600 !important;
         }
 
@@ -1453,11 +1453,18 @@
                             <span style="font-size: var(--font-size); font-weight:800; letter-spacing:2px; color:var(--text-muted);">
                                 {{ strtoupper(__('dashboard.common.alerts')) }}
                             </span>
-                            <a href="{{ route('dashboard.settings') }}" style="font-size: var(--font-size); color:rgba(249,115,22,0.6);
-                                text-decoration:none; letter-spacing:1px;"
-                               onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(249,115,22,0.6)'">
-                                ⚙ {{ strtoupper(__('dashboard.nav.settings')) }}
-                            </a>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="clearNotifications()" style="font-size: var(--font-size); color:rgba(239,68,68,0.6);
+                                    text-decoration:none; letter-spacing:1px; background:none; border:none; cursor:pointer;"
+                                    onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='rgba(239,68,68,0.6)'">
+                                    {{ strtoupper(__('dashboard.btn.clearAll')) }}
+                                </button>
+                                <a href="{{ route('dashboard.settings') }}" style="font-size: var(--font-size); color:rgba(249,115,22,0.6);
+                                    text-decoration:none; letter-spacing:1px;"
+                                   onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(249,115,22,0.6)'">
+                                    ⚙ {{ strtoupper(__('dashboard.nav.settings')) }}
+                                </a>
+                            </div>
                         </div>
                         <div id="bell-list" style="max-height:min(320px, calc(100vh - 160px)); overflow-y:auto; padding:8px 0;">
                             <div style="padding:24px; text-align:center; color:var(--text-faint); font-family:Rajdhani,sans-serif;">
@@ -1723,6 +1730,26 @@
                     `<div style="padding:20px;text-align:center;color:${failColor};font-size: var(--font-size);">${_i18n.failedAlerts}</div>`;
             });
         }
+
+        function clearNotifications() {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            fetch('{{ route("dashboard.notifications.clear") }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Reset the client-side "seen" tracker so cleared alerts don't
+                // immediately re-toast on the next poll.
+                try { localStorage.setItem('seen_alerts', JSON.stringify([])); } catch {}
+                const dot = document.getElementById('bell-dot');
+                if (dot) dot.style.display = 'none';
+                showInlineToast(data.message || 'Notifications cleared', '#22c55e');
+                loadBellAlerts();
+            })
+            .catch(() => showInlineToast('Failed to clear notifications', '#ef4444'));
+        }
+
 
         function openStaffRequestModal(a) {
             closeBell();

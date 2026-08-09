@@ -49,6 +49,21 @@ export function CategoryPage() {
     const rawSlug = sub || main || ''
     if (!rawSlug) return null
 
+    // When only a top-level slug is present (e.g. a Table/Chair brand like
+    // /category/table-chair/dx-racer from the flattened navbar), resolve it
+    // to a brand name so it can be sent as an exact category filter.
+    if (!sub) {
+      for (const cat of categoryTree || []) {
+        for (const mc of cat.main_categories || []) {
+          for (const sc of mc.sub_categories || []) {
+            for (const b of sc.brands || []) {
+              if (b.slug === rawSlug) return b.name
+            }
+          }
+        }
+      }
+    }
+
     for (const cat of categoryTree || []) {
       for (const mc of cat.main_categories || []) {
         if (mc.slug === rawSlug) return mc.name
@@ -97,11 +112,11 @@ export function CategoryPage() {
     setLoading(true)
     setProducts([])
 
+    const brand = searchParams.get('brand')
     const sortVal = searchParams.get('sort') || 'default'
     const catsParam = searchParams.get('cats')
 
     const buildParams = () => {
-      const brand = searchParams.get('brand');
       if (isSearch) return { search: qParam, per_page: 999, page: 1, sort: sortVal }
       if (catsParam) return { cats: catsParam, per_page: 999, page: 1, sort: sortVal, brand: brand }
       if (!category || category === 'all') return { per_page: 999, page: 1, sort: sortVal, brand: brand }
@@ -136,11 +151,13 @@ export function CategoryPage() {
         let items = Array.isArray(d) ? d : []
 
         if (items.length === 0 && !isSearch) {
-          // Deep level with an exact-name miss: try a keyword search on the
-          // sub-category name instead of dumping every product.
-          if (deepCategoryName) {
+          // Brands like TABLE / CHAIR's (SECRETLAB, DX RACER, ...) are stored
+          // as the product's `category`, not in brand/brand_pc_part. If the
+          // initial request returned nothing, retry once treating the brand as
+          // an exact category value before falling through to the empty state.
+          if (brand) {
             axios.get('/api/products', {
-              params: { search: deepCategoryName, per_page: 999, page: 1, sort: sortVal, brand: brand },
+              params: { cats: brand, per_page: 999, page: 1, sort: sortVal },
             })
               .then(res2 => {
                 if (cancelled) return
@@ -152,27 +169,28 @@ export function CategoryPage() {
             return
           }
 
-          const fallbackParams = { per_page: 999, page: 1, sort: sortVal }
-          if (brand) fallbackParams.brand = brand
-
-          axios.get('/api/products', { params: fallbackParams })
-            .then(res2 => {
-              if (cancelled) return
-              const d2 = res2.data.data ?? res2.data ?? []
-              let fallbackItems = Array.isArray(d2) ? d2 : []
-              const brandFilter = searchParams.get('brand')
-              if (brandFilter && fallbackItems.length > 0) {
-                const bpLower = brandFilter.toLowerCase()
-                fallbackItems = fallbackItems.filter(p => {
-                  const pbp = (p.brand_pc_part || '').toLowerCase().trim()
-                  if (!pbp) return false
-                  return pbp.includes(bpLower) || bpLower.includes(pbp)
-                })
-              }
-              setProducts(fallbackItems)
+          // Deep level with an exact-name miss: try a keyword search on the
+          // sub-category name. Brand is dropped here on purpose — the search
+          // already matches name/category/brand, and a leftover brand filter
+          // would zero out brand-as-category products.
+          if (deepCategoryName) {
+            axios.get('/api/products', {
+              params: { search: deepCategoryName, per_page: 999, page: 1, sort: sortVal },
             })
-            .catch(() => { if (!cancelled) setProducts([]) })
-            .finally(() => { if (!cancelled) setLoading(false) })
+              .then(res2 => {
+                if (cancelled) return
+                const d2 = res2.data.data ?? res2.data ?? []
+                setProducts(Array.isArray(d2) ? d2 : [])
+              })
+              .catch(() => { if (!cancelled) setProducts([]) })
+              .finally(() => { if (!cancelled) setLoading(false) })
+            return
+          }
+
+          // Nothing resolved — stop and show the empty state instead of dumping
+          // every product in the store onto an empty category page.
+          setProducts([])
+          setLoading(false)
           return
         }
 
@@ -183,16 +201,6 @@ export function CategoryPage() {
             (p.brand || '').toLowerCase().includes(qParam) ||
             (p.description || '').toLowerCase().includes(qParam)
           )
-        }
-        // Filter by brand_pc_part when browsing PC PART sub-categories
-        const brandFilter = searchParams.get('brand')
-        if (brandFilter && !isSearch && items.length > 0) {
-          const bpLower = brandFilter.toLowerCase()
-          items = items.filter(p => {
-            const pbp = (p.brand_pc_part || '').toLowerCase().trim()
-            if (!pbp) return false   // ← products with no brand_pc_part are excluded
-            return pbp.includes(bpLower) || bpLower.includes(pbp)
-          })
         }
         setProducts(items)
       })

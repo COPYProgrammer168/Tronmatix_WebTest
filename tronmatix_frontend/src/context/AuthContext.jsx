@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import api, { clearAuthStorage } from '../lib/axios'
+import { getInitData, ready, expand } from '../lib/telegramMiniApp'
 
 const AuthContext = createContext(null)
 
@@ -118,6 +119,45 @@ export function AuthProvider({ children }) {
     }
     window.addEventListener('auth:social-login', handler)
     return () => window.removeEventListener('auth:social-login', handler)
+  }, [applyToken, applyUser])
+
+  // ── Telegram Mini App auto-login ─────────────────────────────────────────
+  // When the storefront runs inside a Telegram Mini App, Telegram injects a
+  // signed `initData`. We verify it server-side and silently restore the users
+  // session — so opening the mini app logs the already-connected account in
+  // automatically (no manual login, no token deep-link). Runs once on mount.
+  const miniAppDoneRef = useRef(false)
+
+  useEffect(() => {
+    if (miniAppDoneRef.current) return
+    miniAppDoneRef.current = true
+
+    const auto = async () => {
+      const initData = await getInitData().catch(() => null)
+      if (!initData) return // not inside a mini app (or SDK failed) — normal site
+
+      ready()
+      expand()
+
+      try {
+        const res = await api.post('/api/auth/telegram/mini-app', { initData })
+        const t = res.data?.token
+        const u = res.data?.user
+        if (!t || !u) return
+
+        applyToken(t)
+        applyUser(u)
+        // Let the rest of the app (navbar, profile) react to the restored user.
+        window.dispatchEvent(new CustomEvent('auth:social-login', {
+          detail: { token: t, user: u },
+        }))
+      } catch {
+        // Invalid/expired initData or server error — leave the user anonymous;
+        // they can still sign in normally.
+      }
+    }
+
+    auto()
   }, [applyToken, applyUser])
 
   const refreshUser = useCallback(async () => {

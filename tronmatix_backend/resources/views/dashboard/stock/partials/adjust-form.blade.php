@@ -11,6 +11,7 @@
             <div class="form-grid-2">
                 <div class="form-group">
                     <label class="form-label">{{ __('dashboard.stock.selectProductLabel') }}</label>
+                    <input type="text" id="adjustSearch" class="form-control" placeholder="Search products..." style="margin-bottom:8px;">
                     <select name="product_id" id="adjust-product" class="form-control" required data-adjust-current="1" onchange="previewAdjust()">
                         <option value="" disabled selected>{{ __('dashboard.stock.selectProduct') }}</option>
                         @foreach (\App\Models\Product::orderBy('name')->get() as $opt)
@@ -32,3 +33,26 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('adjustSearch');
+    const select = document.getElementById('adjust-product');
+    if (!searchInput || !select) return;
+
+    searchInput.addEventListener('input', function () {
+        const term = this.value.toLowerCase();
+        const options = select.querySelectorAll('option');
+        let firstVisible = null;
+        options.forEach(function (opt) {
+            const text = opt.textContent.toLowerCase();
+            const match = text.includes(term);
+            opt.style.display = match ? '' : 'none';
+            if (match && !firstVisible && opt.value) firstVisible = opt;
+        });
+        if (firstVisible) select.value = firstVisible.value;
+        else if (!term) select.value = '';
+        previewAdjust(select);
+    });
+});
+</script>

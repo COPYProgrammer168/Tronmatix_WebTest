@@ -690,6 +690,20 @@
             border-color: #F97316;
         }
 
+        /* ── Gallery as a drag-and-drop upload target ────────────────── */
+        .gallery-drop-target {
+            outline: 2px dashed #F97316;
+            outline-offset: 4px;
+            border-radius: 12px;
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        .gallery-drop-target .gallery-add-slot {
+            border-color: #F97316;
+            color: #F97316;
+            background: rgba(249, 115, 22, 0.08);
+        }
+
         /* ── Form invalid ──────────────────────────────────────────────────────── */
         .form-control.is-invalid {
             border-color: #EF4444;
@@ -753,6 +767,11 @@
             color: rgba(15, 23, 42, 0.35) !important;
         }
 
+        [data-theme="light"] .gallery-drop-target {
+            outline: 2px dashed #F97316;
+            background: rgba(249, 115, 22, 0.04) !important;
+        }
+
         [data-theme="light"] .gallery-add-slot:hover {
             border-color: rgba(249, 115, 22, 0.40) !important;
             background: rgba(249, 115, 22, 0.03) !important;
@@ -805,7 +824,9 @@
 
         // ── Handle multiple file upload ───────────────────────────────────────────
         function handleMultiImages(input) {
-            const files = Array.from(input.files)
+            // Accept either an <input> element or a raw FileList/File[] (from a
+            // drag-and-drop drop event) so both paths share the same pipeline.
+            const files = Array.from(input.files || input || [])
             const gallery = document.getElementById('imageGallery')
             const addSlot = document.getElementById('addImageSlot')
             const thumbs = gallery.querySelectorAll('.gallery-thumb')
@@ -1017,6 +1038,52 @@
             const gallery = document.getElementById('imageGallery')
             gallery.style.opacity = checkbox.checked ? '0.3' : '1'
         }
+
+        // ── Drag-and-drop multi-image upload ──────────────────────────────────
+        // The gallery doubles as a drop zone for uploading image *files*.
+        // Thumbnail reordering is handled separately by each thumb's own native
+        // drag handlers, so these gallery-level listeners only react to file
+        // drags (dataTransfer carries Files) and skip thumbnail drags entirely.
+        const galleryEl = document.getElementById('imageGallery')
+        let dragDepth = 0 // dragenter/dragleave fire once per child — track nesting
+
+        function isFileDrag(e) {
+            return e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1
+        }
+
+        galleryEl.addEventListener('dragenter', (e) => {
+            if (!isFileDrag(e)) return // thumbnail reorder drags don't concern us
+            e.preventDefault()
+            dragDepth++
+            galleryEl.classList.add('gallery-drop-target')
+        })
+        galleryEl.addEventListener('dragover', (e) => {
+            if (!isFileDrag(e)) return
+            e.preventDefault() // required for the browser to allow the drop
+            e.dataTransfer.dropEffect = 'copy'
+            galleryEl.classList.add('gallery-drop-target')
+        })
+        galleryEl.addEventListener('dragleave', (e) => {
+            if (!isFileDrag(e)) return
+            e.preventDefault()
+            dragDepth = Math.max(0, dragDepth - 1)
+            if (dragDepth === 0) galleryEl.classList.remove('gallery-drop-target')
+        })
+        galleryEl.addEventListener('drop', (e) => {
+            // Only handle real file drops here; thumbnail drops are handled by
+            // each thumb's native ondrop, which fires on the target before this
+            // listener sees the bubbling event (and isFileDrag() is false there).
+            if (!isFileDrag(e)) return
+            e.preventDefault()
+            e.stopPropagation()
+            dragDepth = 0
+            galleryEl.classList.remove('gallery-drop-target')
+
+            const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'))
+            if (files.length > 0) {
+                handleMultiImages({ files })
+            }
+        })
 
         // ── Add spec row ────────────────────────────────────────────────────────
         function addSpecRow() {

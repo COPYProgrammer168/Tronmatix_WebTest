@@ -96,9 +96,9 @@ class TelegramAuthController extends Controller
                 $user = User::create([
                     'name'                   => $fullName ?: $username,
                     'username'               => $username,
-                    // No email — Telegram doesn't provide one.
-                    // Email is nullable or must be set via ProfileSetupModal later.
-                    'email'                  => null,
+                    // No real email — Telegram doesn't provide one. Use a unique
+                    // placeholder (users.email is NOT NULL in the DB).
+                    'email'                  => $this->generateTelegramEmail($telegramId),
                     'password'               => Hash::make(Str::random(32)),
                     'avatar'                 => $photoUrl,
                     'telegram_chat_id'       => $telegramId,
@@ -151,26 +151,33 @@ class TelegramAuthController extends Controller
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**
-     * Verify the Telegram Login Widget hash.
+     * Verify a Telegram-signed payload hash (Login Widget OR Mini App initData).
      *
      * Algorithm (from Telegram docs):
      *   secret_key = SHA256(bot_token)          ← NOT HMAC, just raw SHA256
      *   data_check_string = sorted key=value pairs (excluding hash), joined by \n
      *   expected = HMAC-SHA256(data_check_string, secret_key)
+     *
+     * The token differs by flow:
+     *   - Login Widget  → services.telegram.bot_token (admin bot)
+     *   - Mini App initData → services.telegram_user.bot_token (user-facing bot
+     *     that OWNS the mini app). Telegram only injects initData for the bot the
+     *     mini app belongs to, so this is the correct signing key.
      */
-    private function verifyTelegramHash(array $data): bool
+    private function verifyTelegramHash(array $data, ?string $botToken = null): bool
     {
-        $botToken = config('services.telegram.bot_token')
-            ?: env('TELEGRAM_BOT_TOKEN', '');
+        $botToken = $botToken
+            ?: config('services.telegram.bot_token')
+                ?: env('TELEGRAM_BOT_TOKEN', '');
 
         if (! $botToken) {
             // If bot token is not configured, skip verification in local dev
             // but log a warning so it isn't silently skipped in production.
-            Log::channel('security')->warning('TelegramAuth: TELEGRAM_BOT_TOKEN not set — skipping hash verification');
+            Log::channel('security')->warning('TelegramAuth: bot token not set — skipping hash verification');
             return app()->environment('local', 'testing');
         }
 
-        $hash = $data['hash'];
+        $hash = $data['hash'] ?? null;
         unset($data['hash']);
 
         // Build the data-check string: alphabetically sorted key=value lines
@@ -186,7 +193,148 @@ class TelegramAuthController extends Controller
         $secretKey = hash('sha256', $botToken, true); // raw binary
         $expected  = hash_hmac('sha256', $dataCheckString, $secretKey);
 
-        return hash_equals($expected, $hash);
+        return is_string($hash) && hash_equals($expected, $hash);
+    }
+
+    /**
+     * POST /api/auth/telegram/mini-app
+     *
+     * Telegram Mini App silent login. The Mini App (opened via the bot's
+     * web_app button) sends its raw initData query string. We validate it with
+     * the USER-FACING bot token (the bot that owns the Mini App), find-or-create
+     * the user by telegram id, and return a Sanctum token so the storefront can
+     * auto-login without any widget click or token deep-link.
+     */
+    public function handleMiniApp(Request $request)
+    {
+        $initData = trim((string) $request->input('initData', ''));
+
+        if ($initData === '') {
+            return response()->json(['message' => 'Missing initData.'], 422);
+        }
+
+        // ── 1. Parse initData into key=value pairs (URL query string format) ──
+        parse_str($initData, $parsed);
+
+        if (empty($parsed['hash']) || empty($parsed['user'])) {
+            return response()->json(['message' => 'Invalid initData payload.'], 422);
+        }
+
+        // ── 2. Verify signature with the USER bot token ───────────────────────
+        // verifyTelegramHash() extracts + removes the hash itself, so pass the
+        // parsed array as-is (with hash still present).
+        $userBotToken = config('services.telegram_user.bot_token')
+            ?: env('TELEGRAM_USER_BOT_TOKEN', '');
+
+        if (! $this->verifyTelegramHash($parsed, $userBotToken)) {
+            Log::channel('security')->warning('TelegramAuth MiniApp: invalid initData signature');
+            return response()->json(['message' => 'Telegram verification failed.'], 401);
+        }
+
+        // ── 3. auth_date freshness (prevent replay) ────────────────────────────
+        $authDate = (int) ($parsed['auth_date'] ?? 0);
+        if ($authDate && (time() - $authDate) > 86_400) {
+            return response()->json(['message' => 'Telegram session has expired. Please try again.'], 401);
+        }
+
+        // ── 4. Extract the Telegram user object (JSON string inside initData) ──
+        $tgUser = json_decode((string) $parsed['user'], true);
+        if (! is_array($tgUser) || empty($tgUser['id'])) {
+            return response()->json(['message' => 'Invalid Telegram user payload.'], 422);
+        }
+
+        $telegramId       = (string) $tgUser['id'];
+        $telegramUsername = $tgUser['username'] ?? null;
+        $firstName        = (string) ($tgUser['first_name'] ?? '');
+        $lastName         = (string) ($tgUser['last_name'] ?? '');
+        $photoUrl         = $tgUser['photo_url'] ?? null;
+        $fullName         = trim($firstName . ' ' . $lastName);
+
+        // ── 5. Find or create the user (same logic as handleCallback) ─────────
+        try {
+            $user = User::where('telegram_chat_id', $telegramId)->first();
+
+            $isNewUser = false;
+            if ($user) {
+                $updates = [];
+                if ($telegramUsername && $user->telegram_username !== $telegramUsername) {
+                    $updates['telegram_username'] = $telegramUsername;
+                }
+                if ($photoUrl && ! $user->avatar) $updates['avatar'] = $photoUrl;
+                if (! $user->telegram_connected_at) $updates['telegram_connected_at'] = now();
+                if (! empty($updates)) $user->update($updates);
+            } else {
+                $isNewUser = true;
+                $username  = $telegramUsername
+                    ? $this->generateUsername($telegramUsername)
+                    : $this->generateUsername($fullName ?: 'user');
+
+                $user = User::create([
+                    'name'                  => $fullName ?: $username,
+                    'username'              => $username,
+                    // No real email — Telegram doesn't provide one. Use a unique
+                    // placeholder (users.email is NOT NULL in the DB).
+                    'email'                 => $this->generateTelegramEmail($telegramId),
+                    'password'              => Hash::make(Str::random(32)),
+                    'avatar'                => $photoUrl,
+                    'telegram_chat_id'      => $telegramId,
+                    'telegram_username'     => $telegramUsername,
+                    'telegram_connected_at' => now(),
+                    'role'                  => 'customer',
+                ]);
+            }
+
+            // ── 6. Banned guard ────────────────────────────────────────────────
+            if ($user->isBanned()) {
+                Log::channel('security')->notice('TelegramAuth MiniApp: banned user attempt', [
+                    'user_id'     => $user->id,
+                    'telegram_id' => $telegramId,
+                    'ip'          => $request->ip(),
+                ]);
+                return response()->json(['message' => 'Your account has been suspended. Please contact support.'], 403);
+            }
+
+            // ── 7. Issue Sanctum token ─────────────────────────────────────────
+            $user->tokens()->delete();
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            Log::channel('security')->info('TelegramAuth MiniApp: success', [
+                'user_id'  => $user->id,
+                'is_new'   => $isNewUser,
+                'ip'       => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'token'       => $token,
+                'user'        => $this->userPayload($user),
+                'is_new_user' => $isNewUser,
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('security')->error('TelegramAuth MiniApp: exception', [
+                'ip'    => $request->ip(),
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['message' => 'Telegram sign-in failed. Please try again.'], 500);
+        }
+    }
+
+    /**
+     * Users.email is NOT NULL, but Telegram provides no email. Generate a unique
+     * placeholder address so Telegram-created accounts can be saved. The random
+     * suffix guards against two Telegram users sharing the same resolved id.
+     */
+    private function generateTelegramEmail(string $telegramId): string
+    {
+        $base = 'tg_' . preg_replace('/[^a-zA-Z0-9]/', '', $telegramId) . '@telegram.local';
+
+        $candidate = $base;
+        $i         = 1;
+        while (User::where('email', $candidate)->exists()) {
+            $candidate = 'tg_' . preg_replace('/[^a-zA-Z0-9]/', '', $telegramId) . '_' . ($i++) . '@telegram.local';
+        }
+
+        return $candidate;
     }
 
     /**

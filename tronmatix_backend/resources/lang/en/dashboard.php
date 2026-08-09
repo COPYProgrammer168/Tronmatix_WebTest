@@ -179,7 +179,7 @@ return [
         'ordersPerPage' => 'Orders Per Page',
         'productsPerPage' => 'Products Per Page',
         'stockAlert' => 'Alert When Stock Is At Or Below',
-        'firstimage' => 'First image = main image. Drag to reorder. Max 8 images, 2MB each.',
+        'firstimage' => 'First image = main image. Drag & drop images to upload, or drag thumbnails to reorder. Max 8 images, 2MB each.',
 
     ],
 
@@ -208,6 +208,7 @@ return [
         'addBanner' => 'Add Banner',
         'addCoupon' => 'Add Coupon',
         'clearFilters' => 'Clear Filters',
+        'clearAll' => 'Clear All',
         'export' => 'Export',
         'search' => 'Search',
         'confirm' => 'Confirm',
@@ -560,6 +561,7 @@ return [
         'topProducts' => 'Top Products',
         'userRegistrations' => 'User Registrations',
         'recentOrders' => 'Recent Orders',
+        'recentLogins' => 'Recently Logged In',
         'lowStock' => 'Low Stock',
         'viewAll' => 'View All',
         'sold' => 'Sold',
@@ -702,6 +704,11 @@ return [
         'inbound' => 'Inbound',
         'outbound' => 'Outbound',
         'unknownUser' => '—',
+        'report' => 'STOCK REPORT',
+        'reportTitle' => 'STOCK REPORT',
+        'export' => 'EXPORT STOCK',
+        'backToStock' => '← BACK TO STOCK',
+        'noMovements' => 'No stock movements found.',
     ],
 
     'categories' => [

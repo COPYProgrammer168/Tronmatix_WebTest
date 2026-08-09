@@ -30,8 +30,8 @@ class DatabaseSeeder extends Seeder
             DB::table('categories')->truncate();
             DB::table('discounts')->truncate();
             DB::table('user_locations')->truncate();
-            DB::table('staff')->truncate();
-            DB::table('users')->truncate();
+            // DB::table('staff')->truncate();
+            // DB::table('users')->truncate();
 
             Schema::enableForeignKeyConstraints();
 
@@ -44,12 +44,13 @@ class DatabaseSeeder extends Seeder
         // ── Run seeders in dependency order ───────────────────────────────────
         $this->call([
             // AdminSeeder::class,
-            StaffSeeder::class,
-            UserSeeder::class,
+            // StaffSeeder::class,
+            // UserSeeder::class,
             CustomerSeeder::class,
             UserLocationSeeder::class,
             DiscountSeeder::class,
             CategorySeeder::class,
+            StockDemoSeeder::class,
             // DeliveryZoneSeeder::class,
             // ProvinceSeeder::class,
             OrderSeeder::class,

@@ -22,9 +22,6 @@ function banner_img_url(?string $path): string {
 }
 @endphp
 
-
-
-
 {{-- Header --}}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
     <div>
@@ -298,7 +295,7 @@ function banner_img_url(?string $path): string {
                 </div>
 
                 {{-- Colors --}}
-                <div>
+                {{-- <div>
                     <label class="form-label">{{ __('dashboard.banners.bgColor') }}</label>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <input type="color" name="bg_color" id="fBgColor" value="#111111"
@@ -317,7 +314,7 @@ function banner_img_url(?string $path): string {
                                style="flex:1; background:#111; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; padding:10px; font-size: var(--title-size);"
                                placeholder="#F97316" oninput="document.getElementById('fTextColor').value=this.value">
                     </div>
-                </div>
+                </div> --}}
 
                 {{-- ─── IMAGE / GIF ──────────────────────────────────────── --}}
                 <div style="grid-column:1/-1; border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:18px;">

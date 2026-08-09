@@ -7,9 +7,24 @@
 @php $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false; @endphp
 @if(!$_permDenied)
 
-{{-- ── Month Selector ────────────────────────────────────────────────────────── --}}
+{{-- ── Period Selector + Month Selector ─────────────────────────────────────── ── --}}
 @if(isset($month))
-    <x-month-selector :month="$month" />
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+        <div style="font-size: var(--title-size); font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase;">
+            PERIOD:
+        </div>
+        <select id="periodSelect" name="period" onchange="applyPeriod(this.value)"
+                class="export-input export-select"
+                style="padding:7px 30px 7px 12px; cursor:pointer;">
+            <option value="about"       {{ ($period ?? 'this-month') === 'about' ? 'selected' : '' }}>📅 All-Time</option>
+            <option value="today"       {{ ($period ?? 'this-month') === 'today' ? 'selected' : '' }}>🗓️ Today</option>
+            <option value="this-month"  {{ ($period ?? 'this-month') === 'this-month' ? 'selected' : '' }}>📆 This Month</option>
+            <option value="6-months"    {{ ($period ?? 'this-month') === '6-months' ? 'selected' : '' }}>🗓️ Last 6 Months</option>
+            <option value="this-year"   {{ ($period ?? 'this-month') === 'this-year' ? 'selected' : '' }}>📅 This Year</option>
+        </select>
+
+        <x-month-selector :month="$month" label="" :margin="false" />
+    </div>
 @endif
 
 {{-- ──   ────────────────────────────────────────────────────────────── --}}
@@ -109,7 +124,8 @@
 
 {{-- ── Row 1: Daily Revenue + Orders for selected month ─────────────────────── --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
-    <div class="card">
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'revenue']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">📈 {{ __('dashboard.charts.monthlyRevenue') }}</span>
             <span class="chart-badge">{{ $month->format('F Y') }}</span>
@@ -118,7 +134,9 @@
             <canvas id="revenueChart" height="110"></canvas>
         </div>
     </div>
-    <div class="card">
+    </a>
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'orders']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">📦 {{ __('dashboard.charts.monthlyOrders') }}</span>
             <span class="chart-badge">{{ $month->format('F Y') }}</span>
@@ -127,11 +145,13 @@
             <canvas id="ordersChart" height="110"></canvas>
         </div>
     </div>
+    </a>
 </div>
 
 {{-- ── Row 2: Monthly Sales + User Registrations ─────────────────────────────── --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
-    <div class="card">
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'sales']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">📅{{ __('dashboard.charts.dailySales') }}</span>
             <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
@@ -140,7 +160,9 @@
             <canvas id="dailyChart" height="110"></canvas>
         </div>
     </div>
-    <div class="card">
+    </a>
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'users']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">👤{{ __('dashboard.charts.userRegistrations') }}</span>
             <span class="chart-badge">{{ __('dashboard.stats.last12Months') }}</span>
@@ -149,11 +171,13 @@
             <canvas id="usersChart" height="110"></canvas>
         </div>
     </div>
+    </a>
 </div>
 
 {{-- ── Row 3: Order Status Pie + Category Revenue Doughnut ─────────────────── --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
-    <div class="card">
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'status']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">{{ __('dashboard.charts.orderStatus') }}</span>
             <span class="chart-badge">{{ __('dashboard.stats.allTime') }}</span>
@@ -164,7 +188,9 @@
             </div>
         </div>
     </div>
-    <div class="card">
+    </a>
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'category']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">{{ __('dashboard.charts.revenueByCategory') }}</span>
             <span class="chart-badge">{{ __('dashboard.stats.allTime') }}</span>
@@ -175,6 +201,7 @@
             </div>
         </div>
     </div>
+    </a>
 </div>
 
 {{-- ── Row 4: Recent Orders + Top Products + Low Stock ─────────────────────── --}}
@@ -326,6 +353,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
+// ── Period selector ───────────────────────────────────────────────────────────
+// Called on period change: reload with ?period= so the KPI cards reflect it.
+// The index page has no export from/to inputs, so no syncExportRange() here.
+function applyPeriod(period) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('period', period);
+    if (period === 'about') params.delete('month');
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
 // ── Theme-aware colour helpers ────────────────────────────────────────────────
@@ -553,6 +590,29 @@ setInterval(async () => {
 
 @push('styles')
 <style>
+/* Export form inputs — used by the PERIOD selector */
+.export-input {
+    background: var(--dark-700, #1A1A1A);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: var(--title-size);
+    font-family: Rajdhani, sans-serif;
+    font-weight: 500;
+    transition: border-color .2s;
+    outline: none;
+}
+.export-input:focus { border-color: #F97316; }
+.export-select { cursor: pointer; padding-right: 32px; }
+
+/* Light mode overrides */
+[data-theme="light"] .export-input {
+    background: #F8FAFC !important;
+    border-color: rgba(15,23,42,0.14) !important;
+    color: #0F172A !important;
+}
+
 [data-theme="light"] .chart-badge {
     color: rgba(15,23,42,0.45);
     background: rgba(15,23,42,0.06);

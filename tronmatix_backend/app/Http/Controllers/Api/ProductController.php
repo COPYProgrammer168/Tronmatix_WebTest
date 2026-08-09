@@ -53,13 +53,17 @@ class ProductController extends Controller
             );
         }
 
-        // Multi-category filter: ?cats=CPU,RAM,MAINBOARD (used by CategoryPage)
+        // Multi-category filter: ?cats=CPU,RAM,MAINBOARD (used by CategoryPage).
+        // Values are matched exactly (or as a word-boundary prefix, e.g.
+        // "SECRETLAB ..." variants) so a brand stored in the category column
+        // (e.g. "DX RACER") doesn't leak into other categories via substring.
         if ($request->filled('cats')) {
             $cats = array_map('strtolower', array_filter(explode(',', $request->cats)));
             if (count($cats) > 0) {
                 $query->where(function($q) use ($cats) {
                     foreach ($cats as $cat) {
-                        $q->orWhereRaw('LOWER(category) LIKE ?', ['%' . $cat . '%']);
+                        $q->orWhereRaw('LOWER(category) = ?', [$cat])
+                          ->orWhereRaw('LOWER(category) LIKE ?', [$cat . '%']);
                     }
                 });
             }

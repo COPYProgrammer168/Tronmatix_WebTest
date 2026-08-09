@@ -56,6 +56,10 @@
             style="display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid rgba(239,68,68,0.4);cursor:pointer;background:rgba(239,68,68,0.08);color:#ef4444;font-family:Rajdhani, var(--font-kh), sans-serif;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;">
             ⚠ {{ __('dashboard.stock.reportDamaged') }}
         </button>
+        <button onclick="window.location.href='{{ route('dashboard.stock.report') }}'" class="stock-btn"
+            style="display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid rgba(249,115,22,0.3);cursor:pointer;background:rgba(249,115,22,0.08);color:#F97316;font-family:Rajdhani, var(--font-kh), sans-serif;font-size: var(--title-size);font-weight:{{ $_fw7 }};letter-spacing:1px;">
+            🧾 {{ __('dashboard.stock.report') }}
+        </button>
     </div>
 </div>
 

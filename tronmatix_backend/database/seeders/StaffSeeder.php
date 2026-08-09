@@ -11,8 +11,12 @@ Class StaffSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = Carbon::now();
+        if (Staff::count() > 0) {
+            $this->command->warn('⚠️  Staff already exist — skipping.');
+            return;
+        }
 
+        $now = Carbon::now();
         $roles = ['editor', 'seller', 'delivery', 'developer'];
         $khmerNames = [
             'Sokha Chan', 'Dara Meas', 'Maly Heng', 'Vireak Som', 'Seiha Pen',

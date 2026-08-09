@@ -21,6 +21,7 @@ use App\Http\Controllers\Dashboard\BrandController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\StockController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardChartController;
 use App\Http\Controllers\StaffRequestController;
 use App\Models\Feedback;
 use Illuminate\Support\Facades\Route;
@@ -133,6 +134,8 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/stock/adjust', [StockController::class, 'adjust'])->name('stock.adjust');
         Route::post('/stock/damaged', [StockController::class, 'damaged'])->name('stock.damaged');
         Route::get('/stock/{product}/history', [StockController::class, 'history'])->name('stock.history');
+        Route::get('/stock/report', [StockController::class, 'report'])->name('stock.report');
+        Route::get('/stock/export', [StockController::class, 'export'])->name('stock.export');
 
         // ── Orders ────────────────────────────────────────────────────────────
         Route::get('/orders', [DashboardController::class, 'orders'])->name('orders');
@@ -175,6 +178,7 @@ Route::prefix('dashboard')->name('dashboard.')
 
         // ── Notifications ─────────────────────────────────────────────────────
         Route::get('/notifications', [SettingsController::class, 'notifications'])->name('notifications');
+        Route::post('/notifications/clear', [SettingsController::class, 'clearNotifications'])->name('notifications.clear');
 
         // Settings — SettingsController::show() checks canEditPerms internally
         Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
@@ -232,4 +236,9 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/report', [DashboardController::class, 'report'])->name('report');
         Route::get('/revenue', [DashboardController::class, 'revenue'])->name('revenue');
         Route::get('/stats', [DashboardController::class, 'stats'])->name('stats');
+
+        // ── Chart drill-down detail pages (dashboard index chart cards) ──────
+        Route::get('/charts/{chart}', [DashboardChartController::class, 'show'])
+            ->whereIn('chart', ['revenue','orders','sales','users','status','category'])
+            ->name('charts.show');
     });

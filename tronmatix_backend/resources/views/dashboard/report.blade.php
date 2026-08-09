@@ -39,28 +39,28 @@
             <option value="6-months"    {{ ($period ?? 'this-month') === '6-months' ? 'selected' : '' }}>🗓️ Last 6 Months</option>
             <option value="this-year"   {{ ($period ?? 'this-month') === 'this-year' ? 'selected' : '' }}>📅 This Year</option>
         </select>
+        <x-month-selector :month="$month" label="" :margin="false" />
     </div>
 
-    <x-month-selector :month="$month" />
 
     {{-- ── Trend KPI Cards ─────────────────────────────────────────────────────── --}}
     <div class="stats-grid" style="margin-bottom:24px;">
-        <x-kpi-card label="Orders" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange">
+        <x-kpi-card label="Orders" value="{{ number_format($orders['current']) }}" :trend="$orders" color="orange" href="{{ route('dashboard.orders', ['today' => 1]) }}">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card :label="__('dashboard.stats.kpiRevenue')" value="{{ compact_number($revenue['current'], '$') }}" :trend="$revenue" color="green">
+        <x-kpi-card :label="__('dashboard.stats.kpiRevenue')" value="{{ compact_number($revenue['current'], '$') }}" :trend="$revenue" color="green" href="{{ route('dashboard.revenue') }}">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card :label="__('dashboard.stats.kpiCustomers')" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue">
+        <x-kpi-card :label="__('dashboard.stats.kpiCustomers')" value="{{ number_format($customers['current']) }}" :trend="$customers" color="blue" href="{{ route('dashboard.users', ['recent' => 1]) }}">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
             </x-slot>
         </x-kpi-card>
-        <x-kpi-card :label="__('dashboard.stats.totalProducts')" value="{{ number_format($stats['total_products']) }}" color="purple">
+        <x-kpi-card :label="__('dashboard.stats.totalProducts')" value="{{ number_format($stats['total_products']) }}" color="purple" href="{{ route('dashboard.products') }}">
             <x-slot name="icon">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             </x-slot>
@@ -228,7 +228,8 @@
 
 {{-- Row 1: Monthly Revenue + Monthly Orders --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
-    <div class="card">
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'revenue']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">📈 {{ strtoupper(__('dashboard.report.monthlyRevenue')) }}</span>
             <span class="chart-badge">{{ $month->format('F Y') }}</span>
@@ -237,7 +238,9 @@
             <canvas id="revenueChart" height="110"></canvas>
         </div>
     </div>
-    <div class="card">
+    </a>
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'orders']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">📦 {{ strtoupper(__('dashboard.report.monthlyOrders')) }}</span>
             <span class="chart-badge">{{ $month->format('F Y') }}</span>
@@ -246,11 +249,13 @@
             <canvas id="ordersChart" height="110"></canvas>
         </div>
     </div>
+    </a>
 </div>
 
 {{-- Row 2: Daily Sales + User Registrations --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
-    <div class="card">
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'sales']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">📅 {{ strtoupper(__('dashboard.report.revenueTrend')) }}</span>
             <span class="chart-badge">{{ __('dashboard.report.last12Months') }}</span>
@@ -259,7 +264,9 @@
             <canvas id="dailyChart" height="110"></canvas>
         </div>
     </div>
-    <div class="card">
+    </a>
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'users']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">👤 {{ strtoupper(__('dashboard.report.userRegistrations')) }}</span>
             <span class="chart-badge">Last 12 Months</span>
@@ -268,11 +275,13 @@
             <canvas id="usersChart" height="110"></canvas>
         </div>
     </div>
+    </a>
 </div>
 
 {{-- Row 3: Order Status Pie + Category Revenue Doughnut --}}
 <div class="chart-grid-2" style="margin-bottom:20px;">
-    <div class="card">
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'status']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">🥧 {{ strtoupper(__('dashboard.report.orderStatus')) }}</span>
             <span class="chart-badge">{{ __('dashboard.report.allTime') }}</span>
@@ -283,7 +292,9 @@
             </div>
         </div>
     </div>
-    <div class="card">
+    </a>
+    <a href="{{ route('dashboard.charts.show', ['chart' => 'category']) }}" style="text-decoration:none; color:inherit; display:block;">
+    <div class="card" style="cursor:pointer;">
         <div class="card-header">
             <span class="card-title">🍩 {{ strtoupper(__('dashboard.report.revenueByCategory')) }}</span>
             <span class="chart-badge">{{ __('dashboard.report.allTime') }}</span>
@@ -294,6 +305,7 @@
             </div>
         </div>
     </div>
+    </a>
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════

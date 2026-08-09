@@ -1,5 +1,5 @@
 // src/pages/CheckoutPage.jsx
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useCart }      from "../context/CartContext"
 import { useAuth }      from "../context/AuthContext"
@@ -9,7 +9,6 @@ import { useTheme }     from "../context/ThemeContext"
 import { useLang }      from "../context/LanguageContext"
 import axios from "../lib/axios"
 import Swal  from "sweetalert2"
-import AuthModal from "../components/AuthModal"
 
 import Step1DeliveryInfo    from "../components/checkout/Step1DeliveryInfo"
 import Step2Payment         from "../components/checkout/Step2Payment"
@@ -55,8 +54,6 @@ export default function CheckoutPage() {
   const [order,          setOrder]          = useState(null)
   const [loading,        setLoading]        = useState(false)
   const [deliveryStatus, setDeliveryStatus] = useState(0)
-  const [showAuthModal,  setShowAuthModal]  = useState(false)
-  const [authMode,       setAuthMode]       = useState("login")
   const [delivery,       setDelivery]       = useState(() => {
     const saved = localStorage.getItem("checkout_delivery")
     return saved ? JSON.parse(saved) : { date: "", timeSlot: "" }
@@ -86,16 +83,8 @@ export default function CheckoutPage() {
   const [selectedProvince, setSelectedProvince] = useState(null)
   const [selectedProviderId, setSelectedProviderId] = useState(null)
   const [deliveryPhoneVerified, setDeliveryPhoneVerified] = useState(false)
-  const pendingOrderAfterLogin              = useRef(false)
 
   const isPickup = fulfillment === "pickup"
-
-  useEffect(() => {
-    if (user && pendingOrderAfterLogin.current) {
-      pendingOrderAfterLogin.current = false
-      placeOrder()
-    }
-  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -181,12 +170,16 @@ export default function CheckoutPage() {
     </div>`
 
     if (!user) {
-      const result = await Swal.fire({ title: "Login Required", html: summaryHtml + `<div style="margin-top:1rem;color:#4b5563;">Login to place this order.</div>`, icon: "info", showCancelButton: true, confirmButtonColor: "#F97316", confirmButtonText: "Log in / Register →", cancelButtonText: "Cancel" })
-      if (result.isConfirmed) {
-        pendingOrderAfterLogin.current = true
-        setAuthMode("login")
-        setShowAuthModal(true)
-      }
+      // Login is gated at the cart (CartSlider CHECKOUT NOW) — if a guest
+      // reaches here via a direct link, bounce them back to the cart.
+      await Swal.fire({
+        title: isKhmer ? "សូមចូលគណនីជាមុន" : "Login Required",
+        html: `<div style="color:#4b5563;">${isKhmer ? "សូមចូលគណនីដើម្បីបញ្ជាទិញ។" : "Please log in before placing your order."}</div>`,
+        icon: "info",
+        confirmButtonColor: "#F97316",
+        confirmButtonText: "OK",
+      })
+      navigate('/cart')
       return
     }
 
@@ -722,16 +715,6 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {showAuthModal && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => {
-            setShowAuthModal(false);
-            if (!user) pendingOrderAfterLogin.current = false;
-          }}
-          onSwitch={setAuthMode}
-        />
-      )}
-    </div>
+      </div>
   );
 }

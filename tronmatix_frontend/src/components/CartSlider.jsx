@@ -1,10 +1,12 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { useDiscount } from '../context/DiscountContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { resolveImage } from '../lib/resolveImage'
 import { useLang } from '../context/LanguageContext'
+import { useAuth } from '../context/AuthContext'
+import AuthModal from './AuthModal'
 import logo from '../assets/logo.png'
 
 export default function CartSlider() {
@@ -16,6 +18,22 @@ export default function CartSlider() {
   const itemsRef = useRef(null)
   const prevCountRef = useRef(0)
   const { t, isKhmer } = useLang()
+  const { user, ready } = useAuth()
+  // Login-gate for the CHECKOUT NOW button — shows the AuthModal when the
+  // user isn't signed in yet instead of sending them to checkout untracked.
+  const [showAuth,   setShowAuth]   = useState(false)
+  const [authMode,   setAuthMode]   = useState('login')
+
+  // After the AuthModal closes, if the user is now logged in, continue to
+  // the cart/checkout. (AuthModal calls onClose after a successful login.)
+  const handleAuthClose = () => {
+    setShowAuth(false)
+    if (user) {
+      setCartOpen(false)
+      navigate('/cart')
+    }
+  }
+
   const khfont    = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, sans-serif'
   const bodyFont = isKhmer
     ? "Kdam Thmor Pro, sans-serif"
@@ -170,7 +188,16 @@ export default function CartSlider() {
             </div>
 
             <button
-              onClick={() => { setCartOpen(false); navigate('/cart') }}
+              onClick={() => {
+                // Require login before letting the guest proceed to checkout.
+                if (ready && !user) {
+                  setAuthMode('login')
+                  setShowAuth(true)   // keep the cart slider open under the modal
+                  return
+                }
+                setCartOpen(false)
+                navigate('/cart')
+              }}
               className="w-full py-3 bg-primary text-white font-black rounded-xl hover:bg-orange-600 active:scale-95 transition-all shadow-lg"
               style={{ fontFamily: bodyFont, fontSize: isKhmer ? 15 : 16, letterSpacing: isKhmer ? 0 : 1 }}>
               🛒 {isKhmer ? 'ទូទាត់ឥឡូវ' : 'CHECKOUT NOW'}
@@ -183,7 +210,21 @@ export default function CartSlider() {
             </button>
           </div>
         )}
+
       </div>
+
+      {/* Login gate for checkout — shown when a guest taps CHECKOUT NOW.
+          Rendered OUTSIDE the transformed cart panel so its fixed inset-0
+          covers the whole viewport (an ancestor with a transform/render
+          translate makes fixed children position relative to that panel
+          instead of the screen, breaking centering). */}
+      {showAuth && (
+        <AuthModal
+          mode={authMode}
+          onClose={handleAuthClose}
+          onSwitch={setAuthMode}
+        />
+      )}
     </>
   )
 }

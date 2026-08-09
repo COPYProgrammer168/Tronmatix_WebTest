@@ -5,13 +5,17 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Exceptions\InsufficientStockException;
+use App\Exports\StockExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdjustStockRequest;
 use App\Http\Requests\ReceiveStockRequest;
 use App\Http\Requests\ReportDamagedRequest;
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\Services\StockService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockController extends Controller
 {
@@ -109,6 +113,55 @@ class StockController extends Controller
             ->withQueryString();
 
         return view('dashboard.stock.history', compact('product', 'movements'));
+    }
+
+    /**
+     * GET /dashboard/stock/report
+     * Stock movements report with optional filters.
+     */
+    public function report(Request $request)
+    {
+        $from    = $request->input('from', '');
+        $to      = $request->input('to', '');
+        $type    = $request->input('type', '');
+        $product = $request->input('product_id', '');
+
+        $query = StockMovement::query()
+            ->with(['createdBy:id,name', 'product:id,name'])
+            ->orderByDesc('created_at');
+
+        if ($from) {
+            $query->whereDate('created_at', '>=', \Carbon\Carbon::parse($from)->startOfDay());
+        }
+        if ($to) {
+            $query->whereDate('created_at', '<=', \Carbon\Carbon::parse($to)->endOfDay());
+        }
+        if ($type) {
+            $query->where('type', $type);
+        }
+        if ($product) {
+            $query->where('product_id', $product);
+        }
+
+        $movements = $query->paginate(50)->withQueryString();
+        $products = Product::orderBy('name')->get(['id', 'name']);
+
+        return view('dashboard.stock.report', compact('movements', 'products', 'from', 'to', 'type', 'product'));
+    }
+
+    /**
+     * GET /dashboard/stock/export
+     * Export stock movements to Excel.
+     */
+    public function export(Request $request)
+    {
+        $from = $request->input('from', '');
+        $to   = $request->input('to', '');
+        $type = $request->input('type', '');
+
+        $filename = 'stock-movements-' . ($from ?: 'all') . '-to-' . ($to ?: 'now') . '.xlsx';
+
+        return Excel::download(new StockExport($from, $to, $type ?: null), $filename);
     }
 
     private function userId(): ?int

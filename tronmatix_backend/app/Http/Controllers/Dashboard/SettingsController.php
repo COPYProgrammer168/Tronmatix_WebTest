@@ -78,6 +78,54 @@ class SettingsController extends Controller
     // ── Notifications JSON (polled by topbar bell) ────────────────────────────
     public function notifications()
     {
+        $alerts = $this->alertList();
+
+        // ── Respect dismissed ("CLEAR ALL") alerts ─────────────────────────────
+        // clearNotifications() persisted a JSON list of dismissed alert ids.
+        // New alerts (different ids) still appear; dismissed ones stay hidden
+        // until their underlying item changes (e.g. a new order id).
+        $dismissed = json_decode((string) AdminSetting::get('notif_dismissed', '[]'), true) ?: [];
+
+        if (! empty($dismissed)) {
+            $alerts = array_values(array_filter($alerts, fn ($a) => ! in_array($a['id'] ?? '', $dismissed, true)));
+        }
+
+        return response()->json(['count' => count($alerts), 'alerts' => $alerts]);
+    }
+
+    /**
+     * POST /dashboard/notifications/clear
+     *
+     * Dismisses the currently-polled notification bell alerts ("CLEAR ALL").
+     * The current alert ids are persisted as a dismissed-set; notifications()
+     * filters them out so the bell empties and stops nagging. Genuinely new
+     * alerts (fresh order/request ids) still surface.
+     */
+    public function clearNotifications()
+    {
+        // Capture the current alert ids, merge with any previously dismissed,
+        // cap the list so it never grows unbounded.
+        $current = collect($this->alertList())->pluck('id')->filter()->values()->all();
+
+        $previous = json_decode((string) AdminSetting::get('notif_dismissed', '[]'), true) ?: [];
+        $dismissed = array_slice(array_values(array_unique(array_merge($previous, $current))), -200);
+
+        \App\Models\AdminSetting::saveMany([
+            'notif_dismissed' => json_encode($dismissed),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notifications cleared.',
+        ]);
+    }
+
+    /**
+     * Build the live alert array (shared by notifications() and clearNotifications()).
+     * Returns the same $alerts list so "clear" dismisses exactly what the bell shows.
+     */
+    private function alertList(): array
+    {
         $settings  = AdminSetting::allMap();
         $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
         $admin     = Auth::guard('admin')->user();
@@ -85,29 +133,19 @@ class SettingsController extends Controller
 
         $alerts = [];
 
-        // ── Staff access requests — superadmin only ───────────────────────────
         if ($isSuperAdmin) {
-            $pendingRequests = StaffRequest::pending()
-                ->orderByDesc('created_at')
-                ->take(10)
-                ->get();
-
+            $pendingRequests = StaffRequest::pending()->orderByDesc('created_at')->take(10)->get();
             foreach ($pendingRequests as $req) {
                 $alerts[] = [
-                    'id'              => 'staff_request_' . $req->id,
-                    'type'            => 'staff_request',
-                    'icon'            => '👤',
-                    'color'           => '#a78bfa',
-                    'font'            => 'ACCESS REQUEST — ' . strtoupper($req->name),
-                    'title'           => 'ACCESS REQUEST — ' . strtoupper($req->name),
-                    'body'            => $req->email . ' · wants ' . strtoupper($req->requested_role) . ' · ' . $req->created_at->diffForHumans(),
-                    'url'             => route('dashboard.staff'),
-                    'request_id'      => $req->id,
-                    'request_name'    => $req->name,
-                    'request_role'    => $req->requested_role,
-                    'request_email'   => $req->email,
-                    'request_message' => $req->message,
-                    'actionable'      => true,
+                    'id' => 'staff_request_' . $req->id, 'type' => 'staff_request',
+                    'icon' => '👤', 'color' => '#a78bfa',
+                    'font' => 'ACCESS REQUEST — ' . strtoupper($req->name),
+                    'title' => 'ACCESS REQUEST — ' . strtoupper($req->name),
+                    'body' => $req->email . ' · wants ' . strtoupper($req->requested_role) . ' · ' . $req->created_at->diffForHumans(),
+                    'url' => route('dashboard.staff'),
+                    'request_id' => $req->id, 'request_name' => $req->name,
+                    'request_role' => $req->requested_role, 'request_email' => $req->email,
+                    'request_message' => $req->message, 'actionable' => true,
                 ];
             }
         }
@@ -116,157 +154,108 @@ class SettingsController extends Controller
             $count = Product::lowStock()->count();
             if ($count > 0) {
                 $alerts[] = [
-                    'id'    => 'low_stock_' . $count,
-                    'type'  => 'low_stock',
-                    'icon'  => '🟠',
-                    'color' => '#F97316',
-                    'font'  => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
+                    'id' => 'low_stock_' . $count, 'type' => 'low_stock', 'icon' => '🟠', 'color' => '#F97316',
+                    'font' => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
                     'title' => "{$count} Low Stock Product".($count > 1 ? 's' : ''),
-                    'body'  => "Stock at or below {$threshold} units",
-                    'url'   => route('dashboard.products'),
+                    'body' => "Stock at or below {$threshold} units", 'url' => route('dashboard.products'),
                 ];
             }
         }
 
         if (AdminSetting::enabled('notif_new_order')) {
-            $newOrders = Order::where('status', 'pending')
-                ->where('created_at', '>=', now()->subMinutes(30))
-                ->orderByDesc('created_at')
-                ->take(5)->get();
-
+            $newOrders = Order::where('status', 'pending')->where('created_at', '>=', now()->subMinutes(30))
+                ->orderByDesc('created_at')->take(5)->get();
             foreach ($newOrders as $order) {
                 $alerts[] = [
-                    'id'    => 'new_order_' . $order->id,
-                    'type'  => 'new_order',
-                    'icon'  => '🛒',
-                    'color' => '#eab308',
-                    'font'  => 'NEW ORDER #' . ($order->order_id ?? $order->id),
+                    'id' => 'new_order_' . $order->id, 'type' => 'new_order', 'icon' => '🛒', 'color' => '#eab308',
+                    'font' => 'NEW ORDER #' . ($order->order_id ?? $order->id),
                     'title' => 'NEW ORDER #' . ($order->order_id ?? $order->id),
-                    'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->created_at->diffForHumans(),
-                    'url'   => route('dashboard.orders.show', $order->order_id),
+                    'body' => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->created_at->diffForHumans(),
+                    'url' => route('dashboard.orders.show', $order->order_id),
                 ];
             }
-
             $todayCount = Order::where('status', 'pending')->whereDate('created_at', today())->count();
             if ($todayCount > 0 && $newOrders->isEmpty()) {
                 $alerts[] = [
-                    'id'    => 'pending_today_' . today()->format('Ymd'),
-                    'type'  => 'new_order',
-                    'icon'  => '📦',
-                    'color' => '#eab308',
-                    'font'  => "{$todayCount} Pending Order".($todayCount > 1 ? 's' : '').' Today',
+                    'id' => 'pending_today_' . today()->format('Ymd'), 'type' => 'new_order', 'icon' => '📦', 'color' => '#eab308',
+                    'font' => "{$todayCount} Pending Order".($todayCount > 1 ? 's' : '').' Today',
                     'title' => "{$todayCount} Pending Order".($todayCount > 1 ? 's' : '').' Today',
-                    'body'  => 'Waiting for confirmation',
-                    'url'   => route('dashboard.orders', ['status' => 'pending']),
+                    'body' => 'Waiting for confirmation', 'url' => route('dashboard.orders', ['status' => 'pending']),
                 ];
             }
         }
 
         if (AdminSetting::enabled('notif_pending_payment')) {
-            $count = Order::where('payment_status', 'pending')
-                ->where('payment_method', 'bakong')
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->count();
+            $count = Order::where('payment_status', 'pending')->where('payment_method', 'bakong')
+                ->whereIn('status', ['pending', 'confirmed'])->count();
             if ($count > 0) {
                 $alerts[] = [
-                    'id'    => 'pending_payment_' . $count,
-                    'type'  => 'pending_payment',
-                    'icon'  => '📱',
-                    'color' => '#3b82f6',
-                    'font'  => "{$count} Awaiting KHQR Payment",
-                    'title' => "{$count} Awaiting KHQR Payment",
-                    'body'  => 'ABA BAKONG payments not yet confirmed',
-                    'url'   => route('dashboard.orders'),
+                    'id' => 'pending_payment_' . $count, 'type' => 'pending_payment', 'icon' => '📱', 'color' => '#3b82f6',
+                    'font' => "{$count} Awaiting KHQR Payment", 'title' => "{$count} Awaiting KHQR Payment",
+                    'body' => 'ABA BAKONG payments not yet confirmed', 'url' => route('dashboard.orders'),
                 ];
             }
-
-            $manualPending = Order::where('payment_status', 'manual_pending')
-                ->where('updated_at', '>=', now()->subMinutes(60))
+            $manualPending = Order::where('payment_status', 'manual_pending')->where('updated_at', '>=', now()->subMinutes(60))
                 ->orderByDesc('updated_at')->take(3)->get();
             foreach ($manualPending as $order) {
                 $alerts[] = [
-                    'id'    => 'manual_' . $order->id,
-                    'type'  => 'manual_payment',
-                    'icon'  => '⏳',
-                    'color' => '#f59e0b',
-                    'font'  => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
+                    'id' => 'manual_' . $order->id, 'type' => 'manual_payment', 'icon' => '⏳', 'color' => '#f59e0b',
+                    'font' => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
                     'title' => 'MANUAL PAYMENT #' . ($order->order_id ?? $order->id),
-                    'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' claims payment sent',
-                    'url'   => route('dashboard.orders.show', $order->order_id),
+                    'body' => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' claims payment sent',
+                    'url' => route('dashboard.orders.show', $order->order_id),
                 ];
             }
         }
 
         if (AdminSetting::enabled('notif_qr_confirmed')) {
-            $paidOrders = Order::where('payment_status', 'paid')
-                ->where('payment_method', 'bakong')
-                ->where('updated_at', '>=', now()->subMinutes(30))
-                ->orderByDesc('updated_at')->take(5)->get();
-
+            $paidOrders = Order::where('payment_status', 'paid')->where('payment_method', 'bakong')
+                ->where('updated_at', '>=', now()->subMinutes(30))->orderByDesc('updated_at')->take(5)->get();
             foreach ($paidOrders as $order) {
                 $alerts[] = [
-                    'id'    => 'paid_' . $order->id,
-                    'type'  => 'qr_confirmed',
-                    'icon'  => '💳',
-                    'color' => '#22c55e',
-                    'font'  => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
+                    'id' => 'paid_' . $order->id, 'type' => 'qr_confirmed', 'icon' => '💳', 'color' => '#22c55e',
+                    'font' => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
                     'title' => 'PAYMENT CONFIRMED #' . ($order->order_id ?? $order->id),
-                    'body'  => '$' . number_format($order->total, 2) . ' paid via KHQR · ' . $order->updated_at->diffForHumans(),
-                    'url'   => route('dashboard.orders.show', $order->order_id),
+                    'body' => '$' . number_format($order->total, 2) . ' paid via KHQR · ' . $order->updated_at->diffForHumans(),
+                    'url' => route('dashboard.orders.show', $order->order_id),
                 ];
             }
-
             $todayPaid = Order::where('payment_status', 'paid')->where('payment_method', 'bakong')->whereDate('updated_at', today())->count();
             if ($todayPaid > 0 && $paidOrders->isEmpty()) {
                 $alerts[] = [
-                    'id'    => 'qr_today_' . today()->format('Ymd'),
-                    'type'  => 'qr_confirmed',
-                    'icon'  => '✅',
-                    'color' => '#22c55e',
-                    'font'  => "{$todayPaid} KHQR Payment".($todayPaid > 1 ? 's' : '').' Confirmed Today',
+                    'id' => 'qr_today_' . today()->format('Ymd'), 'type' => 'qr_confirmed', 'icon' => '✅', 'color' => '#22c55e',
+                    'font' => "{$todayPaid} KHQR Payment".($todayPaid > 1 ? 's' : '').' Confirmed Today',
                     'title' => "{$todayPaid} KHQR Payment".($todayPaid > 1 ? 's' : '').' Confirmed Today',
-                    'body'  => 'ABA BAKONG auto-confirmed',
-                    'url'   => route('dashboard.orders'),
+                    'body' => 'ABA BAKONG auto-confirmed', 'url' => route('dashboard.orders'),
                 ];
             }
         }
 
-        // Cancelled orders (last 60 min) — always show
-        $cancelledOrders = Order::where('status', 'cancelled')
-            ->where('updated_at', '>=', now()->subMinutes(60))
+        $cancelledOrders = Order::where('status', 'cancelled')->where('updated_at', '>=', now()->subMinutes(60))
             ->orderByDesc('updated_at')->take(3)->get();
         foreach ($cancelledOrders as $order) {
             $alerts[] = [
-                'id'    => 'cancelled_' . $order->id,
-                'type'  => 'cancelled',
-                'icon'  => '❌',
-                'color' => '#ef4444',
-                'font'  => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
+                'id' => 'cancelled_' . $order->id, 'type' => 'cancelled', 'icon' => '❌', 'color' => '#ef4444',
+                'font' => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
                 'title' => 'ORDER CANCELLED #' . ($order->order_id ?? $order->id),
-                'body'  => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->updated_at->diffForHumans(),
-                'url'   => route('dashboard.orders'),
+                'body' => '$' . number_format($order->total, 2) . ' — ' . ($order->user->name ?? 'Guest') . ' · ' . $order->updated_at->diffForHumans(),
+                'url' => route('dashboard.orders'),
             ];
         }
 
         if (AdminSetting::enabled('notif_delivery_confirm')) {
-            $count = Order::where('status', 'delivered')
-                ->whereDate('delivery_confirmed_at', today())
-                ->count();
+            $count = Order::where('status', 'delivered')->whereDate('delivery_confirmed_at', today())->count();
             if ($count > 0) {
                 $alerts[] = [
-                    'id'    => 'delivery_' . today()->format('Ymd'),
-                    'type'  => 'delivery',
-                    'icon'  => '🚚',
-                    'color' => '#a78bfa',
-                    'font'  => "{$count} Deliver".($count > 1 ? 'ies' : 'y').' Confirmed Today',
+                    'id' => 'delivery_' . today()->format('Ymd'), 'type' => 'delivery', 'icon' => '🚚', 'color' => '#a78bfa',
+                    'font' => "{$count} Deliver".($count > 1 ? 'ies' : 'y').' Confirmed Today',
                     'title' => "{$count} Deliver".($count > 1 ? 'ies' : 'y').' Confirmed Today',
-                    'body'  => 'Orders marked as delivered',
-                    'url'   => route('dashboard.orders', ['status' => 'delivered']),
+                    'body' => 'Orders marked as delivered', 'url' => route('dashboard.orders', ['status' => 'delivered']),
                 ];
             }
         }
 
-        return response()->json(['count' => count($alerts), 'alerts' => $alerts]);
+        return $alerts;
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

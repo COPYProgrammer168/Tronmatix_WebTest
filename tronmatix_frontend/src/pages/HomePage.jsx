@@ -270,9 +270,9 @@ export default function HomePage() {
 
   @media (max-width: 640px) {
     .banner-wrap {
-      aspect-ratio: unset;
+      aspect-ratio: 16 / 9;       /* mobile */
       max-height: unset;
-      min-height: 300px;          /* mobile */
+      min-height: unset;
     }
     .banner-arrow {
       width: clamp(32px, 4vw, 40px) !important;
@@ -549,7 +549,7 @@ export default function HomePage() {
 
       {/* ── NEW PRODUCTS carousel ────────────────────────────────────────────── */}
       {newProducts.length > 0 && (
-        <div className="max-w-[1280px] mx-auto px-4 mb-10">
+        <div className="max-w-[1550px] mx-auto px-4 mb-10">
           <div className="flex flex-wrap items-center justify-between gap-y-2 mb-5">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-1 h-8 bg-primary rounded-full flex-shrink-0" />
@@ -621,7 +621,7 @@ export default function HomePage() {
           </div>
           {/* Mobile: horizontal scroll — 2 columns per view, up to 10 cards */}
           <div className="new-prod-mobile-scroll">
-            {newProducts.slice(0, 10).map((p, i) => (
+            {newProducts.slice(0, 16).map((p, i) => (
               <ProductCard key={p.id || i} product={p} />
             ))}
           </div>
@@ -638,7 +638,7 @@ export default function HomePage() {
         const scrollId = "cat-" + cat.replace(/ /g, "-");
 
         return (
-          <div key={cat} className="max-w-[1280px] mx-auto px-4 mb-10">
+          <div key={cat} className="max-w-[1550px] mx-auto px-4 mb-10">
             {/* Row header */}
             <div className="relative w-full mb-4" style={{ height: 48 }}>
               <div

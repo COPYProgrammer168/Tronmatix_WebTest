@@ -27,7 +27,7 @@ class DashboardController extends Controller
 {
     use StorageHelper;
     // ── Dashboard index ───────────────────────────────────────────────────────
-    public function index(Request $request, MetricComparisonService $comparison)
+    public function index(Request $request)
     {
         $month = now();
         if ($request->filled('month')) {
@@ -43,17 +43,29 @@ class DashboardController extends Controller
             }
         }
 
-        $orders    = $comparison->compare(Order::query(), 'created_at', $month, 'count');
-        $revenue   = $comparison->compare(
-            Order::whereNotIn('status', ['cancelled']), 'created_at', $month, 'sum', 'total'
+        // ── Period selector ──────────────────────────────────────────────────────
+        // Same logic as report(): drives the KPI cards with a compare-against-
+        // previous-period trend. Charts in buildDashboardData() stay month-based.
+        $validPeriods = ['today', 'this-month', '6-months', 'this-year', 'about'];
+        $period = in_array($request->input('period'), $validPeriods, true)
+            ? $request->input('period')
+            : 'this-month';
+
+        [$curStart, $curEnd, $prevStart, $prevEnd] = $this->periodRange($period, $month);
+
+        $orders = $this->periodCompare(Order::query(), 'created_at', $curStart, $curEnd, $prevStart, $prevEnd, 'count');
+        $revenue = $this->periodCompare(
+            Order::whereNotIn('status', ['cancelled']), 'created_at',
+            $curStart, $curEnd, $prevStart, $prevEnd, 'sum', 'total'
         );
-        $customers = $comparison->compare(User::query(), 'created_at', $month, 'count');
+        $customers = $this->periodCompare(User::query(), 'created_at', $curStart, $curEnd, $prevStart, $prevEnd, 'count');
 
         $data = $this->buildDashboardData($month);
         $data['month']     = $month;
         $data['orders']    = $orders;
         $data['revenue']   = $revenue;
         $data['customers'] = $customers;
+        $data['period']    = $period;
 
         return view('dashboard.index', $data);
     }
@@ -510,6 +522,113 @@ class DashboardController extends Controller
             'monthDailyLabels', 'monthRevenueDaily', 'monthOrdersDaily', 'month',
             'monthlySalesLabels', 'monthlySalesRevenue', 'monthlyOrders'
         );
+    }
+
+    // ── Chart detail drill-down (shared with the dashboard index charts) ────
+    // Range-aware label/value builders reused by DashboardChartController. They
+    // mirror the exact SQL already used by buildDashboardData() (same grouping,
+    // same exclusion of cancelled orders, same status labels / top-6 categories)
+    // so the numbers match the main dashboard at the default `month` range.
+    protected function rangeWindow(string $range): array
+    {
+        $now = Carbon::now();
+        return match ($range) {
+            'today'     => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
+            '6-months'  => [$now->copy()->subMonths(5)->startOfMonth(), $now->copy()->endOfMonth()],
+            'this-year' => [$now->copy()->startOfYear(), $now->copy()->endOfDay()],
+            default     => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
+        };
+    }
+
+    protected function chartData(string $chart, string $range): array
+    {
+        [$start, $end] = $this->rangeWindow($range);
+        $daily    = $range === 'today' || $range === 'month';
+        $granular = $daily ? 'Y-m-d' : 'Y-m';
+        $keyFmt   = $daily ? 'j M' : 'M Y';
+
+        // Revenue (line) + Orders (bar) — per day for today/month, per month
+        // for wider ranges. Same query as the dashboard's monthDailyRows.
+        if ($chart === 'revenue' || $chart === 'orders') {
+            $rows = Order::select(
+                DB::raw($this->dateFormatExpr('created_at', $granular) . ' as bucket'),
+                DB::raw('SUM(total) as revenue'),
+                DB::raw('COUNT(*) as orders')
+            )
+                ->whereBetween('created_at', [$start, $end])
+                ->whereNotIn('status', ['cancelled'])
+                ->groupBy('bucket')->orderBy('bucket')
+                ->get();
+
+            $labels = $values = [];
+            foreach ($rows as $row) {
+                $labels[] = Carbon::parse($row->bucket)->format($keyFmt);
+                $values[] = $chart === 'revenue'
+                    ? round((float) $row->revenue, 2)
+                    : (int) $row->orders;
+            }
+            return compact('labels', 'values');
+        }
+
+        // Monthly sales (line) + user registrations (bar). Buckets are a
+        // contiguous run of months: month → 12 (matches the dashboard's
+        // last-12-months charts), 6-months → 6, this-year → Jan..now.
+        if ($chart === 'sales' || $chart === 'users') {
+            if ($range === 'this-year') {
+                $count = (int) now()->format('n');
+                $startMonth = now()->copy()->startOfYear();
+            } else {
+                $count    = $range === 'today' ? 1 : ($range === '6-months' ? 6 : 12);
+                $startMonth = now()->copy()->subMonths($count - 1)->startOfMonth();
+            }
+
+            $q = $chart === 'sales'
+                ? Order::query()->whereNotIn('status', ['cancelled'])
+                : User::query();
+            $rows = (clone $q)
+                ->select(
+                    DB::raw($this->dateFormatExpr('created_at', 'Y-m') . ' as bucket'),
+                    DB::raw(($chart === 'sales' ? 'SUM(total)' : 'COUNT(*)') . ' as value')
+                )
+                ->where('created_at', '>=', $startMonth->copy())
+                ->groupBy('bucket')->orderBy('bucket')
+                ->get()->keyBy('bucket');
+
+            $labels = $values = [];
+            for ($i = 0; $i < $count; $i++) {
+                $m     = $startMonth->copy()->addMonths($i);
+                $found = $rows->get($m->format('Y-m'));
+                $labels[] = $m->format('M Y');
+                $values[] = $found ? (int) round((float) $found->value) : 0;
+            }
+            return compact('labels', 'values');
+        }
+
+        // Order status — pie. Same 6 status labels as the dashboard.
+        if ($chart === 'status') {
+            $statusCounts = Order::whereBetween('created_at', [$start, $end])
+                ->select('status', DB::raw('COUNT(*) as total'))
+                ->groupBy('status')->get()
+                ->mapWithKeys(fn ($item) => [$item->status => (int) $item->total]);
+
+            $statusLabels = ['pending','confirmed','processing','shipped','delivered','cancelled'];
+            $labels = collect($statusLabels)->map(fn ($s) => strtoupper($s))->values()->toArray();
+            $values = collect($statusLabels)->map(fn ($s) => $statusCounts->get($s, 0))->values()->toArray();
+            return compact('labels', 'values');
+        }
+
+        // Revenue by category — doughnut. Same top-6 join + cancelled exclusion.
+        $categoryRevenue = DB::table('order_items')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders',   'order_items.order_id',   '=', 'orders.id')
+            ->whereBetween('orders.created_at', [$start, $end])
+            ->whereNotIn('orders.status', ['cancelled'])
+            ->select('products.category', DB::raw('SUM(order_items.price * order_items.qty) as revenue'))
+            ->groupBy('products.category')->orderByDesc('revenue')->limit(6)->get();
+
+        $labels = $categoryRevenue->pluck('category')->toArray();
+        $values = $categoryRevenue->pluck('revenue')->map(fn ($v) => round((float) $v, 2))->toArray();
+        return compact('labels', 'values');
     }
 
     // ── Products list ─────────────────────────────────────────────────────────

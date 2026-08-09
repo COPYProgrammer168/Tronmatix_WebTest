@@ -13,6 +13,13 @@ import logo from '../assets/logo.png'
 
 const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
 
+// Deep path for the flattened TABLE / CHAIR branch: the brand is hoisted to
+// the main level, so /category/<topSlug>/<brandSlug>. Brands are sent via
+// ?cats=<brand> (they're stored in the product's category column, and the
+// brand_pc_part/brand filter matches nothing for them).
+const brandPath = (item, brand) =>
+  `${item.path}/${slugify(brand)}?cats=${encodeURIComponent(brand)}`
+
 /* ── Desktop dropdown panel (4-level: Category → MainCate → SubCate → Brand) ─ */
 function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOpenSub, setOpenSubSub, isKhmer, dark, expandedCatNames }) {
   const closeTimeoutRef = useRef(null)
@@ -85,7 +92,7 @@ function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOp
                 style={{ backgroundColor: openSub === mc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
                 onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
                 onMouseLeave={scheduleCloseSub}>
-                <Link to={`/category/${slugify(item.label)}/${slugify(mc.label)}`}
+                <Link to={`${item.path}/${slugify(mc.label)}`}
                   className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
                   style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
                   onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
@@ -122,7 +129,7 @@ function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOp
                         style={{ backgroundColor: openSubSub === sc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
                         onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
                         onMouseLeave={scheduleCloseSubSub}>
-                        <Link to={`/category/${slugify(item.label)}/${slugify(mc.label)}/${slugify(sc.label)}`}
+                        <Link to={`${item.path}/${slugify(mc.label)}/${slugify(sc.label)}`}
                           className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
                           style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
                           onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
@@ -152,7 +159,7 @@ function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOp
                           </div>
                           {sc.brands.map(brand => (
                             <Link key={brand}
-                              to={`/category/${slugify(item.label)}/${slugify(mc.label)}/${slugify(sc.label)}?brand=${encodeURIComponent(brand)}`}
+                              to={`${item.path}/${slugify(mc.label)}/${slugify(sc.label)}?cats=${encodeURIComponent(brand)}`}
                               className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
                               style={{
                                 fontFamily: dropFont,
@@ -184,7 +191,7 @@ function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOp
             const hasFlyout = subBrands.length > 0
 
             const link = (
-              <Link to={`/category/${slugify(item.label)}/${slugify(subLabel)}`}
+              <Link to={`${item.path}/${slugify(subLabel)}`}
                 className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
                 style={{
                   fontFamily: dropFont,
@@ -228,7 +235,7 @@ function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOp
                     </div>
                     {subBrands.map(brand => (
                       <Link key={brand}
-                        to={`/category/${slugify(item.label)}/${slugify(subLabel)}?brand=${encodeURIComponent(brand)}`}
+                        to={brandPath(item, brand)}
                         className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
                         style={{
                           fontFamily: dropFont,
@@ -1129,7 +1136,7 @@ export default function Navbar({ onAuthOpen }) {
                             surface their sub-categories here directly. */}
                         {item.sub.map(mc => {
                           const mcLabel = typeof mc === 'string' ? mc : mc.label
-                          const mcPath = `/category/${slugify(item.label)}/${slugify(mcLabel)}`
+                          const mcPath = `${item.path}/${slugify(mcLabel)}`
                           const mcExpanded = mobileSub === item.label && mobileSubItem === mcLabel;
                           const mcSubs = (mc && mc.sub) || []
                           const mcBrands = (mc && mc.brands) || []
@@ -1172,7 +1179,7 @@ export default function Navbar({ onAuthOpen }) {
                                   }}>
                                   {/* Flattened single-main: sub-categories are the brand level */}
                                   {mcSubs.length === 0 && mcBrands.map(brand => (
-                                    <Link key={brand} to={`${mcPath}?brand=${encodeURIComponent(brand)}`}
+                                    <Link key={brand} to={brandPath(item, brand)}
                                       className="block py-1 font-semibold"
                                       style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
                                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
@@ -1222,7 +1229,7 @@ export default function Navbar({ onAuthOpen }) {
                                               opacity: scExpanded ? 1 : 0
                                             }}>
                                             {brands.map(brand => (
-                                              <Link key={brand} to={`${scPath}?brand=${encodeURIComponent(brand)}`}
+                                              <Link key={brand} to={`${scPath}?cats=${encodeURIComponent(brand)}`}
                                                 className="block py-1 font-semibold"
                                                 style={{ fontSize: 12, color: subTextColor, transition: 'color 0.15s' }}
                                                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
