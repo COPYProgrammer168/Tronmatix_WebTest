@@ -145,6 +145,8 @@ return [
         'rating' => 'Rating (0-5)',
         'featured' => 'Featured Product',
         'hot' => 'Hot Item',
+        'featuredProduct' => 'Featured Product',
+        'hotItem' => 'Hot Item',
         'productImages' => 'Product Images',
         'addImages' => 'Add Images',
         'addImageUrl' => 'Add Image by URL',

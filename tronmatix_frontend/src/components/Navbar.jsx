@@ -649,7 +649,7 @@ export default function Navbar({ onAuthOpen }) {
 
         {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
         <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-          <div className="w-full max-w-[1550px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
+          <div className="w-full max-w-[1450px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
             <Link to="/" className="flex-shrink-0">
               <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
             </Link>
@@ -682,7 +682,7 @@ export default function Navbar({ onAuthOpen }) {
                         <Link
                           to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
                           className="flex items-center gap-0.5 px-2 py-2 font-bold tracking-wide whitespace-nowrap"
-                          style={{ fontFamily: navbFont, fontSize: isKhmer ? 17 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                          style={{ fontFamily: navbFont, fontSize: isKhmer ? 18 : 20, color: (hoveredNav === item.label || isActive(item)) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
                           onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null); setHoveredNav(null) }}>
                           {t(NAV_LABEL_KEYS[item.label] || item.label)}
                           {item.sub && !error && (

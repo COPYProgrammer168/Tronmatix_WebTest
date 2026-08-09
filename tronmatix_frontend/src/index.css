@@ -142,7 +142,14 @@ body.lang-km .banner-title,
 body.lang-km h2.banner-title {
   font-family: var(--font-kh-heading) !important;
   letter-spacing: 0 !important;
-  font-size: clamp(36px, 4vw, 50px) !important;
+  font-size: clamp(36px, 4vw, 40px) !important;
+  line-height: 1 !important;
+}
+body .banner-title,
+body h2.banner-title {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+  font-size: clamp(36px, 4vw, 40px) !important;
   line-height: 1 !important;
 }
 

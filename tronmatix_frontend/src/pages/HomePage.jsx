@@ -439,8 +439,6 @@ export default function HomePage() {
                     <h2
                       className="mb-3 font-black tracking-tighter banner-title"
                       style={{
-                        fontFamily: headingFont,
-                        fontSize: isKhmer ? "clamp(36px, 4vw, 50px)" : "clamp(50px, 5vw, 60px)",
                         lineHeight: isKhmer ? 1.35 : 1.1,
                         fontWeight: 500,
                         letterSpacing: .5,
@@ -451,8 +449,8 @@ export default function HomePage() {
                       ))}
                     </h2>
                     <p
-                      className="mb-10 font-semibold opacity-90 tracking-tighte "
-                      style={{ fontSize: "clamp(16px, 2vw, 24px)" }}
+                      className="mb-10 font-semibold opacity-90"
+                      style={{ fontSize: "clamp(16px, 2vw, 24px)", wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "pre-wrap" }}
                     >
                       {banner.subtitle}
                     </p>

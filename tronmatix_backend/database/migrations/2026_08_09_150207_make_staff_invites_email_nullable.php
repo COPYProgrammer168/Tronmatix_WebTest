@@ -16,8 +16,8 @@ return new class extends Migration
             // unique index so email can be NULL. Multiple NULL emails are legal
             // in PostgreSQL (NULLs are distinct in unique indexes), but we drop
             // the unique index anyway to keep the intent clear.
-            $table->dropUnique(['email']);
-            $table->string('email')->nullable()->change();
+            // $table->dropUnique(['email']);
+            // $table->string('email')->nullable()->change();
         });
     }
 
@@ -26,9 +26,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('staff_invites', function (Blueprint $table) {
-            $table->string('email')->nullable(false)->change();
-            $table->unique('email');
-        });
+        // Schema::table('staff_invites', function (Blueprint $table) {
+        //     $table->string('email')->nullable(false)->change();
+        //     $table->unique('email');
+        // });
     }
 };
