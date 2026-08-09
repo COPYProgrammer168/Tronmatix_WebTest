@@ -1513,6 +1513,7 @@ document.addEventListener('keydown', e => {
 </script>
 
 @endif
+@endif
 
 @push('styles')
 <style>
