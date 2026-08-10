@@ -490,85 +490,49 @@
             $currentAdminRole = $user?->role ?? 'editor';
             $canEditPerms = in_array($currentAdminRole, ['admin', 'superadmin']);
 
-            // Permission matrix definition: [feature_key => display_label]
-            $permFeatures = [
-                'dashboard' => ['label' => __('dashboard.nav.dashboard'), 'icon' => '📊'],
-                'products' => ['label' => __('dashboard.nav.products') . ' & ' . __('dashboard.nav.banners'), 'icon' => '📦'],
-                'orders' => ['label' => __('dashboard.nav.orders') . ' (view)', 'icon' => '📋'],
-                'orders_edit' => ['label' => __('dashboard.nav.orders') . ' (edit)', 'icon' => '✏️'],
-                'users' => ['label' => __('dashboard.nav.users'), 'icon' => '👥'],
-                'discounts' => ['label' => __('dashboard.nav.discounts'), 'icon' => '🏷️'],
-                'report' => ['label' => __('dashboard.nav.reports'), 'icon' => '📈'],
-                'settings' => ['label' => __('dashboard.nav.settings'), 'icon' => '⚙️'],
-                'staff' => ['label' => __('dashboard.nav.staff') . ' & ' . __('dashboard.table.role'), 'icon' => '🛡️'],
-            ];
+            // ── Dynamic feature list from DB ─────────────────────────────────────
+            $allFeatures = \App\Models\Feature::ordered()->get();
+            $permFeatures = $allFeatures->mapWithKeys(fn ($f) => [
+                $f->key => ['label' => $f->label, 'icon' => $f->icon],
+            ])->toArray();
 
-            // Roles that can be configured (superadmin is always full — not editable)
-            $permRoles = [
-                'admin' => ['label' => __('dashboard.staff.inviteAdmin'), 'color' => '#F97316', 'icon' => '🛡️'],
-                'editor' => ['label' => __('dashboard.staff.editor'), 'color' => '#3b82f6', 'icon' => '✏️'],
-                'seller' => ['label' => __('dashboard.staff.seller'), 'color' => '#10b981', 'icon' => '🏪'],
-                'delivery' => ['label' => __('dashboard.staff.delivery'), 'color' => '#a855f7', 'icon' => '🚚'],
-                'developer' => ['label' => __('dashboard.staff.developer'), 'color' => '#06b6d4', 'icon' => '💻'],
-            ];
+            // ── Dynamic role list from DB (superadmin excluded — always full access) ──
+            $allRoles = \App\Models\Role::editable()->get();
+            $permRoles = $allRoles->mapWithKeys(fn ($r) => [
+                $r->key => ['label' => $r->label, 'color' => $r->color, 'icon' => $r->icon, 'description' => $r->description],
+            ])->toArray();
 
-            // Default locked values for superadmin (always all true)
-            $superadminPerms = array_fill_keys(array_keys($permFeatures), true);
+            // Preload role lock configs for the template
+            $roleLockConfig = $allRoles->mapWithKeys(fn ($r) => [
+                $r->key => [
+                    'locked_on'    => $r->locked_features ?? [],
+                    'locked_off'   => $r->forbidden_features ?? [],
+                ],
+            ])->toArray();
 
-            // Helper to read saved perm from settings: perm_{role}_{feature}
-            $perm = function ($role, $feature) use ($s) {
+            // ── Helper: resolve permission value for a role+feature ──────────────
+            $perm = function ($role, $feature) use ($s, $roleLockConfig) {
                 $key = "perm_{$role}_{$feature}";
-                // Sensible defaults if not saved yet
-                $defaults = [
-                    'admin_dashboard' => '1',
-                    'admin_products' => '1',
-                    'admin_orders' => '1',
-                    'admin_orders_edit' => '1',
-                    'admin_users' => '1',
-                    'admin_discounts' => '1',
-                    'admin_report' => '1',
-                    'admin_settings' => '1',
-                    'admin_staff' => '1',
-                    'editor_dashboard' => '1',
-                    'editor_products' => '1',
-                    'editor_orders' => '1',
-                    'editor_orders_edit' => '0',
-                    'editor_users' => '0',
-                    'editor_discounts' => '1',
-                    'editor_report' => '1',
-                    'editor_settings' => '0',
-                    'editor_staff' => '0',
-                    'seller_dashboard' => '1',
-                    'seller_products' => '1',
-                    'seller_orders' => '1',
-                    'seller_orders_edit' => '1',
-                    'seller_users' => '0',
-                    'seller_discounts' => '1',
-                    'seller_report' => '1',
-                    'seller_settings' => '0',
-                    'seller_staff' => '0',
-                    // delivery — orders view & edit only, no admin pages
-                    'delivery_dashboard' => '1',
-                    'delivery_products' => '0',
-                    'delivery_orders' => '1',
-                    'delivery_orders_edit' => '1',
-                    'delivery_users' => '0',
-                    'delivery_discounts' => '0',
-                    'delivery_report' => '0',
-                    'delivery_settings' => '0',
-                    'delivery_staff' => '0',
-                    // developer — broad read access, no admin-sensitive pages
-                    'developer_dashboard' => '1',
-                    'developer_products' => '1',
-                    'developer_orders' => '1',
-                    'developer_orders_edit' => '0',
-                    'developer_users' => '0',
-                    'developer_discounts' => '0',
-                    'developer_report' => '0',
-                    'developer_settings' => '0',
-                    'developer_staff' => '0',
-                ];
-                return ($s[$key] ?? ($defaults["{$role}_{$feature}"] ?? '0')) === '1';
+
+                // 1) Check saved admin_settings value
+                if (isset($s[$key])) {
+                    return $s[$key] === '1';
+                }
+
+                // 2) Check role's locked_features (default ON)
+                $lockedOn = in_array($feature, $roleLockConfig[$role]['locked_on'] ?? [], true);
+                if ($lockedOn) {
+                    return true;
+                }
+
+                // 3) Check role's forbidden_features (default OFF)
+                $lockedOff = in_array($feature, $roleLockConfig[$role]['locked_off'] ?? [], true);
+                if ($lockedOff) {
+                    return false;
+                }
+
+                // 4) New combination — default OFF
+                return false;
             };
         @endphp
 
@@ -644,9 +608,9 @@
                                     </th>
 
                                     @foreach ($permRoles as $roleKey => $roleMeta)
-                                        <th style="padding:16px 10px; text-align:center; white-space:nowrap; width:12%;">
+                                        <th style="padding:16px 8px; text-align:center; white-space:nowrap; width:12%;">
                                             <div
-                                                style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
+                                                style="display:inline-flex; flex-direction:column; align-items:center; gap:3px;">
                                                 <div
                                                     style="width:32px; height:32px; border-radius:8px;
                                                 background:{{ $roleMeta['color'] }}18; border:1px solid {{ $roleMeta['color'] }}44;
@@ -654,9 +618,16 @@
                                                     {{ $roleMeta['icon'] }}
                                                 </div>
                                                 <span
-                                                    style="font-size: var(--text-xs); letter-spacing:1px; color:{{ $roleMeta['color'] }}; font-weight:800;">
+                                                    style="font-size:10px; letter-spacing:0.8px; color:{{ $roleMeta['color'] }}; font-weight:800; line-height:1.1;">
                                                     {{ strtoupper($roleMeta['label']) }}
                                                 </span>
+                                                @if (!empty($roleMeta['description']))
+                                                    <span
+                                                        style="font-size:9px; color:rgba(255,255,255,0.3); line-height:1.2; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                                        title="{{ $roleMeta['description'] }}">
+                                                        {{ $roleMeta['description'] }}
+                                                    </span>
+                                                @endif
                                             </div>
                                         </th>
                                     @endforeach
@@ -691,22 +662,9 @@
 
                                         @foreach ($permRoles as $roleKey => $roleMeta)
                                             @php
-                                                $checked = $perm($roleKey, $featureKey);
-
-                                                // admin: always ON for sensitive features — cannot be removed
-                                                $lockedOn =
-                                                    $roleKey === 'admin' &&
-                                                    in_array($featureKey, [
-                                                        'settings',
-                                                        'staff',
-                                                        'orders_edit',
-                                                        'users',
-                                                    ]);
-
-                                                // delivery & developer: always OFF for admin-sensitive pages — cannot be granted
-                                                $lockedOff =
-                                                    in_array($roleKey, ['delivery', 'developer']) &&
-                                                    in_array($featureKey, ['settings', 'staff', 'users']);
+                                                $checked     = $perm($roleKey, $featureKey);
+                                                $lockedOn    = in_array($featureKey, $roleLockConfig[$roleKey]['locked_on'] ?? [], true);
+                                                $lockedOff   = in_array($featureKey, $roleLockConfig[$roleKey]['locked_off'] ?? [], true);
                                             @endphp
                                             <td style="padding:14px; text-align:center; vertical-align:middle;">
                                                 @if ($lockedOn)
@@ -815,17 +773,174 @@
                 </form>
             </div>
 
+            {{-- Add Role form (superadmin only) --}}
+            @if ($canEditPerms)
+                <div class="card" style="margin-top:18px; padding:18px 20px;">
+                    <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main, #fff); margin-bottom:12px;">
+                        ➕ {{ strtoupper(__('dashboard.settings.addRole')) }}
+                    </div>
+                    <form method="POST" action="{{ route('dashboard.settings.roles.store') }}" style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+                        @csrf
+                        <div style="flex:1; min-width:140px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY *</label>
+                            <input type="text" name="key" required maxlength="50" placeholder="e.g. accountant"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="flex:1; min-width:140px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
+                            <input type="text" name="label" required maxlength="100" placeholder="Display name"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="width:60px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">COLOR</label>
+                            <input type="color" name="color" value="#6b7280"
+                                style="width:100%; height:36px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; cursor:pointer;" />
+                        </div>
+                        <div style="width:60px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
+                            <input type="text" name="icon" maxlength="50" placeholder="❓"
+                                style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:16px; text-align:center;" />
+                        </div>
+                        <div style="flex:2; min-width:180px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">DESCRIPTION</label>
+                            <input type="text" name="description" maxlength="255" placeholder="Short description of this role"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="width:80px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
+                            <input type="number" name="sort_order" value="0" min="0"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; padding-bottom:8px;">
+                            <input type="checkbox" name="is_staff_portal" id="role_staff_portal" checked
+                                style="accent-color:#F97316;" />
+                            <label for="role_staff_portal" style="font-size:12px; color:var(--text-muted, rgba(255,255,255,0.5)); cursor:pointer;">Staff portal</label>
+                        </div>
+                        <button type="submit"
+                            style="padding:8px 18px; border-radius:8px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:#F97316; font-weight:700; font-size:13px; cursor:pointer; letter-spacing:1px; white-space:nowrap;">
+                            ADD ROLE
+                        </button>
+                    </form>
+                </div>
+            @endif
+
+            {{-- Add Feature form (superadmin only) --}}
+            @if ($canEditPerms)
+                <div class="card" style="margin-top:14px; padding:18px 20px;">
+                    <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main, #fff); margin-bottom:12px;">
+                        ➕ {{ strtoupper(__('dashboard.settings.addFeature')) }}
+                    </div>
+                    <form method="POST" action="{{ route('dashboard.settings.features.store') }}" style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+                        @csrf
+                        <div style="flex:1; min-width:140px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY *</label>
+                            <input type="text" name="key" required maxlength="50" placeholder="e.g. invoices"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="flex:1; min-width:140px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
+                            <input type="text" name="label" required maxlength="100" placeholder="Display name"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="width:60px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
+                            <input type="text" name="icon" maxlength="50" placeholder="📄"
+                                style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:16px; text-align:center;" />
+                        </div>
+                        <div style="width:140px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">CATEGORY</label>
+                            <input type="text" name="category" maxlength="50" placeholder="e.g. admin, inventory"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <div style="width:80px;">
+                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
+                            <input type="number" name="sort_order" value="0" min="0"
+                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                        </div>
+                        <button type="submit"
+                            style="padding:8px 18px; border-radius:8px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#3b82f6; font-weight:700; font-size:13px; cursor:pointer; letter-spacing:1px; white-space:nowrap;">
+                            ADD FEATURE
+                        </button>
+                    </form>
+                </div>
+            @endif
+
+            {{-- Manage existing roles/features (edit + delete) --}}
+            @if ($canEditPerms && ($allRoles->count() > 0 || $allFeatures->count() > 0))
+                <div class="card" style="margin-top:14px; padding:18px 20px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        {{-- Roles management --}}
+                        <div>
+                            <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main, #fff); margin-bottom:12px;">
+                                🎭 ROLES
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                @foreach ($allRoles as $r)
+                                    <div style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                                        <span style="font-size:18px; line-height:1.2;">{{ $r->icon }}</span>
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                                <span style="font-size:13px; font-weight:700; color:{{ $r->color }};">{{ $r->label }}</span>
+                                                <span style="font-size:10px; color:rgba(255,255,255,0.3); font-family:monospace;">{{ $r->key }}</span>
+                                                @if($r->is_locked)<span style="font-size:10px; color:rgba(255,255,255,0.25);">🔒</span>@endif
+                                                @if($r->is_staff_portal)<span style="font-size:10px; color:rgba(59,130,246,0.6);">staff</span>@endif
+                                            </div>
+                                            @if($r->description)
+                                                <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-top:3px; line-height:1.3;">{{ $r->description }}</div>
+                                            @endif
+                                        </div>
+                                        @if (!$r->is_locked)
+                                            <form method="POST" action="{{ route('dashboard.settings.roles.destroy', $r->id) }}" onsubmit="return confirm('Delete role {{ $r->key }}? This removes its permissions too.');" style="display:inline; flex-shrink:0;">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" title="Delete role"
+                                                    style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; padding:2px 6px;">🗑️</button>
+                                            </form>
+                                        @else
+                                            <span style="font-size:12px; color:rgba(255,255,255,0.2); flex-shrink:0;">🔒</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        {{-- Features management --}}
+                        <div>
+                            <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main, #fff); margin-bottom:12px;">
+                                📦 FEATURES
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                @foreach ($allFeatures as $f)
+                                    <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
+                                        <span style="font-size:18px;">{{ $f->icon }}</span>
+                                        <span style="font-size:13px; font-weight:700; color:var(--text-main, #fff); flex:1;">{{ $f->label }}</span>
+                                        <span style="font-size:11px; color:rgba(255,255,255,0.3);">{{ $f->key }}</span>
+                                        <span style="font-size:10px; color:rgba(255,255,255,0.2);">{{ $f->category ?? '—' }}</span>
+                                        <form method="POST" action="{{ route('dashboard.settings.features.destroy', $f->id) }}" onsubmit="return confirm('Delete feature {{ $f->key }}? This removes its permissions from all roles.');" style="display:inline;">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" title="Delete feature"
+                                                style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; padding:2px 6px;">🗑️</button>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Role legend --}}
             <div class="role-legend-grid" style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-top:14px;">
                 @php
-                    $legend = [
-                        ['👑', 'SUPER ADMIN', '#F97316', 'Full owner-level access to everything'],
-                        ['🛡️', 'ADMIN', '#F97316', 'Full access; cannot demote superadmin'],
-                        ['✏️', 'EDITOR', '#3b82f6', 'Products, banners & discounts; read-only orders'],
-                        ['🏪', 'SELLER', '#10b981', 'Products, orders & discounts management'],
-                        ['🚚', 'DELIVERY', '#a855f7', 'Order delivery management only'],
-                        ['💻', 'DEVELOPER', '#06b6d4', 'Technical access; no admin-sensitive pages'],
-                    ];
+                    $legend = \App\Models\Role::ordered()->get()->map(fn ($r) => [
+                        $r->icon,
+                        strtoupper($r->label),
+                        $r->color,
+                        $r->key === 'superadmin' ? 'Full owner-level access to everything'
+                            : ($r->key === 'admin' ? 'Full access; cannot demote superadmin'
+                            : ($r->key === 'editor' ? 'Products, banners & discounts; read-only orders'
+                            : ($r->key === 'seller' ? 'Products, orders & discounts management'
+                            : ($r->key === 'delivery' ? 'Order delivery management only'
+                            : 'Technical access; no admin-sensitive pages')))),
+                    ])->toArray();
                 @endphp
                 <style>
                     /* Role legend cards — use the layout's real theme variables so

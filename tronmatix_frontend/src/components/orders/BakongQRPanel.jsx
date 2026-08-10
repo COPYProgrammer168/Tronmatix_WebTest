@@ -72,6 +72,7 @@ export default function BakongQRPanel({
   discountCode,
   items,
   onPaid,
+  onSuccessAlert,
 }) {
   const { t, isKhmer } = useLang();
 
@@ -162,6 +163,7 @@ export default function BakongQRPanel({
             paidRef.current = true;
             setPaymentStatus("paid");
             onPaid?.();
+            onSuccessAlert?.();
           }
           return;
         }

@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\TelegramController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\MarqueeController;
 use App\Http\Controllers\Api\VideoController;
+use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\StaffAuthController;
 use App\Http\Controllers\Auth\DevAuthController;
@@ -62,6 +63,10 @@ Route::get('/discounts/public', [DiscountController::class, 'storefront']);
 Route::post('/apply-discount', [DiscountController::class, 'apply']);
 
 Route::post('/chat/message', [ChatController::class, 'message']);
+
+// Settings metadata — public (used by PortalGuards.jsx and frontend)
+Route::get('/settings/roles',   [SettingsApiController::class, 'roles']);
+Route::get('/settings/features',[SettingsApiController::class, 'features']);
 
 // ABA PayWay webhook — public, no auth (ABA server calls this)
 Route::post('/payment/webhook', [CheckPaymentController::class, 'webhook']);

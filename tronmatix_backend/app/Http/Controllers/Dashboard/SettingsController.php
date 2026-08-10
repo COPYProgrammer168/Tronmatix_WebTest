@@ -272,6 +272,7 @@ class SettingsController extends Controller
         ];
     }
 
+    // ── Update role-permission matrix ─────────────────────────────────────────
     public function updatePermissions(Request $request)
     {
         $admin = Auth::guard('admin')->user();
@@ -282,19 +283,36 @@ class SettingsController extends Controller
             'Access denied.'
         );
 
-        $roles = ['admin', 'editor', 'seller', 'developer', 'delivery'];
-        $features = ['dashboard', 'products', 'orders', 'orders_edit', 'users', 'discounts', 'report', 'settings', 'staff'];
+        $roles     = \App\Models\AdminSetting::getAllRoleKeys();
+        $features  = \App\Models\AdminSetting::getAllFeatureKeys();
+        $roleMeta  = \App\Models\Role::all()->keyBy('key');
 
         $permsToSave = [];
 
         foreach ($roles as $role) {
             foreach ($features as $feature) {
                 $key = "perm_{$role}_{$feature}";
-                $lockedOn = $role === 'admin' && in_array($feature, ['settings', 'staff', 'orders_edit', 'users']);
 
-                $permsToSave[$key] = $lockedOn
-                    ? '1'
-                    : ($request->has($key) ? '1' : '0');
+                // Locked-on: admin role always has these sensitive features
+                $lockedOn = $role === 'admin'
+                    && in_array($feature, ['settings', 'staff', 'orders_edit', 'users']);
+
+                // Locked-off: role-specific forbidden features from DB
+                $lockedOff = false;
+                if ($roleMeta->has($role)) {
+                    $forbidden = $roleMeta[$role]->forbidden_features ?? [];
+                    if (in_array($feature, $forbidden, true)) {
+                        $lockedOff = true;
+                    }
+                }
+
+                if ($lockedOn || $lockedOff) {
+                    $permsToSave[$key] = $lockedOn ? '1' : '0';
+                } elseif ($request->has($key)) {
+                    $permsToSave[$key] = '1';
+                } else {
+                    $permsToSave[$key] = '0';
+                }
             }
         }
 
@@ -303,6 +321,184 @@ class SettingsController extends Controller
         return redirect()->route('dashboard.settings')
             ->with('success', 'Permissions saved successfully.');
     }
+
+    // ── Roles CRUD ─────────────────────────────────────────────────────────────
+
+    /** POST /dashboard/settings/roles — superadmin only */
+    public function storeRole(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin && $admin->role === 'superadmin', 403, 'Superadmin only.');
+
+        $data = $request->validate([
+            'key'         => 'required|string|max:50|unique:roles,key',
+            'label'       => 'required|string|max:100',
+            'description' => 'nullable|string|max:255',
+            'color'       => 'nullable|string|max:20',
+            'icon'        => 'nullable|string|max:50',
+            'sort_order'  => 'nullable|integer|min:0',
+            'is_staff_portal' => 'nullable|boolean',
+        ]);
+
+        $data['sort_order']      = (int) ($data['sort_order'] ?? 0);
+        $data['color']           = $data['color'] ?? '#6b7280';
+        $data['icon']            = $data['icon'] ?? '❓';
+        $data['description']     = $data['description'] ?? null;
+        $data['is_staff_portal'] = $request->boolean('is_staff_portal', true);
+        $data['is_locked']       = false;
+        $data['locked_features']    = json_encode([]);
+        $data['forbidden_features'] = json_encode([]);
+
+        \App\Models\Role::create($data);
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', 'Role created successfully.');
+    }
+
+    /** PUT /dashboard/settings/roles/{role} — superadmin only */
+    public function updateRole(Request $request, $id)
+    {
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin && $admin->role === 'superadmin', 403, 'Superadmin only.');
+
+        $role = \App\Models\Role::findOrFail($id);
+
+        if ($role->key === 'superadmin') {
+            abort(403, 'Cannot modify the superadmin role.');
+        }
+
+        $data = $request->validate([
+            'label'       => 'required|string|max:100',
+            'description' => 'nullable|string|max:255',
+            'color'       => 'nullable|string|max:20',
+            'icon'        => 'nullable|string|max:50',
+            'sort_order'  => 'nullable|integer|min:0',
+            'is_staff_portal' => 'nullable|boolean',
+            'locked_features'    => 'nullable|array',
+            'forbidden_features' => 'nullable|array',
+        ]);
+
+        $update = [
+            'label'        => $data['label'],
+            'description'  => $data['description'] ?? $role->description,
+            'color'        => $data['color'] ?? $role->color,
+            'icon'         => $data['icon'] ?? $role->icon,
+            'sort_order'   => (int) ($data['sort_order'] ?? $role->sort_order),
+            'is_staff_portal' => $request->boolean('is_staff_portal', $role->is_staff_portal),
+        ];
+
+        if (isset($data['locked_features'])) {
+            $update['locked_features'] = json_encode(array_values($data['locked_features']));
+        }
+        if (isset($data['forbidden_features'])) {
+            $update['forbidden_features'] = json_encode(array_values($data['forbidden_features']));
+        }
+
+        $role->update($update);
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', 'Role updated successfully.');
+    }
+
+    /** DELETE /dashboard/settings/roles/{role} — superadmin only */
+    public function destroyRole($id)
+    {
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin && $admin->role === 'superadmin', 403, 'Superadmin only.');
+
+        $role = \App\Models\Role::findOrFail($id);
+
+        if ($role->key === 'superadmin' || $role->is_locked) {
+            abort(403, 'Cannot delete this role.');
+        }
+
+        $roleKey = $role->key;
+
+        // Remove all perm_{roleKey}_* settings from admin_settings
+        $features = \App\Models\AdminSetting::getAllFeatureKeys();
+        $permKeys = array_map(fn ($f) => "perm_{$roleKey}_{$f}", $features);
+        \App\Models\AdminSetting::whereIn('key', $permKeys)->delete();
+        \App\Models\AdminSetting::bustCache();
+
+        $role->delete();
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', 'Role deleted successfully.');
+    }
+
+    // ── Features CRUD ──────────────────────────────────────────────────────────
+
+    /** POST /dashboard/settings/features — superadmin only */
+    public function storeFeature(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin && $admin->role === 'superadmin', 403, 'Superadmin only.');
+
+        $data = $request->validate([
+            'key'        => 'required|string|max:50|unique:features,key',
+            'label'      => 'required|string|max:100',
+            'icon'       => 'nullable|string|max:50',
+            'category'   => 'nullable|string|max:50',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
+        $data['icon']       = $data['icon'] ?? '📄';
+
+        \App\Models\Feature::create($data);
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', 'Feature created successfully.');
+    }
+
+    /** PUT /dashboard/settings/features/{feature} — superadmin only */
+    public function updateFeature(Request $request, $id)
+    {
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin && $admin->role === 'superadmin', 403, 'Superadmin only.');
+
+        $feature = \App\Models\Feature::findOrFail($id);
+
+        $data = $request->validate([
+            'label'      => 'required|string|max:100',
+            'icon'       => 'nullable|string|max:50',
+            'category'   => 'nullable|string|max:50',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $feature->update([
+            'label'      => $data['label'],
+            'icon'       => $data['icon'] ?? $feature->icon,
+            'category'   => $data['category'] ?? $feature->category,
+            'sort_order' => (int) ($data['sort_order'] ?? $feature->sort_order),
+        ]);
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', 'Feature updated successfully.');
+    }
+
+    /** DELETE /dashboard/settings/features/{feature} — superadmin only */
+    public function destroyFeature($id)
+    {
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin && $admin->role === 'superadmin', 403, 'Superadmin only.');
+
+        $feature = \App\Models\Feature::findOrFail($id);
+        $featureKey = $feature->key;
+
+        // Remove all perm_*_{featureKey} settings from admin_settings
+        $roles = \App\Models\AdminSetting::getAllRoleKeys();
+        $permKeys = array_map(fn ($r) => "perm_{$r}_{$featureKey}", $roles);
+        \App\Models\AdminSetting::whereIn('key', $permKeys)->delete();
+        \App\Models\AdminSetting::bustCache();
+
+        $feature->delete();
+
+        return redirect()->route('dashboard.settings')
+            ->with('success', 'Feature deleted successfully.');
+    }
+
+    // ── Notifications JSON (polled by topbar bell) ────────────────────────────
 
     public function resetVipRoles(Request $request)
     {

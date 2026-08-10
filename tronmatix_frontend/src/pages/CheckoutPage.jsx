@@ -712,6 +712,17 @@ export default function CheckoutPage() {
                   setStep(3);
                 }, 1800);
               }}
+              onSuccessAlert={() => {
+                Swal.fire({
+                  title: isKhmer ? "បង់ប្រាក់ជោគជ័យ! ✅" : "Payment Successful! ✅",
+                  text: isKhmer
+                    ? "ការបង់ប្រាក់របស់អ្នកត្រូវបានបញ្ជាក់។ អរគុណសម្រាប់ការបញ្ជាទិញ។"
+                    : "Your payment has been confirmed. Thank you for your order!",
+                  icon: "success",
+                  confirmButtonColor: "#F97316",
+                  confirmButtonText: isKhmer ? "យល់ព្រម" : "OK",
+                });
+              }}
             />
           </div>
           <style>{`@keyframes fadeInScale { from { opacity:0; transform:scale(.93) translateY(20px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>

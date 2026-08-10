@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class AdminSetting extends Model
 {
@@ -92,6 +93,54 @@ class AdminSetting extends Model
             'delivery' => ['color' => '#a855f7', 'icon' => '🚚', 'label' => __('dashboard.roles.delivery')],
             'developer' => ['color' => '#06b6d4', 'icon' => '💻', 'label' => __('dashboard.roles.developer')],
         ];
+    }
+
+    // ── Dynamic role/feature getters ───────────────────────────────────────────
+
+    /** All role slugs from DB, falling back to keys in getDefaults() */
+    public static function getAllRoleKeys(): array
+    {
+        if (Schema::hasTable('roles')) {
+            $dbKeys = \App\Models\Role::allKeys();
+            if (! empty($dbKeys)) {
+                return $dbKeys;
+            }
+        }
+
+        // Fallback: derive from getDefaults() keys (format: role_feature)
+        return array_keys(array_unique(array_map(
+            fn ($k) => explode('_', $k, 2)[0],
+            array_keys(static::getDefaults())
+        )));
+    }
+
+    /** All feature slugs from DB, falling back to hardcoded list */
+    public static function getAllFeatureKeys(): array
+    {
+        if (Schema::hasTable('features')) {
+            $dbKeys = \App\Models\Feature::allKeys();
+            if (! empty($dbKeys)) {
+                return $dbKeys;
+            }
+        }
+
+        return [
+            'dashboard', 'products', 'orders', 'orders_edit', 'users',
+            'discounts', 'report', 'settings', 'staff', 'stock', 'activity_log',
+        ];
+    }
+
+    /** Role metadata keyed by slug — prefers DB, falls back to getRoleMeta() */
+    public static function dynamicRoleMeta(): array
+    {
+        if (Schema::hasTable('roles')) {
+            $dbMeta = \App\Models\Role::metaMap();
+            if (! empty($dbMeta)) {
+                return $dbMeta;
+            }
+        }
+
+        return static::getRoleMeta();
     }
 
     // ── Static getters ────────────────────────────────────────────────────────

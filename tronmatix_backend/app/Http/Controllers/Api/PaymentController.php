@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\TelegramService;
+use App\Services\TelegramUserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -203,7 +204,9 @@ class PaymentController extends Controller
                 Log::info('Payment confirmed via polling ✅', ['order_id' => $order->id]);
 
                 try {
-                    app(TelegramService::class)->sendPaymentConfirmed($order, $data['data']['hash']);
+                    $freshOrder = Order::with('items', 'user')->find($order->id);
+                    app(TelegramService::class)->sendPaymentConfirmed($freshOrder, $data['data']['hash']);
+                    app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $data['data']['hash']);
                 } catch (\Throwable $e) {
                     Log::warning('Telegram confirm failed: '.$e->getMessage());
                 }
@@ -252,10 +255,25 @@ class PaymentController extends Controller
 
         $payment->markAsPaid($apv ?: $tranId); // syncs order too via model
 
+        $freshOrder = Order::with('items', 'user')->find($payment->order_id);
+
+        // Admin Telegram receipt
         try {
-            app(TelegramService::class)->sendPaymentConfirmed($payment->order, $apv ?: $tranId);
+            app(TelegramService::class)->sendPaymentConfirmed($freshOrder, $apv ?: $tranId);
+            Log::info('Admin Telegram webhook receipt sent', ['order_id' => $freshOrder?->id]);
         } catch (\Throwable $e) {
-            Log::warning('Telegram webhook alert failed: '.$e->getMessage());
+            Log::warning('Telegram webhook admin alert failed: '.$e->getMessage());
+        }
+
+        // Customer Telegram receipt
+        try {
+            app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $apv ?: $tranId);
+            Log::info('Customer Telegram webhook receipt sent', [
+                'order_id' => $freshOrder?->id,
+                'chat_id'  => $freshOrder?->user?->telegram_chat_id ?? 'not connected',
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Telegram webhook customer alert failed: '.$e->getMessage());
         }
 
         return response()->json(['success' => true, 'message' => 'ok']);

@@ -4,7 +4,7 @@ import { useLang } from "../../context/LanguageContext";
 import BakongQRPanel from "./BakongQRPanel";
 import { useCart } from "../../context/CartContext";
 
-export default function QRModal({ order, onClose, onPaid }) {
+export default function QRModal({ order, onClose, onPaid, onSuccessAlert }) {
   const { t, isKhmer } = useLang();
   const { clearCart } = useCart();
 
@@ -74,6 +74,7 @@ export default function QRModal({ order, onClose, onPaid }) {
             discountCode={order.discount_code}
             items={order.items}
             onPaid={handlePaid}
+            onSuccessAlert={onSuccessAlert}
           />
         </div>
       </div>

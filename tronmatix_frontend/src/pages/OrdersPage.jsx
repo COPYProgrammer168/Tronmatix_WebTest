@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useLang } from "../context/LanguageContext";
+import { useCart } from "../context/CartContext";
+import Swal from "sweetalert2";
 
 import useOrders    from "../hooks/useOrders";
 import OrderHeader  from "../components/orders/OrderHeader";
@@ -16,6 +18,7 @@ export default function OrdersPage() {
   const { user }  = useAuth();
   const { dark }  = useTheme();
   const { t, isKhmer}     = useLang();
+  const { setNotification } = useCart();
   const [filter,   setFilter]  = useState("all");
   const [expanded, setExpanded] = useState(null);
   const [qrOrder,  setQrOrder]  = useState(null);
@@ -72,6 +75,9 @@ export default function OrdersPage() {
           order={qrOrder}
           onClose={() => setQrOrder(null)}
           onPaid={() => { markPaid(qrOrder.id); setQrOrder(null); }}
+          onSuccessAlert={(msg) => {
+            setNotification?.(msg ?? 'Payment successful! Your order has been confirmed.');
+          }}
         />
       )}
 

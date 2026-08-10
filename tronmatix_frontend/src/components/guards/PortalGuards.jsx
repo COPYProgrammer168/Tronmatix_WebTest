@@ -3,21 +3,41 @@
  *
  * Two guards for staff and developer protected routes.
  * Both use existing AuthContext — no new context needed.
+ * Staff roles are fetched from the backend so new roles added in
+ * dashboard settings are recognized automatically.
  */
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useState, useEffect } from 'react'
 
-// Matches Staff::STAFF_PORTAL_ROLES — the roles that authenticate via /api/staff/login.
-// admin/superadmin live in the admins table and use the Blade dashboard, not this portal.
-const STAFF_ROLES = ['editor', 'seller', 'delivery']
+// Fallback used while the API call is in flight or if it fails
+const DEFAULT_STAFF_ROLES = ['editor', 'seller', 'delivery']
 
 // ── Staff Guard ───────────────────────────────────────────────────────────────
 export function StaffGuard({ children }) {
   const { user, ready } = useAuth()
+  const [staffRoles, setStaffRoles] = useState<string[]>([])
 
-  if (!ready) return <PortalLoader color="#F97316" />
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/settings/roles')
+      .then(r => r.json())
+      .then(json => {
+        if (cancelled) return
+        const roles: string[] = (json?.data ?? [])
+          .filter((r: any) => r.is_staff_portal && r.key !== 'superadmin')
+          .map((r: any) => r.key)
+        setStaffRoles(roles.length ? roles : DEFAULT_STAFF_ROLES)
+      })
+      .catch(() => setStaffRoles(DEFAULT_STAFF_ROLES))
+    return () => { cancelled = true }
+  }, [])
 
-  if (!user || !STAFF_ROLES.includes(user.role)) {
+  if (!ready || !staffRoles.length) {
+    return <PortalLoader color="#F97316" />
+  }
+
+  if (!user || !staffRoles.includes(user.role)) {
     return <Navigate to="/staff/login" replace />
   }
 
@@ -27,10 +47,28 @@ export function StaffGuard({ children }) {
 // ── Dev Guard ─────────────────────────────────────────────────────────────────
 export function DevGuard({ children }) {
   const { user, ready } = useAuth()
+  const [devRoles, setDevRoles] = useState<string[]>([])
 
-  if (!ready) return <PortalLoader color="#3b82f6" />
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/settings/roles')
+      .then(r => r.json())
+      .then(json => {
+        if (cancelled) return
+        const roles: string[] = (json?.data ?? [])
+          .filter((r: any) => r.key === 'developer')
+          .map((r: any) => r.key)
+        setDevRoles(roles.length ? roles : ['developer'])
+      })
+      .catch(() => setDevRoles(['developer']))
+    return () => { cancelled = true }
+  }, [])
 
-  if (!user || user.role !== 'developer') {
+  if (!ready || !devRoles.length) {
+    return <PortalLoader color="#3b82f6" />
+  }
+
+  if (!user || !devRoles.includes(user.role)) {
     return <Navigate to="/dev/login" replace />
   }
 

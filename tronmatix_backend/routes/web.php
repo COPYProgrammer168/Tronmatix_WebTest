@@ -187,6 +187,16 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::get('/settings/reset', [SettingsController::class, 'reset'])->name('settings.reset');
         Route::put('/settings/permissions', [SettingsController::class, 'updatePermissions'])->name('settings.permissions');
 
+        // Role CRUD — superadmin only
+        Route::post('/settings/roles', [SettingsController::class, 'storeRole'])->name('settings.roles.store');
+        Route::put('/settings/roles/{id}', [SettingsController::class, 'updateRole'])->name('settings.roles.update');
+        Route::delete('/settings/roles/{id}', [SettingsController::class, 'destroyRole'])->name('settings.roles.destroy');
+
+        // Feature CRUD — superadmin only
+        Route::post('/settings/features', [SettingsController::class, 'storeFeature'])->name('settings.features.store');
+        Route::put('/settings/features/{id}', [SettingsController::class, 'updateFeature'])->name('settings.features.update');
+        Route::delete('/settings/features/{id}', [SettingsController::class, 'destroyFeature'])->name('settings.features.destroy');
+
         // Marquee messages CRUD
         Route::get('/settings/marquees', [SettingsController::class, 'marquees'])->name('settings.marquees');
         Route::post('/settings/marquees', [SettingsController::class, 'storeMarquee'])->name('settings.marquees.store');

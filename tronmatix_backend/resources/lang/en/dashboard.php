@@ -374,6 +374,8 @@ return [
         'permDesc' => 'Define what each role can access across the dashboard',
         'featureModule' => 'Feature / Module',
         'superAdminShort' => 'Super',
+        'addRole' => 'Add New Role',
+        'addFeature' => 'Add New Feature',
         'resetVipRoles' => 'Reset VIP Roles',
         'resetVipDesc' => 'Demote all VIP members back to Customer if they no longer meet the spending threshold.',
         'confirmResetVip' => 'Are you sure? This will demote all VIP members who have spent less than the threshold back to Customer.',
