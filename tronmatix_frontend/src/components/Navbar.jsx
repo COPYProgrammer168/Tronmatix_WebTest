@@ -13,10 +13,6 @@ import logo from '../assets/logo.png'
 
 const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
 
-// Deep path for the flattened TABLE / CHAIR branch: the brand is hoisted to
-// the main level, so /category/<topSlug>/<brandSlug>. Brands are sent via
-// ?cats=<brand> (they're stored in the product's category column, and the
-// brand_pc_part/brand filter matches nothing for them).
 const brandPath = (item, brand) =>
   `${item.path}/${slugify(brand)}?cats=${encodeURIComponent(brand)}`
 
@@ -339,11 +335,6 @@ export default function Navbar({ onAuthOpen }) {
         }
       })
 
-      // Flatten a category that has exactly ONE main category with the SAME
-      // name (e.g. PC BUILD → [PC BUILD], MONITOR → [MONITOR], ACCESSORY →
-      // [ACCESSORY]). Hoisting its sub-categories up one level avoids the
-      // redundant "PC BUILD → PC BUILD → UNDER 1K" nesting the real site
-      // doesn't have. PC PARTS keeps its mains (CPU, RAM, …) as-is.
       let sub
       if (mainItems.length === 1 && mainItems[0].label === cat.name) {
         sub = mainItems[0].sub
@@ -372,10 +363,7 @@ export default function Navbar({ onAuthOpen }) {
     return items
   }, [apiCategories, error])
 
-  /* ── Expanded category names for "ALL {label}" links ──────────────────────
-     Include main + sub + brand names so products stored under any of those
-     show up. e.g. table-chair → "GENERAL,DX RACER,SECRETLAB,TTR RACING,..."
-     (not just "TABLE CHAIR", which matches no products). */
+  /* ── Expanded category names for "ALL {label}" links ─────────── */
   const expandedCatNames = useMemo(() => {
     const map = {}
     ;(apiCategories || []).forEach(cat => {
@@ -400,9 +388,6 @@ export default function Navbar({ onAuthOpen }) {
   const SLUG_TO_I18N_KEY = {
     'pc-build': 'pcBuild',
     'monitor': 'monitor',
-    // CategorySeeder now matches the live site exactly: "PC PARTS" → pc-parts,
-    // "TABLE / CHAIR" → table-chair. Keep the old keys too as fallbacks so any
-    // stale DB rows (old slugs) still resolve.
     'pc-part': 'pcPart',
     'pc-parts': 'pcParts',
     'hot-item': 'hotItem',
@@ -656,7 +641,7 @@ export default function Navbar({ onAuthOpen }) {
 
         {/* ══════════ COMPACT BAR (scrolled) ══════════════════════════════════ */}
         <div style={{ display: scrolled ? 'block' : 'none', borderBottom: `1px solid ${navBorder}` }}>
-          <div className="w-full max-w-[1450px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
+          <div className="w-full max-w-[1550px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-1" style={{ height: 70 }}>
             <Link to="/" className="flex-shrink-0">
               <img src={logo} alt="Tronmatix" className="object-contain" style={{ height: 60 }} />
             </Link>

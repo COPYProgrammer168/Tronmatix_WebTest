@@ -587,6 +587,7 @@ class OrderController extends Controller
         $order->update([
             'payment_status' => 'paid',
             'status'         => $order->status === 'pending' ? 'confirmed' : $order->status,
+            'payment_ref'    => 'Manual Verification',
         ]);
 
         // ── Stock management: pending Bakong/KHQR orders were not stocked out at
@@ -603,10 +604,18 @@ class OrderController extends Controller
 
         \App\Services\ActivityLogger::paymentVerified($order, $request);
 
+        // Bot 1 (admin)
         try {
             app(TelegramService::class)->sendPaymentConfirmed($order, 'Manual Verification');
         } catch (\Throwable $e) {
             Log::warning('[Bot1] Payment verify alert failed: ' . $e->getMessage());
+        }
+
+        // Bot 2 (user)
+        try {
+            app(TelegramUserService::class)->onPaymentConfirmed($order, 'Manual Verification');
+        } catch (\Throwable $e) {
+            Log::warning('[Bot2] Payment verify user alert failed: ' . $e->getMessage());
         }
 
         return response()->json(['success' => true, 'data' => $order]);

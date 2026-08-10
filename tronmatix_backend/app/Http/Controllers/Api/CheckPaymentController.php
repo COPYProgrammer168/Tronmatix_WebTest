@@ -63,6 +63,17 @@ class CheckPaymentController extends Controller
 
         // Fast-path: already paid (no need to poll PayWay again)
         if ($order->payment_status === 'paid') {
+            // Retry Telegram in case the webhook paid the order but failed to notify
+            try {
+                $freshOrder = Order::with('items', 'user')->find($order->id);
+                if ($freshOrder) {
+                    app(TelegramService::class)->sendPaymentConfirmed($freshOrder, $freshOrder->payment_ref ?? '');
+                    app(TelegramUserService::class)->onPaymentConfirmed($freshOrder, $freshOrder->payment_ref ?? '');
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Telegram payment receipt retry failed: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
                 'status' => 'paid',
@@ -75,6 +86,13 @@ class CheckPaymentController extends Controller
             ->latest()->first();
 
         if (!$payment) {
+            if ($order->payment_status === 'paid') {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'paid',
+                    'paid_at' => $order->updated_at?->toIso8601String(),
+                ]);
+            }
             return response()->json(['success' => false, 'status' => 'pending', 'message' => 'No pending payment.'], 404);
         }
 

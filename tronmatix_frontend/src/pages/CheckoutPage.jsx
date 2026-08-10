@@ -232,6 +232,9 @@ export default function CheckoutPage() {
       setDeliveryStatus(initialDeliveryStatus)
 
       if (effectivePayMethod === "bakong") {
+        clearCheckoutStorage();
+        clearCart();
+        removeDiscount();
         setOrder(orderData)
         setShowQrModal(true)
       } else {
