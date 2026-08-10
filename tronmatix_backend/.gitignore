@@ -7,6 +7,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/app/backups
 /vendor
 .DS_Store
 .env

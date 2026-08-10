@@ -18,6 +18,12 @@ class Feature extends Model
         static::addGlobalScope('ordered', fn (Builder $q) => $q->orderBy('sort_order'));
     }
 
+    /** Return all features ordered by sort_order */
+    public static function ordered(): Builder
+    {
+        return static::query()->orderBy('sort_order');
+    }
+
     /** Return all feature slugs as a flat array */
     public static function allKeys(): array
     {

@@ -61,7 +61,7 @@ class AppServiceProvider extends ServiceProvider
 
         if (app()->runningInConsole()) {
             EventFacade::listen(
-                [\Illuminate\Console\Events\CommandStarting::class, \Illuminate\Console\Events\CommandFinished::class],
+                \Illuminate\Console\Events\CommandStarting::class,
                 [BackupBeforeDestructiveCommandListener::class, 'handle']
             );
         }

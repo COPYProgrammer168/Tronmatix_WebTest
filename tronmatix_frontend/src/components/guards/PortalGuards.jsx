@@ -16,7 +16,7 @@ const DEFAULT_STAFF_ROLES = ['editor', 'seller', 'delivery']
 // ── Staff Guard ───────────────────────────────────────────────────────────────
 export function StaffGuard({ children }) {
   const { user, ready } = useAuth()
-  const [staffRoles, setStaffRoles] = useState<string[]>([])
+  const [staffRoles, setStaffRoles] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -24,9 +24,9 @@ export function StaffGuard({ children }) {
       .then(r => r.json())
       .then(json => {
         if (cancelled) return
-        const roles: string[] = (json?.data ?? [])
-          .filter((r: any) => r.is_staff_portal && r.key !== 'superadmin')
-          .map((r: any) => r.key)
+        const roles = (json?.data ?? [])
+          .filter(r => r.is_staff_portal && r.key !== 'superadmin')
+          .map(r => r.key)
         setStaffRoles(roles.length ? roles : DEFAULT_STAFF_ROLES)
       })
       .catch(() => setStaffRoles(DEFAULT_STAFF_ROLES))
@@ -47,7 +47,7 @@ export function StaffGuard({ children }) {
 // ── Dev Guard ─────────────────────────────────────────────────────────────────
 export function DevGuard({ children }) {
   const { user, ready } = useAuth()
-  const [devRoles, setDevRoles] = useState<string[]>([])
+  const [devRoles, setDevRoles] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -55,9 +55,9 @@ export function DevGuard({ children }) {
       .then(r => r.json())
       .then(json => {
         if (cancelled) return
-        const roles: string[] = (json?.data ?? [])
-          .filter((r: any) => r.key === 'developer')
-          .map((r: any) => r.key)
+        const roles = (json?.data ?? [])
+          .filter(r => r.key === 'developer')
+          .map(r => r.key)
         setDevRoles(roles.length ? roles : ['developer'])
       })
       .catch(() => setDevRoles(['developer']))

@@ -86,12 +86,48 @@ class StockDemoSeeder extends Seeder
             $product->saveQuietly();
         }
         $unitCost = (float) $product->cost_price;
+        $price    = (float) $product->price;
+
+        // ── Category-aware stock profile ─────────────────────────────────────
+        // High-value items (GPUs, laptops) move in small batches; accessories
+        // and cables move in larger quantities. Cheap items sell faster.
+        $cat = strtolower($product->category ?? '');
+        $isHighValue = str_contains($cat, 'gpu') || str_contains($cat, 'laptop') || str_contains($cat, 'monitor');
+        $isAccessory = str_contains($cat, 'cable') || str_contains($cat, 'case') || str_contains($cat, 'cooler');
+        $isMedium    = str_contains($cat, 'ram') || str_contains($cat, 'ssd') || str_contains($cat, 'hdd');
+
+        if ($isHighValue) {
+            $openingBase = 4;
+            $sellMax     = 6;
+            $damageChance = 15; // out of 100
+        } elseif ($isAccessory) {
+            $openingBase = 20;
+            $sellMax     = 25;
+            $damageChance = 5;
+        } elseif ($isMedium) {
+            $openingBase = 12;
+            $sellMax     = 15;
+            $damageChance = 8;
+        } else {
+            $openingBase = max(6, (int) round($price / 80) + 3);
+            $sellMax     = 10;
+            $damageChance = 10;
+        }
 
         // ── 1. STOCK-IN — staged receiving over the last ~3 months ───────────
-        // Split the opening quantity across 2–3 deliveries instead of one lump.
-        $opening   = max(8, (int) round((float) $product->price / 50) + 5);
-        $deliveries = rand(2, 3);
+        // Vary the total opening quantity per product so inventory looks mixed.
+        $opening = $openingBase + rand(-2, 6);
+        $opening = max(2, $opening);
+
+        $deliveries = rand(2, 4);
         $remaining  = $opening;
+
+        $deliveryNotes = [
+            'PO-2026-' . rand(100, 999) . ' — initial stock-in',
+            'PO-2026-' . rand(100, 999) . ' — replenishment',
+            'PO-2026-' . rand(100, 999) . ' — express restock',
+            'PO-2026-' . rand(100, 999) . ' — monthly order',
+        ];
 
         for ($i = 0; $i < $deliveries; $i++) {
             $qty = ($i === $deliveries - 1)
@@ -103,60 +139,103 @@ class StockDemoSeeder extends Seeder
                 continue;
             }
 
-            // receiveStock() adds +qty to current_stock and writes a +qty `in`
-            // movement. This is the canonical "stock-in" entry point.
-            $service->receiveStock($product, $qty, $unitCost, 'Demo: Stock-in delivery', $userId);
-
-            // Back-date the movement so the history timeline looks realistic.
-            $this->backDateLast($product, Carbon::now()->subDays(rand(2, 90)));
+            $note = $deliveryNotes[$i] ?? 'PO-' . rand(100, 999) . ' — stock-in';
+            $service->receiveStock($product, $qty, $unitCost, 'Demo: ' . $note, $userId);
+            $this->backDateLast($product, Carbon::now()->subDays(rand(3, 90)));
         }
 
-        // ── 2) STOCK-OUT — a few days of simulated sales ────────────────────
-        $forSale = min((int) floor($opening * 0.35), 12);
-        for ($i = 0; $i < $forSale; $i++) {
-            $sold   = rand(1, 3);
+        // ── 2) STOCK-OUT — simulated sales over the last ~20 days ───────────
+        // Determine how aggressive this product sells: faster for cheap items.
+        $sellAggression = $isAccessory ? rand(4, $sellMax) : ($isHighValue ? rand(1, $sellMax) : rand(2, $sellMax));
+
+        $saleNotes = [
+            'Online order #' . rand(1000, 9999),
+            'Walk-in customer',
+            'Online order #' . rand(1000, 9999),
+            'Staff demo unit',
+            'Online order #' . rand(1000, 9999),
+            'Corporate bulk order',
+            'Online order #' . rand(1000, 9999),
+            'Pre-order fulfilment',
+        ];
+
+        for ($i = 0; $i < $sellAggression; $i++) {
+            $sold   = $isHighValue ? rand(1, 2) : rand(1, 4);
             $usable = $product->fresh()->current_stock ?? 0;
-            $sold   = min($sold, $usable); // clamp so sell() never throws
+            $sold   = min($sold, $usable);
             if ($sold <= 0) {
                 break;
             }
 
-            // sell() writes a -qty `out` movement and decrements current_stock.
+            $note = $saleNotes[array_rand($saleNotes)];
             $service->sell($product, $sold, null, $userId);
             $this->backDateLast($product, Carbon::now()->subDays(rand(0, 20)));
         }
 
-        // ── 2.5) DAMAGED/LOST — infrequent loss ─────────────────────────────
-        // ~1 in 10 products have some damaged stock.
-        if (rand(1, 10) === 1) {
-            $qtyDamaged = rand(1, 2);
+        // ── 2.5) DAMAGED / WARRANTY RETURN ──────────────────────────────────
+        if (rand(1, 100) <= $damageChance) {
+            $qtyDamaged = $isHighValue ? 1 : rand(1, 3);
             $usable     = $product->fresh()->current_stock ?? 0;
             if ($usable >= $qtyDamaged) {
-                $service->reportDamaged($product, $qtyDamaged, 'Demo: Damaged item', $userId);
-                $this->backDateLast($product, Carbon::now()->subDays(rand(0, 20)));
+                $damageNotes = [
+                    'DOA — returned by customer',
+                    'Packaging damaged in transit',
+                    'Warranty replacement issued',
+                    'Display unit scratched',
+                ];
+                $service->reportDamaged($product, $qtyDamaged, 'Demo: ' . $damageNotes[array_rand($damageNotes)], $userId);
+                $this->backDateLast($product, Carbon::now()->subDays(rand(0, 15)));
             }
         }
 
-        // ── 3) LOW STOCK — force ~1/4 of products into the low-stock band ──
-        // Every 4th product (index 0 intentionally included) is pinned to just
-        // under its per-product threshold via adjust(), so the dashboard "low
-        // stock" widget and the stock-page badge flag it.
-        if ($index === 0 || $product->id % 4 === 0) {
+        // ── 3) STOCK-COUNT ADJUSTMENT — occasional physical count discrepancy ─
+        // ~15% of products get a tiny adjustment (±1–2) to mimic real
+        // warehouse recounts. This adds realism to the movement history.
+        if (rand(1, 100) <= 15) {
+            $adjustQty = rand(-2, 2);
+            if ($adjustQty !== 0) {
+                $fresh = $product->fresh();
+                $newTotal = max(0, ($fresh->current_stock ?? 0) + $adjustQty);
+                $service->adjust($product, $newTotal, 'Demo: Physical stock count', $userId);
+                $this->backDateLast($product, Carbon::now()->subDays(rand(0, 7)));
+            }
+        }
+
+        // ── 4) LOW-STOCK / SOLD-OUT paint ────────────────────────────────────
+        // Every 5th product is pinned low so the dashboard "low stock" widget
+        // and the stock-page threshold badge have data to show.
+        if ($index % 5 === 0) {
             $threshold = $product->low_stock_threshold ?: 5;
             $service->adjust(
                 $product,
-                max(1, $threshold - 2), // e.g. threshold 5 → 3 units left
-                'Demo: low stock marker',
+                max(0, $threshold - rand(1, 3)),
+                'Demo: low-stock marker',
                 $userId,
             );
             $this->backDateLast($product, Carbon::now()->subDays(rand(0, 5)));
         }
 
-        // Re-read and remind the health of the resulting current_stock.
+        // Every 12th product is sold out — shows "Sold Out" badge on storefront.
+        if ($index % 12 === 0) {
+            $service->adjust($product, 0, 'Demo: out of stock', $userId);
+            $this->backDateLast($product, Carbon::now()->subDays(rand(0, 3)));
+        }
+
+        // ── Sync stock_status to match final current_stock ───────────────────
         $product->refresh();
-        $final = $product->low_stock_threshold ?: 5;
-        if ($product->current_stock !== null && $product->current_stock <= $final) {
-            $this->command->line("   low-stock: {$product->name} → {$product->current_stock} ≤ {$final}");
+        if ($product->current_stock === 0 || $product->current_stock === null) {
+            $product->update(['stock_status' => 'Sold Out']);
+        } elseif ($product->isLowStock()) {
+            $product->update(['stock_status' => 'Low Stock']);
+        } else {
+            $product->update(['stock_status' => 'Available InStock Now']);
+        }
+
+        $final = $product->current_stock ?? 0;
+        if ($final <= 0) {
+            $this->command->line("   sold-out: {$product->name}");
+        } elseif ($product->isLowStock()) {
+            $this->command->line("   low-stock: {$product->name} → {$final} units");
         }
     }
 

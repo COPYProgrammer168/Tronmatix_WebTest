@@ -27,11 +27,11 @@ class DatabaseSeeder extends Seeder
             // DB::table('brands')->truncate();
             // DB::table('sub_categories')->truncate();
             // DB::table('main_categories')->truncate();
-            DB::table('categories')->truncate();
+            // DB::table('categories')->truncate();
             DB::table('discounts')->truncate();
-            DB::table('user_locations')->truncate();
-            // DB::table('staff')->truncate();
-            // DB::table('users')->truncate();
+            // DB::table('user_locations')->truncate();
+            DB::table('staff')->truncate();
+            DB::table('users')->truncate();
 
             Schema::enableForeignKeyConstraints();
 
@@ -45,16 +45,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // AdminSeeder::class,
             // StaffSeeder::class,
-            // UserSeeder::class,
-            // CustomerSeeder::class,
+            UserSeeder::class,
+            CustomerSeeder::class,
             UserLocationSeeder::class,
             DiscountSeeder::class,
-            CategorySeeder::class,
+            // CategorySeeder::class,
             StockDemoSeeder::class,
             // DeliveryZoneSeeder::class,
             // ProvinceSeeder::class,
             OrderSeeder::class,
-            ProductSkuSeeder::class, // assigns SKUs to any product missing one
+            // ProductSkuSeeder::class,
             // ProductImportSeeder::class,
             // ActivityLogSeeder::class,       // login events incl. current month
             // DeliveryScheduleSeeder::class,

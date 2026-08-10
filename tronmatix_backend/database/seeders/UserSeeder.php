@@ -39,6 +39,14 @@ class UserSeeder extends Seeder
                 ->subMonths($data['months_ago'])
                 ->addDays(rand(0, 20));
 
+            // Stagger last_login: each user logged in at least once, most within
+            // the last 30 days. recent_login is a separate "today/yesterday"
+            // login so dashboard "recently logged in" shows activity.
+            $lastLogin = Carbon::now()->subDays(rand(0, 30));
+            $recentLogin = rand(0, 4) === 0
+                ? Carbon::now()->subDays(rand(0, 3))   // 20% also logged in recently
+                : null;
+
             // updateOrCreate — safe to re-run without duplicate-email crashes
             User::updateOrCreate(
                 ['email' => $data['email']],
@@ -48,6 +56,8 @@ class UserSeeder extends Seeder
                     'password' => Hash::make($data['password'] ?? 'Password@123'),
                     'created_at' => $createdAt,
                     'updated_at' => $createdAt,
+                    'last_login_at' => $lastLogin,
+                    'recent_login_at' => $recentLogin,
                 ]
             );
         }
@@ -56,33 +66,66 @@ class UserSeeder extends Seeder
         $this->command->info('   Default password : Password@123');
         $this->command->info('   Test user password: Test@1234');
 
-        // Create 50 random users
-        $firstNames = ['Sokha', 'Dara', 'Chanthy', 'Visal', 'Sreymom', 'Bopha', 'Rathana', 'Kimheng', 'Sophal', 'Makara', 'Chan', 'Vanna', 'Samnang', 'Sopheak', 'Chenda', 'Navy', 'Borey', 'Phalla', 'Sarom', 'Thida', 'Khemara', 'Chantha', 'Rithy', 'Sothea', 'Sreyleak'];
-        $lastNames = ['Chea', 'Ly', 'Kim', 'Peng', 'Noun', 'Sann', 'Hok', 'Tep', 'Sao', 'Meas', 'Oum', 'Yim', 'Nuon', 'Keo', 'Chhoeun', 'Chan', 'Seng', 'Kuy', 'Hour', 'Chhim', 'Bun', 'In', 'Yin', 'Lim', 'Kong'];
+        // ── Create 100 realistic random users ────────────────────────────────────
+        $firstNames = [
+            'Sokha','Dara','Chanthy','Visal','Sreymom','Bopha','Rathana','Kimheng',
+            'Sophal','Makara','Chan','Vanna','Samnang','Sopheak','Chenda','Navy',
+            'Borey','Phalla','Sarom','Thida','Khemara','Chantha','Rithy','Sothea',
+            'Sreyleak','Pisey','Rattanak','Mony','Davin','Sreyneang','Phearom',
+            'Tola','Chanmony','Sreypov','Bopha','Kunthea','Sopheap','Chhun',
+            'Sokun','Meng','Sreyroth','Heng','Nara','Phin','Thira','Leap','Vichet',
+            'Sokuntheary','Chamnan','Sreynith','Ravy','Dina','Cheat','Kimleng',
+        ];
+        $lastNames = [
+            'Chea','Ly','Kim','Peng','Noun','Sann','Hok','Tep','Sao','Meas',
+            'Oum','Yim','Nuon','Keo','Chhoeun','Chan','Seng','Kuy','Hour','Chhim',
+            'Bun','In','Yin','Lim','Kong','Heng','Phorn','Rith','Soeun','Lorn',
+        ];
         $domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com'];
+        $roles = ['customer', 'customer', 'customer', 'vip', 'reseller']; // weighted toward customer
 
         for ($i = 0; $i < 100; $i++) {
             $firstName = $firstNames[array_rand($firstNames)];
-            $lastName = $lastNames[array_rand($lastNames)];
-            $name = $firstName . ' ' . $lastName;
+            $lastName  = $lastNames[array_rand($lastNames)];
+            $name      = $firstName . ' ' . $lastName;
 
-            // Generate a simple username from the name
             $username = strtolower($firstName . $lastName) . rand(10, 99);
-            $email = $username . '@' . $domains[array_rand($domains)];
+            $email    = $username . '@' . $domains[array_rand($domains)];
 
-            $createdAt = Carbon::now()->subMonths(rand(0, 12))->subDays(rand(0, 28));
+            // Accounts spread across the last 18 months
+            $createdAt = Carbon::now()->subMonths(rand(0, 18))->subDays(rand(0, 28));
+
+            // last_login: spread across the last 60 days — most active recently,
+            // a few haven't logged in for weeks (realistic churn).
+            $lastLoginRand = rand(1, 100);
+            if ($lastLoginRand <= 60) {
+                $lastLogin = Carbon::now()->subDays(rand(0, 7));   // active this week
+            } elseif ($lastLoginRand <= 85) {
+                $lastLogin = Carbon::now()->subDays(rand(8, 30));  // active this month
+            } else {
+                $lastLogin = Carbon::now()->subDays(rand(31, 60)); // dormant
+            }
+
+            // recent_login: ~30% of users have a second "very recent" login
+            // (today or yesterday) to drive the dashboard "recently logged in" list.
+            $recentLogin = rand(0, 2) === 0
+                ? Carbon::now()->subDays(rand(0, 2))->subHours(rand(0, 23))
+                : null;
 
             User::updateOrCreate(
                 ['email' => $email],
                 [
-                    'username' => $username,
-                    'name' => $name,
-                    'password' => Hash::make('Password@123'),
-                    'created_at' => $createdAt,
-                    'updated_at' => $createdAt,
+                    'username'       => $username,
+                    'name'           => $name,
+                    'role'           => $roles[array_rand($roles)],
+                    'password'       => Hash::make('Password@123'),
+                    'created_at'    => $createdAt,
+                    'updated_at'    => $createdAt,
+                    'last_login_at'  => $lastLogin,
+                    'recent_login_at' => $recentLogin,
                 ]
             );
         }
-        $this->command->info('✅ Added 50 random users with names.');
+        $this->command->info('✅ Added 100 random users with realistic login activity.');
     }
 }

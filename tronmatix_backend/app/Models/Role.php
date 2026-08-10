@@ -22,10 +22,16 @@ class Role extends Model
         static::addGlobalScope('ordered', fn (Builder $q) => $q->orderBy('sort_order'));
     }
 
+    /** Return all roles ordered by sort_order */
+    public static function ordered(): Builder
+    {
+        return static::query()->orderBy('sort_order');
+    }
+
     /** Return all editable roles (superadmin excluded from add/edit/delete UI) */
     public static function editable(): Builder
     {
-        return static::where('key', '!=', 'superadmin')->ordered();
+        return static::where('key', '!=', 'superadmin');
     }
 
     /** Return all role slugs as a flat array */
