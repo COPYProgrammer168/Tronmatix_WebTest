@@ -110,14 +110,14 @@
                             </span>
                         @endif
                     @endif
-                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                    <span data-payment-status="{{ $order->payment_status ?? 'pending' }}" id="live-payment-badge" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
                         border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                         background:{{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }};
                         border:1px solid {{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }};
                         color:{{ ($order->payment_status ?? 'pending') === 'paid' ? '#22c55e' : '#ef4444' }};">
                         {{ strtoupper($order->payment_status ?? 'pending') }}
                     </span>
-                    <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">
+                    <span data-order-status="{{ $order->status }}" id="live-status-badge" class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">
                         {{ strtoupper($order->status) }}
                     </span>
                 </div>
@@ -704,9 +704,14 @@
         @endif
 
         {{-- Update Status — always shown in the right column --}}
-        <div class="card">
+        <div class="card" id="live-status-card">
             <div class="card-header">
                 <span class="card-title km-english">UPDATE STATUS</span>
+                <span id="live-poll-indicator"
+                    style="font-size:10px; font-weight:700; letter-spacing:0.5px; color:#22c55e; display:inline-flex; align-items:center; gap:4px; margin-left:auto;">
+                    <span id="live-poll-dot" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+                    <span id="live-poll-text">LIVE</span>
+                </span>
             </div>
             <div class="card-body">
                 @php
@@ -1502,7 +1507,85 @@ document.addEventListener('keydown', e => {
         });
     }
 });
-</script>
+
+/* ── Live order status poller ───────────────────────────────────────────────
+   Watches for payment/status changes (e.g. customer pays via KHQR on MyOrder)
+   and reloads the page when a change is detected. */
+(function () {
+    const ORDER_ID = '{{ $order->order_id }}';
+    const INITIAL_PAYMENT = document.getElementById('live-payment-badge')?.dataset.paymentStatus ?? '{{ $order->payment_status ?? "pending" }}';
+    const INITIAL_STATUS  = document.getElementById('live-status-badge')?.dataset.orderStatus ?? '{{ $order->status }}';
+    const FINAL_STATES    = ['delivered', 'cancelled'];
+    const POLL_INTERVAL   = 30000; // 30s
+
+    const dot   = document.getElementById('live-poll-dot');
+    const text  = document.getElementById('live-poll-text');
+    let timerId = null;
+    let alive   = true;
+
+    function setIndicator(state, msg) {
+        if (!dot || !text) return;
+        if (state === 'ok') {
+            dot.style.background = '#22c55e';
+            text.style.color = '#22c55e';
+        } else if (state === 'err') {
+            dot.style.background = '#eab308';
+            text.style.color = '#eab308';
+        } else {
+            dot.style.background = '#6b7280';
+            text.style.color = '#6b7280';
+        }
+        text.textContent = msg;
+    }
+
+    function stop() {
+        alive = false;
+        if (timerId) { clearInterval(timerId); timerId = null; }
+        setIndicator('off', 'STOPPED');
+    }
+
+    async function check() {
+        if (!alive) return;
+        try {
+            // Use the dashboard route (web guard / session auth) since the admin
+            // is logged in via the browser, not Sanctum.
+            const url = '{{ route('dashboard.orders.show', ['order_id' => '__ID__']) }}'.replace('__ID__', encodeURIComponent(ORDER_ID)) + '?json=1';
+            const res = await fetch(url, {
+                headers: { 'Accept': 'application/json' },
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const json = await res.json();
+            const order = json?.data ?? json;
+            const newPayment = order.payment_status ?? 'pending';
+            const newStatus  = order.status;
+
+            if (newPayment !== INITIAL_PAYMENT || newStatus !== INITIAL_STATUS) {
+                // Something changed — reload to re-render the full Blade template
+                setIndicator('ok', 'UPDATING…');
+                setTimeout(function () { location.reload(); }, 600);
+                stop();
+                return;
+            }
+
+            if (FINAL_STATES.includes(newStatus)) {
+                // Order is done — no need to keep polling
+                setIndicator('off', 'ENDED');
+                stop();
+                return;
+            }
+
+            setIndicator('ok', 'LIVE');
+        } catch (err) {
+            console.warn('[live-status] poll failed:', err.message);
+            setIndicator('err', 'RETRY…');
+        }
+    }
+
+    // First check after 15s, then every 30s
+    timerId = setInterval(check, POLL_INTERVAL);
+    setTimeout(check, 15000);
+    setIndicator('ok', 'LIVE');
+})();
 
 @endif
 @endif

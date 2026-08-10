@@ -817,6 +817,14 @@ class DashboardController extends Controller
         $order = Order::where('order_id', $order_id)->firstOrFail();
         $order->load(['user', 'items.product', 'location', 'deliveryProvider.zones']); // FIX [3]
 
+        // Return JSON for the live status poller (avoids rendering full Blade)
+        if (request()->wantsJson() || request()->has('json')) {
+            return response()->json([
+                'success' => true,
+                'data'    => $order->toArray(),
+            ]);
+        }
+
         return view('dashboard.orders-show', compact('order'));
     }
 
