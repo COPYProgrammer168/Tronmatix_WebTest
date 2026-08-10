@@ -48,6 +48,35 @@
             </script>
         @endif
 
+        @if ($errors->any())
+            <div id="save-toast"
+                style="
+                    position:fixed; top:20px; right:20px; z-index:9999;
+                    padding:12px 20px; background:#ef4444; color:#fff;
+                    border-radius:12px; box-shadow:0 10px 25px rgba(239,68,68,0.3);
+                    font-family:Rajdhani, sans-serif; font-weight:700; letter-spacing:1px;
+                    display:flex; align-items:center; gap:10px;
+                    animation:toastIn .4s cubic-bezier(0.34,1.56,0.64,1);
+                    flex-direction:column; align-items:flex-start; gap:6px;
+                ">
+                <div>⚠️ {{ strtoupper(__('dashboard.settings.errorTitle')) }}</div>
+                <ul style="margin:0; padding-left:16px; font-weight:600; list-style:square;">
+                    @foreach ($errors->all() as $err)
+                        <li style="font-size:12px;">{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            <script>
+                setTimeout(() => {
+                    const t = document.getElementById('save-toast');
+                    if (t) {
+                        t.style.animation = 'toastOut .3s ease-out forwards';
+                        setTimeout(() => t.remove(), 300);
+                    }
+                }, 6000);
+            </script>
+        @endif
+
         <form method="POST" action="{{ route('dashboard.settings.update') }}" id="settings-form">
             @csrf @method('PUT')
 
@@ -489,6 +518,8 @@
             $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
             $currentAdminRole = $user?->role ?? 'editor';
             $canEditPerms = in_array($currentAdminRole, ['admin', 'superadmin']);
+            // ── Role/feature CRUD is superadmin-only (controller aborts otherwise) ──
+            $isSuperAdmin = $currentAdminRole === 'superadmin';
 
             // ── Dynamic feature list from DB ─────────────────────────────────────
             $allFeatures = \App\Models\Feature::ordered()->get();
@@ -774,7 +805,7 @@
             </div>
 
             {{-- Add Role form (superadmin only) --}}
-            @if ($canEditPerms)
+            @if ($isSuperAdmin)
                 <div class="card" style="margin-top:18px; padding:18px 20px;">
                     <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main, #fff); margin-bottom:12px;">
                         ➕ {{ strtoupper(__('dashboard.settings.addRole')) }}
@@ -825,7 +856,7 @@
             @endif
 
             {{-- Add Feature form (superadmin only) --}}
-            @if ($canEditPerms)
+            @if ($isSuperAdmin)
                 <div class="card" style="margin-top:14px; padding:18px 20px;">
                     <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main, #fff); margin-bottom:12px;">
                         ➕ {{ strtoupper(__('dashboard.settings.addFeature')) }}
@@ -865,8 +896,8 @@
                 </div>
             @endif
 
-            {{-- Manage existing roles/features (edit + delete) --}}
-            @if ($canEditPerms && ($allRoles->count() > 0 || $allFeatures->count() > 0))
+            {{-- Manage existing roles/features (edit + delete) — superadmin only --}}
+            @if ($isSuperAdmin && ($allRoles->count() > 0 || $allFeatures->count() > 0))
                 <div class="card" style="margin-top:14px; padding:18px 20px;">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                         {{-- Roles management --}}

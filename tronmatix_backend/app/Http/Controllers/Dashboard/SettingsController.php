@@ -344,8 +344,10 @@ class SettingsController extends Controller
         $data['color']           = $data['color'] ?? '#6b7280';
         $data['icon']            = $data['icon'] ?? '❓';
         $data['description']     = $data['description'] ?? null;
-        $data['is_staff_portal'] = $request->boolean('is_staff_portal', true);
-        $data['is_locked']       = false;
+        // Postgres boolean columns reject PHP bools bound as int 1/0 — send the
+        // string literals 'true'/'false' that pg_driver accepts natively.
+        $data['is_staff_portal'] = $request->boolean('is_staff_portal', true) ? 'true' : 'false';
+        $data['is_locked']       = 'false';
         $data['locked_features']    = json_encode([]);
         $data['forbidden_features'] = json_encode([]);
 
@@ -384,7 +386,8 @@ class SettingsController extends Controller
             'color'        => $data['color'] ?? $role->color,
             'icon'         => $data['icon'] ?? $role->icon,
             'sort_order'   => (int) ($data['sort_order'] ?? $role->sort_order),
-            'is_staff_portal' => $request->boolean('is_staff_portal', $role->is_staff_portal),
+            // Postgres boolean column — string literal, not PHP bool (see storeRole).
+            'is_staff_portal' => $request->boolean('is_staff_portal', (bool) $role->is_staff_portal) ? 'true' : 'false',
         ];
 
         if (isset($data['locked_features'])) {
