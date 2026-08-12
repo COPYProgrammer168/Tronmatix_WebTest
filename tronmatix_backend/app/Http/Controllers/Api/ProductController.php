@@ -91,6 +91,43 @@ class ProductController extends Controller
     }
 
     /**
+     * GET /api/products/suggestions
+     * Returns up to 4 product suggestions for the nav search dropdown.
+     */
+    public function suggestions(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $term = '%' . mb_strtolower($q) . '%';
+
+        $products = Product::query()
+            ->select('id', 'name', 'price', 'image', 'images')
+            ->where(fn ($q2) => $q2
+                ->whereRaw('LOWER(name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(category) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(brand) LIKE ?', [$term])
+            )
+            ->orderByRaw('CASE WHEN LOWER(name) LIKE ? THEN 0 ELSE 1 END', [mb_strtolower($q) . '%'])
+            ->limit(4)
+            ->get()
+            ->map(function ($p) {
+                $imgs = $p->all_images ?? [];
+                $first = $imgs[0] ?? ($p->image ?: null);
+                return [
+                    'id'    => $p->id,
+                    'name'  => $p->name,
+                    'price' => $p->price,
+                    'image' => $first,
+                ];
+            });
+
+        return response()->json(['success' => true, 'data' => $products]);
+    }
+
+    /**
      * GET /api/products/{id}
      */
     public function show($id)

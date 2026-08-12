@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AdjustStockRequest;
 use App\Http\Requests\ReceiveStockRequest;
 use App\Http\Requests\ReportDamagedRequest;
+use App\Http\Requests\ResetStockRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Services\StockService;
@@ -36,7 +37,15 @@ class StockController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('dashboard.stock.index', compact('products', 'threshold'));
+        // Distinct categories, used by the "Reset / Randomize" scope select.
+        $categories = Product::query()
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return view('dashboard.stock.index', compact('products', 'threshold', 'categories'));
     }
 
     /**
@@ -77,6 +86,36 @@ class StockController extends Controller
         }
 
         return back()->with('success', "Stock for \"{$product->name}\" adjusted to {$request->counted_quantity} units.");
+    }
+
+    /**
+     * POST /dashboard/stock/reset
+     * Bulk-randomize stock levels ("more or less") across all products or a
+     * single category, so the shop shows a realistic demo spread. Every change
+     * is recorded as an 'adjustment' movement by StockService::resetRandom().
+     */
+    public function resetRandom(ResetStockRequest $request)
+    {
+        $scope = $request->input('scope');
+
+        $productIds = $scope === 'category'
+            ? Product::where('category', $request->input('category'))->pluck('id')->all()
+            : Product::pluck('id')->all();
+
+        if (empty($productIds)) {
+            return back()->with('error', 'No products matched that scope — nothing to reset.');
+        }
+
+        $changed = $this->stock->resetRandom(
+            $productIds,
+            $request->input('note'),
+            $this->userId(),
+        );
+
+        return back()->with(
+            'success',
+            "Stock randomized for {$changed} of " . count($productIds) . " products (more or less).",
+        );
     }
 
     /**

@@ -34,9 +34,9 @@ class ProductController extends Controller
 
         if ($request->filled('stock')) {
             match ($request->stock) {
-                'out'   => $query->where('stock', '<=', 0),
-                'low'   => $query->where('stock', '>', 0)->where('stock', '<=', $threshold),
-                'in'    => $query->where(fn($q) => $q->whereNull('stock')->orWhere('stock', '>', 0)),
+                'out'   => $query->where('current_stock', '<=', 0),
+                'low'   => $query->where('current_stock', '>', 0)->where('current_stock', '<=', $threshold),
+                'in'    => $query->where(fn($q) => $q->whereNull('current_stock')->orWhere('current_stock', '>', 0)),
                 default => null,
             };
         }
@@ -64,11 +64,13 @@ class ProductController extends Controller
     {
         $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
         $stockStatuses  = $this->stockStatusList();
+        $brandList      = \App\Services\DynamicBrandList::all();
 
         return view('dashboard.products-form', [
             'product'        => null,
             'categoryGroups' => $categoryGroups,
             'stockStatuses'  => $stockStatuses,
+            'brandList'      => $brandList,
         ]);
     }
 
@@ -88,8 +90,9 @@ class ProductController extends Controller
     {
         $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
         $stockStatuses  = $this->stockStatusList();
+        $brandList      = \App\Services\DynamicBrandList::all();
 
-        return view('dashboard.products-form', compact('product', 'categoryGroups', 'stockStatuses'));
+        return view('dashboard.products-form', compact('product', 'categoryGroups', 'stockStatuses', 'brandList'));
     }
 
     /**

@@ -32,9 +32,33 @@ export function CartProvider({ children }) {
     saveCart(items);
   }, [items]);
 
+  // Stock limit for a product. null / undefined / 0 / NaN stock means
+  // "unlimited" (legacy products without tracked inventory).
+  const stockOf = (item) => {
+    const s = item?.stock;
+    return s == null || isNaN(s) || s <= 0 ? null : Number(s);
+  };
+
+  // Max quantity for a product: its stock, or null when unlimited.
+  // addItem/updateQty compare against the qty already in the cart, so the
+  // combined total never exceeds stock.
+  const maxQtyFor = (item) => {
+    const stock = stockOf(item);
+    if (stock === null) return null;
+    return Math.max(0, stock);
+  };
+
   const addItem = (product) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === product.id);
+
+      // Limit how many of this product can sit in the cart. null = unlimited.
+      const max = maxQtyFor(product);
+      const currentQty = existing?.qty ?? 0;
+      if (max !== null && currentQty >= max) {
+        return prev; // already at (or over) stock — don't add more
+      }
+
       if (existing)
         return prev.map((i) =>
           i.id === product.id ? { ...i, qty: i.qty + 1 } : i,
@@ -50,9 +74,14 @@ export function CartProvider({ children }) {
   const updateQty = (id, delta) => {
     setItems((prev) =>
       prev
-        .map((i) =>
-          i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i,
-        )
+        .map((i) => {
+          if (i.id !== id) return i;
+          const max = maxQtyFor(i);
+          const next = max === null
+            ? i.qty + delta
+            : Math.min(max, Math.max(1, i.qty + delta));
+          return { ...i, qty: next };
+        })
         .filter((i) => i.qty > 0),
     );
   };

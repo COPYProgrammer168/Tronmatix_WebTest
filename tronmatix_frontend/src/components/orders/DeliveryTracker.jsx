@@ -15,41 +15,34 @@ function useNow() {
 }
 
 export default function DeliveryTracker({ status, order, fulfillmentType }) {
-  const now      = useNow();
+  const now = useNow();
   const { dark } = useTheme();
   const { t, isKhmer } = useLang();
-
-  // ✅ Fix 2: pick the correct pipeline based on fulfillment type
-  const isPickup    = (fulfillmentType ?? order?.fulfillment_type ?? "delivery") === "pickup";
+  const isPickup = (fulfillmentType ?? order?.fulfillment_type ?? "delivery") === "pickup";
   const STATUS_STEPS = getStatusSteps(isPickup ? "pickup" : "delivery");
   // Map the backend status to the 4-step stepper index (spec mapping).
-  const current      = getStatusStepIndex(status, isPickup ? "pickup" : "delivery");
+  const current = getStatusStepIndex(status, isPickup ? "pickup" : "delivery");
 
-  // ✅ Fix 3: labels and icons match the correct pipeline length
-  // Delivery: Confirmed / Processing / Shipped / Delivered
-  // Pickup:   Confirmed / Ready     / Picked Up
   const labels = isPickup
     ? (isKhmer
-        ? [t("orders.confirmed"), t("orders.processing"), t("orders.pickup")]
-        : ["Confirmed", "Ready", "Picked Up"])
+      ? [t("orders.confirmed"), t("orders.processing"), t("orders.pickup")]
+      : ["Confirmed", "Ready", "Picked Up"])
     : (isKhmer
-        ? [t("orders.confirmed"), t("orders.processing"), t("orders.shipped"), t("orders.delivered")]
-        : ["Confirmed", "Processing", "Shipped", "Delivered"]);
+      ? [t("orders.confirmed"), t("orders.processing"), t("orders.shipped"), t("orders.delivered")]
+      : ["Confirmed", "Processing", "Shipped", "Delivered"]);
 
   const icons = isPickup
     ? ["✅", "📦", "🏪"]
     : ["✅", "⚙️", "🚚", "📦"];
 
-  // ✅ Fix 5: zone-aware delivery provider + ETA shown under the "delivering"
-  // step (delivery only). Resolved server-side into delivery_provider_details.
-  const providerName  = order?.delivery_provider_details?.name || order?.deliveryProvider?.name || null;
+  const providerName = order?.delivery_provider_details?.name || order?.deliveryProvider?.name || null;
   const estimatedTime = order?.delivery_provider_details?.estimated_time
     ?? order?.delivery_provider_details?.estimatedTime
     ?? null;
-  // delivering step index = 2 (delivery pipeline), only meaningful when status is shipped
+
   const showProvider = !isPickup && status === "shipped";
 
-  // ✅ Fix 4: delivery date note uses pickup-aware labels
+
   let deliveryNote = null;
   if (order?.delivery_date) {
     const schedDay = new Date(order.delivery_date);
@@ -95,8 +88,8 @@ export default function DeliveryTracker({ status, order, fulfillmentType }) {
     <div>
       {/* Live clock */}
       <div className="flex items-center gap-2 mb-3">
-        <span style={{ fontSize: 12, color: dark ? "#9ca3af" : "#6b7280" }}>🕐 Live:</span>
-        <span className="font-black text-primary" style={{ fontSize: 13, fontFamily: "monospace" }}>
+        <span style={{ fontSize: isKhmer ? 17 : 20, color: dark ? "#9ca3af" : "#6b7280" }}>🕐 Live:</span>
+        <span className="font-black text-primary" style={{ fontSize: isKhmer ? 17 : 20, fontFamily: "Rajdhani" }}>
           {now.toLocaleDateString("en-GB", {
             weekday: "short", day: "2-digit", month: "short", year: "numeric",
           })}
@@ -117,7 +110,7 @@ export default function DeliveryTracker({ status, order, fulfillmentType }) {
                 style={{
                   fontSize: i <= current ? 14 : 11,
                   background: i <= current ? "#F97316" : (dark ? "#4b5563" : "#e5e7eb"),
-                  color:      i <= current ? "#fff"    : (dark ? "#9ca3af" : "#6b7280"),
+                  color: i <= current ? "#fff" : (dark ? "#9ca3af" : "#6b7280"),
                 }}
               >
                 {i <= current ? icons[i] : i + 1}

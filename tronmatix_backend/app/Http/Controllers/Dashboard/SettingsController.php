@@ -300,7 +300,10 @@ class SettingsController extends Controller
                 // Locked-off: role-specific forbidden features from DB
                 $lockedOff = false;
                 if ($roleMeta->has($role)) {
-                    $forbidden = $roleMeta[$role]->forbidden_features ?? [];
+                    // Coerce to array — a double-encoded row reads back as the
+                    // string "[]", which would crash in_array() below.
+                    $forbidden = $roleMeta[$role]->forbidden_features;
+                    $forbidden = is_array($forbidden) ? $forbidden : [];
                     if (in_array($feature, $forbidden, true)) {
                         $lockedOff = true;
                     }
@@ -335,26 +338,31 @@ class SettingsController extends Controller
             'label'       => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
             'color'       => 'nullable|string|max:20',
-            'icon'        => 'nullable|string|max:50',
+            'icon'        => 'required|string|max:20',
             'sort_order'  => 'nullable|integer|min:0',
-            'is_staff_portal' => 'nullable|boolean',
+            'is_staff_portal' => 'nullable',
         ]);
+
+        \Illuminate\Support\Facades\Log::info('Store Role Data:', $data);
 
         $data['sort_order']      = (int) ($data['sort_order'] ?? 0);
         $data['color']           = $data['color'] ?? '#6b7280';
         $data['icon']            = $data['icon'] ?? '❓';
         $data['description']     = $data['description'] ?? null;
-        // Postgres boolean columns reject PHP bools bound as int 1/0 — send the
-        // string literals 'true'/'false' that pg_driver accepts natively.
-        $data['is_staff_portal'] = $request->boolean('is_staff_portal', true) ? 'true' : 'false';
-        $data['is_locked']       = 'false';
-        $data['locked_features']    = json_encode([]);
-        $data['forbidden_features'] = json_encode([]);
+        
+        // Convert to actual boolean
+        $data['is_staff_portal'] = $request->has('is_staff_portal');
+        $data['is_locked']       = false; 
+        
+        // The Role model casts these as `array`, which JSON-encodes on write.
+        $data['locked_features']    = [];
+        $data['forbidden_features'] = [];
 
-        \App\Models\Role::create($data);
+        $role = \App\Models\Role::create($data);
+        \Illuminate\Support\Facades\Log::info('Role Created:', ['id' => $role->id]);
 
         return redirect()->route('dashboard.settings')
-            ->with('success', 'Role created successfully.');
+            ->with('success', 'Role added successfully.');
     }
 
     /** PUT /dashboard/settings/roles/{role} — superadmin only */
@@ -373,7 +381,7 @@ class SettingsController extends Controller
             'label'       => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
             'color'       => 'nullable|string|max:20',
-            'icon'        => 'nullable|string|max:50',
+            'icon'        => 'nullable|string|max:200',
             'sort_order'  => 'nullable|integer|min:0',
             'is_staff_portal' => 'nullable|boolean',
             'locked_features'    => 'nullable|array',
@@ -391,10 +399,12 @@ class SettingsController extends Controller
         ];
 
         if (isset($data['locked_features'])) {
-            $update['locked_features'] = json_encode(array_values($data['locked_features']));
+            // Role's `array` cast JSON-encodes on write — pass the raw array,
+            // never a pre-encoded string (would double-encode, like storeRole).
+            $update['locked_features'] = array_values($data['locked_features']);
         }
         if (isset($data['forbidden_features'])) {
-            $update['forbidden_features'] = json_encode(array_values($data['forbidden_features']));
+            $update['forbidden_features'] = array_values($data['forbidden_features']);
         }
 
         $role->update($update);
@@ -440,7 +450,7 @@ class SettingsController extends Controller
         $data = $request->validate([
             'key'        => 'required|string|max:50|unique:features,key',
             'label'      => 'required|string|max:100',
-            'icon'       => 'nullable|string|max:50',
+            'icon'       => 'nullable|string|max:200',
             'category'   => 'nullable|string|max:50',
             'sort_order' => 'nullable|integer|min:0',
         ]);
@@ -464,7 +474,7 @@ class SettingsController extends Controller
 
         $data = $request->validate([
             'label'      => 'required|string|max:100',
-            'icon'       => 'nullable|string|max:50',
+            'icon'       => 'nullable|string|max:200',
             'category'   => 'nullable|string|max:50',
             'sort_order' => 'nullable|integer|min:0',
         ]);

@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-title" content="Tronmatix Computer" />
     <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}" />
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('tronmatix_theme')||'dark');</script>
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('tronmatix_theme') || 'dark');</script>
 
     {{-- English font --}}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -29,35 +29,44 @@
             --font-en: 'Rajdhani', sans-serif;
             --font-kh: 'Kdam Thmor Pro', sans-serif;
             --lh-en: 1.5;
-            --lh-kh: 1.5;   /* Khmer needs more line height for diacritics */
+            --lh-kh: 1.5;
+            /* Khmer needs more line height for diacritics */
 
             /* ── English type scale (default) ─────────────────────────────────── */
-            --text-nav:  20px;   /* nav items  */
-            --text-xs:   14px;   /* badges, faint labels          */
-            --text-sm:   16px;   /* table cells, secondary text   */
-            --text-base: 17px;   /* body, buttons      */
-            --text-md:   20px;   /* card titles, topbar items     */
-            --text-lg:   22px;   /* topbar page title             */
-            --text-xl:   24px;   /* section headings              */
-            --text-2xl:  28px;   /* prominent titles              */
+            --text-nav: 20px;
+            /* nav items  */
+            --text-xs: 14px;
+            /* badges, faint labels          */
+            --text-sm: 16px;
+            /* table cells, secondary text   */
+            --text-base: 17px;
+            /* body, buttons      */
+            --text-md: 20px;
+            /* card titles, topbar items     */
+            --text-lg: 22px;
+            /* topbar page title             */
+            --text-xl: 24px;
+            /* section headings              */
+            --text-2xl: 28px;
+            /* prominent titles              */
 
             --title-size: var(--text-md);
             --heading-size: var(--text-xl);
-            --label-size:   var(--text-xs);
-            --label-status:   var(--text-sm);
-            --icon-size:    20px;
+            --label-size: var(--text-xs);
+            --label-status: var(--text-sm);
+            --icon-size: 20px;
         }
 
         /* ── Khmer type scale — slightly larger across the board ─────────────── */
         /* Khmer glyphs are visually smaller at the same px + need stacking room  */
         :lang(km) {
-            --text-nav:  16px;
-            --text-xs:   12px;
-            --text-sm:   14px;
+            --text-nav: 16px;
+            --text-xs: 12px;
+            --text-sm: 14px;
             --text-base: 18px;
-            --text-md:   16px;
-            --text-lg:   20px;
-            --text-xl:   22px;
+            --text-md: 16px;
+            --text-lg: 20px;
+            --text-xl: 22px;
             --font-size: var(--text-base);
         }
 
@@ -65,13 +74,15 @@
             font-size: var(--text-base);
             line-height: 1.5;
         }
-        :lang(km) .chart-badge{
+
+        :lang(km) .chart-badge {
             font-family: var(--font-kh) !important;
             line-height: var(--lh-kh);
             font-size: var(--text-xs) !important;
             font-weight: 400 !important;
         }
-        :lang(km) .card-title{
+
+        :lang(km) .card-title {
             font-family: var(--font-kh) !important;
             line-height: var(--lh-kh);
             font-size: var(--text-md) !important;
@@ -85,6 +96,7 @@
             font-size: var(--text-nav) !important;
             font-weight: 400 !important;
         }
+
         :lang(km) thead th,
         :lang(km) tbody td {
             font-family: var(--font-kh) !important;
@@ -92,16 +104,23 @@
             font-size: var(--text-lg) !important;
             font-weight: 500 !important;
         }
-        :lang(km) h1, :lang(km) h2, :lang(km) h3, :lang(km) h4, :lang(km) h5, :lang(km) h6,
+
+        :lang(km) h1,
+        :lang(km) h2,
+        :lang(km) h3,
+        :lang(km) h4,
+        :lang(km) h5,
+        :lang(km) h6,
         :lang(km) .card-font {
             font-size: var(--text-md) !important;
         }
 
-        :lang(km) .stat-label{
+        :lang(km) .stat-label {
             font-size: var(--text-sm) !important;
             font-weight: 400 !important;
             margin-top: 5px !important;
         }
+
         :lang(km) .stat-value {
             /* Khmer digits render smaller at the same px — bump the size so they
                read as prominently as English stat values. */
@@ -133,14 +152,14 @@
                The :lang(km) block shrinks --text-* for Khmer glyphs, which wrongly
                shrinks any English runs too — restore the English sizes here so
                English text in Khmer mode stays readable and matches English mode. */
-            --text-nav:  20px;
-            --text-xs:   14px;
-            --text-sm:   16px;
+            --text-nav: 20px;
+            --text-xs: 14px;
+            --text-sm: 16px;
             --text-base: 17px;
-            --text-md:   20px;
-            --text-lg:   22px;
-            --text-xl:   24px;
-            --text-2xl:  28px;
+            --text-md: 20px;
+            --text-lg: 22px;
+            --text-xl: 24px;
+            --text-2xl: 28px;
             --title-size: var(--text-md);
             --font-size: var(--text-base);
             font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
@@ -162,7 +181,10 @@
         }
 
         /* Smooth language swap fade */
-        .lang-fading { opacity: 0 !important; transition: opacity 0.15s ease !important; }
+        .lang-fading {
+            opacity: 0 !important;
+            transition: opacity 0.15s ease !important;
+        }
 
         /* ── Global Khmer font fallback ─────────────────────────────────────────
            When the page is in Khmer (lang=km on <html>), ensure EVERY element
@@ -192,7 +214,9 @@
     </style>
 
     <style>
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -200,69 +224,84 @@
 
         /* ── Design tokens — Dark theme (default) ───────────────────────────── */
         :root {
-            --orange:    #F97316;
+            --orange: #F97316;
             --sidebar-w: 240px;
 
             /* Surface layers */
-            --bg:        #0A0A0A;
-            --surface:   #111111;
+            --bg: #0A0A0A;
+            --surface: #111111;
             --surface-2: #1A1A1A;
             --surface-3: #222222;
 
             /* Text */
-            --text:         #FFFFFF;
-            --text-main:    #FFFFFF;
-            --text-muted:   rgba(255,255,255,0.55);
-            --text-xfaint:  rgba(255,255,255,0.20);
+            --text: #FFFFFF;
+            --text-main: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-xfaint: rgba(255, 255, 255, 0.20);
 
             /* Borders */
-            --border:       rgba(255,255,255,0.07);
-            --border-faint: rgba(255,255,255,0.04);
-            --border-input: rgba(255,255,255,0.10);
+            --border: rgba(255, 255, 255, 0.07);
+            --border-faint: rgba(255, 255, 255, 0.04);
+            --border-input: rgba(255, 255, 255, 0.10);
 
             /* Interactive states */
-            --hover-bg:     rgba(255,255,255,0.04);
-            --active-bg:    rgba(249,115,22,0.08);
-            --overlay:      rgba(0,0,0,0.75);
+            --hover-bg: rgba(255, 255, 255, 0.04);
+            --active-bg: rgba(249, 115, 22, 0.08);
+            --overlay: rgba(0, 0, 0, 0.75);
 
             /* Components */
-            --toggle-off:   rgba(255,255,255,0.10);
-            --bell-bg:      rgba(255,255,255,0.06);
-            --bell-border:  rgba(255,255,255,0.10);
-            --dropdown-bg:  #141414;
-            --modal-bg:     #141414;
-            --chart-badge:  rgba(255,255,255,0.05);
-            --scrollbar:    rgba(255,255,255,0.08);
+            --toggle-off: rgba(255, 255, 255, 0.10);
+            --bell-bg: rgba(255, 255, 255, 0.06);
+            --bell-border: rgba(255, 255, 255, 0.10);
+            --dropdown-bg: #141414;
+            --modal-bg: #141414;
+            --chart-badge: rgba(255, 255, 255, 0.05);
+            --scrollbar: rgba(255, 255, 255, 0.08);
         }
 
         /* ── Light theme ─────────────────────────────────────────────────────── */
         [data-theme="light"] {
-            --bg:        #F1F5F9;
-            --surface:   #FFFFFF;
+            --bg: #F4F7FB;
+            /* airier cool tint */
+            --surface: #FFFFFF;
             --surface-2: #F8FAFC;
-            --surface-3: #E2E8F0;
+            --surface-3: #E9EEF4;
 
-            --text:         #0F172A;
-            --text-main:    #0F172A;
-            --text-muted:   rgba(15,23,42,0.60);
-            --text-faint:   rgba(15,23,42,0.40);
-            --text-xfaint:  rgba(15,23,42,0.25);
+            --text: #0F172A;
+            --text-main: #0F172A;
+            --text-muted: rgba(15, 23, 42, 0.62);
+            --text-faint: rgba(15, 23, 42, 0.42);
+            --text-xfaint: rgba(15, 23, 42, 0.26);
 
-            --border:       rgba(15,23,42,0.08);
-            --border-faint: rgba(15,23,42,0.04);
-            --border-input: rgba(15,23,42,0.15);
+            --border: rgba(15, 23, 42, 0.07);
+            --border-faint: rgba(15, 23, 42, 0.045);
+            --border-input: rgba(15, 23, 42, 0.13);
 
-            --hover-bg:     rgba(15,23,42,0.04);
-            --active-bg:    rgba(249,115,22,0.08);
-            --overlay:      rgba(0,0,0,0.50);
+            --hover-bg: rgba(15, 23, 42, 0.045);
+            --active-bg: rgba(249, 115, 22, 0.09);
+            --overlay: rgba(15, 23, 42, 0.40);
 
-            --toggle-off:   rgba(15,23,42,0.12);
-            --bell-bg:      rgba(15,23,42,0.05);
-            --bell-border:  rgba(15,23,42,0.12);
-            --dropdown-bg:  #FFFFFF;
-            --modal-bg:     #FFFFFF;
-            --chart-badge:  rgba(15,23,42,0.06);
-            --scrollbar:    rgba(15,23,42,0.08);
+            --toggle-off: rgba(15, 23, 42, 0.10);
+            --bell-bg: rgba(15, 23, 42, 0.045);
+            --bell-border: rgba(15, 23, 42, 0.11);
+            --dropdown-bg: #FFFFFF;
+            --modal-bg: #FFFFFF;
+            --chart-badge: rgba(15, 23, 42, 0.06);
+            --scrollbar: rgba(15, 23, 42, 0.09);
+
+            /* ── Airy/polish tokens ─────────────────────────────────────────── */
+            --bg-gradient: linear-gradient(180deg, #F7F9FC 0%, #F1F5F9 100%);
+            --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px rgba(15, 23, 42, 0.04),
+                0 10px 28px -8px rgba(15, 23, 42, 0.10);
+            --card-glow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 2px 8px rgba(249, 115, 22, 0.10),
+                0 14px 32px -10px rgba(249, 115, 22, 0.22);
+            --surface-hover: #FBFBFD;
+            --input-bg: #F8FAFC;
+            --topbar-shadow: 0 1px 0 rgba(15, 23, 42, 0.04),
+                0 6px 20px -10px rgba(15, 23, 42, 0.12);
+            --sidebar-shadow: 8px 0 24px -18px rgba(15, 23, 42, 0.22);
         }
 
         body {
@@ -275,6 +314,30 @@
             transition: background 0.2s, color 0.2s;
         }
 
+        /* ── Global: every dashboard text element is semibold (EN + KM) ─────
+           English mode: weight 600 (semibold) on every text node unless the
+           element has already declared a heavier weight (e.g. font-weight:700
+           on .stat-value, .btn, .card-font, .brand-name). The :not() guards
+           skip elements with an inline font-weight so we don't downgrade them.
+
+           Khmer mode: stays at 400 for the major blocks (.nav-item, .card-title,
+           .chart-badge, .btn, .badge, .input, table cells, stat labels,
+           topbar-title) via the existing :lang(km) !important rules above.
+           Khmer glyphs turn blobby/unreadable above 500, so the layout's
+           existing :lang(km) font-weight:400 !important blocks already keep
+           them regular. For the rest of the Khmer text (paragraphs, helper
+           text, list items) we still apply 600 so headings/labels stand out
+           — Rajdhani's 600 weight on Latin script inside Khmer copy renders
+           fine; only Khmer glyphs themselves need to stay at 400, which the
+           existing per-class overrides already enforce.
+
+           Code/pre and elements with monospace styling are excluded so SKUs,
+           invite URLs, and console output keep their intended look. */
+        .content,
+        .content *:not(code):not(pre):not([style*="monospace"]):not([style*="font-weight"]):not(code *):not(pre *) {
+            font-weight: 600;
+        }
+
         /* ── Sidebar ──────────────────────────────────────────────────────────── */
         .sidebar {
             width: var(--sidebar-w);
@@ -283,7 +346,9 @@
             display: flex;
             flex-direction: column;
             position: fixed;
-            top: 0; left: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            bottom: 0;
             z-index: 200;
             transition: transform 0.3s ease;
         }
@@ -381,12 +446,14 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 199;
             backdrop-filter: blur(2px);
         }
 
-        .sidebar-overlay.active { display: block; }
+        .sidebar-overlay.active {
+            display: block;
+        }
 
         /* ── Main wrapper ─────────────────────────────────────────────────────── */
         .main {
@@ -419,7 +486,7 @@
         :lang(en) .topbar-title {
             font-family: 'Rajdhani', var(--font-kh), sans-serif !important;
             font-size: var(--text-lg) !important;
-            font-weight: 600 !important;
+            font-weight: 700 !important;
         }
 
         :lang(km) .topbar-title {
@@ -479,7 +546,7 @@
             font-size: var(--text-sm);
             flex-shrink: 0;
             overflow: hidden;
-            border: 2px solid rgba(249,115,22,0.4);
+            border: 2px solid rgba(249, 115, 22, 0.4);
         }
 
         .admin-avatar img {
@@ -558,8 +625,8 @@
         .stat-icon {
             width: 46px;
             height: 46px;
-            background: rgba(249,115,22,0.1);
-            border: 1px solid rgba(249,115,22,0.2);
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.2);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -608,16 +675,19 @@
 
         .chart-badge {
             font-size: var(--text-sm);
-            font-weight: 700; /* bold in English; :lang(km) override below keeps Khmer at 400 */
-            color: rgba(255,255,255,0.35);
-            background: rgba(255,255,255,0.05);
+            font-weight: 700;
+            /* bold in English; :lang(km) override below keeps Khmer at 400 */
+            color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.05);
             padding: 3px 10px;
             border-radius: 20px;
             letter-spacing: 1px;
         }
 
         /* ── Table ────────────────────────────────────────────────────────────── */
-        .table-wrap { overflow-x: auto;}
+        .table-wrap {
+            overflow-x: auto;
+        }
 
         table {
             width: 100%;
@@ -643,8 +713,13 @@
             font-size: var(--text-md);
         }
 
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: var(--hover-bg); }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover td {
+            background: var(--hover-bg);
+        }
 
         /* ── Badges ───────────────────────────────────────────────────────────── */
         .badge {
@@ -657,16 +732,65 @@
             white-space: nowrap;
         }
 
-        .badge-pending   { background: rgba(234,179,8,0.15);  color: #EAB308; border: 1px solid rgba(234,179,8,0.3); }
-        .badge-confirmed { background: rgba(34,197,94,0.12);  color: #22C55E; border: 1px solid rgba(34,197,94,0.3); }
-        .badge-paid      { background: rgba(34,197,94,0.15);  color: #22C55E; border: 1px solid rgba(34,197,94,0.3); }
-        .badge-processing{ background: rgba(59,130,246,0.15); color: #3B82F6; border: 1px solid rgba(59,130,246,0.3); }
-        .badge-shipped   { background: rgba(59,130,246,0.15); color: #3B82F6; border: 1px solid rgba(59,130,246,0.3); }
-        .badge-delivered { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.3); }
-        .badge-cancelled { background: rgba(239,68,68,0.15);  color: #EF4444; border: 1px solid rgba(239,68,68,0.3); }
-        .badge-orange    { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
-        .badge-gray      { background: var(--hover-bg); color: var(--text-faint); border: 1px solid var(--border-input); }
-        .badge-seller    { background: rgba(16,185,129,0.15);  color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-pending {
+            background: rgba(234, 179, 8, 0.15);
+            color: #EAB308;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .badge-confirmed {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22C55E;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .badge-paid {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22C55E;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .badge-processing {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3B82F6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-shipped {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3B82F6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-delivered {
+            background: rgba(249, 115, 22, 0.15);
+            color: #F97316;
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .badge-cancelled {
+            background: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-orange {
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--orange);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .badge-gray {
+            background: var(--hover-bg);
+            color: var(--text-faint);
+            border: 1px solid var(--border-input);
+        }
+
+        .badge-seller {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
 
         /* ── Buttons ──────────────────────────────────────────────────────────── */
         .btn {
@@ -687,27 +811,46 @@
             white-space: nowrap;
         }
 
-        .btn-orange { background: var(--orange); color: #fff; }
-        .btn-orange:hover { background: #FB923C; transform: translateY(-1px); }
+        .btn-orange {
+            background: var(--orange);
+            color: #fff;
+        }
+
+        .btn-orange:hover {
+            background: #FB923C;
+            transform: translateY(-1px);
+        }
 
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border-input);
             color: var(--text-muted);
         }
-        .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+
+        .btn-outline:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
 
         .btn-danger {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.3);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             color: #EF4444;
         }
-        .btn-danger:hover { background: rgba(239,68,68,0.2); }
 
-        .btn-sm { padding: 5px 12px; font-size: var(--font-size); }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: var(--font-size);
+        }
 
         /* ── Forms ────────────────────────────────────────────────────────────── */
-        .form-group { margin-bottom: 18px; }
+        .form-group {
+            margin-bottom: 18px;
+        }
 
         .form-label {
             display: block;
@@ -731,9 +874,20 @@
             outline: none;
             transition: border-color 0.2s;
         }
-        .form-control:focus  { border-color: var(--orange); }
-        .form-control::placeholder { color: var(--text-muted); opacity: 0.8; }
-        .form-control option { background: var(--surface-2); color: var(--text); }
+
+        .form-control:focus {
+            border-color: var(--orange);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .form-control option {
+            background: var(--surface-2);
+            color: var(--text);
+        }
 
         .form-grid-2 {
             display: grid;
@@ -742,10 +896,23 @@
         }
 
         /* ── Toggle switch ────────────────────────────────────────────────────── */
-        .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        .toggle { position: relative; width: 40px; height: 22px; }
-        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
         .toggle-slider {
             position: absolute;
@@ -755,17 +922,26 @@
             cursor: pointer;
             transition: 0.3s;
         }
+
         .toggle-slider::before {
             content: '';
             position: absolute;
-            width: 16px; height: 16px;
-            left: 3px; top: 3px;
+            width: 16px;
+            height: 16px;
+            left: 3px;
+            top: 3px;
             background: white;
             border-radius: 50%;
             transition: 0.3s;
         }
-        .toggle input:checked + .toggle-slider { background: var(--orange); }
-        .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+        .toggle input:checked+.toggle-slider {
+            background: var(--orange);
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(18px);
+        }
 
         /* ── Alerts ───────────────────────────────────────────────────────────── */
         .alert {
@@ -775,14 +951,16 @@
             font-size: var(--font-size);
             font-weight: 600;
         }
+
         .alert-success {
-            background: rgba(34,197,94,0.1);
-            border: 1px solid rgba(34,197,94,0.3);
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
             color: #22C55E;
         }
+
         .alert-error {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.3);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             color: #EF4444;
         }
 
@@ -810,8 +988,17 @@
             color: var(--text-muted);
             transition: all 0.2s;
         }
-        .pagination a:hover       { border-color: var(--orange); color: var(--orange); }
-        .pagination .active       { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+        .pagination a:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .pagination .active {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #fff;
+        }
 
         /* ── Product thumb ────────────────────────────────────────────────────── */
         .product-thumb {
@@ -824,11 +1011,20 @@
         }
 
         /* ── Flash animation ──────────────────────────────────────────────────── */
-        .flash { animation: flash-in 0.4s ease; }
+        .flash {
+            animation: flash-in 0.4s ease;
+        }
 
         @keyframes flash-in {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ── Profile link ─────────────────────────────────────────────────────── */
@@ -842,27 +1038,40 @@
             border: 1px solid transparent;
             transition: all 0.2s;
         }
+
         .admin-profile-link:hover {
             background: var(--active-bg);
-            border-color: rgba(249,115,22,0.3);
+            border-color: rgba(249, 115, 22, 0.3);
         }
-        .admin-profile-link:hover .admin-avatar { box-shadow: 0 0 0 2px var(--orange); }
-        .admin-profile-link:hover .admin-name   { color: var(--orange); }
+
+        .admin-profile-link:hover .admin-avatar {
+            box-shadow: 0 0 0 2px var(--orange);
+        }
+
+        .admin-profile-link:hover .admin-name {
+            color: var(--orange);
+        }
+
         .admin-profile-link.active-profile {
             background: var(--active-bg);
-            border-color: rgba(249,115,22,0.3);
+            border-color: rgba(249, 115, 22, 0.3);
         }
-        .admin-profile-link.active-profile .admin-name { color: var(--orange); }
+
+        .admin-profile-link.active-profile .admin-name {
+            color: var(--orange);
+        }
 
         /* ── Sidebar language toggle ─────────────────────────────────────────── */
         .sidebar-lang-toggle {
             padding: 10px 20px;
             border-top: 1px solid var(--border);
-            display: none; /* hidden on desktop, shown on mobile/tablet */
+            display: none;
+            /* hidden on desktop, shown on mobile/tablet */
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
         }
+
         .sidebar-lt-wrap {
             display: inline-flex;
             align-items: center;
@@ -872,14 +1081,21 @@
             padding: 3px;
             gap: 2px;
         }
+
         .sidebar-lt-btn {
             font-size: var(--font-size);
         }
 
         @media (max-width: 768px) {
-            .sidebar-lang-toggle { display: flex; }
-            #lang-toggle { display: none !important; }
+            .sidebar-lang-toggle {
+                display: flex;
+            }
+
+            #lang-toggle {
+                display: none !important;
+            }
         }
+
         @media (max-width: 768px) {
             :lang(km) .topbar-title {
                 font-family: var(--font-kh) !important;
@@ -900,6 +1116,7 @@
             cursor: default;
             flex-shrink: 0;
         }
+
         .lt-btn {
             padding: 4px 11px;
             border-radius: 999px;
@@ -912,247 +1129,960 @@
             transition: all 0.2s;
             font-family: 'Rajdhani', sans-serif;
         }
-        .lt-btn:hover { color: var(--text); }
+
+        .lt-btn:hover {
+            color: var(--text);
+        }
+
         .lt-btn.active {
             background: var(--orange);
             color: #fff;
         }
-        .lt-btn.km-btn { font-family: var(--font-kh); font-size: 13px; font-weight: 500; }
+
+        .lt-btn.km-btn {
+            font-family: var(--font-kh);
+            font-size: 13px;
+            font-weight: 500;
+        }
 
         /* ══════════════════════════════════════════════════════════════════════
            LIGHT THEME OVERRIDES
         ══════════════════════════════════════════════════════════════════════ */
-        [data-theme="light"] body { color: #0F172A; }
-        [data-theme="light"] .card { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .stat-card { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .stat-value { color: #0F172A; }
-        [data-theme="light"] .stat-label { color: rgba(15,23,42,0.45); }
-        [data-theme="light"] .sidebar { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .topbar  { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .topbar-font { color: #0F172A; }
-        [data-theme="light"] .nav-item { color: rgba(15,23,42,0.55); }
-        [data-theme="light"] .nav-item:hover { color: #0F172A; background: rgba(15,23,42,0.04); }
-        [data-theme="light"] .nav-section-label { color: rgba(15,23,42,0.40); }
-        [data-theme="light"] .brand-name { color: #0F172A; }
-        [data-theme="light"] .sidebar-footer { color: rgba(15,23,42,0.30); }
-        [data-theme="light"] .card-header { border-color: rgba(15,23,42,0.07); }
-        [data-theme="light"] .card-font  { color: #0F172A; }
-        [data-theme="light"] thead th  { color: rgba(15,23,42,0.55); border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] tbody td  { color: rgba(15,23,42,0.7);  border-color: rgba(15,23,42,0.04); }
-        [data-theme="light"] tbody tr:hover td { background: rgba(15,23,42,0.02); }
-        [data-theme="light"] .btn-outline { border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.65); background: transparent; }
-        [data-theme="light"] .btn-outline:hover { border-color: #F97316; color: #F97316; }
-        [data-theme="light"] .form-control { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
-        [data-theme="light"] .form-control::placeholder { color: rgba(15,23,42,0.35); }
-        [data-theme="light"] .form-control option { background: #fff; color: #0F172A; }
-        [data-theme="light"] .form-label { color: rgba(15,23,42,0.45); }
-        [data-theme="light"] .badge-gray { background: rgba(15,23,42,0.06); color: rgba(15,23,42,0.55); border-color: rgba(15,23,42,0.12); }
-        [data-theme="light"] .toggle-slider { background: rgba(15,23,42,0.12); }
+        [data-theme="light"] body {
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .card {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .stat-card {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .stat-value {
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .stat-label {
+            color: rgba(15, 23, 42, 0.45);
+        }
+
+        [data-theme="light"] .sidebar {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .topbar {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .topbar-font {
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .nav-item {
+            color: rgba(15, 23, 42, 0.55);
+        }
+
+        [data-theme="light"] .nav-item:hover {
+            color: #0F172A;
+            background: rgba(15, 23, 42, 0.04);
+        }
+
+        [data-theme="light"] .nav-section-label {
+            color: rgba(15, 23, 42, 0.40);
+        }
+
+        [data-theme="light"] .brand-name {
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .sidebar-footer {
+            color: rgba(15, 23, 42, 0.30);
+        }
+
+        [data-theme="light"] .card-header {
+            border-color: rgba(15, 23, 42, 0.07);
+        }
+
+        [data-theme="light"] .card-font {
+            color: #0F172A;
+        }
+
+        [data-theme="light"] thead th {
+            color: rgba(15, 23, 42, 0.55);
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] tbody td {
+            color: rgba(15, 23, 42, 0.7);
+            border-color: rgba(15, 23, 42, 0.04);
+        }
+
+        [data-theme="light"] tbody tr:hover td {
+            background: rgba(15, 23, 42, 0.02);
+        }
+
+        [data-theme="light"] .btn-outline {
+            border-color: rgba(15, 23, 42, 0.15);
+            color: rgba(15, 23, 42, 0.65);
+            background: transparent;
+        }
+
+        [data-theme="light"] .btn-outline:hover {
+            border-color: #F97316;
+            color: #F97316;
+        }
+
+        [data-theme="light"] .form-control {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.15);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .form-control::placeholder {
+            color: rgba(15, 23, 42, 0.35);
+        }
+
+        [data-theme="light"] .form-control option {
+            background: #fff;
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .form-label {
+            color: rgba(15, 23, 42, 0.45);
+        }
+
+        [data-theme="light"] .badge-gray {
+            background: rgba(15, 23, 42, 0.06);
+            color: rgba(15, 23, 42, 0.55);
+            border-color: rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="light"] .toggle-slider {
+            background: rgba(15, 23, 42, 0.12);
+        }
+
         [data-theme="light"] .pagination a,
-        [data-theme="light"] .pagination span { border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.6); background: #fff; }
-        [data-theme="light"] .pagination a:hover { border-color: #F97316; color: #F97316; }
-        [data-theme="light"] .admin-name { color: rgba(15,23,42,0.65); }
-        [data-theme="light"] .hamburger { border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.5); }
-        [data-theme="light"] .chart-badge { color: rgba(15,23,42,0.45); background: rgba(15,23,42,0.05); }
-        [data-theme="light"] .filter-bar { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .filter-input { background: #F8FAFC; border-color: rgba(15,23,42,0.12); color: #0F172A; }
-        [data-theme="light"] .filter-input::placeholder { color: rgba(15,23,42,0.35); }
-        [data-theme="light"] .filter-select { background: #F8FAFC; border-color: rgba(15,23,42,0.12); color: #0F172A; }
-        [data-theme="light"] .filter-tab { border-color: rgba(15,23,42,0.12); color: rgba(15,23,42,0.55); }
-        [data-theme="light"] .filter-tab:hover { border-color: #F97316; color: #F97316; }
-        [data-theme="light"] .filter-tab.active { background: rgba(249,115,22,0.08); border-color: #F97316; color: #F97316; }
-        [data-theme="light"] .count-pill { background: rgba(15,23,42,0.07); }
-        [data-theme="light"] .filter-tab.active .count-pill { background: rgba(249,115,22,0.18); }
-        [data-theme="light"] .search-input { background: #F8FAFC; border-color: rgba(15,23,42,0.12); color: #0F172A; }
-        [data-theme="light"] .search-input::placeholder { color: rgba(15,23,42,0.35); }
-        [data-theme="light"] .role-select { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
-        [data-theme="light"] .flash-toast { background: #FFFFFF; border-color: rgba(15,23,42,0.12); color: #0F172A; }
-        [data-theme="light"] .s-card-font { color: #0F172A; }
-        [data-theme="light"] .s-card-sub   { color: rgba(15,23,42,0.45); }
-        [data-theme="light"] .s-label { color: rgba(15,23,42,0.85); }
-        [data-theme="light"] .s-desc  { color: rgba(15,23,42,0.45); }
-        [data-theme="light"] .s-divider { background: rgba(15,23,42,0.06); }
-        [data-theme="light"] .s-sub { background: rgba(249,115,22,0.04); border-color: rgba(249,115,22,0.15); }
-        [data-theme="light"] .s-sub-label { color: rgba(15,23,42,0.45); }
-        [data-theme="light"] .s-input { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
-        [data-theme="light"] .s-input option { background: #fff; color: #0F172A; }
-        [data-theme="light"] .s-num-input { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: #0F172A; }
-        [data-theme="light"] .ts-track { background: rgba(15,23,42,0.12); border-color: rgba(15,23,42,0.12); }
-        [data-theme="light"] .perm-check.perm-off { background: rgba(15,23,42,0.03); border-color: rgba(15,23,42,0.15); }
-        [data-theme="light"] .perm-toggle:hover .perm-check.perm-off { border-color: rgba(15,23,42,0.3); background: rgba(15,23,42,0.06); }
-        [data-theme="light"] .role-card { background: #FFFFFF; border-color: rgba(15,23,42,0.08); }
-        [data-theme="light"] .role-card-desc { color: rgba(15,23,42,0.40); }
-        [data-theme="light"] .role-filter { border-color: rgba(15,23,42,0.12); color: rgba(15,23,42,0.55); background: transparent; }
-        [data-theme="light"] .role-filter.active { background: rgba(249,115,22,0.08) !important; border-color: rgba(249,115,22,0.4) !important; color: #F97316 !important; }
-        [data-theme="light"] .gallery-thumb { background: #F8FAFC; border-color: rgba(15,23,42,0.12); }
-        [data-theme="light"] .gallery-add-slot { background: #F8FAFC; border-color: rgba(15,23,42,0.15); color: rgba(15,23,42,0.35); }
-        [data-theme="light"] .gallery-add-slot:hover { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.03); }
+        [data-theme="light"] .pagination span {
+            border-color: rgba(15, 23, 42, 0.15);
+            color: rgba(15, 23, 42, 0.6);
+            background: #fff;
+        }
+
+        [data-theme="light"] .pagination a:hover {
+            border-color: #F97316;
+            color: #F97316;
+        }
+
+        [data-theme="light"] .admin-name {
+            color: rgba(15, 23, 42, 0.65);
+        }
+
+        [data-theme="light"] .hamburger {
+            border-color: rgba(15, 23, 42, 0.15);
+            color: rgba(15, 23, 42, 0.5);
+        }
+
+        [data-theme="light"] .chart-badge {
+            color: rgba(15, 23, 42, 0.45);
+            background: rgba(15, 23, 42, 0.05);
+        }
+
+        [data-theme="light"] .filter-bar {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .filter-input {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.12);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .filter-input::placeholder {
+            color: rgba(15, 23, 42, 0.35);
+        }
+
+        [data-theme="light"] .filter-select {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.12);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .filter-tab {
+            border-color: rgba(15, 23, 42, 0.12);
+            color: rgba(15, 23, 42, 0.55);
+        }
+
+        [data-theme="light"] .filter-tab:hover {
+            border-color: #F97316;
+            color: #F97316;
+        }
+
+        [data-theme="light"] .filter-tab.active {
+            background: rgba(249, 115, 22, 0.08);
+            border-color: #F97316;
+            color: #F97316;
+        }
+
+        [data-theme="light"] .count-pill {
+            background: rgba(15, 23, 42, 0.07);
+        }
+
+        [data-theme="light"] .filter-tab.active .count-pill {
+            background: rgba(249, 115, 22, 0.18);
+        }
+
+        [data-theme="light"] .search-input {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.12);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .search-input::placeholder {
+            color: rgba(15, 23, 42, 0.35);
+        }
+
+        [data-theme="light"] .role-select {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.15);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .flash-toast {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.12);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .s-card-font {
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .s-card-sub {
+            color: rgba(15, 23, 42, 0.45);
+        }
+
+        [data-theme="light"] .s-label {
+            color: rgba(15, 23, 42, 0.85);
+        }
+
+        [data-theme="light"] .s-desc {
+            color: rgba(15, 23, 42, 0.45);
+        }
+
+        [data-theme="light"] .s-divider {
+            background: rgba(15, 23, 42, 0.06);
+        }
+
+        [data-theme="light"] .s-sub {
+            background: rgba(249, 115, 22, 0.04);
+            border-color: rgba(249, 115, 22, 0.15);
+        }
+
+        [data-theme="light"] .s-sub-label {
+            color: rgba(15, 23, 42, 0.45);
+        }
+
+        [data-theme="light"] .s-input {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.15);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .s-input option {
+            background: #fff;
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .s-num-input {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.15);
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .ts-track {
+            background: rgba(15, 23, 42, 0.12);
+            border-color: rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="light"] .perm-check.perm-off {
+            background: rgba(15, 23, 42, 0.03);
+            border-color: rgba(15, 23, 42, 0.15);
+        }
+
+        [data-theme="light"] .perm-toggle:hover .perm-check.perm-off {
+            border-color: rgba(15, 23, 42, 0.3);
+            background: rgba(15, 23, 42, 0.06);
+        }
+
+        [data-theme="light"] .role-card {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .role-card-desc {
+            color: rgba(15, 23, 42, 0.40);
+        }
+
+        [data-theme="light"] .role-filter {
+            border-color: rgba(15, 23, 42, 0.12);
+            color: rgba(15, 23, 42, 0.55);
+            background: transparent;
+        }
+
+        [data-theme="light"] .role-filter.active {
+            background: rgba(249, 115, 22, 0.08) !important;
+            border-color: rgba(249, 115, 22, 0.4) !important;
+            color: #F97316 !important;
+        }
+
+        [data-theme="light"] .gallery-thumb {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="light"] .gallery-add-slot {
+            background: #F8FAFC;
+            border-color: rgba(15, 23, 42, 0.15);
+            color: rgba(15, 23, 42, 0.35);
+        }
+
+        [data-theme="light"] .gallery-add-slot:hover {
+            border-color: rgba(249, 115, 22, 0.4);
+            background: rgba(249, 115, 22, 0.03);
+        }
+
         [data-theme="light"] [style*="background:#1a1a1a"],
-        [data-theme="light"] [style*="background: #1a1a1a"] { background: #FFFFFF !important; }
+        [data-theme="light"] [style*="background: #1a1a1a"] {
+            background: #FFFFFF !important;
+        }
+
         [data-theme="light"] [style*="background:#141414"],
-        [data-theme="light"] [style*="background: #141414"] { background: #F8FAFC !important; }
+        [data-theme="light"] [style*="background: #141414"] {
+            background: #F8FAFC !important;
+        }
+
         [data-theme="light"] [style*="background:#111111"],
         [data-theme="light"] [style*="background: #111111"],
         [data-theme="light"] [style*="background:#111"],
-        [data-theme="light"] [style*="background: #111"] { background: #F1F5F9 !important; }
+        [data-theme="light"] [style*="background: #111"] {
+            background: #F4F7FB !important;
+        }
+
         [data-theme="light"] [style*="background:#0A0A0A"],
         [data-theme="light"] [style*="background:#0d0d0d"],
-        [data-theme="light"] [style*="background:#0b0b0b"] { background: #E2E8F0 !important; }
-        [data-theme="light"] [style*="color:#fff"]:not(.btn-orange):not([class*="badge-"]):not([style*="background:#F97316"]):not([style*="background:linear-gradient"]) { color: #0F172A !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.8)"]  { color: rgba(15,23,42,0.80) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.7)"]  { color: rgba(15,23,42,0.70) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.6)"]  { color: rgba(15,23,42,0.60) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.55)"] { color: rgba(15,23,42,0.60) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.5)"]  { color: rgba(15,23,42,0.55) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.45)"] { color: rgba(15,23,42,0.50) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.4)"]  { color: rgba(15,23,42,0.45) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.35)"] { color: rgba(15,23,42,0.40) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.3)"]  { color: rgba(15,23,42,0.35) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.25)"] { color: rgba(15,23,42,0.30) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.2)"]  { color: rgba(15,23,42,0.25) !important; }
-        [data-theme="light"] [style*="color:rgba(255,255,255,0.15)"] { color: rgba(15,23,42,0.20) !important; }
-        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.07)"]  { border-color: rgba(15,23,42,0.08) !important; }
-        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"]   { border-color: rgba(15,23,42,0.10) !important; }
-        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.12)"]  { border-color: rgba(15,23,42,0.12) !important; }
-        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.1)"] { border-color: rgba(15,23,42,0.12) !important; }
-        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.12)"]{ border-color: rgba(15,23,42,0.14) !important; }
-        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.06)"]{ border-color: rgba(15,23,42,0.08) !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.03)"] { background: rgba(15,23,42,0.025) !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] { background: rgba(15,23,42,0.03)  !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.05)"] { background: rgba(15,23,42,0.04)  !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.06)"] { background: rgba(15,23,42,0.05)  !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.07)"] { background: rgba(15,23,42,0.05)  !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.08)"] { background: rgba(15,23,42,0.06)  !important; }
-        [data-theme="light"] [style*="background:rgba(255,255,255,0.1)"]  { background: rgba(15,23,42,0.07)  !important; }
-        [data-theme="light"] #bell-dropdown { background: #FFFFFF; border-color: rgba(15,23,42,0.10); box-shadow: 0 20px 60px rgba(15,23,42,0.12); }
-        [data-theme="light"] .bell-item:hover { background: rgba(15,23,42,0.03); }
-        [data-theme="light"] .bell-item { border-color: rgba(15,23,42,0.05); }
-        [data-theme="light"] #staffReqModal > div { background: #FFFFFF; border-color: rgba(15,23,42,0.10); }
-        [data-theme="light"] .popup-box { background: #FFFFFF; border-color: rgba(15,23,42,0.10); }
-        [data-theme="light"] .product-thumb { background: rgba(15,23,42,0.04); }
-        [data-theme="light"] #bell-list::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.12); }
-        [data-theme="light"] #avatar-preview-wrap { border-color: rgba(249,115,22,0.3); background: rgba(249,115,22,0.05); }
-        [data-theme="light"] .alert-success { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.25); }
-        [data-theme="light"] .alert-error   { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }
-        [data-theme="light"] #bannerModal > div { background: #FFFFFF; }
-        [data-theme="light"] #catDropdown { background: #FFFFFF; border-color: rgba(249,115,22,0.3); }
-        [data-theme="light"] #couponModal > div,
-        [data-theme="light"] #badgeModal > div { background: #FFFFFF; }
-        [data-theme="light"] .orders-search-input { background: #F8FAFC !important; border-color: rgba(15,23,42,0.14) !important; color: #0F172A !important; }
-        [data-theme="light"] .orders-search-input::placeholder { color: rgba(15,23,42,0.35) !important; }
-        [data-theme="light"] .orders-clear-btn { background: rgba(15,23,42,0.05) !important; color: rgba(15,23,42,0.50) !important; border-color: rgba(15,23,42,0.12) !important; }
-        [data-theme="light"] .order-status-tab-inactive { background: rgba(15,23,42,0.05) !important; color: rgba(15,23,42,0.55) !important; border-color: rgba(15,23,42,0.12) !important; }
-        [data-theme="light"] input[type="month"] { background: #F8FAFC !important; border-color: rgba(15,23,42,0.14) !important; color: #0F172A !important; }
-        [data-theme="light"] #lang-toggle { background: rgba(15,23,42,0.05); border-color: rgba(15,23,42,0.12); }
-        [data-theme="light"] .lt-btn { color: #000; }
-        [data-theme="light"] .lt-btn.active { background: var(--orange); color: #fff; }
+        [data-theme="light"] [style*="background:#0b0b0b"] {
+            background: #E2E8F0 !important;
+        }
+
+        [data-theme="light"] [style*="color:#fff"]:not(.btn-orange):not([class*="badge-"]):not([style*="background:#F97316"]):not([style*="background:linear-gradient"]) {
+            color: #0F172A !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.8)"] {
+            color: rgba(15, 23, 42, 0.80) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.7)"] {
+            color: rgba(15, 23, 42, 0.70) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.6)"] {
+            color: rgba(15, 23, 42, 0.60) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.55)"] {
+            color: rgba(15, 23, 42, 0.60) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.5)"] {
+            color: rgba(15, 23, 42, 0.55) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.45)"] {
+            color: rgba(15, 23, 42, 0.50) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.4)"] {
+            color: rgba(15, 23, 42, 0.45) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.35)"] {
+            color: rgba(15, 23, 42, 0.40) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.3)"] {
+            color: rgba(15, 23, 42, 0.35) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.25)"] {
+            color: rgba(15, 23, 42, 0.30) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.2)"] {
+            color: rgba(15, 23, 42, 0.25) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.15)"] {
+            color: rgba(15, 23, 42, 0.20) !important;
+        }
+
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.07)"] {
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
+
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.1)"] {
+            border-color: rgba(15, 23, 42, 0.10) !important;
+        }
+
+        [data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.12)"] {
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.1)"] {
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.12)"] {
+            border-color: rgba(15, 23, 42, 0.14) !important;
+        }
+
+        [data-theme="light"] [style*="border:1.5px solid rgba(255,255,255,0.06)"] {
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.03)"] {
+            background: rgba(15, 23, 42, 0.025) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.04)"] {
+            background: rgba(15, 23, 42, 0.03) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.05)"] {
+            background: rgba(15, 23, 42, 0.04) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.06)"] {
+            background: rgba(15, 23, 42, 0.05) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.07)"] {
+            background: rgba(15, 23, 42, 0.05) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.08)"] {
+            background: rgba(15, 23, 42, 0.06) !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.1)"] {
+            background: rgba(15, 23, 42, 0.07) !important;
+        }
+
+        [data-theme="light"] #bell-dropdown {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.10);
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="light"] .bell-item:hover {
+            background: rgba(15, 23, 42, 0.03);
+        }
+
+        [data-theme="light"] .bell-item {
+            border-color: rgba(15, 23, 42, 0.05);
+        }
+
+        [data-theme="light"] #staffReqModal>div {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.10);
+        }
+
+        [data-theme="light"] .popup-box {
+            background: #FFFFFF;
+            border-color: rgba(15, 23, 42, 0.10);
+        }
+
+        [data-theme="light"] .product-thumb {
+            background: rgba(15, 23, 42, 0.04);
+        }
+
+        [data-theme="light"] #bell-list::-webkit-scrollbar-thumb {
+            background: rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="light"] #avatar-preview-wrap {
+            border-color: rgba(249, 115, 22, 0.3);
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        [data-theme="light"] .alert-success {
+            background: rgba(34, 197, 94, 0.08);
+            border-color: rgba(34, 197, 94, 0.25);
+        }
+
+        [data-theme="light"] .alert-error {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        [data-theme="light"] #bannerModal>div {
+            background: #FFFFFF;
+        }
+
+        [data-theme="light"] #catDropdown {
+            background: #FFFFFF;
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        [data-theme="light"] #couponModal>div,
+        [data-theme="light"] #badgeModal>div {
+            background: #FFFFFF;
+        }
+
+        [data-theme="light"] .orders-search-input {
+            background: #F8FAFC !important;
+            border-color: rgba(15, 23, 42, 0.14) !important;
+            color: #0F172A !important;
+        }
+
+        [data-theme="light"] .orders-search-input::placeholder {
+            color: rgba(15, 23, 42, 0.35) !important;
+        }
+
+        [data-theme="light"] .orders-clear-btn {
+            background: rgba(15, 23, 42, 0.05) !important;
+            color: rgba(15, 23, 42, 0.50) !important;
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        [data-theme="light"] .order-status-tab-inactive {
+            background: rgba(15, 23, 42, 0.05) !important;
+            color: rgba(15, 23, 42, 0.55) !important;
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        [data-theme="light"] input[type="month"] {
+            background: #F8FAFC !important;
+            border-color: rgba(15, 23, 42, 0.14) !important;
+            color: #0F172A !important;
+        }
+
+        [data-theme="light"] #lang-toggle {
+            background: rgba(15, 23, 42, 0.05);
+            border-color: rgba(15, 23, 42, 0.12);
+        }
+
+        [data-theme="light"] .lt-btn {
+            color: #000;
+        }
+
+        [data-theme="light"] .lt-btn.active {
+            background: var(--orange);
+            color: #fff;
+        }
+
+        /* ══════════════════════════════════════════════════════════════════════
+           AIRY LIGHT POLISH — depth, soft glow, airy tint
+        ══════════════════════════════════════════════════════════════════════ */
+        [data-theme="light"] body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+        }
+
+        [data-theme="light"] .content {
+            background: radial-gradient(120% 65% at 50% 0%, rgba(249, 115, 22, 0.05), transparent 62%);
+        }
+
+        [data-theme="light"] .card,
+        [data-theme="light"] .filter-bar {
+            box-shadow: var(--card-shadow);
+        }
+
+        [data-theme="light"] .stat-card {
+            box-shadow: var(--card-shadow);
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        @media (hover:hover) {
+            [data-theme="light"] .stat-card:hover {
+                transform: translateY(-3px);
+                border-color: rgba(249, 115, 22, 0.45);
+                box-shadow: var(--card-glow);
+            }
+        }
+
+        [data-theme="light"] .stat-icon {
+            box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.10),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        [data-theme="light"] .stat-card:hover .stat-icon {
+            box-shadow: 0 6px 16px -4px rgba(249, 115, 22, 0.30);
+        }
+
+        [data-theme="light"] .stat-label {
+            color: rgba(15, 23, 42, 0.50);
+        }
+
+        [data-theme="light"] .chart-badge {
+            color: rgba(15, 23, 42, 0.60);
+            background: rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        [data-theme="light"] .topbar {
+            background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: blur(12px) saturate(1.4);
+            -webkit-backdrop-filter: blur(12px) saturate(1.4);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            box-shadow: var(--topbar-shadow);
+        }
+
+        [data-theme="light"] .sidebar {
+            background: linear-gradient(180deg, #FFFFFF 0%, #FBFCFE 100%);
+            box-shadow: var(--sidebar-shadow);
+            border-right: 1px solid rgba(15, 23, 42, 0.05);
+        }
+
+        [data-theme="light"] .nav-item:hover {
+            background: rgba(15, 23, 42, 0.045);
+        }
+
+        [data-theme="light"] .nav-item.active {
+            background: linear-gradient(90deg, rgba(249, 115, 22, 0.14), rgba(249, 115, 22, 0.05));
+        }
+
+        [data-theme="light"] .form-control,
+        [data-theme="light"] .filter-input,
+        [data-theme="light"] .search-input,
+        [data-theme="light"] .s-input,
+        [data-theme="light"] .s-num-input,
+        [data-theme="light"] input[type="month"],
+        [data-theme="light"] .orders-search-input {
+            background: var(--input-bg);
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        [data-theme="light"] .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
+        }
+
+        [data-theme="light"] thead th {
+            background: rgba(15, 23, 42, 0.02);
+            color: rgba(15, 23, 42, 0.58);
+        }
+
+        [data-theme="light"] tbody td {
+            color: rgba(15, 23, 42, 0.72);
+        }
+
+        [data-theme="light"] .card-header {
+            background: linear-gradient(180deg, #FFFFFF 0%, #FBFCFE 100%);
+        }
+
+        [data-theme="light"] .btn-orange {
+            box-shadow: 0 4px 14px -6px rgba(249, 115, 22, 0.45);
+        }
+
+        /* ── Broken-spot guard-rails (attribute-selector remaps) ── */
+        [data-theme="light"] [style*="background:#1e1e1e"],
+        [data-theme="light"] [style*="background: #1e1e1e"] {
+            background: #F8FAFC !important;
+        }
+
+        [data-theme="light"] [style*="background:rgba(255,255,255,0.12)"] {
+            background: rgba(15, 23, 42, 0.08) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.1)"] {
+            color: rgba(15, 23, 42, 0.15) !important;
+        }
+
+        [data-theme="light"] [style*="color: rgba(255,255,255,0.15)"] {
+            color: rgba(15, 23, 42, 0.20) !important;
+        }
+
+        [data-theme="light"] [style*="color: rgba(255,255,255,0.2)"] {
+            color: rgba(15, 23, 42, 0.25) !important;
+        }
+
+        [data-theme="light"] [style*="color: rgba(255,255,255,0.35)"] {
+            color: rgba(15, 23, 42, 0.40) !important;
+        }
+
+        [data-theme="light"] [style*="color: rgba(255,255,255,0.4)"] {
+            color: rgba(15, 23, 42, 0.45) !important;
+        }
+
+        [data-theme="light"] [style*="color:rgba(255,255,255,0.85)"] {
+            color: rgba(15, 23, 42, 0.85) !important;
+        }
 
         /* ══════════════════════════════════════════════════════════════════════
            RESPONSIVE
         ══════════════════════════════════════════════════════════════════════ */
         @media (max-width: 1024px) {
-            .chart-grid-2  { grid-template-columns: 1fr; }
-            .form-grid-2   { grid-template-columns: 1fr; }
+            .chart-grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 768px) {
+
             /* ── Layout ── */
-            .sidebar       { transform: translateX(-100%); }
-            .sidebar.open  { transform: translateX(0); }
-            .main          { margin-left: 0; min-width: 0; }
-            .hamburger     { display: flex; }
-            .admin-name    { display: none; }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main {
+                margin-left: 0;
+                min-width: 0;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .admin-name {
+                display: none;
+            }
 
             /* ── Topbar ── */
-            .topbar        { padding: 0 14px; height: 56px; }
-            .topbar-left   { min-width: 0; flex: 1; overflow: hidden; }
-            .topbar-font   { font-size: 17px; letter-spacing: 0.5px; white-space: nowrap;
-                             overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-            .topbar-right  { flex-shrink: 0; gap: 6px; }
+            .topbar {
+                padding: 0 14px;
+                height: 56px;
+            }
+
+            .topbar-left {
+                min-width: 0;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            .topbar-font {
+                font-size: 17px;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+
+            .topbar-right {
+                flex-shrink: 0;
+                gap: 6px;
+            }
 
             /* ── Content ── */
-            .content       { padding: 14px; min-width: 0; }
+            .content {
+                padding: 14px;
+                min-width: 0;
+            }
 
             /* ── Cards: min-width:0 so flex/grid children don't overflow ── */
-            .card          { min-width: 0; }
-            .card-header   { flex-direction: column; align-items: flex-start; gap: 6px;
-                             padding: 14px 16px; min-width: 0; }
-            .card-body     { min-width: 0; padding: 16px; }
+            .card {
+                min-width: 0;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+                padding: 14px 16px;
+                min-width: 0;
+            }
+
+            .card-body {
+                min-width: 0;
+                padding: 16px;
+            }
 
             /* ── Stats ── */
-            .stats-grid    { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card     { padding: 14px; gap: 10px; min-width: 0; }
-            .stat-value    { font-size: clamp(1.4rem, 4vw, 2.0rem); }
-            .stat-icon     { width: 38px; height: 38px; }
-            .chart-grid-2  { grid-template-columns: 1fr; }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 14px;
+                gap: 10px;
+                min-width: 0;
+            }
+
+            .stat-value {
+                font-size: clamp(1.4rem, 4vw, 2.0rem);
+            }
+
+            .stat-icon {
+                width: 38px;
+                height: 38px;
+            }
+
+            .chart-grid-2 {
+                grid-template-columns: 1fr;
+            }
 
             /* ── Type scale — readable ── */
             :root {
-                --text-xs:    13px;
-                --text-sm:    15px;
-                --text-base:  16px;
-                --text-md:    17px;
-                --text-lg:    19px;
+                --text-xs: 13px;
+                --text-sm: 15px;
+                --text-base: 16px;
+                --text-md: 17px;
+                --text-lg: 19px;
                 --title-size: 15px;
             }
+
             :lang(km) {
-                --text-xs:   13px;
-                --text-sm:   14px;
+                --text-xs: 13px;
+                --text-sm: 14px;
                 --text-base: 15px;
-                --text-md:   16px;
+                --text-md: 16px;
             }
 
             /* ── Table ── */
-            .table-wrap    { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            table          { font-size: 14px; min-width: 860px; }
-            thead th       { padding: 11px 12px; font-size: 13px; white-space: nowrap; }
-            tbody td       { padding: 11px 12px; font-size: 15px; }
+            .table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                font-size: 14px;
+                min-width: 860px;
+            }
+
+            thead th {
+                padding: 11px 12px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+
+            tbody td {
+                padding: 11px 12px;
+                font-size: 15px;
+            }
 
             /* disable sticky cols so horizontal scroll works freely */
-            thead th:first-child, tbody td:first-child,
-            thead th:last-child,  tbody td:last-child {
+            thead th:first-child,
+            tbody td:first-child,
+            thead th:last-child,
+            tbody td:last-child {
                 position: static !important;
                 z-index: auto !important;
                 border-left: none !important;
                 background: unset !important;
             }
+
             tbody tr:hover td:first-child,
-            tbody tr:hover td:last-child { background: var(--hover-bg) !important; }
+            tbody tr:hover td:last-child {
+                background: var(--hover-bg) !important;
+            }
 
             /* ── Badges ── */
-            .badge         { font-size: 13px !important; padding: 4px 10px; }
+            .badge {
+                font-size: 13px !important;
+                padding: 4px 10px;
+            }
 
             /* ── Buttons ── */
-            .btn           { min-height: 42px; padding: 10px 16px; font-size: 15px; }
-            .btn-sm        { min-height: 36px; padding: 7px 14px; font-size: 13px; }
+            .btn {
+                min-height: 42px;
+                padding: 10px 16px;
+                font-size: 15px;
+            }
+
+            .btn-sm {
+                min-height: 36px;
+                padding: 7px 14px;
+                font-size: 13px;
+            }
 
             /* ── Forms ── */
-            .form-control  { font-size: 15px; padding: 11px 14px; }
-            .form-grid-2   { grid-template-columns: 1fr; }
+            .form-control {
+                font-size: 15px;
+                padding: 11px 14px;
+            }
+
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 480px) {
-            .content       { padding: 10px; }
-            .topbar-badge  { display: none; }
-            #lang-toggle   { display: none; }
-            .stats-grid    { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .stat-card     { padding: 12px; gap: 8px; }
-            .stat-value    { font-size: clamp(1.2rem, 3.5vw, 1.6rem); }
-            .card-header   { padding: 12px; }
-            .card-body     { padding: 12px; }
+            .content {
+                padding: 10px;
+            }
+
+            .topbar-badge {
+                display: none;
+            }
+
+            #lang-toggle {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .stat-value {
+                font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+            }
+
+            .card-header {
+                padding: 12px;
+            }
+
+            .card-body {
+                padding: 12px;
+            }
 
             :root {
-                --text-xs:    13px;
-                --text-sm:    14px;
-                --text-base:  15px;
-                --text-md:    16px;
+                --text-xs: 13px;
+                --text-sm: 14px;
+                --text-base: 15px;
+                --text-md: 16px;
                 --title-size: 14px;
             }
 
-            table          { font-size: 14px; }
-            thead th       { padding: 9px 10px; font-size: 13px; }
-            tbody td       { padding: 9px 10px; font-size: 14px; }
-            .badge         { font-size: 12px !important; padding: 3px 8px; }
+            table {
+                font-size: 14px;
+            }
+
+            thead th {
+                padding: 9px 10px;
+                font-size: 13px;
+            }
+
+            tbody td {
+                padding: 9px 10px;
+                font-size: 14px;
+            }
+
+            .badge {
+                font-size: 12px !important;
+                padding: 3px 8px;
+            }
         }
     </style>
 
@@ -1161,7 +2091,7 @@
 
     {{-- Apply saved theme before paint to prevent flash --}}
     <script>
-        (function() {
+        (function () {
             var t = localStorage.getItem('tronmatix_theme') || 'dark';
             document.documentElement.setAttribute('data-theme', t);
         })();
@@ -1178,22 +2108,24 @@
 
         {{-- Logo --}}
         <div class="sidebar-logo">
-            <a href="{{ route('dashboard.index') }}" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+            <a href="{{ route('dashboard.index') }}"
+                style="display:flex; align-items:center; gap:12px; text-decoration:none;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
-                  <defs>
-                    <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#FFB020"/>
-                      <stop offset="100%" style="stop-color:#F97316"/>
-                    </linearGradient>
-                  </defs>
-                  <polygon points="50,4 90,26 90,74 50,96 10,74 10,26" fill="#1e1e1e" stroke="#F97316" stroke-width="4"/>
-                  <polygon points="54,18 32,54 48,54 44,82 68,46 52,46" fill="url(#lg)"/>
+                    <defs>
+                        <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFB020" />
+                            <stop offset="100%" style="stop-color:#F97316" />
+                        </linearGradient>
+                    </defs>
+                    <polygon points="50,4 90,26 90,74 50,96 10,74 10,26" fill="#1e1e1e" stroke="#F97316"
+                        stroke-width="4" />
+                    <polygon points="54,18 32,54 48,54 44,82 68,46 52,46" fill="url(#lg)" />
                 </svg>
                 <div>
                     @php
                         $_parts = explode(' ', $_storeName, 2);
                         $_brand = strtoupper($_parts[0]);
-                        $_sub   = isset($_parts[1]) ? strtoupper($_parts[1]) : 'COMPUTER';
+                        $_sub = isset($_parts[1]) ? strtoupper($_parts[1]) : 'COMPUTER';
                     @endphp
                     <div class="brand-name">{{ $_brand }}</div>
                     <div class="brand-sub">{{ $_sub }}</div>
@@ -1206,122 +2138,135 @@
 
             <div class="nav-section-label">{{ __('dashboard.common.main') }}</div>
             <a href="{{ route('dashboard.index') }}"
-               class="nav-item {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.dashboard')) }}
             </a>
 
             <div class="nav-section-label">{{ __('dashboard.common.catalog') }}</div>
             <a href="{{ route('dashboard.products') }}"
-               class="nav-item {{ request()->routeIs('dashboard.products*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.products*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                    <path
+                        d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.products')) }}
             </a>
             <a href="{{ route('dashboard.categories.index') }}"
-               class="nav-item {{ request()->routeIs('dashboard.categories*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.categories*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.categories')) }}
             </a>
-            <a href="{{ route('dashboard.banners') }}"
-               class="nav-item {{ request()->routeIs('dashboard.banners*') ? 'active' : '' }}">
+            <a href="{{ route('dashboard.brands.index') }}"
+                class="nav-item {{ request()->routeIs('dashboard.brands*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <path d="M3 9h18M9 21V9"/>
+                    <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                {{ strtoupper(__('dashboard.nav.brands')) }}
+            </a>
+            <a href="{{ route('dashboard.banners') }}"
+                class="nav-item {{ request()->routeIs('dashboard.banners*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 9h18M9 21V9" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.banners')) }}
             </a>
-            <a href="{{ route('dashboard.videos') }}"
-               class="nav-item {{ request()->routeIs('dashboard.videos*') ? 'active' : '' }}">
+            {{-- <a href="{{ route('dashboard.videos') }}"
+                class="nav-item {{ request()->routeIs('dashboard.videos*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                    <path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/>
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.videos')) }}
-            </a>
+            </a> --}}
 
             <div class="nav-section-label">{{ __('dashboard.common.sales') }}</div>
             <a href="{{ route('dashboard.orders') }}"
-               class="nav-item {{ request()->routeIs('dashboard.orders*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.orders*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="1" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.orders')) }}
             </a>
             <a href="{{ route('dashboard.delivery-providers.index') }}"
-               class="nav-item {{ request()->routeIs('dashboard.delivery-providers*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.delivery-providers*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                    <path d="M16 11h.01M8 11h.01M12 11h.01"/>
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                    <path d="M16 11h.01M8 11h.01M12 11h.01" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.deliveryProviders')) }}
             </a>
 
             <a href="{{ route('dashboard.stock.index') }}"
-               class="nav-item {{ request()->routeIs('dashboard.stock*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.stock*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                    <path d="M7 21v-6M21 7h-6M7 7h.01M21 21h.01"/>
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <path d="M7 21v-6M21 7h-6M7 7h.01M21 21h.01" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.stock')) }}
             </a>
 
-            <div class="nav-section-label">{{ __('dashboard.common.catalog') == 'catalog' ? 'Users' : __('dashboard.nav.users') }}</div>
+            <div class="nav-section-label">
+                {{ __('dashboard.common.catalog') == 'catalog' ? 'Users' : __('dashboard.nav.users') }}</div>
             <a href="{{ route('dashboard.users') }}"
-               class="nav-item {{ request()->routeIs('dashboard.users*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.users*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.users')) }}
             </a>
 
             {{-- <a href="{{ route('dashboard.feedback') }}"
-               class="nav-item {{ request()->routeIs('dashboard.feedback*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.feedback*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    <path
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.feedback')) }}
             </a> --}}
             <div class="nav-section-label">{{ __('dashboard.common.promotions') }}</div>
             <a href="{{ route('dashboard.discounts') }}"
-               class="nav-item {{ request()->routeIs('dashboard.discounts*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.discounts*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
-                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.discounts')) }}
             </a>
 
             <div class="nav-section-label">{{ __('dashboard.common.system') }}</div>
             <a href="{{ route('dashboard.report') }}"
-               class="nav-item {{ request()->routeIs('dashboard.report*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.report*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.reports')) }}
             </a>
             <a href="{{ route('dashboard.settings') }}"
-               class="nav-item {{ request()->routeIs('dashboard.settings*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('dashboard.settings*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.settings')) }}
             </a>
@@ -1332,7 +2277,7 @@
                 // Reuse the same permission logic as dashboard._permission_check so the
                 // nav stays in sync with the perm_{role}_{feature} settings. superadmin
                 // always bypasses; admin always has full access.
-                $_navPermStaff    = ($adminRole === 'superadmin' || $adminRole === 'admin')
+                $_navPermStaff = ($adminRole === 'superadmin' || $adminRole === 'admin')
                     ? true
                     : \App\Models\AdminSetting::get("perm_{$adminRole}_staff", '0') === '1';
                 $_navPermActivity = ($adminRole === 'superadmin' || $adminRole === 'admin')
@@ -1340,30 +2285,30 @@
                     : \App\Models\AdminSetting::get("perm_{$adminRole}_activity_log", '0') === '1';
             @endphp
             @if($_navPermStaff)
-            <a href="{{ route('dashboard.staff') }}"
-               class="nav-item {{ request()->routeIs('dashboard.staff*') ? 'active' : '' }}">
-                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-                    <line x1="19" y1="8" x2="19" y2="14"/>
-                    <line x1="22" y1="11" x2="16" y2="11"/>
-                </svg>
-                {{ strtoupper(__('dashboard.nav.staff')) }}
-            </a>
+                <a href="{{ route('dashboard.staff') }}"
+                    class="nav-item {{ request()->routeIs('dashboard.staff*') ? 'active' : '' }}">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        <line x1="19" y1="8" x2="19" y2="14" />
+                        <line x1="22" y1="11" x2="16" y2="11" />
+                    </svg>
+                    {{ strtoupper(__('dashboard.nav.staff')) }}
+                </a>
             @endif
             @if($_navPermActivity)
-            <a href="{{ route('dashboard.activity-logs') }}"
-               class="nav-item {{ request()->routeIs('dashboard.activity-logs*') ? 'active' : '' }}">
-                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                </svg>
-                {{ strtoupper(__('dashboard.nav.activityLog')) }}
-            </a>
+                <a href="{{ route('dashboard.activity-logs') }}"
+                    class="nav-item {{ request()->routeIs('dashboard.activity-logs*') ? 'active' : '' }}">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    {{ strtoupper(__('dashboard.nav.activityLog')) }}
+                </a>
             @endif
 
         </nav>
@@ -1373,9 +2318,9 @@
             <span style="font-size: var(--font-size); font-weight:700; color:var(--text-faint);">LANGUAGE</span>
             <div class="sidebar-lt-wrap">
                 <button class="lt-btn sidebar-lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
-                        onclick="setAppLang('en')" type="button" data-lang="en">EN</button>
+                    onclick="setAppLang('en')" type="button" data-lang="en">EN</button>
                 <button class="lt-btn km-btn sidebar-lt-btn {{ app()->getLocale() === 'km' ? 'active' : '' }}"
-                        onclick="setAppLang('km')" type="button" data-lang="km">ខ្មែរ</button>
+                    onclick="setAppLang('km')" type="button" data-lang="km">ខ្មែរ</button>
             </div>
         </div>
 
@@ -1394,9 +2339,9 @@
             <div class="topbar-left">
                 <button class="hamburger" id="hamburgerBtn" onclick="openSidebar()">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <line x1="3" y1="6"  x2="21" y2="6"/>
-                        <line x1="3" y1="12" x2="21" y2="12"/>
-                        <line x1="3" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
                 <span class="topbar-title">@yield('title', strtoupper(__('dashboard.nav.dashboard')))</span>
@@ -1406,10 +2351,10 @@
 
                 {{-- ── Language Toggle ────────────────────────────────────────── --}}
                 <div id="lang-toggle">
-                    <button class="lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}"
-                            onclick="setAppLang('en')" type="button" font="English" data-lang="en">EN</button>
+                    <button class="lt-btn {{ app()->getLocale() === 'en' ? 'active' : '' }}" onclick="setAppLang('en')"
+                        type="button" font="English" data-lang="en">EN</button>
                     <button class="lt-btn km-btn {{ app()->getLocale() === 'km' ? 'active' : '' }}"
-                            onclick="setAppLang('km')" type="button" font="ភាសាខ្មែរ" data-lang="km">ខ្មែរ</button>
+                        onclick="setAppLang('km')" type="button" font="ភាសាខ្មែរ" data-lang="km">ខ្មែរ</button>
                 </div>
 
                 {{-- Theme toggle --}}
@@ -1418,8 +2363,7 @@
                     border-radius:10px; width:40px; height:40px;
                     display:flex; align-items:center; justify-content:center;
                     cursor:pointer; transition:all .2s; font-size: var(--font-size);
-                " onmouseover="this.style.borderColor='#F97316'"
-                   onmouseout="this.style.borderColor=''">
+                " onmouseover="this.style.borderColor='#F97316'" onmouseout="this.style.borderColor=''">
                     <span id="theme-icon">☀️</span>
                 </button>
 
@@ -1431,7 +2375,7 @@
                         width:40px; height:40px; display:flex; align-items:center; justify-content:center;
                         cursor:pointer; transition:all .2s; font-size: var(--font-size);
                     " onmouseover="this.style.borderColor='#F97316'"
-                       onmouseout="if(!bellOpen)this.style.borderColor=''">
+                        onmouseout="if(!bellOpen)this.style.borderColor=''">
                         🔔
                         <span id="bell-dot" style="
                             display:none; position:absolute; top:6px; right:6px;
@@ -1450,32 +2394,37 @@
                     ">
                         <div style="padding:14px 18px; border-bottom:1px solid var(--border);
                              display:flex; align-items:center; justify-content:space-between;">
-                            <span style="font-size: var(--font-size); font-weight:800; letter-spacing:2px; color:var(--text-muted);">
+                            <span
+                                style="font-size: var(--font-size); font-weight:800; letter-spacing:2px; color:var(--text-muted);">
                                 {{ strtoupper(__('dashboard.common.alerts')) }}
                             </span>
                             <div style="display: flex; gap: 8px;">
-                                <button onclick="clearNotifications()" style="font-size: var(--font-size); color:rgba(239,68,68,0.6);
+                                <button onclick="clearNotifications()"
+                                    style="font-size: var(--font-size); color:rgba(239,68,68,0.6);
                                     text-decoration:none; letter-spacing:1px; background:none; border:none; cursor:pointer;"
-                                    onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='rgba(239,68,68,0.6)'">
+                                    onmouseover="this.style.color='#ef4444'"
+                                    onmouseout="this.style.color='rgba(239,68,68,0.6)'">
                                     {{ strtoupper(__('dashboard.btn.clearAll')) }}
                                 </button>
                                 <a href="{{ route('dashboard.settings') }}" style="font-size: var(--font-size); color:rgba(249,115,22,0.6);
-                                    text-decoration:none; letter-spacing:1px;"
-                                   onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='rgba(249,115,22,0.6)'">
+                                    text-decoration:none; letter-spacing:1px;" onmouseover="this.style.color='#F97316'"
+                                    onmouseout="this.style.color='rgba(249,115,22,0.6)'">
                                     ⚙ {{ strtoupper(__('dashboard.nav.settings')) }}
                                 </a>
                             </div>
                         </div>
-                        <div id="bell-list" style="max-height:min(320px, calc(100vh - 160px)); overflow-y:auto; padding:8px 0;">
-                            <div style="padding:24px; text-align:center; color:var(--text-faint); font-family:Rajdhani,sans-serif;">
+                        <div id="bell-list"
+                            style="max-height:min(320px, calc(100vh - 160px)); overflow-y:auto; padding:8px 0;">
+                            <div
+                                style="padding:24px; text-align:center; color:var(--text-faint); font-family:Rajdhani,sans-serif;">
                                 <div style="font-size: var(--font-size); margin-bottom:6px;">⏳</div>
                                 Loading…
                             </div>
                         </div>
                         <div style="padding:10px 18px; border-top:1px solid var(--border); text-align:center;">
                             <a href="{{ route('dashboard.settings') }}" style="font-size: var(--font-size); color:var(--text-faint);
-                                text-decoration:none; letter-spacing:1px;"
-                               onmouseover="this.style.color='#F97316'" onmouseout="this.style.color=''">
+                                text-decoration:none; letter-spacing:1px;" onmouseover="this.style.color='#F97316'"
+                                onmouseout="this.style.color=''">
                                 {{ __('dashboard.settings.store') }} →
                             </a>
                         </div>
@@ -1492,18 +2441,19 @@
                 @php
                     $_topbarAdmin = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
                     $_topbarAvatar = $_topbarAdmin?->avatar
-                        ? (Str::startsWith($_topbarAdmin->avatar, ['http://','https://'])
+                        ? (Str::startsWith($_topbarAdmin->avatar, ['http://', 'https://'])
                             ? $_topbarAdmin->avatar
                             : asset('storage/' . $_topbarAdmin->avatar))
                         : null;
                 @endphp
-                <a href="{{ route('dashboard.profile') }}" class="admin-profile-link" font="{{ __('dashboard.profile.editProfile') }}">
+                <a href="{{ route('dashboard.profile') }}" class="admin-profile-link"
+                    font="{{ __('dashboard.profile.editProfile') }}">
                     <div class="admin-avatar">
                         @if($_topbarAvatar)
-                            <img src="{{ $_topbarAvatar }}"
-                                 alt="{{ $_topbarAdmin->name }}"
-                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:400;font-size: var(--font-size);">
+                            <img src="{{ $_topbarAvatar }}" alt="{{ $_topbarAdmin->name }}"
+                                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                            <span
+                                style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:400;font-size: var(--font-size);">
                                 {{ strtoupper(substr($_topbarAdmin->name ?? 'A', 0, 1)) }}
                             </span>
                         @else
@@ -1561,17 +2511,17 @@
             document.body.style.overflow = '';
         }
 
-        document.querySelectorAll('.nav-item').forEach(function(link) {
-            link.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(function (link) {
+            link.addEventListener('click', function () {
                 if (window.innerWidth <= 768) closeSidebar();
             });
         });
 
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeSidebar();
         });
 
-        (function() {
+        (function () {
             var link = document.querySelector('.admin-profile-link');
             if (link && window.location.pathname.includes('/dashboard/profile')) {
                 link.classList.add('active-profile');
@@ -1584,22 +2534,57 @@
     {{-- ── Notification Bell ─────────────────────────────────────────────────── --}}
     <style>
         @keyframes bellPulse {
-            0%,100% { transform:scale(1);   opacity:1; }
-            50%      { transform:scale(1.35); opacity:.7; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.35);
+                opacity: .7;
+            }
         }
+
         @keyframes bellDropIn {
-            from { opacity:0; transform:translateY(-8px) scale(.97); }
-            to   { opacity:1; transform:translateY(0)    scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
-        #bell-list::-webkit-scrollbar { width:4px; }
-        #bell-list::-webkit-scrollbar-thumb { background:var(--scrollbar); border-radius:2px; }
+
+        #bell-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #bell-list::-webkit-scrollbar-thumb {
+            background: var(--scrollbar);
+            border-radius: 2px;
+        }
+
         .bell-item {
-            display:flex; align-items:flex-start; gap:12px;
-            padding:11px 18px; text-decoration:none;
-            transition:background .15s; border-bottom:1px solid var(--border-faint);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 11px 18px;
+            text-decoration: none;
+            transition: background .15s;
+            border-bottom: 1px solid var(--border-faint);
         }
-        .bell-item:last-child { border-bottom:none; }
-        .bell-item:hover { background:var(--hover-bg); }
+
+        .bell-item:last-child {
+            border-bottom: none;
+        }
+
+        .bell-item:hover {
+            background: var(--hover-bg);
+        }
     </style>
 
     <script>
@@ -1609,7 +2594,7 @@
 
         function openBell() {
             bellOpen = true;
-            const d   = document.getElementById('bell-dropdown');
+            const d = document.getElementById('bell-dropdown');
             const btn = document.getElementById('bell-btn');
             d.style.display = 'block';
             d.style.animation = 'none';
@@ -1622,49 +2607,49 @@
         function closeBell() {
             bellOpen = false;
             document.getElementById('bell-dropdown').style.display = 'none';
-            document.getElementById('bell-btn').style.borderColor  = '';
+            document.getElementById('bell-btn').style.borderColor = '';
         }
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (bellOpen && !document.getElementById('bell-wrapper').contains(e.target)) closeBell();
         });
 
         // i18n strings for bell (PHP passes to JS)
         var _i18n = {
-            noAlerts:     '{{ __("dashboard.common.noAlerts") }}',
-            allClear:     '{{ __("dashboard.common.allClear") }}',
+            noAlerts: '{{ __("dashboard.common.noAlerts") }}',
+            allClear: '{{ __("dashboard.common.allClear") }}',
             failedAlerts: '{{ __("dashboard.common.failedAlerts") }}',
-            alertsfont:  '{{ strtoupper(__("dashboard.common.alerts")) }}',
-            staffAccess:  '{{ __("dashboard.common.staffAccess") }}',
-            review:       '{{ strtoupper(__("dashboard.btn.view")) }}',
-            accept:       '✓ {{ strtoupper(__("dashboard.btn.confirm")) }}',
-            reject:       '✕ {{ strtoupper(__("dashboard.btn.delete")) }}',
+            alertsfont: '{{ strtoupper(__("dashboard.common.alerts")) }}',
+            staffAccess: '{{ __("dashboard.common.staffAccess") }}',
+            review: '{{ strtoupper(__("dashboard.btn.view")) }}',
+            accept: '✓ {{ strtoupper(__("dashboard.btn.confirm")) }}',
+            reject: '✕ {{ strtoupper(__("dashboard.btn.delete")) }}',
         };
 
         function loadBellAlerts() {
             fetch('{{ route("dashboard.notifications") }}', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(r => r.json())
-            .then(data => {
-                const list   = document.getElementById('bell-list');
-                const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-                const mutedColor  = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(15,23,42,0.45)';
-                const faintColor  = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(15,23,42,0.30)';
-                const arrowColor  = isDark ? 'rgba(255,255,255,0.2)'  : 'rgba(15,23,42,0.25)';
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('bell-list');
+                    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+                    const mutedColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(15,23,42,0.45)';
+                    const faintColor = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(15,23,42,0.30)';
+                    const arrowColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(15,23,42,0.25)';
 
-                if (!data.alerts || data.alerts.length === 0) {
-                    list.innerHTML = `
+                    if (!data.alerts || data.alerts.length === 0) {
+                        list.innerHTML = `
                         <div style="padding:28px; text-align:center; font-family:Rajdhani,sans-serif;">
                             <div style="font-size: var(--font-size); margin-bottom:8px;">🎉</div>
                             <div style="color:#22c55e; font-weight:700; font-size: var(--font-size); letter-spacing:1px;">${_i18n.allClear}</div>
                             <div style="color:${mutedColor}; font-size: var(--font-size); margin-top:4px;">${_i18n.noAlerts}</div>
                         </div>`;
-                    return;
-                }
-                list.innerHTML = data.alerts.map(a => {
-                    if (a.actionable && a.type === 'staff_request') {
-                        return `
+                        return;
+                    }
+                    list.innerHTML = data.alerts.map(a => {
+                        if (a.actionable && a.type === 'staff_request') {
+                            return `
                         <div class="bell-item" style="flex-direction:column;gap:8px;align-items:stretch;">
                             <div style="display:flex;align-items:flex-start;gap:12px;">
                                 <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;
@@ -1680,7 +2665,7 @@
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;padding-left:48px;">
-                                <button onclick="openStaffRequestModal(${JSON.stringify(a).replace(/"/g,'&quot;')})"
+                                <button onclick="openStaffRequestModal(${JSON.stringify(a).replace(/"/g, '&quot;')})"
                                     style="flex:1;padding:7px 0;border-radius:8px;background:#a78bfa22;border:1px solid #a78bfa44;
                                            color:#a78bfa;font-family:Rajdhani,sans-serif;font-size: var(--font-size);
                                            font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;"
@@ -1706,8 +2691,8 @@
                                 </button>
                             </div>
                         </div>`;
-                    }
-                    return `
+                        }
+                        return `
                     <a href="${a.url}" class="bell-item" onclick="closeBell()">
                         <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;
                              background:${a.color}18;border:1px solid ${a.color}44;
@@ -1721,14 +2706,14 @@
                         </div>
                         <div style="font-size: var(--font-size);color:${arrowColor};flex-shrink:0;">›</div>
                     </a>`;
-                }).join('');
-            })
-            .catch(() => {
-                const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-                const failColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.4)';
-                document.getElementById('bell-list').innerHTML =
-                    `<div style="padding:20px;text-align:center;color:${failColor};font-size: var(--font-size);">${_i18n.failedAlerts}</div>`;
-            });
+                    }).join('');
+                })
+                .catch(() => {
+                    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+                    const failColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.4)';
+                    document.getElementById('bell-list').innerHTML =
+                        `<div style="padding:20px;text-align:center;color:${failColor};font-size: var(--font-size);">${_i18n.failedAlerts}</div>`;
+                });
         }
 
         function clearNotifications() {
@@ -1737,29 +2722,29 @@
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(r => r.json())
-            .then(data => {
-                // Reset the client-side "seen" tracker so cleared alerts don't
-                // immediately re-toast on the next poll.
-                try { localStorage.setItem('seen_alerts', JSON.stringify([])); } catch {}
-                const dot = document.getElementById('bell-dot');
-                if (dot) dot.style.display = 'none';
-                showInlineToast(data.message || 'Notifications cleared', '#22c55e');
-                loadBellAlerts();
-            })
-            .catch(() => showInlineToast('Failed to clear notifications', '#ef4444'));
+                .then(r => r.json())
+                .then(data => {
+                    // Reset the client-side "seen" tracker so cleared alerts don't
+                    // immediately re-toast on the next poll.
+                    try { localStorage.setItem('seen_alerts', JSON.stringify([])); } catch { }
+                    const dot = document.getElementById('bell-dot');
+                    if (dot) dot.style.display = 'none';
+                    showInlineToast(data.message || 'Notifications cleared', '#22c55e');
+                    loadBellAlerts();
+                })
+                .catch(() => showInlineToast('Failed to clear notifications', '#ef4444'));
         }
 
 
         function openStaffRequestModal(a) {
             closeBell();
             const m = document.getElementById('staffReqModal');
-            document.getElementById('srm-name').textContent  = a.request_name;
+            document.getElementById('srm-name').textContent = a.request_name;
             document.getElementById('srm-email').textContent = a.request_email;
-            document.getElementById('srm-role').textContent  = (a.request_role || '').toUpperCase();
-            document.getElementById('srm-msg').textContent   = a.request_message || '(no message)';
-            document.getElementById('srm-accept').onclick    = () => handleStaffRequest(a.request_id, 'accept', document.getElementById('srm-accept'));
-            document.getElementById('srm-reject').onclick    = () => handleStaffRequest(a.request_id, 'reject', document.getElementById('srm-reject'));
+            document.getElementById('srm-role').textContent = (a.request_role || '').toUpperCase();
+            document.getElementById('srm-msg').textContent = a.request_message || '(no message)';
+            document.getElementById('srm-accept').onclick = () => handleStaffRequest(a.request_id, 'accept', document.getElementById('srm-accept'));
+            document.getElementById('srm-reject').onclick = () => handleStaffRequest(a.request_id, 'reject', document.getElementById('srm-reject'));
             m.style.display = 'flex';
             requestAnimationFrame(() => m.style.opacity = '1');
         }
@@ -1781,16 +2766,16 @@
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
             })
-            .then(r => r.json())
-            .then(data => {
-                closeStaffReqModal();
-                showInlineToast(data.message || data.error, action === 'accept' ? '#22c55e' : '#ef4444');
-                loadBellAlerts();
-            })
-            .catch(() => {
-                showInlineToast('Action failed. Please try again.', '#ef4444');
-                if (btn) { btn.disabled = false; btn.textContent = action === 'accept' ? '✓ ACCEPT' : '✕ REJECT'; }
-            });
+                .then(r => r.json())
+                .then(data => {
+                    closeStaffReqModal();
+                    showInlineToast(data.message || data.error, action === 'accept' ? '#22c55e' : '#ef4444');
+                    loadBellAlerts();
+                })
+                .catch(() => {
+                    showInlineToast('Action failed. Please try again.', '#ef4444');
+                    if (btn) { btn.disabled = false; btn.textContent = action === 'accept' ? '✓ ACCEPT' : '✕ REJECT'; }
+                });
         }
 
         function showInlineToast(msg, color) {
@@ -1804,7 +2789,7 @@
                 animation:atToastIn .3s ease;white-space:nowrap;`;
             el.textContent = msg;
             document.body.appendChild(el);
-            setTimeout(() => { el.style.animation='atToastOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3500);
+            setTimeout(() => { el.style.animation = 'atToastOut .3s ease forwards'; setTimeout(() => el.remove(), 300); }, 3500);
         }
 
         function getSeenAlerts() {
@@ -1813,24 +2798,24 @@
         }
         function markAlertsSeen(ids) {
             try { localStorage.setItem('seen_alerts', JSON.stringify(ids)); }
-            catch {}
+            catch { }
         }
 
         function showAlertToast(alert) {
             const id = 'atst_' + Date.now() + Math.random().toString(36).slice(2);
             const colors = {
-                '#22c55e': { bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.35)',  text: '#22c55e' },
+                '#22c55e': { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.35)', text: '#22c55e' },
                 '#F97316': { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.35)', text: '#F97316' },
-                '#ef4444': { bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.35)',  text: '#ef4444' },
+                '#ef4444': { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.35)', text: '#ef4444' },
                 '#3b82f6': { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.35)', text: '#3b82f6' },
             };
             const c = colors[alert.color] || colors['#F97316'];
             const modalBg = getComputedStyle(document.documentElement).getPropertyValue('--modal-bg').trim() || '#141414';
             const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
             const bodyTextColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(15,23,42,0.55)';
-            const closeBtnBg    = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)';
-            const closeBtnBorder= isDark ? 'rgba(255,255,255,0.1)'  : 'rgba(15,23,42,0.12)';
-            const closeBtnColor = isDark ? 'rgba(255,255,255,0.3)'  : 'rgba(15,23,42,0.4)';
+            const closeBtnBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)';
+            const closeBtnBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.12)';
+            const closeBtnColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.4)';
 
             const el = document.createElement('div');
             el.id = id;
@@ -1844,8 +2829,8 @@
                 animation:atToastIn .4s cubic-bezier(0.34,1.4,0.64,1);
                 cursor:pointer; transition:transform .15s, box-shadow .15s;
             `;
-            el.onmouseenter = () => { el.style.transform='translateY(-2px)'; el.style.boxShadow='0 20px 60px rgba(0,0,0,0.3)'; };
-            el.onmouseleave = () => { el.style.transform=''; el.style.boxShadow='0 16px 48px rgba(0,0,0,0.25)'; };
+            el.onmouseenter = () => { el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 20px 60px rgba(0,0,0,0.3)'; };
+            el.onmouseleave = () => { el.style.transform = ''; el.style.boxShadow = '0 16px 48px rgba(0,0,0,0.25)'; };
             el.onclick = () => { if (alert.url) window.location.href = alert.url; };
 
             el.innerHTML = `
@@ -1887,11 +2872,11 @@
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 // Two-tone "ding-dong" beep
                 [523.25, 659.25].forEach((freq, i) => {
-                    const osc  = ctx.createOscillator();
+                    const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.type      = 'sine';
+                    osc.type = 'sine';
                     osc.frequency.value = freq;
                     const start = ctx.currentTime + i * 0.18;
                     gain.gain.setValueAtTime(0, start);
@@ -1900,7 +2885,7 @@
                     osc.start(start);
                     osc.stop(start + 0.35);
                 });
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function dismissAlertToast(id) {
@@ -1914,27 +2899,27 @@
             fetch("{{ route('dashboard.notifications') }}", {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(r => r.json())
-            .then(data => {
-                const count = data.count ?? 0;
-                document.getElementById('bell-dot').style.display = count > 0 ? 'block' : 'none';
+                .then(r => r.json())
+                .then(data => {
+                    const count = data.count ?? 0;
+                    document.getElementById('bell-dot').style.display = count > 0 ? 'block' : 'none';
 
-                if (!data.alerts || data.alerts.length === 0) return;
+                    if (!data.alerts || data.alerts.length === 0) return;
 
-                const seen    = getSeenAlerts();
-                const current = data.alerts.map(a => a.id || a.font + a.body);
-                const newAlerts = data.alerts.filter(a => {
-                    const key = a.id || a.font + a.body;
-                    return !seen.includes(key);
-                });
+                    const seen = getSeenAlerts();
+                    const current = data.alerts.map(a => a.id || a.font + a.body);
+                    const newAlerts = data.alerts.filter(a => {
+                        const key = a.id || a.font + a.body;
+                        return !seen.includes(key);
+                    });
 
-                if (newAlerts.length > 0) playOrderAlertSound();
-                newAlerts.forEach(a => showAlertToast(a));
+                    if (newAlerts.length > 0) playOrderAlertSound();
+                    newAlerts.forEach(a => showAlertToast(a));
 
-                const allSeen = [...new Set([...seen, ...current])].slice(-50);
-                markAlertsSeen(allSeen);
-            })
-            .catch(() => {});
+                    const allSeen = [...new Set([...seen, ...current])].slice(-50);
+                    markAlertsSeen(allSeen);
+                })
+                .catch(() => { });
         }
 
         pollBellDot();
@@ -1955,13 +2940,13 @@
             applyTheme(next);
         }
 
-        (function() {
+        (function () {
             const t = document.documentElement.getAttribute('data-theme') || 'dark';
             applyTheme(t);
         })();
 
         // ── Staff online heartbeat ──────────────────────────────────────
-        (function() {
+        (function () {
             const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
             function sendHeartbeat() {
@@ -1969,7 +2954,7 @@
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': csrf, 'Content-Type': 'application/json' },
                     keepalive: true
-                }).catch(() => {});
+                }).catch(() => { });
             }
 
             function sendOffline() {
@@ -1982,7 +2967,7 @@
             sendHeartbeat();
             setInterval(sendHeartbeat, 30000);
             window.addEventListener('beforeunload', sendOffline);
-            document.addEventListener('visibilitychange', function() {
+            document.addEventListener('visibilitychange', function () {
                 if (document.visibilityState === 'hidden') sendOffline();
                 else sendHeartbeat();
             });
@@ -1994,7 +2979,7 @@
             if (currentLang === lang) return;
 
             // Update toggle button active state immediately
-            document.querySelectorAll('.lt-btn').forEach(function(btn) {
+            document.querySelectorAll('.lt-btn').forEach(function (btn) {
                 btn.classList.toggle('active', btn.dataset.lang === lang);
             });
 
@@ -2008,18 +2993,18 @@
 
             // Hit the lang route (sets session) then reload current page
             fetch('/lang/' + lang, { method: 'GET', credentials: 'same-origin' })
-                .then(function() {
+                .then(function () {
                     // Reload current URL so blade re-renders with new locale
                     window.location.reload();
                 })
-                .catch(function() {
+                .catch(function () {
                     window.location.href = '/lang/' + lang;
                 });
         }
     </script>
 
     <script>
-        (function() {
+        (function () {
             if (document.documentElement.lang !== 'km') return;
 
             const ENGLISH_RE = /[A-Za-z]/;
@@ -2060,7 +3045,7 @@
                 }
             }
 
-            document.body.querySelectorAll('.km-english').forEach(function(el) {
+            document.body.querySelectorAll('.km-english').forEach(function (el) {
                 el.classList.remove('km-english');
             });
 
@@ -2069,97 +3054,142 @@
     </script>
 
     <style>
-    @keyframes atToastIn  { from{opacity:0;transform:translateX(40px) scale(.95)} to{opacity:1;transform:none} }
-    @keyframes atToastOut { to{opacity:0;transform:translateX(40px) scale(.95)} }
-    @keyframes atToastBar { from{width:100%} to{width:0%} }
-    @keyframes onlinePulse {
-        0%, 100% { box-shadow: 0 0 4px #22c55e; }
-        50%       { box-shadow: 0 0 12px #22c55e, 0 0 20px rgba(34,197,94,0.3); }
-    }
+        @keyframes atToastIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes atToastOut {
+            to {
+                opacity: 0;
+                transform: translateX(40px) scale(.95)
+            }
+        }
+
+        @keyframes atToastBar {
+            from {
+                width: 100%
+            }
+
+            to {
+                width: 0%
+            }
+        }
+
+        @keyframes onlinePulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 4px #22c55e;
+            }
+
+            50% {
+                box-shadow: 0 0 12px #22c55e, 0 0 20px rgba(34, 197, 94, 0.3);
+            }
+        }
     </style>
 
     {{-- Staff Request Modal (superadmin only) --}}
     @if((Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role === 'superadmin')
-    <div id="staffReqModal" style="
-        display:none; opacity:0; transition:opacity .2s;
-        position:fixed; inset:0; z-index:99000;
-        background:var(--overlay); backdrop-filter:blur(4px);
-        align-items:center; justify-content:center; padding:20px;
-    " onclick="if(event.target===this)closeStaffReqModal()">
-        <div style="
-            background:var(--modal-bg); border:1px solid var(--border);
-            border-radius:20px; width:100%; max-width:460px;
-            box-shadow:0 30px 80px rgba(0,0,0,0.4);
-            overflow:hidden; font-family:Rajdhani,sans-serif;
-        ">
-            <div style="height:3px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);"></div>
-            <div style="padding:28px 32px 32px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-                    <div>
-                        <div style="font-size: var(--font-size);letter-spacing:3px;color:var(--text-faint);margin-bottom:3px;">
-                            {{ strtoupper(__('dashboard.common.staffAccess')) }}
-                        </div>
-                        <div style="font-size: var(--font-size);font-weight:800;letter-spacing:1px;color:#a78bfa;" id="srm-name">—</div>
-                    </div>
-                    <button onclick="closeStaffReqModal()" style="
-                        width:36px;height:36px;border-radius:10px;border:1px solid var(--border-input);
-                        background:var(--hover-bg);color:var(--text-muted);
-                        font-size: var(--font-size);cursor:pointer;display:flex;align-items:center;justify-content:center;
-                    ">×</button>
-                </div>
-
-                <div style="display:grid;gap:12px;margin-bottom:22px;">
-                    <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
-                        <div style="font-size: var(--font-size);width:36px;text-align:center;">📧</div>
+        <div id="staffReqModal" style="
+            display:none; opacity:0; transition:opacity .2s;
+            position:fixed; inset:0; z-index:99000;
+            background:var(--overlay); backdrop-filter:blur(4px);
+            align-items:center; justify-content:center; padding:20px;
+        " onclick="if(event.target===this)closeStaffReqModal()">
+            <div style="
+                background:var(--modal-bg); border:1px solid var(--border);
+                border-radius:20px; width:100%; max-width:460px;
+                box-shadow:0 30px 80px rgba(0,0,0,0.4);
+                overflow:hidden; font-family:Rajdhani,sans-serif;
+            ">
+                <div style="height:3px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);"></div>
+                <div style="padding:28px 32px 32px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
                         <div>
-                            <div style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
-                                {{ strtoupper(__('dashboard.form.email')) }}
+                            <div
+                                style="font-size: var(--font-size);letter-spacing:3px;color:var(--text-faint);margin-bottom:3px;">
+                                {{ strtoupper(__('dashboard.common.staffAccess')) }}
                             </div>
-                            <div style="font-size: var(--font-size);font-weight:600;color:var(--text);" id="srm-email">—</div>
+                            <div style="font-size: var(--font-size);font-weight:800;letter-spacing:1px;color:#a78bfa;"
+                                id="srm-name">—</div>
                         </div>
+                        <button onclick="closeStaffReqModal()" style="
+                            width:36px;height:36px;border-radius:10px;border:1px solid var(--border-input);
+                            background:var(--hover-bg);color:var(--text-muted);
+                            font-size: var(--font-size);cursor:pointer;display:flex;align-items:center;justify-content:center;
+                        ">×</button>
                     </div>
-                    <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
-                        <div style="font-size: var(--font-size);width:36px;text-align:center;">👤</div>
-                        <div>
-                            <div style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
-                                {{ strtoupper(__('dashboard.access.yourRole')) }}
-                            </div>
-                            <div style="font-size: var(--font-size);font-weight:700;color:#a78bfa;letter-spacing:2px;" id="srm-role">—</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
-                        <div style="font-size: var(--font-size);width:36px;text-align:center;">💬</div>
-                        <div>
-                            <div style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">MESSAGE</div>
-                            <div style="font-size: var(--font-size);color:var(--text-muted);font-style:italic;" id="srm-msg">—</div>
-                        </div>
-                    </div>
-                </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <button id="srm-reject" style="
-                        padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);
-                        background:rgba(239,68,68,0.08);color:#ef4444;
-                        font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
-                        letter-spacing:2px;cursor:pointer;transition:all .2s;
-                    " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
-                       onmouseout="this.style.background='rgba(239,68,68,0.08)'">
-                        ✕ {{ strtoupper(__('dashboard.btn.cancel')) }}
-                    </button>
-                    <button id="srm-accept" style="
-                        padding:13px;border-radius:12px;border:none;
-                        background:#22c55e;color:#fff;
-                        font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
-                        letter-spacing:2px;cursor:pointer;transition:all .2s;
-                    " onmouseover="this.style.background='#16a34a'"
-                       onmouseout="this.style.background='#22c55e'">
-                        ✓ {{ strtoupper(__('dashboard.btn.confirm')) }}
-                    </button>
+                    <div style="display:grid;gap:12px;margin-bottom:22px;">
+                        <div
+                            style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
+                            <div style="font-size: var(--font-size);width:36px;text-align:center;">📧</div>
+                            <div>
+                                <div
+                                    style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                                    {{ strtoupper(__('dashboard.form.email')) }}
+                                </div>
+                                <div style="font-size: var(--font-size);font-weight:600;color:var(--text);" id="srm-email">—
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
+                            <div style="font-size: var(--font-size);width:36px;text-align:center;">👤</div>
+                            <div>
+                                <div
+                                    style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                                    {{ strtoupper(__('dashboard.access.yourRole')) }}
+                                </div>
+                                <div style="font-size: var(--font-size);font-weight:700;color:#a78bfa;letter-spacing:2px;"
+                                    id="srm-role">—</div>
+                            </div>
+                        </div>
+                        <div
+                            style="display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border);">
+                            <div style="font-size: var(--font-size);width:36px;text-align:center;">💬</div>
+                            <div>
+                                <div
+                                    style="font-size: var(--font-size);letter-spacing:2px;color:var(--text-faint);margin-bottom:2px;">
+                                    MESSAGE</div>
+                                <div style="font-size: var(--font-size);color:var(--text-muted);font-style:italic;"
+                                    id="srm-msg">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <button id="srm-reject" style="
+                            padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);
+                            background:rgba(239,68,68,0.08);color:#ef4444;
+                            font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
+                            letter-spacing:2px;cursor:pointer;transition:all .2s;
+                        " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
+                            onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+                            ✕ {{ strtoupper(__('dashboard.btn.cancel')) }}
+                        </button>
+                        <button id="srm-accept" style="
+                            padding:13px;border-radius:12px;border:none;
+                            background:#22c55e;color:#fff;
+                            font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
+                            letter-spacing:2px;cursor:pointer;transition:all .2s;
+                        " onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">
+                            ✓ {{ strtoupper(__('dashboard.btn.confirm')) }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     @endif
 
 </body>
+
 </html>

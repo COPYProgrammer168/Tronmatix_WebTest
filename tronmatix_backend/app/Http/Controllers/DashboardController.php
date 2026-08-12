@@ -49,7 +49,7 @@ class DashboardController extends Controller
         $validPeriods = ['today', 'this-month', '6-months', 'this-year', 'about'];
         $period = in_array($request->input('period'), $validPeriods, true)
             ? $request->input('period')
-            : 'this-month';
+            : 'today';
 
         [$curStart, $curEnd, $prevStart, $prevEnd] = $this->periodRange($period, $month);
 
@@ -649,11 +649,11 @@ class DashboardController extends Controller
         // FIX [2]: low/in stock filters use AdminSetting threshold
         $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
         if (request('stock') === 'out') {
-            $query->where('stock', '<=', 0);
+            $query->where('current_stock', '<=', 0);
         } elseif (request('stock') === 'low') {
-            $query->where('stock', '>', 0)->where('stock', '<=', $threshold); // FIX [2]
+            $query->where('current_stock', '>', 0)->where('current_stock', '<=', $threshold); // FIX [2]
         } elseif (request('stock') === 'in') {
-            $query->where(fn($q) => $q->whereNull('stock')->orWhere('stock', '>', 0));
+            $query->where(fn($q) => $q->whereNull('current_stock')->orWhere('current_stock', '>', 0));
         }
 
         if (request('filter') === 'hot') {

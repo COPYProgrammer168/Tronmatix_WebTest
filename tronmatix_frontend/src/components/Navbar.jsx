@@ -9,6 +9,7 @@ import { useLang } from '../context/LanguageContext'
 import { useMobileMenu } from '../context/MobileMenuContext'
 import { useCategories } from '../context/CategoryContext'
 import LogoutConfirmModal from './LogoutConfirmModal'
+import SearchSuggestions from './SearchSuggestions'
 import logo from '../assets/logo.png'
 
 const slugify = s => s.toLowerCase().replace(/\s+/g, '-')
@@ -74,183 +75,183 @@ function DropdownPanel({ item, openDrop, openSub, openSubSub, setOpenDrop, setOp
       <Link
         to={(() => { const cats = expandedCatNames[item.path.split('/').pop()] || item.categories || []; return cats.length ? `${item.path}?cats=${cats.map(c => encodeURIComponent(c)).join(',')}` : item.path })()}
         className="block px-4 py-2 font-bold text-primary border-b border-[#333] mb-1 tracking-wider"
-        style={{ fontFamily: dropFont, fontSize: 15, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#F97316' : '#1f2937' }}
+        style={{ fontFamily: dropFont, fontSize: 17, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#F97316' : '#1f2937' }}
         onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
         ALL {item.label}
       </Link>
 
       {hasNested
         ? item.sub.map(mc => (
-            <div key={mc.label} className="relative"
+          <div key={mc.label} className="relative"
+            onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
+            onMouseLeave={scheduleCloseSub}>
+            <div className="flex items-center justify-between transition-colors"
+              style={{ backgroundColor: openSub === mc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
               onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
               onMouseLeave={scheduleCloseSub}>
-              <div className="flex items-center justify-between transition-colors"
-                style={{ backgroundColor: openSub === mc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
+              <Link to={`${item.path}/${slugify(mc.label)}`}
+                className="flex-1 px-4 py-3 font-bold hover:text-primary tracking-wider"
+                style={{ fontFamily: dropFont, fontSize: 17, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
+                onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                {mc.label}
+              </Link>
+              {/* Arrow only when this main category actually has sub-categories */}
+              {mc.sub && mc.sub.length > 0 && (
+                <span className="pr-3 text-gray-500">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              )}
+            </div>
+
+            {openSub === mc.label && mc.sub && (
+              <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
+                style={{
+                  background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                  backdropFilter: 'blur(12px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                  border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+                }}
                 onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
                 onMouseLeave={scheduleCloseSub}>
-                <Link to={`${item.path}/${slugify(mc.label)}`}
-                  className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
-                  style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
-                  onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 14 }}>
                   {mc.label}
-                </Link>
-                {/* Arrow only when this main category actually has sub-categories */}
-                {mc.sub && mc.sub.length > 0 && (
-                  <span className="pr-3 text-gray-500">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                )}
-              </div>
+                </div>
+                {mc.sub.map(sc => (
+                  <div key={sc.label} className="relative"
+                    onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
+                    onMouseLeave={scheduleCloseSubSub}>
+                    <div className="flex items-center justify-between transition-colors"
+                      style={{ backgroundColor: openSubSub === sc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
+                      onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
+                      onMouseLeave={scheduleCloseSubSub}>
+                      <Link to={`${item.path}/${slugify(mc.label)}/${slugify(sc.label)}`}
+                        className="flex-1 px-4 py-3 font-bold hover:text-primary tracking-wider"
+                        style={{ fontFamily: dropFont, fontSize: 17, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
+                        onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                        {sc.label}
+                      </Link>
+                      {sc.brands && sc.brands.length > 0 && (
+                        <span className="pr-3 text-gray-500">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
 
-              {openSub === mc.label && mc.sub && (
-                <div className="absolute left-full top-0 shadow-2xl z-[210] min-w-[220px] py-2"
+                    {openSubSub === sc.label && sc.brands && (
+                      <div className="absolute left-full top-0 shadow-2xl z-[220] min-w-[220px] py-2"
+                        style={{
+                          background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
+                          backdropFilter: 'blur(12px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                          border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
+                        }}
+                        onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
+                        onMouseLeave={scheduleCloseSubSub}>
+                        <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 14 }}>
+                          {sc.label}
+                        </div>
+                        {sc.brands.map(brand => (
+                          <Link key={brand}
+                            to={`${item.path}/${slugify(mc.label)}/${slugify(sc.label)}?cats=${encodeURIComponent(brand)}`}
+                            className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
+                            style={{
+                              fontFamily: dropFont,
+                              fontSize: 17,
+                              letterSpacing: isKhmer ? 0 : undefined,
+                              color: dark ? '#d1d5db' : '#374151',
+                              backgroundColor: 'transparent'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                            onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                            {brand}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))
+        : item.sub.map(sub => {
+          // Flattened single-main categories (e.g. PC BUILD) surface their
+          // sub-categories here as { label, brands } objects; legacy nav
+          // strings still work too.
+          const subLabel = typeof sub === 'string' ? sub : sub.label
+          const subBrands = typeof sub === 'string' ? [] : (sub.brands || [])
+          const hasFlyout = subBrands.length > 0
+
+          const link = (
+            <Link to={`${item.path}/${slugify(subLabel)}`}
+              className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
+              style={{
+                fontFamily: dropFont,
+                fontSize: 17,
+                letterSpacing: isKhmer ? 0 : undefined,
+                color: dark ? '#d1d5db' : '#374151',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+              {subLabel}
+            </Link>
+          )
+
+          return (
+            <div key={subLabel} className="relative flex items-center justify-between transition-colors"
+              onMouseEnter={() => { clearClose(); if (hasFlyout) setOpenSub(subLabel) }}
+              onMouseLeave={scheduleCloseSub}>
+              {link}
+              {/* Flyout arrow only when this item has brands to show */}
+              {hasFlyout && (
+                <span className="pr-3 text-gray-500">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              )}
+              {openSub === subLabel && hasFlyout && (
+                <div className="absolute left-full top-0 shadow-2xl z-[220] min-w-[220px] py-2"
                   style={{
                     background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
                     backdropFilter: 'blur(12px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(12px) saturate(180%)',
                     border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
                   }}
-                  onMouseEnter={() => { clearClose(); setOpenSub(mc.label) }}
+                  onMouseEnter={() => { clearClose(); setOpenSub(subLabel) }}
                   onMouseLeave={scheduleCloseSub}>
-                  <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
-                    {mc.label}
+                  <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 14 }}>
+                    {subLabel}
                   </div>
-                  {mc.sub.map(sc => (
-                    <div key={sc.label} className="relative"
-                      onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
-                      onMouseLeave={scheduleCloseSubSub}>
-                      <div className="flex items-center justify-between transition-colors"
-                        style={{ backgroundColor: openSubSub === sc.label ? (dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)') : 'transparent' }}
-                        onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
-                        onMouseLeave={scheduleCloseSubSub}>
-                        <Link to={`${item.path}/${slugify(mc.label)}/${slugify(sc.label)}`}
-                          className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider"
-                          style={{ fontFamily: dropFont, fontSize: 16, letterSpacing: isKhmer ? 0 : undefined, color: dark ? '#d1d5db' : '#374151' }}
-                          onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
-                          {sc.label}
-                        </Link>
-                        {sc.brands && sc.brands.length > 0 && (
-                          <span className="pr-3 text-gray-500">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                          </span>
-                        )}
-                      </div>
-
-                      {openSubSub === sc.label && sc.brands && (
-                        <div className="absolute left-full top-0 shadow-2xl z-[220] min-w-[220px] py-2"
-                          style={{
-                            background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
-                            backdropFilter: 'blur(12px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                            border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
-                          }}
-                          onMouseEnter={() => { clearClose(); setOpenSubSub(sc.label) }}
-                          onMouseLeave={scheduleCloseSubSub}>
-                          <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
-                            {sc.label}
-                          </div>
-                          {sc.brands.map(brand => (
-                            <Link key={brand}
-                              to={`${item.path}/${slugify(mc.label)}/${slugify(sc.label)}?cats=${encodeURIComponent(brand)}`}
-                              className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
-                              style={{
-                                fontFamily: dropFont,
-                                fontSize: 16,
-                                letterSpacing: isKhmer ? 0 : undefined,
-                                color: dark ? '#d1d5db' : '#374151',
-                                backgroundColor: 'transparent'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                              onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
-                              {brand}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  {subBrands.map(brand => (
+                    <Link key={brand}
+                      to={brandPath(item, brand)}
+                      className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
+                      style={{
+                        fontFamily: dropFont,
+                        fontSize: 17,
+                        letterSpacing: isKhmer ? 0 : undefined,
+                        color: dark ? '#d1d5db' : '#374151',
+                        backgroundColor: 'transparent'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
+                      {brand}
+                    </Link>
                   ))}
                 </div>
               )}
             </div>
-          ))
-        : item.sub.map(sub => {
-            // Flattened single-main categories (e.g. PC BUILD) surface their
-            // sub-categories here as { label, brands } objects; legacy nav
-            // strings still work too.
-            const subLabel = typeof sub === 'string' ? sub : sub.label
-            const subBrands = typeof sub === 'string' ? [] : (sub.brands || [])
-            const hasFlyout = subBrands.length > 0
-
-            const link = (
-              <Link to={`${item.path}/${slugify(subLabel)}`}
-                className="flex-1 px-4 py-2.5 font-bold hover:text-primary tracking-wider transition-colors"
-                style={{
-                  fontFamily: dropFont,
-                  fontSize: 16,
-                  letterSpacing: isKhmer ? 0 : undefined,
-                  color: dark ? '#d1d5db' : '#374151',
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
-                {subLabel}
-              </Link>
-            )
-
-            return (
-              <div key={subLabel} className="relative flex items-center justify-between transition-colors"
-                onMouseEnter={() => { clearClose(); if (hasFlyout) setOpenSub(subLabel) }}
-                onMouseLeave={scheduleCloseSub}>
-                {link}
-                {/* Flyout arrow only when this item has brands to show */}
-                {hasFlyout && (
-                  <span className="pr-3 text-gray-500">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                )}
-                {openSub === subLabel && hasFlyout && (
-                  <div className="absolute left-full top-0 shadow-2xl z-[220] min-w-[220px] py-2"
-                    style={{
-                      background: dark ? 'rgba(17, 17, 17, 0.85)' : 'rgba(249, 250, 251, 0.85)',
-                      backdropFilter: 'blur(12px) saturate(180%)',
-                      WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-                      border: `1px solid ${dark ? 'rgba(249,115,22,0.3)' : 'rgba(249,115,22,0.2)'}`,
-                    }}
-                    onMouseEnter={() => { clearClose(); setOpenSub(subLabel) }}
-                    onMouseLeave={scheduleCloseSub}>
-                    <div className="px-4 py-1 text-primary font-black tracking-widest border-b border-[#333] mb-1" style={{ fontSize: 12 }}>
-                      {subLabel}
-                    </div>
-                    {subBrands.map(brand => (
-                      <Link key={brand}
-                        to={brandPath(item, brand)}
-                        className="block px-4 py-2 hover:text-primary tracking-wider transition-colors font-bold"
-                        style={{
-                          fontFamily: dropFont,
-                          fontSize: 16,
-                          letterSpacing: isKhmer ? 0 : undefined,
-                          color: dark ? '#d1d5db' : '#374151',
-                          backgroundColor: 'transparent'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = dark ? 'rgba(249,115,22,0.1)' : 'rgba(249,115,22,0.05)'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                        onClick={() => { setOpenDrop(null); setOpenSub(null); setOpenSubSub(null) }}>
-                        {brand}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })
+          )
+        })
       }
     </div>
   )
@@ -268,8 +269,11 @@ export default function Navbar({ onAuthOpen }) {
   const [mobileSubSub, setMobileSubSub] = useState(null)
   const [search, setSearch] = useState('')
   const [userMenu, setUserMenu] = useState(false)
+  const desktopInputRef = useRef(null)
+  const mobileInputRef = useRef(null)
   const [scrolled, setScrolled] = useState(false)
   const [hoveredNav, setHoveredNav] = useState(null)
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
   const { user, logout, ready } = useAuth()
   const { items, setCartOpen } = useCart()
@@ -366,21 +370,21 @@ export default function Navbar({ onAuthOpen }) {
   /* ── Expanded category names for "ALL {label}" links ─────────── */
   const expandedCatNames = useMemo(() => {
     const map = {}
-    ;(apiCategories || []).forEach(cat => {
-      const names = []
-      ;(cat.main_categories || []).forEach(mc => {
-        if (mc.name) names.push(mc.name)
-        const scs = mc.sub_categories || []
-        scs.forEach(sc => {
-          if (sc.name) names.push(sc.name)
-          const brands = Array.isArray(sc.brands)
-            ? sc.brands.map(b => b.name).filter(b => b && b !== 'TBD')
-            : (typeof sc.brands === 'string' ? sc.brands.split(',').map(s => s.trim()).filter(s => s && s !== 'TBD') : [])
-          if (brands.length) names.push(...brands)
-        })
+      ; (apiCategories || []).forEach(cat => {
+        const names = []
+          ; (cat.main_categories || []).forEach(mc => {
+            if (mc.name) names.push(mc.name)
+            const scs = mc.sub_categories || []
+            scs.forEach(sc => {
+              if (sc.name) names.push(sc.name)
+              const brands = Array.isArray(sc.brands)
+                ? sc.brands.map(b => b.name).filter(b => b && b !== 'TBD')
+                : (typeof sc.brands === 'string' ? sc.brands.split(',').map(s => s.trim()).filter(s => s && s !== 'TBD') : [])
+              if (brands.length) names.push(...brands)
+            })
+          })
+        map[cat.slug] = [...new Set(names.filter(Boolean))]
       })
-      map[cat.slug] = [...new Set(names.filter(Boolean))]
-    })
     return map
   }, [apiCategories])
 
@@ -583,7 +587,7 @@ export default function Navbar({ onAuthOpen }) {
         ) : user ? (
           <>
             <UserAvatar size={10} fontSize={16} />
-            <span className="font-bold truncate" style={{ fontSize: 15, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
+            <span className="font-bold truncate" style={{ fontSize: 17, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
               {user.username || user.name || 'User'}
             </span>
           </>
@@ -734,7 +738,7 @@ export default function Navbar({ onAuthOpen }) {
                   {user ? (
                     <>
                       <UserAvatar size={9} fontSize={15} />
-                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 16, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
+                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 17, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
                         {user.username || user.name}
                       </span>
                     </>
@@ -814,10 +818,10 @@ export default function Navbar({ onAuthOpen }) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   <div>
-                    <div style={{ fontFamily: navbFont, fontSize: 13, color: subTextColor, fontWeight: 700, letterSpacing: isKhmer ? 0 : 0.5 }}>
+                    <div style={{ fontFamily: navbFont, fontSize: 15, color: subTextColor, fontWeight: 700, letterSpacing: isKhmer ? 0 : 0.5 }}>
                       {isKhmer ? 'ទំនាក់ទំនងយើង' : 'Call us now'}
                     </div>
-                    <div style={{ fontFamily: navFont, fontSize: 13, fontWeight: 700, color: textColor, letterSpacing: isKhmer ? 0 : 0.5 }}>{isKhmer ? '096 733 3725 / 077 711 126' : '096 733 3725 / 077 711 126'}</div>
+                    <div style={{ fontFamily: navFont, fontSize: 15, fontWeight: 700, color: textColor, letterSpacing: isKhmer ? 0 : 0.5 }}>{isKhmer ? '096 733 3725 / 077 711 126' : '096 733 3725 / 077 711 126'}</div>
                   </div>
                 </div>
                 {/* <div className="flex gap-3 mt-1.5 ml-7">
@@ -829,7 +833,7 @@ export default function Navbar({ onAuthOpen }) {
 
               <form onSubmit={handleSearch} className="flex-1 hidden md:flex mx-3">
                 <div className="relative w-full max-w-md">
-                  <input value={search} onChange={e => setSearch(e.target.value)}
+                  <input ref={desktopInputRef} value={search} onChange={e => setSearch(e.target.value)}
                     placeholder={t('nav.search')}
                     className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none transition-colors"
                     style={{ fontFamily: navFont, fontSize: 15, fontWeight: 700, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }}
@@ -841,6 +845,7 @@ export default function Navbar({ onAuthOpen }) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </button>
+                  <SearchSuggestions query={search} onClose={() => setSuggestionsOpen(false)} onClear={() => setSearch('')} inputRef={desktopInputRef} />
                 </div>
               </form>
 
@@ -1016,7 +1021,7 @@ export default function Navbar({ onAuthOpen }) {
                         <div className="font-black truncate" style={{ fontSize: 15, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                           {user.username || user.name}
                         </div>
-                        <div style={{ fontFamily: navFont, fontSize: 11, color: subTextColor }}>
+                        <div style={{ fontFamily: navFont, fontSize: 14, color: subTextColor }}>
                           {isKhmer ? 'បានចូល' : 'Logged in'}
                         </div>
                       </div>
@@ -1025,12 +1030,12 @@ export default function Navbar({ onAuthOpen }) {
                     <div className="flex gap-2 flex-wrap">
                       <button onClick={() => { onAuthOpen('login'); setIsMobileMenuOpen(false) }}
                         className="bg-primary text-white px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
-                        style={{ fontFamily: navFont, fontSize: 13 }}>
+                        style={{ fontFamily: navFont, fontSize: 14 }}>
                         {t('nav.login').toUpperCase()}
                       </button>
                       <button onClick={() => { onAuthOpen('register'); setIsMobileMenuOpen(false) }}
                         className="border-2 border-primary px-3 py-1.5 rounded-lg font-bold flex-shrink-0"
-                        style={{ fontFamily: navFont, fontSize: 13, color: '#F97316' }}>
+                        style={{ fontFamily: navFont, fontSize: 14, color: '#F97316' }}>
                         {t('nav.register').toUpperCase()}
                       </button>
                     </div>
@@ -1057,7 +1062,7 @@ export default function Navbar({ onAuthOpen }) {
               background: dark ? 'rgba(249,115,22,0.03)' : 'rgba(249,115,22,0.02)',
             }}>
               <div className="relative">
-                <input value={search} onChange={e => setSearch(e.target.value)}
+                <input ref={mobileInputRef} value={search} onChange={e => setSearch(e.target.value)}
                   placeholder={t('nav.search')}
                   className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
                   style={{
@@ -1070,6 +1075,7 @@ export default function Navbar({ onAuthOpen }) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </button>
+                <SearchSuggestions query={search} onClose={() => setSuggestionsOpen(false)} onClear={() => setSearch('')} inputRef={mobileInputRef} />
               </div>
             </form>
 
@@ -1094,7 +1100,7 @@ export default function Navbar({ onAuthOpen }) {
                     }}>
                     <span
                       className="font-bold tracking-wide cursor-pointer flex-1"
-                      style={{ fontFamily: navbFont, fontSize: 16, color: isActive(item) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
+                      style={{ fontFamily: navbFont, fontSize: 17, color: isActive(item) ? '#F97316' : textColor, transition: 'color 0.15s', letterSpacing: isKhmer ? 0 : undefined }}
                     >
                       {t(NAV_LABEL_KEYS[item.label] || item.label)}
                     </span>
@@ -1166,7 +1172,7 @@ export default function Navbar({ onAuthOpen }) {
                                   {mcSubs.length === 0 && mcBrands.map(brand => (
                                     <Link key={brand} to={brandPath(item, brand)}
                                       className="block py-1 font-semibold"
-                                      style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
+                                      style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
                                       onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                                       onMouseLeave={e => e.currentTarget.style.color = subTextColor}
                                       onClick={() => setIsMobileMenuOpen(false)}>- {brand}</Link>
@@ -1182,7 +1188,7 @@ export default function Navbar({ onAuthOpen }) {
                                         <div className="flex items-center justify-between">
                                           <Link to={scPath}
                                             className="block py-1 font-semibold flex-1"
-                                            style={{ fontSize: 13, color: subTextColor, transition: 'color 0.15s' }}
+                                            style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
                                             onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                                             onMouseLeave={e => e.currentTarget.style.color = subTextColor}
                                             onClick={() => setIsMobileMenuOpen(false)}>{scLabel}</Link>
@@ -1216,7 +1222,7 @@ export default function Navbar({ onAuthOpen }) {
                                             {brands.map(brand => (
                                               <Link key={brand} to={`${scPath}?cats=${encodeURIComponent(brand)}`}
                                                 className="block py-1 font-semibold"
-                                                style={{ fontSize: 12, color: subTextColor, transition: 'color 0.15s' }}
+                                                style={{ fontSize: 14, color: subTextColor, transition: 'color 0.15s' }}
                                                 onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
                                                 onMouseLeave={e => e.currentTarget.style.color = subTextColor}
                                                 onClick={() => setIsMobileMenuOpen(false)}>- {brand}</Link>
@@ -1260,8 +1266,8 @@ export default function Navbar({ onAuthOpen }) {
                   ))}
                 </div>
                 <button onClick={() => { setIsMobileMenuOpen(false); setLogoutOpen(true) }}
-                  className="w-full text-red-500 font-bold border border-red-300 py-2 rounded-lg"
-                  style={{ fontFamily: navFont, fontSize: 15 }}>
+                  className="w-full text-red-500 font-bold border border-red-300 py-2.5 rounded-lg"
+                  style={{ fontFamily: navFont, fontSize: 17 }}>
                   🚪 {t('nav.logout')}
                 </button>
               </div>

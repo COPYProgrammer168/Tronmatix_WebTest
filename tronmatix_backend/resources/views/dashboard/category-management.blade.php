@@ -21,11 +21,11 @@
     {{-- Header --}}
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
         <div>
-            <h1 style="font-size:var(--text-2xl); font-weight:800; letter-spacing:2px; color:var(--text); margin:0;">CATEGORY MANAGEMENT</h1>
-            <p style="font-size:var(--text-sm); color:var(--text-muted); margin-top:4px;">4-level navigation tree — Category → MainCate → SubCate → Brand</p>
+            <h1 style="font-size:var(--text-3xl); font-weight:900; letter-spacing:2px; color:var(--text); margin:0;">CATEGORY MANAGEMENT</h1>
+            <p style="font-size:var(--text-md); color:var(--text-muted); margin-top:4px;">4-level navigation tree — Category → MainCate → SubCate → Brand</p>
         </div>
-        <button onclick="openModal('category')" class="btn btn-orange">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <button onclick="openModal('category')" class="btn btn-orange" style="padding:12px 22px; font-size:var(--text-base);">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             ADD CATEGORY
@@ -33,7 +33,7 @@
     </div>
 
     {{-- Toast notification --}}
-    <div id="cm-toast" style="display:none; position:fixed; top:20px; right:20px; z-index:9999; background:rgba(34,197,94,0.95); color:#fff; padding:12px 20px; border-radius:10px; font-weight:700; font-size:var(--text-sm); box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+    <div id="cm-toast" style="display:none; position:fixed; top:20px; right:20px; z-index:9999; background:rgba(34,197,94,0.95); color:#fff; padding:14px 24px; border-radius:10px; font-weight:700; font-size:var(--text-base); box-shadow:0 4px 20px rgba(0,0,0,0.2);">
         ✓ Saved
     </div>
 
@@ -41,9 +41,9 @@
     <div id="category-tree" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
         @if(count($tree ?? []) === 0)
             <div style="text-align:center; padding:60px 20px; color:var(--text-xfaint);">
-                <div style="font-size:48px; margin-bottom:12px;">📂</div>
-                <p style="font-size:var(--text-md); font-weight:700;">No categories yet</p>
-                <p style="font-size:var(--text-sm); margin-top:4px;">Click "ADD CATEGORY" to create the first level.</p>
+                <div style="font-size:56px; margin-bottom:16px;">📂</div>
+                <p style="font-size:var(--text-lg); font-weight:700;">No categories yet</p>
+                <p style="font-size:var(--text-md); margin-top:4px;">Click "ADD CATEGORY" to create the first level.</p>
             </div>
         @else
             @include('dashboard.category-management.partials.tree', ['items' => $tree ?? [], 'level' => 0])
@@ -58,27 +58,27 @@
     <div class="cm-modal-overlay" onclick="closeModal('category')"></div>
     <div class="cm-modal-box">
         <div class="cm-modal-header">
-            <h3 id="modal-category-title" style="margin:0; font-size:var(--text-lg); font-weight:800; letter-spacing:1px;">ADD CATEGORY</h3>
+            <h3 id="modal-category-title" style="margin:0; font-size:var(--text-xl); font-weight:900; letter-spacing:1px;">ADD CATEGORY</h3>
             <button onclick="closeModal('category')" class="cm-modal-close">✕</button>
         </div>
         <form id="form-category" onsubmit="saveCategory(event)">
             <input type="hidden" name="id" id="cat-id">
             <div style="display:flex; flex-direction:column; gap:16px; padding:20px 0;">
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
                     <input type="text" name="name" id="cat-name" required class="s-input" style="margin-top:6px;" placeholder="e.g. PC BUILD">
-                    <div style="font-size:12px; color:var(--text-xfaint); margin-top:4px;">Slug generated automatically.</div>
+                    <div style="font-size:14px; color:var(--text-xfaint); margin-top:4px;">Slug generated automatically.</div>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
                         <input type="number" name="order" id="cat-order" value="0" min="0" class="s-input" style="margin-top:6px;">
                     </div>
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
                         <label style="display:flex; align-items:center; gap:8px; margin-top:10px; cursor:pointer;">
                             <input type="checkbox" name="is_active" id="cat-is_active" value="1" checked style="width:18px; height:18px; accent-color:#F97316;">
-                            <span style="font-size:14px; color:var(--text-muted);">Active</span>
+                            <span style="font-size:15px; color:var(--text-muted);">Active</span>
                         </label>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
     <div class="cm-modal-overlay" onclick="closeModal('main-category')"></div>
     <div class="cm-modal-box">
         <div class="cm-modal-header">
-            <h3 id="modal-main-category-title" style="margin:0; font-size:var(--text-lg); font-weight:800; letter-spacing:1px;">ADD MAIN CATEGORY</h3>
+            <h3 id="modal-main-category-title" style="margin:0; font-size:var(--text-xl); font-weight:900; letter-spacing:1px;">ADD MAIN CATEGORY</h3>
             <button onclick="closeModal('main-category')" class="cm-modal-close">✕</button>
         </div>
         <form id="form-main-category" onsubmit="saveMainCategory(event)">
@@ -104,23 +104,23 @@
             <input type="hidden" name="category_id" id="mc-category_id">
             <div style="display:flex; flex-direction:column; gap:16px; padding:20px 0;">
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">PARENT CATEGORY</label>
-                    <div id="mc-parent-display" style="margin-top:6px; padding:8px 12px; background:var(--surface-2); border-radius:8px; font-size:14px; font-weight:700; color:var(--orange);"></div>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">PARENT CATEGORY</label>
+                    <div id="mc-parent-display" style="margin-top:6px; padding:8px 12px; background:var(--surface-2); border-radius:8px; font-size:15px; font-weight:700; color:var(--orange);"></div>
                 </div>
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
                     <input type="text" name="name" id="mc-name" required class="s-input" style="margin-top:6px;" placeholder="e.g. PC BUILD">
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
                         <input type="number" name="order" id="mc-order" value="0" min="0" class="s-input" style="margin-top:6px;">
                     </div>
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
                         <label style="display:flex; align-items:center; gap:8px; margin-top:10px; cursor:pointer;">
                             <input type="checkbox" name="is_active" id="mc-is_active" value="1" checked style="width:18px; height:18px; accent-color:#F97316;">
-                            <span style="font-size:14px; color:var(--text-muted);">Active</span>
+                            <span style="font-size:15px; color:var(--text-muted);">Active</span>
                         </label>
                     </div>
                 </div>
@@ -138,7 +138,7 @@
     <div class="cm-modal-overlay" onclick="closeModal('sub-category')"></div>
     <div class="cm-modal-box">
         <div class="cm-modal-header">
-            <h3 id="modal-sub-category-title" style="margin:0; font-size:var(--text-lg); font-weight:800; letter-spacing:1px;">ADD SUB CATEGORY</h3>
+            <h3 id="modal-sub-category-title" style="margin:0; font-size:var(--text-xl); font-weight:900; letter-spacing:1px;">ADD SUB CATEGORY</h3>
             <button onclick="closeModal('sub-category')" class="cm-modal-close">✕</button>
         </div>
         <form id="form-sub-category" onsubmit="saveSubCategory(event)">
@@ -146,23 +146,23 @@
             <input type="hidden" name="main_category_id" id="sc-main_category_id">
             <div style="display:flex; flex-direction:column; gap:16px; padding:20px 0;">
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">PARENT MAIN CATEGORY</label>
-                    <div id="sc-parent-display" style="margin-top:6px; padding:8px 12px; background:var(--surface-2); border-radius:8px; font-size:14px; font-weight:700; color:var(--orange);"></div>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">PARENT MAIN CATEGORY</label>
+                    <div id="sc-parent-display" style="margin-top:6px; padding:8px 12px; background:var(--surface-2); border-radius:8px; font-size:15px; font-weight:700; color:var(--orange);"></div>
                 </div>
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
                     <input type="text" name="name" id="sc-name" required class="s-input" style="margin-top:6px;" placeholder="e.g. UNDER 1K">
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
                         <input type="number" name="order" id="sc-order" value="0" min="0" class="s-input" style="margin-top:6px;">
                     </div>
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
                         <label style="display:flex; align-items:center; gap:8px; margin-top:10px; cursor:pointer;">
                             <input type="checkbox" name="is_active" id="sc-is_active" value="1" checked style="width:18px; height:18px; accent-color:#F97316;">
-                            <span style="font-size:14px; color:var(--text-muted);">Active</span>
+                            <span style="font-size:15px; color:var(--text-muted);">Active</span>
                         </label>
                     </div>
                 </div>
@@ -180,7 +180,7 @@
     <div class="cm-modal-overlay" onclick="closeModal('brand')"></div>
     <div class="cm-modal-box">
         <div class="cm-modal-header">
-            <h3 id="modal-brand-title" style="margin:0; font-size:var(--text-lg); font-weight:800; letter-spacing:1px;">ADD BRAND</h3>
+            <h3 id="modal-brand-title" style="margin:0; font-size:var(--text-xl); font-weight:900; letter-spacing:1px;">ADD BRAND</h3>
             <button onclick="closeModal('brand')" class="cm-modal-close">✕</button>
         </div>
         <form id="form-brand" onsubmit="saveBrand(event)" enctype="multipart/form-data">
@@ -188,28 +188,28 @@
             <input type="hidden" name="sub_category_id" id="brand-sub_category_id">
             <div style="display:flex; flex-direction:column; gap:16px; padding:20px 0;">
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">PARENT SUB CATEGORY</label>
-                    <div id="brand-parent-display" style="margin-top:6px; padding:8px 12px; background:var(--surface-2); border-radius:8px; font-size:14px; font-weight:700; color:var(--orange);"></div>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">PARENT SUB CATEGORY</label>
+                    <div id="brand-parent-display" style="margin-top:6px; padding:8px 12px; background:var(--surface-2); border-radius:8px; font-size:15px; font-weight:700; color:var(--orange);"></div>
                 </div>
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">NAME *</label>
                     <input type="text" name="name" id="brand-name" required class="s-input" style="margin-top:6px;" placeholder="e.g. INTEL 12TH">
                 </div>
                 <div>
-                    <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">BRAND LOGO IMAGE</label>
+                    <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">BRAND LOGO IMAGE</label>
                     <input type="file" name="image_file" id="brand-image_file" accept="image/*" class="s-input" style="margin-top:6px; padding:8px;">
-                    <div style="font-size:12px; color:var(--text-xfaint); margin-top:4px;">JPG, PNG, WebP or GIF (max 50MB)</div>
+                    <div style="font-size:14px; color:var(--text-xfaint); margin-top:4px;">JPG, PNG, WebP or GIF (max 50MB)</div>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">ORDER</label>
                         <input type="number" name="order" id="brand-order" value="0" min="0" class="s-input" style="margin-top:6px;">
                     </div>
                     <div>
-                        <label style="font-size:13px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
+                        <label style="font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted);">STATUS</label>
                         <label style="display:flex; align-items:center; gap:8px; margin-top:10px; cursor:pointer;">
                             <input type="checkbox" name="is_active" id="brand-is_active" value="1" checked style="width:18px; height:18px; accent-color:#F97316;">
-                            <span style="font-size:14px; color:var(--text-muted);">Active</span>
+                            <span style="font-size:15px; color:var(--text-muted);">Active</span>
                         </label>
                     </div>
                 </div>
@@ -228,8 +228,8 @@
     <div class="cm-modal-box" style="max-width:420px; text-align:center;">
         <div style="padding:32px 24px 24px;">
             <div style="font-size:48px; margin-bottom:12px;">⚠️</div>
-            <h3 style="margin:0 0 8px; font-size:var(--text-lg); font-weight:800;">DELETE?</h3>
-            <p id="delete-message" style="color:var(--text-muted); font-size:var(--text-sm); margin:0 0 20px;"></p>
+            <h3 style="margin:0 0 8px; font-size:var(--text-xl); font-weight:900;">DELETE?</h3>
+            <p id="delete-message" style="color:var(--text-muted); font-size:var(--text-md); margin:0 0 20px;"></p>
             <input type="hidden" id="delete-type">
             <input type="hidden" id="delete-id">
             <div style="display:flex; gap:12px;">
@@ -245,11 +245,11 @@
 .cm-tree-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 10px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--border);
     transition: background 0.15s;
-    min-height: 48px;
+    min-height: 54px;
 }
 .cm-tree-row:last-child {
     border-bottom: none;
@@ -279,8 +279,8 @@
 }
 
 .cm-chevron {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -299,7 +299,7 @@
 .cm-node-name {
     flex: 1;
     font-weight: 700;
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     color: var(--text);
     letter-spacing: 0.5px;
     min-width: 0;
@@ -324,15 +324,15 @@
 }
 
 .cm-node-order {
-    width: 56px;
+    width: 64px;
     text-align: center;
-    font-size: var(--text-xs);
+    font-size: var(--text-base);
     font-weight: 700;
     color: var(--text-muted);
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 4px;
+    padding: 6px;
     flex-shrink: 0;
 }
 
@@ -374,19 +374,19 @@
 }
 
 .cm-btn-icon {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     border: none;
     background: transparent;
     color: var(--text-muted);
     transition: all 0.15s;
     flex-shrink: 0;
-    font-size: 14px;
+    font-size: 18px;
 }
 .cm-btn-icon:hover {
     background: var(--surface-2);
@@ -399,7 +399,7 @@
 .cm-btn-icon.cm-btn-add {
     color: #F97316;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .cm-children {
@@ -447,18 +447,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 18px 24px;
     border-bottom: 1px solid var(--border);
 }
 .cm-modal-close {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     border: none;
     background: var(--surface-2);
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 16px;
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -474,10 +474,10 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 8px;
     font-weight: 700;
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     cursor: pointer;
     border: none;
     text-decoration: none;
@@ -494,7 +494,7 @@
 }
 .btn-sm {
     padding: 4px 10px;
-    font-size: 11px;
+    font-size: 12px;
     border-radius: 6px;
 }
 .btn-outline {
@@ -508,12 +508,12 @@
 }
 .s-input {
     width: 100%;
-    padding: 8px 12px;
+    padding: 10px 14px;
     border-radius: 8px;
     border: 1.5px solid var(--border-input);
     background: var(--surface);
     color: var(--text);
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     font-family: 'Rajdhani', sans-serif;
     transition: border-color 0.15s;
 }

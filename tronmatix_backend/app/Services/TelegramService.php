@@ -184,17 +184,19 @@ class TelegramService
         $customerName = $order->user?->username ?? ($shipping['name'] ?? 'Guest');
         $phone = $shipping['phone'] ?? $order->user?->phone ?? '—';
 
-        $message = implode("\n", [
+        $message = implode("\n", array_filter([
             '✅ *Customer Confirmed Delivery*',
             '',
             "📦 Order: `#{$order->order_id}`",
             '👤 Customer: ' . $customerName,
             '📞 Phone: ' . $phone,
+            $order->isPickup() || ! $order->delivery_provider_id ? null : $this->providerLine($order),
+            $order->isPickup() || ! $order->delivery_provider_id ? null : $this->deliveryFeeLine($order),
             '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
             '',
             'The customer confirmed receipt directly in Telegram.',
             '[🔗 View Order](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
-        ]);
+        ], fn($l) => $l !== null));
 
         $this->send($message);
     }
@@ -246,6 +248,7 @@ class TelegramService
             '👤 Customer: ' . ($shippingName ?: $order->user?->username ?? 'Guest'),
             '📞 Phone: ' . ($shippingPhone ?: $order->user?->phone ?? '—'),
             $fulfillment,
+            !$isPickup && $order->delivery_provider_id ? $this->providerLine($order) : null,
             !empty($locationParts) ? '📍 ' . implode(', ', $locationParts) : null,
             $order->delivery_date
             ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': ' . $order->delivery_date
@@ -274,6 +277,7 @@ class TelegramService
                 }
                 return implode("\n", $lines);
             })() : null,
+            !$isPickup && $order->delivery_provider_id ? $this->deliveryFeeLine($order) : null,
             "✅ *Total Paid: \${$order->total} USD*",
             "🔑 APV: `{$apv}`",
             '',
@@ -333,7 +337,23 @@ class TelegramService
             ? ' — ETA: will contact to schedule'
             : ' — ETA: ' . $details['estimated_time'];
 
+        $line .= $details['fee'] !== null
+            ? ' — Delivery: $' . number_format((float) $details['fee'], 2)
+            : ' — Delivery: Fee varies';
+
         return $line;
+    }
+
+    /** Delivery fee line for ADMIN messages (Markdown-safe). '' for pickup / no provider. */
+    private function deliveryFeeLine(Order $order): string
+    {
+        if ($order->isPickup()) {
+            return '';
+        }
+        if ((float) $order->delivery > 0) {
+            return '🚚 Delivery fee: $' . number_format((float) $order->delivery, 2);
+        }
+        return $order->delivery_provider_id ? '🚚 Delivery fee: Fee varies' : '';
     }
 
     private function send(string $text, ?string $chatId = null): void

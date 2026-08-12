@@ -21,6 +21,51 @@
             $badgeDiscounts = $discounts->filter(
                 fn($d) => ($d->badge_config && !empty($d->badge_config['text'])) || ($d->kind ?? 'code') === 'badge',
             );
+
+            $catGroups = [
+                'PC BUILD' => [
+                    'PC BUILD UNDER 1K',
+                    'PC BUILD UNDER 2K',
+                    'PC BUILD UNDER 3K',
+                    'PC BUILD UNDER 4K',
+                    'PC BUILD UNDER 5K',
+                    'PC BUILD 5K UP',
+                ],
+                'MONITOR' => [
+                    'MONITOR 25INCH',
+                    'MONITOR 27INCH',
+                    'MONITOR 32INCH',
+                    'MONITOR 34INCH',
+                    'MONITOR 39INCH',
+                    'MONITOR 42INCH',
+                    'MONITOR 48INCH',
+                    'MONITOR 49INCH',
+                ],
+                'PC PART' => ['CPU', 'RAM', 'MAINBOARD', 'COOLING', 'M2', 'VGA', 'CASE', 'POWER SUPPLY', 'FAN'],
+                'HOT ITEM' => ['BEST PRICE', 'BEST SET'],
+                'ACCESSORY' => [
+                    'KEYBOARD',
+                    'MOUSE',
+                    'HEADSET',
+                    'EARPHONE',
+                    'MONITOR STAND',
+                    'SPEAKER',
+                    'MICROPHONE',
+                    'WEBCAM',
+                    'MOUSEPAD',
+                    'LIGHTBAR',
+                    'ROUTER',
+                ],
+                'TABLE CHAIR' => [
+                    'DX RACER',
+                    'SECRETLAB',
+                    'RAZER',
+                    'CONSAIR',
+                    'FANTECH',
+                    'COOLER MASTER',
+                    'TTR RACING',
+                ],
+            ];
         @endphp
 
         <style>
@@ -54,28 +99,6 @@
 
             .modal-full {
                 grid-column: 1/-1;
-            }
-
-            /* ── Category select (discount form) — bold + centered, matching the
-                 product form's categorySelect: dark bg, bold orange optgroup
-                 headers, bold centered option text. ── */
-            #couponModal select.form-control option,
-            #couponModal select.form-control optgroup {
-                background: #1A1A1A;
-                color: #fff;
-                font-family: 'Rajdhani', sans-serif;
-                text-align: center;
-                padding: 7px 10px;
-                line-height: 1.3;
-            }
-            #couponModal select.form-control optgroup {
-                color: #F97316;
-                font-weight: 700;
-                font-size: 19px;
-            }
-            #couponModal select.form-control option {
-                font-weight: 700;
-                font-size: 19px;
             }
 
             @media(max-width:900px) {
@@ -135,7 +158,7 @@
 
         {{-- ── Stats ────────────────────────────────────────────────────────────────── --}}
         <div class="disc-stats">
-            @foreach ([['label' => strtoupper(__('dashboard.status.active')), 'val' => $activeCount, 'color' => '#22c55e'], ['label' => strtoupper(__('dashboard.status.expired')), 'val' => $expiredCount, 'color' => '#ef4444'], ['label' => strtoupper(__('dashboard.discounts.exhausted')), 'val' => $exhaustedCount, 'color' => '#a855f7'], ['label' => strtoupper(__('dashboard.discounts.disabled')), 'val' => $disabledCount, 'color' => '#6b7280'], ['label' => strtoupper(__('dashboard.discounts.usage')), 'val' => $totalUses, 'color' => '#F97316']] as $stat)
+            @foreach ([['label' => 'ACTIVE', 'val' => $activeCount, 'color' => '#22c55e'], ['label' => 'EXPIRED', 'val' => $expiredCount, 'color' => '#ef4444'], ['label' => 'EXHAUSTED', 'val' => $exhaustedCount, 'color' => '#a855f7'], ['label' => 'DISABLED', 'val' => $disabledCount, 'color' => '#6b7280'], ['label' => 'TOTAL USES', 'val' => $totalUses, 'color' => '#F97316']] as $stat)
                 <div
                     style="background:#1a1a1a; border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:14px 18px;">
                     <div
@@ -158,14 +181,15 @@
                     <span style="font-size: var(--title-size);">🎟️</span>
                     <div>
                         <span class="card-title"
-                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">{{ strtoupper(__('dashboard.discounts.couponCodes')) }}</span>
+                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">COUPON CODE
+                            DISCOUNTS</span>
                         <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:2px;">Customer
                             types code at checkout to receive the discount</div>
                     </div>
                     <div class="disc-actions">
                         <button type="button" onclick="openCouponModal()" class="btn btn-orange"
                             style="font-size: var(--title-size); padding:8px 18px; white-space:nowrap; display:flex; align-items:center; gap:6px;">
-                            + {{ strtoupper(__('dashboard.discounts.addCoupon')) }}
+                            + ADD COUPON
                         </button>
                     </div>
                 </div>
@@ -174,15 +198,15 @@
                 <table class="disc-table" style="min-width:680px;">
                     <thead>
                         <tr>
-                            <th>{{ strtoupper(__('dashboard.discounts.code')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.discounts.kind')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.discounts.typeValue')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.table.product')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.table.category')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.discounts.minOrder')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.discounts.usage')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.discounts.expires')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.table.status')) }}</th>
+                            <th>CODE</th>
+                            <th>KIND</th>
+                            <th>TYPE / VALUE</th>
+                            <th>PRODUCT</th>
+                            <th>CATEGORIES</th>
+                            <th>MIN ORDER</th>
+                            <th>USAGE</th>
+                            <th>EXPIRES</th>
+                            <th>STATUS</th>
                             <th>ACTIONS</th>
                         </tr>
                     </thead>
@@ -384,7 +408,7 @@
                         @empty
                             <tr>
                                 <td colspan="9" style="text-align:center; padding:40px; color:rgba(255,255,255,0.3);">
-                                    {{ __('dashboard.discounts.noBadges') }}. <strong style="color:#F97316;">+ {{ strtoupper(__('dashboard.discounts.addCoupon')) }}</strong>
+                                    No discounts yet. Click <strong style="color:#F97316;">+ ADD COUPON</strong> to create
                                     one.
                                 </td>
                             </tr>
@@ -405,13 +429,15 @@
                     <span style="font-size: var(--title-size);">🏷️</span>
                     <div>
                         <span class="card-title"
-                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">{{ strtoupper(__('dashboard.discounts.discountBadges')) }}</span>
+                            style="font-weight:900; font-size: var(--title-size); letter-spacing:1.5px;">DISCOUNT
+                            BADGES</span>
                         <div style="font-size: var(--title-size); color:rgba(255,255,255,0.35); margin-top:2px;">
-                            {{ __('dashboard.discounts.badgeDesc') }}</div>
+                            Auto-displayed on product cards &amp; cart page — no code required</div>
                     </div>
                     <div class="disc-actions">
                         <span style="font-size: var(--title-size); color:rgba(255,255,255,0.3); font-style:italic;">
-                            → <strong style="color:#a78bfa; font-style:normal;">{{ strtoupper(__('dashboard.discounts.badge')) }}</strong>
+                            → Click <strong style="color:#a78bfa; font-style:normal;">BADGE</strong> on any row above to
+                            configure
                         </span>
                     </div>
                 </div>
@@ -459,14 +485,14 @@
                                     <div
                                         style="display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px;
                             font-size: var(--title-size); font-weight:900; letter-spacing:1px;
-                            background:{{ $bc2['bg'] ?? '#F97316' }};
-                            border:1.5px solid {{ $bc2['border'] ?? '#F97316' }};
-                            color:{{ $bc2['color'] ?? '#fff' }};">
+                            background:{{ $bc2['bg'] ?? 'rgba(249,115,22,0.18)' }};
+                            border:1.5px solid {{ $bc2['border'] ?? 'rgba(249,115,22,0.55)' }};
+                            color:{{ $bc2['color'] ?? '#F97316' }};">
                                         {{ $bc2['icon'] ?? '🏷️' }} {{ $bc2['text'] }}
                                     </div>
                                 @else
                                     <div class="badge-discound">
-                                        🏷️ {{ strtoupper(__('dashboard.discounts.noBadges')) }}
+                                        🏷️ NO BADGE YET
                                     </div>
                                 @endif
                                 <div style="font-size: var(--title-size); font-weight:900; color:#fff;">
@@ -495,7 +521,7 @@
                             <div>
                                 <div
                                     style="font-size: var(--title-size); color:rgba(255,255,255,0.3); letter-spacing:1px; margin-bottom:5px;">
-                                    {{ __('dashboard.form.appliesTo') }}</div>
+                                    APPLIES TO</div>
                                 @if ($d->product_id)
                                     <div style="color:#F97316; font-size: var(--title-size); font-weight:700;">
                                         {{ $d->product->name ?? 'Product ID: ' . $d->product_id }}
@@ -573,15 +599,6 @@
 
                 <form id="couponForm" method="POST" onsubmit="syncProductId()">
                     @csrf
-                    @if ($errors->any())
-                        <div class="alert alert-error" style="margin-bottom:15px; padding: 10px;">
-                            <ul style="padding-left: 20px; margin: 0;">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
                     <input type="hidden" name="_method" id="couponMethod" value="POST">
                     <input type="hidden" id="couponId" name="id" value="">
                     {{-- Hidden input to ensure product_id is always submitted --}}
@@ -589,14 +606,14 @@
 
                     <div class="modal-grid">
                         <div class="modal-full">
-                            <label class="form-label">{{ __('dashboard.form.discountCode') }}</label>
+                            <label class="form-label">DISCOUNT CODE *</label>
                             <input type="text" name="code" id="fCode" class="form-control" required
                                 placeholder="e.g. SAVE20"
                                 style="text-transform:uppercase; letter-spacing:2px; width:100%; box-sizing:border-box;"
                                 oninput="this.value=this.value.toUpperCase()">
                         </div>
                         <div>
-                            <label class="form-label">{{ __('dashboard.form.discountType') }}</label>
+                            <label class="form-label">TYPE *</label>
                             <select name="type" id="fType" class="form-control" required
                                 style="width:100%; box-sizing:border-box;">
                                 <option value="percentage">Percentage (%)</option>
@@ -604,28 +621,28 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">{{ __('dashboard.form.discountValue') }}</label>
+                            <label class="form-label">VALUE *</label>
                             <input type="number" name="value" id="fValue" class="form-control" required
                                 min="0" step="0.01" placeholder="e.g. 20"
                                 style="width:100%; box-sizing:border-box;">
                         </div>
                         <div>
-                            <label class="form-label">{{ __('dashboard.form.minOrder') }}</label>
+                            <label class="form-label">MIN ORDER ($)</label>
                             <input type="number" name="min_order" id="fMinOrder" class="form-control" min="0"
                                 step="0.01" placeholder="0 = no minimum" style="width:100%; box-sizing:border-box;">
                         </div>
                         <div>
-                            <label class="form-label">{{ __('dashboard.form.maxUses') }}</label>
+                            <label class="form-label">MAX USES</label>
                             <input type="number" name="max_uses" id="fMaxUses" class="form-control" min="1"
                                 placeholder="Blank = unlimited" style="width:100%; box-sizing:border-box;">
                         </div>
                         <div class="modal-full">
-                            <label class="form-label">{{ __('dashboard.form.expiryDate') }}</label>
+                            <label class="form-label">EXPIRY DATE</label>
                             <input type="date" name="expires_at" id="fExpires" class="form-control"
                                 style="width:100%; box-sizing:border-box;">
                         </div>
                         <div class="modal-full">
-                            <label class="form-label">{{ __('dashboard.form.appliesTo') }} PRODUCT</label>
+                            <label class="form-label">APPLY TO PRODUCT</label>
                             <div style="position:relative;">
                                 <input type="text" id="productSearch" placeholder="🔍 Search product…"
                                     autocomplete="off" oninput="filterProducts(this.value)"
@@ -651,26 +668,27 @@
                         </div>
                         <div class="modal-full">
                             <label class="form-label">
-                                {{ __('dashboard.form.appliesTo') }} CATEGORIES
+                                APPLY TO CATEGORIES
                                 <span
                                     style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(empty
                                     = all categories)</span>
                             </label>
-                            {{-- Single-select category picker — same style as the product form's
-                                 categorySelect (dynamic optgroups from the category tree). Submits
-                                 categories[] so the controller's array validation & model cast work. --}}
-                            <select name="categories[]" id="fCategorySelect" class="form-control">
-                                <option value="">-- All categories (sitewide) --</option>
-                                @forelse($categoryGroups ?? [] as $group)
-                                    <optgroup label="────────── {{ $group['label'] }} ──────────">
-                                        @foreach ($group['options'] as $opt)
-                                            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
-                                        @endforeach
-                                    </optgroup>
-                                @empty
-                                    <option value="" disabled>No categories available</option>
-                                @endforelse
-                            </select>
+                            <div id="catHiddenInputs"></div>
+                            <div id="catTags" onclick="toggleCatDropdown(event)"
+                                style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15);
+                                border-radius:8px; padding:6px 36px 6px 10px; cursor:pointer;
+                                display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+                                position:relative; transition:border-color .2s; box-sizing:border-box;">
+                                <span id="catPlaceholder"
+                                    style="color:rgba(255,255,255,0.3); font-size: var(--title-size); user-select:none;">
+                                    Select categories…
+                                </span>
+                                <svg style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;"
+                                    width="14" height="14" fill="none" stroke="rgba(255,255,255,0.4)"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </div>
                         </div>
                         <div class="modal-full">
                             <label class="form-label" style="margin-bottom:8px; display:block;">DISCOUNT KIND</label>
@@ -723,10 +741,10 @@
                                     <div>
                                         <div id="kindBadgeText"
                                             style="font-weight:800; font-size: var(--title-size); letter-spacing:1px; color:rgba(255,255,255,0.5);">
-                                            🏷 {{ strtoupper(__('dashboard.discounts.discountBadge')) }}</div>
+                                            🏷 DISCOUNT BADGE</div>
                                         <div
                                             style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:1px;">
-                                            {{ __('dashboard.discounts.autoShown') }}</div>
+                                            Auto-shown on product cards</div>
                                     </div>
                                 </label>
 
@@ -766,6 +784,46 @@
 
 
         {{-- ══════════════════════════════════════════════════════════════════════════ --}}
+        {{-- CATEGORY DROPDOWN — at body level, escapes modal overflow clipping        --}}
+        {{-- ══════════════════════════════════════════════════════════════════════════ --}}
+        <div id="catDropdown"
+            style="display:none; position:fixed; z-index:99999; background:#1e1e1e;
+            border:1px solid rgba(249,115,22,0.4); border-radius:10px;
+            padding:12px; max-height:300px; overflow-y:auto;
+            box-shadow:0 8px 32px rgba(0,0,0,0.85);">
+            <input id="catSearch" type="text" placeholder="🔍 Search category…" oninput="filterCats(this.value)"
+                style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.1);
+                  color:#fff; border-radius:6px; padding:6px 10px; font-size: var(--title-size);
+                  margin-bottom:10px; outline:none; box-sizing:border-box;"
+                onclick="event.stopPropagation()">
+            @foreach ($catGroups as $group => $subs)
+                <div class="cat-group" style="margin-bottom:10px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                        <input type="checkbox" class="group-checkbox" data-group="{{ $group }}"
+                            style="accent-color:#F97316; width:14px; height:14px; cursor:pointer; flex-shrink:0;"
+                            onclick="toggleGroup('{{ $group }}', this.checked); event.stopPropagation()">
+                        <span
+                            style="color:#F97316; font-weight:800; font-size: var(--title-size); letter-spacing:1.5px; user-select:none;">{{ $group }}</span>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; padding-left:22px;">
+                        @foreach ($subs as $cat)
+                            <label class="cat-chip" data-cat="{{ $cat }}" data-group="{{ $group }}"
+                                style="display:inline-flex; align-items:center; gap:5px; background:#2a2a2a; border:1.5px solid transparent;
+                          border-radius:20px; padding:4px 11px; cursor:pointer; font-size: var(--title-size); color:rgba(255,255,255,0.7);
+                          transition:all .15s; user-select:none; white-space:nowrap;"
+                                onclick="toggleCat('{{ $cat }}', '{{ $group }}'); event.stopPropagation()">
+                                <span class="chip-dot"
+                                    style="width:7px; height:7px; border-radius:50%; background:transparent; border:1.5px solid #666; flex-shrink:0;"></span>
+                                {{ $cat }}
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+
+        {{-- ══════════════════════════════════════════════════════════════════════════ --}}
         {{-- BADGE MODAL                                                               --}}
         {{-- ══════════════════════════════════════════════════════════════════════════ --}}
         <div id="badgeModal"
@@ -784,9 +842,9 @@
                             🏷️</div>
                         <div>
                             <div style="font-size: var(--title-size); font-weight:900; color:#fff; letter-spacing:2px;"
-                                id="badgeModalTitle">{{ strtoupper(__('dashboard.discounts.discountBadge')) }}</div>
+                                id="badgeModalTitle">DISCOUNT BADGE</div>
                             <div style="font-size: var(--title-size); color:rgba(255,255,255,0.3); margin-top:1px;"
-                                id="badgeModalSubtitle">{{ __('dashboard.discounts.autoShown') }}</div>
+                                id="badgeModalSubtitle">Auto-shown on cart &amp; product cards</div>
                         </div>
                     </div>
                     <button onclick="closeBadgeModal()"
@@ -801,7 +859,7 @@
                     padding:16px; margin-bottom:20px; text-align:center;">
                     <div
                         style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:12px; font-weight:700;">
-                        {{ strtoupper(__('dashboard.discounts.livePreview')) }}</div>
+                        LIVE PREVIEW</div>
                     <div
                         style="display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;">
                         <div id="bPreview"
@@ -815,7 +873,8 @@
 
                 <div style="margin-bottom:14px;">
                     <label
-                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:6px;">{{ strtoupper(__('dashboard.form.badgeLabel')) }}</label>
+                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:6px;">BADGE
+                        TEXT *</label>
                     <input type="text" id="bText" placeholder="e.g. SALE, HOT, 20% OFF" maxlength="18"
                         style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.12); color:#fff;
                           border-radius:8px; padding:10px 14px; font-size: var(--title-size); font-weight:800; letter-spacing:1.5px;
@@ -827,7 +886,7 @@
 
                 <div style="margin-bottom:14px;">
                     <label
-                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">{{ strtoupper(__('dashboard.discounts.discountBadge')) }} ICON</label>
+                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">ICON</label>
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
                         @foreach (['🏷️', '🔥', '⚡', '💥', '🎯', '✨', '🎁', '💎', '🚀', '⭐', '🆕', '💰'] as $ico)
                             <button type="button" onclick="selectBIcon('{{ $ico }}')"
@@ -841,9 +900,9 @@
 
                 <div style="margin-bottom:20px;">
                     <label
-                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">{{ strtoupper(__('dashboard.form.textColor')) }}</label>
+                        style="font-size: var(--title-size); font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.4); display:block; margin-bottom:8px;">COLOR</label>
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                        @php $bcp = [['l' => 'Orange', 'bg' => '#F97316', 'bd' => '#F97316', 'c' => '#fff'], ['l' => 'Red', 'bg' => '#ef4444', 'bd' => '#ef4444', 'c' => '#fff'], ['l' => 'Green', 'bg' => '#22c55e', 'bd' => '#22c55e', 'c' => '#fff'], ['l' => 'Blue', 'bg' => '#3b82f6', 'bd' => '#3b82f6', 'c' => '#fff'], ['l' => 'Purple', 'bg' => '#a78bfa', 'bd' => '#a78bfa', 'c' => '#1e1b4b'], ['l' => 'Yellow', 'bg' => '#eab308', 'bd' => '#eab308', 'c' => '#1f2937'], ['l' => 'Dark', 'bg' => '#111827', 'bd' => '#111827', 'c' => '#fff']]; @endphp
+                        @php $bcp = [['l' => 'Orange', 'bg' => 'rgba(249,115,22,0.18)', 'bd' => 'rgba(249,115,22,0.55)', 'c' => '#F97316'], ['l' => 'Red', 'bg' => 'rgba(239,68,68,0.18)', 'bd' => 'rgba(239,68,68,0.55)', 'c' => '#ef4444'], ['l' => 'Green', 'bg' => 'rgba(34,197,94,0.18)', 'bd' => 'rgba(34,197,94,0.55)', 'c' => '#22c55e'], ['l' => 'Blue', 'bg' => 'rgba(59,130,246,0.18)', 'bd' => 'rgba(59,130,246,0.55)', 'c' => '#3b82f6'], ['l' => 'Purple', 'bg' => 'rgba(167,139,250,0.18)', 'bd' => 'rgba(167,139,250,0.55)', 'c' => '#a78bfa'], ['l' => 'Yellow', 'bg' => 'rgba(234,179,8,0.18)', 'bd' => 'rgba(234,179,8,0.55)', 'c' => '#eab308'], ['l' => 'Solid', 'bg' => '#F97316', 'bd' => '#F97316', 'c' => '#fff']]; @endphp
                         @foreach ($bcp as $i => $p)
                             <button type="button" data-bbg="{{ $p['bg'] }}" data-bbd="{{ $p['bd'] }}"
                                 data-bc="{{ $p['c'] }}" onclick="selectBColor(this)"
@@ -907,27 +966,141 @@
                 })
             }
 
-            // ── Category select (single-select, mirrors product form) ─────────────────────
-            // When a specific product is chosen, a category discount can't also apply —
-            // disable the category select (the controller ignores categories when
-            // product_id is set).
+            // ── Category dropdown ─────────────────────────────────────────────────────────
+            let selectedCats = []
+
+            function toggleCatDropdown(e) {
+                if (e) e.stopPropagation()
+                const dd = document.getElementById('catDropdown')
+                if (dd.style.display !== 'none') {
+                    dd.style.display = 'none';
+                    return
+                }
+                const rect = document.getElementById('catTags').getBoundingClientRect()
+                const ddW = Math.min(460, window.innerWidth - 24)
+                let left = rect.left
+                if (left + ddW > window.innerWidth - 12) left = window.innerWidth - ddW - 12
+                if (left < 12) left = 12
+                dd.style.left = left + 'px'
+                dd.style.width = ddW + 'px'
+                dd.style.top = (rect.bottom + 6) + 'px'
+                dd.style.display = 'block'
+                setTimeout(() => document.getElementById('catSearch').focus(), 50)
+            }
+
+            function toggleCat(cat, group) {
+                // If product selected, prevent cat selection
+                if (document.getElementById('fProduct').value) return;
+
+                const idx = selectedCats.indexOf(cat)
+                if (idx === -1) selectedCats.push(cat);
+                else selectedCats.splice(idx, 1)
+
+                // If we have selected categories, clear the product selection
+                if (selectedCats.length > 0) {
+                    document.getElementById('fProduct').value = '';
+                    document.getElementById('fProductShadow').value = '';
+                }
+
+                renderCatState();
+                updateGroupCheckbox(group)
+            }
+
             function updateProductSelect() {
                 const product = document.getElementById('fProduct').value;
-                const catSel = document.getElementById('fCategorySelect');
-                if (!catSel) return;
+                const catTags = document.getElementById('catTags');
+                const ph = document.getElementById('catPlaceholder');
 
                 if (product) {
-                    catSel.value = '';
-                    catSel.disabled = true;
-                    catSel.style.opacity = '0.5';
+                    selectedCats = [];
+                    renderCatState();
+                    catTags.style.pointerEvents = 'none';
+                    catTags.style.opacity = '0.5';
+                    ph.textContent = 'Category selection disabled (product discount applied)';
                 } else {
-                    catSel.disabled = false;
-                    catSel.style.opacity = '1';
+                    catTags.style.pointerEvents = 'auto';
+                    catTags.style.opacity = '1';
+                    ph.textContent = 'Select categories…';
                 }
             }
 
             // Ensure it runs on change
             document.getElementById('fProduct').addEventListener('change', updateProductSelect);
+
+            function toggleGroup(group, checked) {
+                document.querySelectorAll(`[data-group="${group}"]`).forEach(chip => {
+                    const cat = chip.dataset.cat;
+                    if (!cat) return
+                    if (checked && !selectedCats.includes(cat)) selectedCats.push(cat)
+                    else if (!checked) selectedCats = selectedCats.filter(c => c !== cat)
+                })
+                renderCatState()
+            }
+
+            function updateGroupCheckbox(group) {
+                const chips = document.querySelectorAll(`label[data-group="${group}"]`)
+                const total = chips.length
+                const chk = [...chips].filter(c => selectedCats.includes(c.dataset.cat)).length
+                const cb = document.querySelector(`.group-checkbox[data-group="${group}"]`)
+                if (cb) {
+                    cb.checked = chk === total && total > 0;
+                    cb.indeterminate = chk > 0 && chk < total
+                }
+            }
+
+            function renderCatState() {
+                document.querySelectorAll('label[data-cat]').forEach(chip => {
+                    const active = selectedCats.includes(chip.dataset.cat)
+                    chip.style.background = active ? 'rgba(249,115,22,0.2)' : '#2a2a2a'
+                    chip.style.borderColor = active ? '#F97316' : 'transparent'
+                    chip.style.color = active ? '#fff' : 'rgba(255,255,255,0.7)'
+                    const dot = chip.querySelector('.chip-dot')
+                    if (dot) {
+                        dot.style.background = active ? '#F97316' : 'transparent';
+                        dot.style.borderColor = active ? '#F97316' : '#666'
+                    }
+                })
+                const tagsEl = document.getElementById('catTags'),
+                    ph = document.getElementById('catPlaceholder')
+                if (!tagsEl) return
+                tagsEl.querySelectorAll('.selected-tag').forEach(t => t.remove())
+                if (selectedCats.length === 0) {
+                    ph.style.display = ''
+                } else {
+                    ph.style.display = 'none'
+                    selectedCats.forEach(cat => {
+                        const tag = document.createElement('span')
+                        tag.className = 'selected-tag'
+                        tag.style.cssText =
+                            'background:#F97316;color:#fff;font-size: var(--title-size);font-weight:700;border-radius:20px;padding:2px 10px;display:inline-flex;align-items:center;gap:5px;letter-spacing:.5px;white-space:nowrap;'
+                        tag.innerHTML =
+                            `${cat} <span onclick="removeCat('${cat}');event.stopPropagation()" style="cursor:pointer;opacity:.8;font-size: var(--title-size);line-height:1;">&times;</span>`
+                        tagsEl.insertBefore(tag, tagsEl.lastElementChild)
+                    })
+                }
+                const hd = document.getElementById('catHiddenInputs')
+                if (hd) hd.innerHTML = selectedCats.map(c => `<input type="hidden" name="categories[]" value="${c}">`).join('')
+            }
+
+            function removeCat(cat) {
+                selectedCats = selectedCats.filter(c => c !== cat)
+                const group = document.querySelector(`label[data-cat="${cat}"]`)?.dataset.group
+                renderCatState();
+                if (group) updateGroupCheckbox(group)
+            }
+
+            function filterCats(q) {
+                q = (q || "").toLowerCase().trim()
+                document.querySelectorAll(".cat-group").forEach(function(group) {
+                    var groupVisible = false
+                    group.querySelectorAll("label[data-cat]").forEach(function(chip) {
+                        var match = !q || chip.dataset.cat.toLowerCase().indexOf(q) !== -1
+                        chip.style.display = match ? "" : "none"
+                        if (match) groupVisible = true
+                    })
+                    group.style.display = groupVisible ? "" : "none"
+                })
+            }
 
             // ── Product map (id → name) ───────────────────────────────────────────────────
             const _productMap = {
@@ -1000,6 +1173,24 @@
                 }
             }
 
+            function repositionDropdown() {
+                const dd = document.getElementById('catDropdown');
+                if (!dd || dd.style.display === 'none') return
+                const tags = document.getElementById('catTags');
+                if (!tags) return
+                const rect = tags.getBoundingClientRect()
+                dd.style.top = (rect.bottom + 6) + 'px';
+                dd.style.left = rect.left + 'px'
+            }
+            window.addEventListener('scroll', repositionDropdown, true)
+            window.addEventListener('resize', repositionDropdown)
+
+            document.addEventListener('click', function(e) {
+                const dd = document.getElementById('catDropdown'),
+                    tags = document.getElementById('catTags')
+                if (dd && !dd.contains(e.target) && tags && !tags.contains(e.target)) dd.style.display = 'none'
+            })
+
             // ── Coupon Modal ──────────────────────────────────────────────────────────────
             function syncProductId() {
                 document.getElementById('fProductShadow').value = document.getElementById('fProduct').value;
@@ -1013,18 +1204,17 @@
                 document.getElementById('productSearch').value = ''
                 hideProductDropdown()
 
-                // Pre-select the first saved category (if any) in the new single-select.
-                const catSel = document.getElementById('fCategorySelect');
-                if (catSel) {
-                    catSel.disabled = false;
-                    catSel.style.opacity = '1';
-                    catSel.value = (categories && categories.length) ? categories[0] : '';
-                }
+                selectedCats = categories && categories.length ? [...categories] : []
+                renderCatState()
+                document.querySelectorAll('.group-checkbox').forEach(cb => updateGroupCheckbox(cb.dataset.group))
+                document.getElementById('catSearch').value = '';
+                filterCats('')
+                document.getElementById('catDropdown').style.display = 'none'
 
                 document.getElementById('couponModal').style.display = 'flex'
 
                 if (id) {
-                    document.getElementById('couponModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.editCoupon")) }}'
+                    document.getElementById('couponModalTitle').textContent = 'EDIT COUPON'
                     document.getElementById('couponForm').action = `/dashboard/discounts/${id}`
                     document.getElementById('couponMethod').value = 'PUT'
                     document.getElementById('couponId').value = id
@@ -1046,14 +1236,14 @@
                     setKind(kind || 'code')
                     updateProductSelect()
                 } else {
-                    document.getElementById('couponModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.addCouponLabel")) }}'
+                    document.getElementById('couponModalTitle').textContent = 'ADD COUPON'
                     document.getElementById('couponForm').action = '{{ route('dashboard.discounts.store') }}'
                     document.getElementById('couponMethod').value = 'POST'
                     document.getElementById('couponId').value = ''
                     document.getElementById('fActive').checked = true
                     syncActiveVisual()
-                    const catSelAdd = document.getElementById('fCategorySelect');
-                    if (catSelAdd) { catSelAdd.value = ''; catSelAdd.disabled = false; catSelAdd.style.opacity = '1'; }
+                    selectedCats = [];
+                    renderCatState()
                     setKind('code')
                     updateProductSelect()
                 }
@@ -1061,6 +1251,7 @@
 
             function closeCouponModal() {
                 document.getElementById('couponModal').style.display = 'none'
+                document.getElementById('catDropdown').style.display = 'none'
             }
             document.getElementById('couponModal').addEventListener('click', function(e) {
                 if (e.target === this) closeCouponModal()
@@ -1068,9 +1259,9 @@
 
             // ── Badge Modal ───────────────────────────────────────────────────────────────
             let _bIco = '🏷️',
-                _bBg = '#F97316',
-                _bBd = '#F97316',
-                _bC = '#fff'
+                _bBg = 'rgba(249,115,22,0.18)',
+                _bBd = 'rgba(249,115,22,0.55)',
+                _bC = '#F97316'
             let _bDiscountId = null,
                 _bDiscountType = null,
                 _bDiscountVal = null
@@ -1083,19 +1274,19 @@
                 if (existingBadge && existingBadge.text) {
                     document.getElementById('bText').value = existingBadge.text || ''
                     _bIco = existingBadge.icon || '🏷️';
-                    _bBg = existingBadge.bg || '#F97316'
-                    _bBd = existingBadge.border || '#F97316';
-                    _bC = existingBadge.color || '#fff'
-                    document.getElementById('badgeModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.editBadge")) }}'
+                    _bBg = existingBadge.bg || 'rgba(249,115,22,0.18)'
+                    _bBd = existingBadge.border || 'rgba(249,115,22,0.55)';
+                    _bC = existingBadge.color || '#F97316'
+                    document.getElementById('badgeModalTitle').textContent = 'EDIT BADGE'
                     document.getElementById('badgeModalSubtitle').textContent = `Discount #${discountId}`
                     document.getElementById('badgeClearBtn').style.display = 'block'
                 } else {
                     document.getElementById('bText').value = ''
                     _bIco = '🏷️';
-                    _bBg = '#F97316';
-                    _bBd = '#F97316';
-                    _bC = '#fff'
-                    document.getElementById('badgeModalTitle').textContent = '{{ strtoupper(__("dashboard.discounts.addBadgeLabel")) }}'
+                    _bBg = 'rgba(249,115,22,0.18)';
+                    _bBd = 'rgba(249,115,22,0.55)';
+                    _bC = '#F97316'
+                    document.getElementById('badgeModalTitle').textContent = 'ADD BADGE'
                     document.getElementById('badgeModalSubtitle').textContent = `Discount #${discountId}`
                     document.getElementById('badgeClearBtn').style.display = 'none'
                 }
@@ -1333,6 +1524,29 @@
             [data-theme="light"] #badgeModal [style*="border-bottom:1px solid rgba(255,255,255"] {
                 border-bottom-color: rgba(15, 23, 42, 0.08) !important;
             }
+
+            /* Category dropdown */
+            [data-theme="light"] #catDropdown {
+                background: #FFFFFF !important;
+                border-color: rgba(15, 23, 42, 0.15) !important;
+                box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1) !important;
+            }
+
+            [data-theme="light"] #catSearch {
+                background: #F8FAFC !important;
+                border-color: rgba(15, 23, 42, 0.1) !important;
+                color: #0F172A !important;
+            }
+
+            [data-theme="light"] .cat-chip {
+                background: #F1F5F9 !important;
+                color: rgba(15, 23, 42, 0.7) !important;
+            }
+
+            [data-theme="light"] .cat-chip[style*="border-color: #F97316"] {
+                background: rgba(249, 115, 22, 0.1) !important;
+            }
+
 
             [data-theme="light"] .discount-card [style*="color:rgba(255,255,255,0.4)"] {
                 color: rgba(15, 23, 42, 0.45) !important;

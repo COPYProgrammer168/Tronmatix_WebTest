@@ -541,10 +541,13 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
 
         const bg = bgColor   || '#111111'
         const tc = textColor || '#F97316'
-        document.getElementById('fBgColor').value       = bg
-        document.getElementById('fBgColorText').value   = bg
-        document.getElementById('fTextColor').value     = tc
-        document.getElementById('fTextColorText').value = tc
+        // The color inputs are optional (currently hidden from the form), so
+        // guard each — a missing element must not throw and block the image
+        // preview code below.
+        document.getElementById('fBgColor')?.value       = bg
+        document.getElementById('fBgColorText')?.value   = bg
+        document.getElementById('fTextColor')?.value     = tc
+        document.getElementById('fTextColorText')?.value = tc
 
         // Image
         if (image) {
@@ -574,10 +577,10 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('productSearch').value      = ''
         document.getElementById('fCategory').value          = ''
         document.getElementById('fActive').checked         = true
-        document.getElementById('fBgColor').value          = '#111111'
-        document.getElementById('fBgColorText').value      = '#111111'
-        document.getElementById('fTextColor').value        = '#F97316'
-        document.getElementById('fTextColorText').value    = '#F97316'
+        document.getElementById('fBgColor')?.value          = '#111111'
+        document.getElementById('fBgColorText')?.value      = '#111111'
+        document.getElementById('fTextColor')?.value        = '#F97316'
+        document.getElementById('fTextColorText')?.value    = '#F97316'
         document.getElementById('currentImageWrap').style.display   = 'none'
         document.getElementById('newImagePreviewWrap').style.display = 'none'
         document.getElementById('newImagePreview').src               = ''

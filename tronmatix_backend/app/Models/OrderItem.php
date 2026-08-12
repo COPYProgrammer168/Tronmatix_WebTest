@@ -16,6 +16,7 @@ class OrderItem extends Model
         'price',
         'qty',
         'image',
+        'brand',
         'warranty_start',
         'warranty_end',
     ];

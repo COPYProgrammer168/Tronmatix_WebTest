@@ -130,12 +130,12 @@ function isLight() {
 function themeColors() {
     const l = isLight();
     return {
-        text:      l ? 'rgba(15,23,42,0.50)'   : 'rgba(255,255,255,0.45)',
-        grid:      l ? 'rgba(15,23,42,0.06)'   : 'rgba(255,255,255,0.06)',
+        text:      l ? 'rgba(15,23,42,0.65)'   : 'rgba(255,255,255,0.45)',
+        grid:      l ? 'rgba(15,23,42,0.08)'   : 'rgba(255,255,255,0.06)',
         tooltipBg: l ? '#FFFFFF'                : '#1A1A1A',
         tooltipBdr:l ? 'rgba(249,115,22,0.35)' : 'rgba(249,115,22,0.4)',
-        pieBorder: l ? '#F1F5F9'               : '#111',
-        bodyClr:   l ? 'rgba(15,23,42,0.75)'  : 'rgba(255,255,255,0.8)',
+        pieBorder: l ? '#FFFFFF'                : '#111',
+        bodyClr:   l ? 'rgba(15,23,42,0.80)'   : 'rgba(255,255,255,0.8)',
     };
 }
 function applyChartDefaults() {
@@ -211,13 +211,13 @@ const revenueChart = new Chart(rCtx, {
     data: { labels: windowLabels, datasets: [
         // Orders — bars on the right axis
         { type:'bar', label:'Orders', data:windowOrders, yAxisID:'yOrders',
-          backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.55)','rgba(249,115,22,0.12)'),
+          backgroundColor:makeGradient(rCtx, isLight() ? 'rgba(249,115,22,0.62)' : 'rgba(249,115,22,0.55)', isLight() ? 'rgba(249,115,22,0.10)' : 'rgba(249,115,22,0.12)'),
           borderColor:'#F97316', borderWidth:1.5, borderRadius:4, order:2 },
         // Revenue — line on the left axis
         { type:'line', label:'Revenue ($)', data:windowRevenue, yAxisID:'yRevenue',
           borderColor:green, borderWidth:2.5, pointBackgroundColor:green,
-          pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
-          fill:true, backgroundColor:makeGradient(rCtx,'rgba(34,197,94,0.25)','rgba(34,197,94,0)'), tension:0.4, order:1 }]
+          pointBorderColor: isLight() ? '#FFFFFF' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
+          fill:true, backgroundColor:makeGradient(rCtx, isLight() ? 'rgba(34,197,94,0.40)' : 'rgba(34,197,94,0.25)', isLight() ? 'rgba(34,197,94,0.04)' : 'rgba(34,197,94,0)'), tension:0.4, order:1 }]
     },
     options: { responsive:true, layout:{ padding:{ top: 24 } },
         plugins:{ legend:{ position:'top', labels:{ boxWidth:12, padding:16 } },
@@ -241,8 +241,8 @@ const yearChart = new Chart(yCtx, {
     type: 'line',
     data: { labels: monthlyLabels, datasets: [{ label:'Revenue ($)', data:monthlyRevenue,
         borderColor:blue, borderWidth:2.5, pointBackgroundColor:blue,
-        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
-        fill:true, backgroundColor:makeGradient(yCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
+        pointBorderColor: isLight() ? '#FFFFFF' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
+        fill:true, backgroundColor:makeGradient(yCtx, isLight() ? 'rgba(59,130,246,0.40)' : 'rgba(59,130,246,0.25)', isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0)'), tension:0.4 }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:fmtKdollar,
         tooltip:{ callbacks:{ label: c => ' '+fmtK(c.parsed.y, '$') }}},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }},
@@ -255,10 +255,10 @@ const compareChart = new Chart(cCtx, {
     type: 'bar',
     data: { labels: compareLabels, datasets: [
         { label:'Previous', data:comparePrev,
-          backgroundColor:'rgba(167,139,250,0.55)', borderColor:'#A78BFA',
+          backgroundColor: isLight() ? 'rgba(167,139,250,0.65)' : 'rgba(167,139,250,0.55)', borderColor:'#A78BFA',
           borderWidth:1.5, borderRadius:5, group:'g' },
         { label:'Current', data: compareCurr,
-          backgroundColor:makeGradient(cCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.15)'),
+          backgroundColor:makeGradient(cCtx, isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)', isLight() ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.15)'),
           borderColor:'#22C55E', borderWidth:1.5, borderRadius:5, group:'g' }
     ] },
     options: { responsive:true, layout:{ padding:{ top: 24 } },
@@ -271,7 +271,7 @@ const compareChart = new Chart(cCtx, {
 window.__updateChartTheme = function(t) {
     applyChartDefaults();
     const c  = themeColors();
-    const bd = t === 'light' ? '#F1F5F9' : '#111';
+    const bd = t === 'light' ? '#FFFFFF' : '#111';
     [revenueChart, yearChart].forEach(ch => {
         ch.options.scales.x.grid.color = c.grid;
         ch.options.scales.y.grid.color = c.grid;
@@ -282,20 +282,25 @@ window.__updateChartTheme = function(t) {
     if (revDs) {
         revDs.pointBorderColor = bd;
         revDs.borderColor = green;
-        revDs.backgroundColor = makeGradient(revenueChart.ctx, 'rgba(34,197,94,0.25)', 'rgba(34,197,94,0)');
+        revDs.backgroundColor = makeGradient(revenueChart.ctx, isLight() ? 'rgba(34,197,94,0.40)' : 'rgba(34,197,94,0.25)', isLight() ? 'rgba(34,197,94,0.04)' : 'rgba(34,197,94,0)');
     }
     const ordDs = revenueChart.data.datasets.find(d => d.label === 'Orders');
     if (ordDs) {
-        ordDs.backgroundColor = makeGradient(revenueChart.ctx, 'rgba(249,115,22,0.55)', 'rgba(249,115,22,0.12)');
+        ordDs.backgroundColor = makeGradient(revenueChart.ctx, isLight() ? 'rgba(249,115,22,0.62)' : 'rgba(249,115,22,0.55)', isLight() ? 'rgba(249,115,22,0.10)' : 'rgba(249,115,22,0.12)');
     }
     revenueChart.update('none');
-    // 12-month chart: point border colour
+    // 12-month chart: point border colour + refresh gradient
     yearChart.data.datasets[0].pointBorderColor = bd;
+    yearChart.data.datasets[0].backgroundColor = makeGradient(
+        yearChart.ctx,
+        isLight() ? 'rgba(59,130,246,0.40)' : 'rgba(59,130,246,0.25)',
+        isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0)'
+    );
     yearChart.update('none');
     // Compare chart: refresh the current-series gradient (bars need context-sized gradient)
     const cmpCur = compareChart.data.datasets.find(d => d.label === 'Current');
     if (cmpCur) {
-        cmpCur.backgroundColor = makeGradient(compareChart.ctx, 'rgba(34,197,94,0.6)', 'rgba(34,197,94,0.15)');
+        cmpCur.backgroundColor = makeGradient(compareChart.ctx, isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)', isLight() ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.15)');
     }
     compareChart.update('none');
 };

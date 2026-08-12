@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
 
 class RestoreDatabase extends Command
@@ -53,6 +54,12 @@ class RestoreDatabase extends Command
 
         $this->info('Restoring database from: ' . basename($backupFile));
 
+        // pg_dump (without --clean) cannot drop the tables it is about to
+        // create. Dump the existing schema first so both old and new
+        // backups restore cleanly into a database that is not empty.
+        $this->info('Dropping existing tables...');
+        $this->dropAllTables($connection);
+
         $command = [
             $psqlPath,
             '-h', $host,
@@ -79,6 +86,40 @@ class RestoreDatabase extends Command
         $this->info('Database restored successfully from: ' . basename($backupFile));
 
         return self::SUCCESS;
+    }
+
+    private function dropAllTables(array $connection): void
+    {
+        $connectionName = $connection['name'] ?? config('database.default');
+        $schema         = $connection['search_path'] ?? 'public';
+
+        try {
+            $tables = DB::connection($connectionName)
+                ->select("SELECT tablename FROM pg_tables WHERE schemaname = ?", [$schema]);
+        } catch (\Throwable $e) {
+            $this->error('Could not list tables: ' . $e->getMessage());
+
+            return;
+        }
+
+        if (empty($tables)) {
+            $this->info('No existing tables to drop.');
+
+            return;
+        }
+
+        $conn = DB::connection($connectionName);
+        $conn->statement('SET session_replication_role = replica;');
+
+        try {
+            foreach ($tables as $table) {
+                $tableName = $table->tablename;
+                $this->line("  Dropping {$schema}.{$tableName}");
+                $conn->statement("DROP TABLE IF EXISTS {$schema}.{$tableName} CASCADE");
+            }
+        } finally {
+            $conn->statement('SET session_replication_role = DEFAULT;');
+        }
     }
 
     private function selectBackupFile(string $backupPath): ?string

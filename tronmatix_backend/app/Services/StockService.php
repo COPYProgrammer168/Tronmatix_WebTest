@@ -126,6 +126,78 @@ class StockService
     }
 
     /**
+     * Bulk-reset a set of products to randomized demo stock levels ("more or
+     * less"), so the shop shows a realistic spread instead of everything being
+     * high or zero. Each change is recorded as an 'adjustment' movement so the
+     * ledger stays consistent and history explains the jump.
+     *
+     * Skips products whose current stock already equals the target (no row).
+     * Updating via $product->update() fires the Product saving hook, which
+     * re-syncs stock_status (a randomized target is always > 0 → available).
+     *
+     * @param  int[]  $productIds  products to (possibly) randomize
+     * @return int  number of products whose stock actually changed
+     */
+    public function resetRandom(
+        array $productIds,
+        ?string $note = null,
+        ?int $userId = null,
+    ): int {
+        return DB::transaction(function () use ($productIds, $note, $userId) {
+            $changed = 0;
+
+            foreach (array_chunk(array_values($productIds), 200) as $chunk) {
+                $products = Product::lockForUpdate()->whereIn('id', $chunk)->get();
+
+                foreach ($products as $product) {
+                    $target  = $this->randomDemoLevel();
+                    $current = $product->current_stock ?? 0;
+
+                    if ($current === $target) {
+                        continue;
+                    }
+
+                    $product->update(['current_stock' => $target]);
+
+                    $this->record(
+                        $product,
+                        StockMovement::TYPE_ADJUSTMENT,
+                        $target - $current,
+                        null,
+                        $note ?: 'Randomized demo stock (more/less)',
+                        null,
+                        null,
+                        $userId,
+                    );
+
+                    $changed++;
+                }
+            }
+
+            return $changed;
+        });
+    }
+
+    /**
+     * Pick a believable "more or less" stock level. Rough distribution:
+     * ~25% low (1–5), ~50% mid (6–30), ~25% higher (31–150). Never 0 — a
+     * randomize action shouldn't silently put products on backorder.
+     */
+    private function randomDemoLevel(): int
+    {
+        $roll = mt_rand(1, 100);
+
+        if ($roll <= 25) {
+            return mt_rand(1, 5);   // low — near the notification threshold
+        }
+        if ($roll <= 75) {
+            return mt_rand(6, 30);  // mid — comfortable stock
+        }
+
+        return mt_rand(31, 150);    // higher — deep stock
+    }
+
+    /**
      * Undo a movement (order cancellation/refund). Creates an opposite-signed
      * 'reversal' row pointing back via reversed_movement_id. The double-reversal
      * check runs AFTER acquiring the product lock — see docblock above.

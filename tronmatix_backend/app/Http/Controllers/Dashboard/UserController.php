@@ -36,6 +36,10 @@ public function index(Request $request): View
         $query->where('role', $request->role);
     }
 
+    if ($request->filled('telegram') && $request->telegram === 'connected') {
+        $query->whereNotNull('telegram_chat_id');
+    }
+
     if ($request->filled('search')) {
         $term = '%'.$request->search.'%';
         $query->where(function ($q) use ($term) {

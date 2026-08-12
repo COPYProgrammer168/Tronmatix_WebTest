@@ -18,6 +18,18 @@
             {
                 return $settings[$key] ?? $default;
             }
+            function iconTag($icon, $size = 16, $radius = '8px')
+            {
+                $icon = (string) ($icon ?? '');
+                if ($icon === '') {
+                    return '❓';
+                }
+                if (preg_match('#^https?://#i', $icon) || preg_match('#^data:image#i', $icon)) {
+                    $px = is_int($size) ? $size . 'px' : $size;
+                    return '<img src="' . e($icon) . '" alt="" style="width:' . $px . ';height:' . $px . ';object-fit:contain;border-radius:' . $radius . ';vertical-align:middle;" onerror="this.replaceWith(document.createTextNode(\'❓\'))">';
+                }
+                return e($icon);
+            }
         @endphp
 
         {{-- ── Save success toast ───────────────────────────────────────────────────── --}}
@@ -31,7 +43,7 @@
                     display:flex; align-items:center; gap:10px;
                     animation:toastIn .4s cubic-bezier(0.34,1.56,0.64,1);
                 ">
-                <span>✓</span> {{ strtoupper(__('dashboard.settings.saved')) }}
+                <span>✓</span> {{ strtoupper(session('success')) }}
             </div>
             <style>
                 @keyframes toastIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -62,7 +74,7 @@
                 <div>⚠️ {{ strtoupper(__('dashboard.settings.errorTitle')) }}</div>
                 <ul style="margin:0; padding-left:16px; font-weight:600; list-style:square;">
                     @foreach ($errors->all() as $err)
-                        <li style="font-size:12px;">{{ $err }}</li>
+                        <li style="font-size:14px;">{{ $err }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -259,21 +271,23 @@
                                 <form method="POST" action="{{ route('dashboard.settings.marquees.update', $msg->id) }}"
                                     style="margin-bottom:16px; padding:16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
                                     @csrf @method('PUT')
+                                    <input type="hidden" name="is_active" value="{{ old('is_active', $msg->is_active ? '1' : '0') }}">
+                                    <input type="hidden" name="order" value="{{ old('order', $msg->order) }}">
                                     <div style="display:flex; flex-direction:column; gap:12px;">
                                         <div>
                                             <div class="s-sub-label">ROUTE</div>
-                                            <input type="text" name="route" value="{{ $msg->route ?? '' }}"
+                                            <input type="text" name="route" value="{{ old('route', $msg->route) }}"
                                                 class="s-input"
-                                                style="margin-top:6px; font-size:13px; color:rgba(255,255,255,0.5);"
+                                                style="margin-top:6px; font-size:15px; color:rgba(255,255,255,0.5);"
                                                 placeholder="e.g. /cart or leave empty for all pages">
                                         </div>
                                         <div>
                                             <div class="s-sub-label">ENGLISH TEXT</div>
-                                            <textarea name="text_en" rows="2" class="s-input" style="margin-top:6px; resize:vertical;">{{ $msg->text_en }}</textarea>
+                                            <textarea name="text_en" rows="2" class="s-input" style="margin-top:6px; resize:vertical;">{{ old('text_en', $msg->text_en) }}</textarea>
                                         </div>
                                         <div>
                                             <div class="s-sub-label">KHMER TEXT</div>
-                                            <textarea name="text_kh" rows="2" class="s-input" style="margin-top:6px; resize:vertical;">{{ $msg->text_kh }}</textarea>
+                                            <textarea name="text_kh" rows="2" class="s-input" style="margin-top:6px; resize:vertical;">{{ old('text_kh', $msg->text_kh) }}</textarea>
                                         </div>
                                         <div style="display:flex; justify-content:flex-end;">
                                             <button type="submit"
@@ -335,7 +349,13 @@
                                     $_aw = __('dashboard.settings.khqrAwaiting');
                                     $_qr = __('dashboard.settings.khqrConfirmed');
                                     $_dl = __('dashboard.settings.deliveryAlert');
-                                    $alertGrid = [[$_ls, $counts['low_stock'], '🟠', '#F97316', 'rgba(249,115,22,.12)', 'rgba(249,115,22,.25)', route('dashboard.products')], [$_no, $counts['pending_orders'], '📦', '#eab308', 'rgba(234,179,8,.12)', 'rgba(234,179,8,.25)', route('dashboard.orders', ['status' => 'pending'])], [$_aw, $counts['pending_payment'], '📱', '#3b82f6', 'rgba(59,130,246,.12)', 'rgba(59,130,246,.25)', route('dashboard.orders')], [$_qr, $counts['qr_confirmed'], '✅', '#22c55e', 'rgba(34,197,94,.12)', 'rgba(34,197,94,.25)', route('dashboard.orders')], [$_dl, $counts['delivered_today'], '🚚', '#a78bfa', 'rgba(167,139,250,.12)', 'rgba(167,139,250,.25)', route('dashboard.orders', ['status' => 'delivered'])]];
+                                    $alertGrid = [
+                                        [$_ls, $counts['low_stock'], '🟠', '#F97316', 'rgba(249,115,22,.12)', 'rgba(249,115,22,.25)', route('dashboard.products', ['stock' => 'low'])], 
+                                        [$_no, $counts['pending_orders'], '📦', '#eab308', 'rgba(234,179,8,.12)', 'rgba(234,179,8,.25)', route('dashboard.orders', ['status' => 'pending'])], 
+                                        [$_aw, $counts['pending_payment'], '📱', '#3b82f6', 'rgba(59,130,246,.12)', 'rgba(59,130,246,.25)', route('dashboard.orders', ['status' => 'pending'])], 
+                                        [$_qr, $counts['qr_confirmed'], '✅', '#22c55e', 'rgba(34,197,94,.12)', 'rgba(34,197,94,.25)', route('dashboard.orders', ['status' => 'confirmed'])], 
+                                        [$_dl, $counts['delivered_today'], '🚚', '#a78bfa', 'rgba(167,139,250,.12)', 'rgba(167,139,250,.25)', route('dashboard.orders', ['status' => 'delivered'])]
+                                    ];
                                 @endphp
 
                                 @foreach ($alertGrid as [$label, $count, $icon, $color, $bg, $border, $url])
@@ -533,11 +553,13 @@
                 $r->key => ['label' => $r->label, 'color' => $r->color, 'icon' => $r->icon, 'description' => $r->description],
             ])->toArray();
 
-            // Preload role lock configs for the template
+            // Preload role lock configs for the template. Defensive normalize:
+            // a corrupted/double-encoded row reads back as the string "[]" —
+            // coerce any non-array to [] so in_array() below can't crash.
             $roleLockConfig = $allRoles->mapWithKeys(fn ($r) => [
                 $r->key => [
-                    'locked_on'    => $r->locked_features ?? [],
-                    'locked_off'   => $r->forbidden_features ?? [],
+                    'locked_on'    => is_array($r->locked_features)    ? $r->locked_features    : [],
+                    'locked_off'   => is_array($r->forbidden_features) ? $r->forbidden_features : [],
                 ],
             ])->toArray();
 
@@ -645,16 +667,20 @@
                                                 <div
                                                     style="width:32px; height:32px; border-radius:8px;
                                                 background:{{ $roleMeta['color'] }}18; border:1px solid {{ $roleMeta['color'] }}44;
-                                                display:flex; align-items:center; justify-content:center; font-size: var(--text-sm);">
-                                                    {{ $roleMeta['icon'] }}
+                                                display:flex; align-items:center; justify-content:center; font-size: var(--text-sm); overflow:hidden;">
+                                                    @if (Str::startsWith((string) ($roleMeta['icon'] ?? ''), ['http://', 'https://']))
+                                                        <img src="{{ $roleMeta['icon'] }}" alt="" style="width:22px; height:22px; object-fit:contain;" onerror="this.parentElement.textContent='❓'">
+                                                    @else
+                                                        {{ $roleMeta['icon'] ?? '❓' }}
+                                                    @endif
                                                 </div>
                                                 <span
-                                                    style="font-size:10px; letter-spacing:0.8px; color:{{ $roleMeta['color'] }}; font-weight:800; line-height:1.1;">
+                                                    style="font-size:15px; letter-spacing:0.8px; color:{{ $roleMeta['color'] }}; font-weight:800; line-height:1.1;">
                                                     {{ strtoupper($roleMeta['label']) }}
                                                 </span>
                                                 @if (!empty($roleMeta['description']))
                                                     <span
-                                                        style="font-size:9px; color:rgba(255,255,255,0.3); line-height:1.2; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                                        style="font-size:15px; color:rgba(255,255,255,0.3); line-height:1.2; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
                                                         title="{{ $roleMeta['description'] }}">
                                                         {{ $roleMeta['description'] }}
                                                     </span>
@@ -669,8 +695,13 @@
                                     <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                                         <td style="padding:14px 20px;">
                                             <div style="display:flex; align-items:center; gap:10px;">
-                                                <span
-                                                    style="font-size: var(--title-size);">{{ $featureMeta['icon'] }}</span>
+                                                <span style="font-size: var(--title-size); width:24px; display:inline-flex; justify-content:center;">
+                                                    @if (Str::startsWith((string) ($featureMeta['icon'] ?? ''), ['http://', 'https://']))
+                                                        <img src="{{ $featureMeta['icon'] }}" alt="" style="width:20px; height:20px; object-fit:contain; vertical-align:middle;" onerror="this.style.display='none'">
+                                                    @else
+                                                        {{ $featureMeta['icon'] ?? '📄' }}
+                                                    @endif
+                                                </span>
                                                 <span
                                                     style="font-size: var(--title-size); font-weight:600; color:var(--text-main, rgba(255,255,255,0.85));">
                                                     {{ $featureMeta['label'] }}
@@ -743,7 +774,7 @@
                                                             name="perm_{{ $roleKey }}_{{ $featureKey }}"
                                                             value="1" {{ $checked ? 'checked' : '' }}
                                                             {{ !$canEditPerms ? 'disabled' : '' }}
-                                                            onchange="markPermDirty()" style="display:none;" />
+                                                            onchange="markPermDirty()" class="perm-hidden" />
                                                         <span class="perm-check {{ $checked ? 'perm-on' : 'perm-off' }}"
                                                             data-color="{{ $roleMeta['color'] }}"
                                                             style="display: inline-flex; align-items: center; justify-content: center;"></span>
@@ -813,42 +844,50 @@
                     <form method="POST" action="{{ route('dashboard.settings.roles.store') }}" style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
                         @csrf
                         <div style="flex:1; min-width:140px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY *</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY *</label>
                             <input type="text" name="key" required maxlength="50" placeholder="e.g. accountant"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <div style="flex:1; min-width:140px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
                             <input type="text" name="label" required maxlength="100" placeholder="Display name"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <div style="width:60px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">COLOR</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">COLOR</label>
                             <input type="color" name="color" value="#6b7280"
                                 style="width:100%; height:36px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; cursor:pointer;" />
                         </div>
-                        <div style="width:60px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
-                            <input type="text" name="icon" maxlength="50" placeholder="❓"
-                                style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:16px; text-align:center;" />
+                        <div style="min-width:140px;">
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON *</label>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div id="role-icon-preview" class="s-icon-preview"
+                                    style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; overflow:hidden;">❓</div>
+                                <input type="text" name="icon" id="role-icon-input" maxlength="20" placeholder="Emoji"
+                                    style="flex:1; min-width:80px; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:18px; text-align:center;" />
+                            </div>
+                            <div style="margin-top:6px;">
+                                <span class="s-icon-pick" onclick="pickEmoji('role-icon-input','role-icon-preview')" title="Pick emoji"
+                                    style="cursor:pointer; font-size:15px; color:#F97316; border:1px solid rgba(249,115,22,0.3); background:rgba(249,115,22,0.08); border-radius:6px; padding:2px 8px;">😀 Pick Emoji</span>
+                            </div>
                         </div>
                         <div style="flex:2; min-width:180px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">DESCRIPTION</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">DESCRIPTION</label>
                             <input type="text" name="description" maxlength="255" placeholder="Short description of this role"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <div style="width:80px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
                             <input type="number" name="sort_order" value="0" min="0"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <div style="display:flex; align-items:center; gap:6px; padding-bottom:8px;">
                             <input type="checkbox" name="is_staff_portal" id="role_staff_portal" checked
                                 style="accent-color:#F97316;" />
-                            <label for="role_staff_portal" style="font-size:12px; color:var(--text-muted, rgba(255,255,255,0.5)); cursor:pointer;">Staff portal</label>
+                            <label for="role_staff_portal" style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.5)); cursor:pointer;">Staff portal</label>
                         </div>
                         <button type="submit"
-                            style="padding:8px 18px; border-radius:8px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:#F97316; font-weight:700; font-size:13px; cursor:pointer; letter-spacing:1px; white-space:nowrap;">
+                            style="padding:9px 18px; border-radius:8px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:#F97316; font-weight:700; font-size:16px; cursor:pointer; letter-spacing:1px; white-space:nowrap;">
                             ADD ROLE
                         </button>
                     </form>
@@ -864,32 +903,43 @@
                     <form method="POST" action="{{ route('dashboard.settings.features.store') }}" style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
                         @csrf
                         <div style="flex:1; min-width:140px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY *</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY *</label>
                             <input type="text" name="key" required maxlength="50" placeholder="e.g. invoices"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <div style="flex:1; min-width:140px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
                             <input type="text" name="label" required maxlength="100" placeholder="Display name"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
-                        <div style="width:60px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
-                            <input type="text" name="icon" maxlength="50" placeholder="📄"
-                                style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:16px; text-align:center;" />
+                        <div style="min-width:140px;">
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div id="feature-icon-preview" class="s-icon-preview"
+                                    style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; overflow:hidden;">📄</div>
+                                <input type="text" name="icon" id="feature-icon-input" maxlength="200" placeholder="📄 or image URL"
+                                    oninput="iconPreview('feature-icon-input','feature-icon-preview')"
+                                    style="flex:1; min-width:80px; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:18px; text-align:center;" />
+                            </div>
+                            <div style="margin-top:6px;">
+                                <span class="s-icon-pick" onclick="pickEmoji('feature-icon-input','feature-icon-preview')" title="Pick emoji"
+                                    style="cursor:pointer; font-size:15px; color:#F97316; border:1px solid rgba(249,115,22,0.3); background:rgba(249,115,22,0.08); border-radius:6px; padding:2px 8px;">😀 Emoji</span>
+                                <span class="s-icon-pick" onclick="pickUrl('feature-icon-input','feature-icon-preview')" title="Use emoji URL"
+                                    style="cursor:pointer; font-size:15px; color:#3b82f6; border:1px solid rgba(59,130,246,0.3); background:rgba(59,130,246,0.08); border-radius:6px; padding:2px 8px; margin-left:6px;">🔗 URL</span>
+                            </div>
                         </div>
                         <div style="width:140px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">CATEGORY</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">CATEGORY</label>
                             <input type="text" name="category" maxlength="50" placeholder="e.g. admin, inventory"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <div style="width:80px;">
-                            <label style="font-size:11px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
+                            <label style="font-size:16px; color:var(--text-muted, rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
                             <input type="number" name="sort_order" value="0" min="0"
-                                style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:13px;" />
+                                style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main, #fff); font-size:17px;" />
                         </div>
                         <button type="submit"
-                            style="padding:8px 18px; border-radius:8px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#3b82f6; font-weight:700; font-size:13px; cursor:pointer; letter-spacing:1px; white-space:nowrap;">
+                            style="padding:9px 18px; border-radius:8px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#3b82f6; font-weight:700; font-size:16px; cursor:pointer; letter-spacing:1px; white-space:nowrap;">
                             ADD FEATURE
                         </button>
                     </form>
@@ -908,26 +958,37 @@
                             <div style="display:flex; flex-direction:column; gap:8px;">
                                 @foreach ($allRoles as $r)
                                     <div style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
-                                        <span style="font-size:18px; line-height:1.2;">{{ $r->icon }}</span>
+                                        <span style="font-size:18px; line-height:1.2;">
+                                            @if (Str::startsWith($r->icon, ['http://', 'https://']))
+                                                <img src="{{ $r->icon }}" alt="" style="width:20px; height:20px; object-fit:contain; vertical-align:middle;" onerror="this.style.display='none'">
+                                            @else
+                                                {{ $r->icon }}
+                                            @endif
+                                        </span>
                                         <div style="flex:1; min-width:0;">
                                             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                                <span style="font-size:13px; font-weight:700; color:{{ $r->color }};">{{ $r->label }}</span>
-                                                <span style="font-size:10px; color:rgba(255,255,255,0.3); font-family:monospace;">{{ $r->key }}</span>
-                                                @if($r->is_locked)<span style="font-size:10px; color:rgba(255,255,255,0.25);">🔒</span>@endif
-                                                @if($r->is_staff_portal)<span style="font-size:10px; color:rgba(59,130,246,0.6);">staff</span>@endif
+                                                <span style="font-size:16px; font-weight:700; color:{{ $r->color }};">{{ $r->label }}</span>
+                                                <span style="font-size:15px; color:rgba(255,255,255,0.3); font-family:monospace;">{{ $r->key }}</span>
+                                                @if($r->is_locked)<span style="font-size:15px; color:rgba(255,255,255,0.25);">🔒</span>@endif
+                                                @if($r->is_staff_portal)<span style="font-size:15px; color:rgba(59,130,246,0.6);">staff</span>@endif
                                             </div>
                                             @if($r->description)
-                                                <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-top:3px; line-height:1.3;">{{ $r->description }}</div>
+                                                <div style="font-size:16px; color:rgba(255,255,255,0.35); margin-top:3px; line-height:1.3;">{{ $r->description }}</div>
                                             @endif
                                         </div>
                                         @if (!$r->is_locked)
-                                            <form method="POST" action="{{ route('dashboard.settings.roles.destroy', $r->id) }}" onsubmit="return confirm('Delete role {{ $r->key }}? This removes its permissions too.');" style="display:inline; flex-shrink:0;">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" title="Delete role"
-                                                    style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; padding:2px 6px;">🗑️</button>
-                                            </form>
+                                            <div style="display:flex; gap:4px; flex-shrink:0;">
+                                                <button type="button" title="Edit role"
+                                                    onclick="openRoleEdit({{ $r->id }})"
+                                                    style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); color:#3b82f6; cursor:pointer; font-size:15px; padding:2px 7px; border-radius:6px;">✏️</button>
+                                                <form method="POST" action="{{ route('dashboard.settings.roles.destroy', $r->id) }}" onsubmit="return confirm('Delete role {{ $r->key }}? This removes its permissions too.');" style="display:inline;">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" title="Delete role"
+                                                        style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px; padding:2px 6px;">🗑️</button>
+                                                </form>
+                                            </div>
                                         @else
-                                            <span style="font-size:12px; color:rgba(255,255,255,0.2); flex-shrink:0;">🔒</span>
+                                            <span style="font-size:15px; color:rgba(255,255,255,0.2); flex-shrink:0;">🔒</span>
                                         @endif
                                     </div>
                                 @endforeach
@@ -941,19 +1002,154 @@
                             <div style="display:flex; flex-direction:column; gap:8px;">
                                 @foreach ($allFeatures as $f)
                                     <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);">
-                                        <span style="font-size:18px;">{{ $f->icon }}</span>
-                                        <span style="font-size:13px; font-weight:700; color:var(--text-main, #fff); flex:1;">{{ $f->label }}</span>
-                                        <span style="font-size:11px; color:rgba(255,255,255,0.3);">{{ $f->key }}</span>
-                                        <span style="font-size:10px; color:rgba(255,255,255,0.2);">{{ $f->category ?? '—' }}</span>
-                                        <form method="POST" action="{{ route('dashboard.settings.features.destroy', $f->id) }}" onsubmit="return confirm('Delete feature {{ $f->key }}? This removes its permissions from all roles.');" style="display:inline;">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" title="Delete feature"
-                                                style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:14px; padding:2px 6px;">🗑️</button>
-                                        </form>
+                                        <span style="font-size:20px; width:24px; display:flex; justify-content:center;">
+                                            @if (Str::startsWith((string) $f->icon, ['http://', 'https://']))
+                                                <img src="{{ $f->icon }}" alt="" style="width:22px; height:22px; object-fit:contain; vertical-align:middle;" onerror="this.style.display='none'">
+                                            @else
+                                                {{ $f->icon }}
+                                            @endif
+                                        </span>
+                                        <span style="font-size:15px; font-weight:700; color:var(--text-main, #fff); flex:1;">{{ $f->label }}</span>
+                                        <span style="font-size:15px; color:rgba(255,255,255,0.3);">{{ $f->key }}</span>
+                                        <span style="font-size:14px; color:rgba(255,255,255,0.2);">{{ $f->category ?? '—' }}</span>
+                                        <div style="display:flex; gap:4px;">
+                                            <button type="button" title="Edit feature"
+                                                onclick="openFeatureEdit({{ $f->id }})"
+                                                style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); color:#3b82f6; cursor:pointer; font-size:15px; padding:2px 7px; border-radius:6px;">✏️</button>
+                                            <form method="POST" action="{{ route('dashboard.settings.features.destroy', $f->id) }}" onsubmit="return confirm('Delete feature {{ $f->key }}? This removes its permissions from all roles.');" style="display:inline;">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" title="Delete feature"
+                                                    style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px; padding:2px 6px;">🗑️</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- ═══ Edit Role / Feature modals (superadmin only) ═════════════════════ --}}
+            @php
+                $_roleEditData = $allRoles->map(fn ($r) => [
+                    'id' => $r->id, 'label' => $r->label, 'key' => $r->key,
+                    'description' => $r->description, 'color' => $r->color,
+                    'icon' => $r->icon, 'sort_order' => $r->sort_order,
+                    'is_staff_portal' => (bool) $r->is_staff_portal,
+                ])->values()->all();
+                $_featureEditData = $allFeatures->map(fn ($f) => [
+                    'id' => $f->id, 'label' => $f->label, 'key' => $f->key,
+                    'icon' => $f->icon, 'category' => $f->category,
+                    'sort_order' => $f->sort_order,
+                ])->values()->all();
+            @endphp
+            @if ($isSuperAdmin)
+                {{-- Inline data for JS populating the edit forms --}}
+                <script>
+                    window.__ROLE_EDIT_DATA__ = @json($_roleEditData);
+                    window.__FEATURE_EDIT_DATA__ = @json($_featureEditData);
+                </script>
+
+                <div id="role-edit-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this)closeEditModal('role-edit-modal')">
+                    <div style="background:var(--surface-2,#1a1a1a); border:1px solid var(--border,rgba(255,255,255,0.1)); border-radius:16px; max-width:520px; width:100%; padding:22px; box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                            <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main,#fff);">✏️ EDIT ROLE</div>
+                            <button type="button" onclick="closeEditModal('role-edit-modal')" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:20px; padding:2px 8px;">×</button>
+                        </div>
+                        <form method="POST" action="{{ route('dashboard.settings.roles.update', '__ID__') }}" onsubmit="if(!document.getElementById('role-edit-id').value){event.preventDefault();}" id="role-edit-form">
+                            @csrf @method('PUT')
+                            <input type="hidden" name="id" id="role-edit-id" value="">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY</label>
+                                    <div id="role-edit-key" style="padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); color:rgba(255,255,255,0.4); font-size:17px; font-family:monospace;">—</div>
+                                </div>
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
+                                    <input type="text" name="label" id="role-edit-label" required maxlength="100" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:17px;" />
+                                </div>
+                            </div>
+                            <div style="margin-top:12px;">
+                                <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">DESCRIPTION</label>
+                                <input type="text" name="description" id="role-edit-description" maxlength="255" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:17px;" />
+                            </div>
+                            <div style="display:grid; grid-template-columns:90px 1fr; gap:12px; margin-top:12px; align-items:end;">
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">COLOR</label>
+                                    <input type="color" name="color" id="role-edit-color" style="width:100%; height:38px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; cursor:pointer;" />
+                                </div>
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div id="role-edit-icon-preview" class="s-icon-preview" style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; overflow:hidden;">❓</div>
+                                        <input type="text" name="icon" id="role-edit-icon" maxlength="200" oninput="iconPreview('role-edit-icon','role-edit-icon-preview')" style="flex:1; min-width:60px; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:18px; text-align:center;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns:80px 1fr; gap:12px; margin-top:12px; align-items:end;">
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
+                                    <input type="number" name="sort_order" id="role-edit-sort" min="0" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:17px;" />
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px; padding-bottom:9px;">
+                                    <input type="checkbox" name="is_staff_portal" id="role-edit-staff" style="accent-color:#F97316;" />
+                                    <label for="role-edit-staff" style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.5)); cursor:pointer;">Staff portal</label>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+                                <button type="button" onclick="closeEditModal('role-edit-modal')" style="padding:9px 18px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:transparent; color:rgba(255,255,255,0.5); cursor:pointer; font-size:15px; font-weight:700; letter-spacing:1px;">CANCEL</button>
+                                <button type="submit" style="display:flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; border:none; background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; cursor:pointer; font-size:15px; font-weight:800; letter-spacing:1px;">💾 SAVE ROLE</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="feature-edit-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:20px;" onclick="if(event.target===this)closeEditModal('feature-edit-modal')">
+                    <div style="background:var(--surface-2,#1a1a1a); border:1px solid var(--border,rgba(255,255,255,0.1)); border-radius:16px; max-width:520px; width:100%; padding:22px; box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                            <div style="font-size: var(--title-size); font-weight:800; letter-spacing:1.5px; color:var(--text-main,#fff);">✏️ EDIT FEATURE</div>
+                            <button type="button" onclick="closeEditModal('feature-edit-modal')" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:20px; padding:2px 8px;">×</button>
+                        </div>
+                        <form method="POST" action="{{ route('dashboard.settings.features.update', '__ID__') }}" id="feature-edit-form">
+                            @csrf @method('PUT')
+                            <input type="hidden" name="id" id="feature-edit-id" value="">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">KEY</label>
+                                    <div id="feature-edit-key" style="padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); color:rgba(255,255,255,0.4); font-size:17px; font-family:monospace;">—</div>
+                                </div>
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">LABEL *</label>
+                                    <input type="text" name="label" id="feature-edit-label" required maxlength="100" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:17px;" />
+                                </div>
+                            </div>
+                            <div style="margin-top:12px;">
+                                <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ICON</label>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <div id="feature-edit-icon-preview" class="s-icon-preview" style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; overflow:hidden;">📄</div>
+                                    <input type="text" name="icon" id="feature-edit-icon" maxlength="200" oninput="iconPreview('feature-edit-icon','feature-edit-icon-preview')" style="flex:1; min-width:60px; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:18px; text-align:center;" />
+                                </div>
+                                <div style="margin-top:6px;">
+                                    <span class="s-icon-pick" onclick="pickEmoji('feature-edit-icon','feature-edit-icon-preview')" style="cursor:pointer; font-size:15px; color:#F97316; border:1px solid rgba(249,115,22,0.3); background:rgba(249,115,22,0.08); border-radius:6px; padding:2px 8px;">😀 Emoji</span>
+                                    <span class="s-icon-pick" onclick="pickUrl('feature-edit-icon','feature-edit-icon-preview')" style="cursor:pointer; font-size:15px; color:#3b82f6; border:1px solid rgba(59,130,246,0.3); background:rgba(59,130,246,0.08); border-radius:6px; padding:2px 8px; margin-left:6px;">🔗 URL</span>
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 80px; gap:12px; margin-top:12px;">
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">CATEGORY</label>
+                                    <input type="text" name="category" id="feature-edit-category" maxlength="50" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:17px;" />
+                                </div>
+                                <div>
+                                    <label style="font-size:16px; color:var(--text-muted,rgba(255,255,255,0.4)); letter-spacing:1px; display:block; margin-bottom:4px;">ORDER</label>
+                                    <input type="number" name="sort_order" id="feature-edit-sort" min="0" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text-main,#fff); font-size:17px;" />
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+                                <button type="button" onclick="closeEditModal('feature-edit-modal')" style="padding:9px 18px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:transparent; color:rgba(255,255,255,0.5); cursor:pointer; font-size:15px; font-weight:700; letter-spacing:1px;">CANCEL</button>
+                                <button type="submit" style="display:flex; align-items:center; gap:6px; padding:9px 20px; border-radius:8px; border:none; background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; cursor:pointer; font-size:15px; font-weight:800; letter-spacing:1px;">💾 SAVE FEATURE</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             @endif
@@ -1009,12 +1205,18 @@
                 </style>
                 @foreach ($legend as [$icon, $label, $color, $desc])
                     <div class="role-card">
-                        <span style="font-size: 24px; padding:8px; background:{{$color}}15; border-radius:8px;">{{ $icon }}</span>
+                        <span style="font-size: 28px; padding:8px; background:{{$color}}15; border-radius:8px;">
+                            @if (Str::startsWith((string) $icon, ['http://', 'https://']))
+                                <img src="{{ $icon }}" alt="" style="width:26px; height:26px; object-fit:contain; vertical-align:middle;" onerror="this.style.display='none'">
+                            @else
+                                {{ $icon }}
+                            @endif
+                        </span>
                         <div style="min-width:0;">
-                            <div style="font-size: 14px; font-weight:800; letter-spacing:0.5px; color:{{ $color }};">
+                            <div style="font-size: 18px; font-weight:800; letter-spacing:0.5px; color:{{ $color }};">
                                 {{ $label }}
                             </div>
-                            <div class="role-desc" style="font-size: 13px; margin-top:2px;">
+                            <div class="role-desc" style="font-size: 16px; margin-top:2px;">
                                 {{ $desc }}
                             </div>
                         </div>
@@ -1101,14 +1303,14 @@
 
             /* Card titles */
             .s-card-title {
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 3px);
                 font-weight: 800;
                 letter-spacing: 1.5px;
                 padding: 0;
             }
 
             .s-card-sub {
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 1px);
                 color: var(--text-muted, rgba(80, 80, 80, 0.7));
                 margin-top: 2px;
             }
@@ -1148,14 +1350,14 @@
             }
 
             .s-label {
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 2px);
                 font-weight: 700;
                 color: var(--text-main, #1a1a1a);
                 margin-bottom: 3px;
             }
 
             .s-desc {
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 1px);
                 color: var(--text-muted, rgba(60, 60, 60, 0.7));
                 line-height: 1.5;
             }
@@ -1189,7 +1391,7 @@
             }
 
             .s-sub-label {
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 2px);
                 letter-spacing: 2px;
                 color: var(--text-muted, rgba(60, 60, 60, 0.7));
                 font-weight: 700;
@@ -1260,7 +1462,7 @@
                 border-radius: 10px;
                 padding: 10px 14px;
                 font-family: Rajdhani, sans-serif;
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 2px);
                 font-weight: 600;
                 outline: none;
                 transition: border-color .2s;
@@ -1282,7 +1484,7 @@
                 border-radius: 8px;
                 padding: 7px 10px;
                 font-family: Rajdhani, sans-serif;
-                font-size: var(--title-size);
+                font-size: calc(var(--title-size) + 2px);
                 font-weight: 700;
                 outline: none;
                 text-align: center;
@@ -1377,6 +1579,81 @@
                     }
                 });
             }
+
+            /* ── Edit Role / Feature modals ─────────────────────────────────────── */
+            function openRoleEdit(id) {
+                const data = (window.__ROLE_EDIT_DATA__ || []).find(r => r.id === id);
+                if (!data) return;
+                document.getElementById('role-edit-id').value = data.id;
+                document.getElementById('role-edit-key').textContent = data.key;
+                document.getElementById('role-edit-label').value = data.label || '';
+                document.getElementById('role-edit-description').value = data.description || '';
+                document.getElementById('role-edit-color').value = data.color || '#6b7280';
+                document.getElementById('role-edit-icon').value = data.icon || '';
+                document.getElementById('role-edit-sort').value = data.sort_order ?? 0;
+                document.getElementById('role-edit-staff').checked = !!data.is_staff_portal;
+                document.getElementById('role-edit-form').action = "{{ route('dashboard.settings.roles.update', '__ID__') }}".replace('__ID__', data.id);
+                iconPreview('role-edit-icon', 'role-edit-icon-preview');
+                document.getElementById('role-edit-modal').style.display = 'flex';
+            }
+
+            function openFeatureEdit(id) {
+                const data = (window.__FEATURE_EDIT_DATA__ || []).find(f => f.id === id);
+                if (!data) return;
+                document.getElementById('feature-edit-id').value = data.id;
+                document.getElementById('feature-edit-key').textContent = data.key;
+                document.getElementById('feature-edit-label').value = data.label || '';
+                document.getElementById('feature-edit-icon').value = data.icon || '';
+                document.getElementById('feature-edit-category').value = data.category || '';
+                document.getElementById('feature-edit-sort').value = data.sort_order ?? 0;
+                document.getElementById('feature-edit-form').action = "{{ route('dashboard.settings.features.update', '__ID__') }}".replace('__ID__', data.id);
+                iconPreview('feature-edit-icon', 'feature-edit-icon-preview');
+                document.getElementById('feature-edit-modal').style.display = 'flex';
+            }
+
+            function closeEditModal(id) {
+                const m = document.getElementById(id);
+                if (m) m.style.display = 'none';
+            }
+
+            /* ── Icon helpers: emoji / URL / URL-picker with live preview ───────── */
+            // Display the icon wherever it appears: emoji as text, URL as <img>.
+            function iconPreview(inputId, previewId) {
+                const input = document.getElementById(inputId);
+                const preview = document.getElementById(previewId);
+                if (!input || !preview) return;
+                const val = (input.value || '').trim();
+                if (/^https?:\/\//i.test(val)) {
+                    preview.innerHTML = '<img src="' + val.replace(/"/g, '&quot;') + '" style="max-width:100%; max-height:100%; object-fit:contain;" onerror="this.style.display=\'none\';this.closest(\'.s-icon-preview\').textContent=\'🖼️\'">';
+                } else if (val) {
+                    preview.textContent = val.slice(0, 4);
+                } else {
+                    preview.textContent = '?';
+                }
+            }
+
+            // Open a quick inline emoji picker in a prompt-style list.
+            function pickEmoji(inputId, previewId) {
+                const emojis = ['👑','🛡️','🧾','📄','🧑‍💼','👤','📦','🖥️','💻','🔧','⚙️','🚚','🏪','👥','⭐','🖌️','🎨','🛒','💳','📊','🗂️','🔒','🔓','📣','🎯','🤝','📞','✉️','💼','🧭'];
+                const pick = prompt('Pick a number for the emoji:\n' + emojis.map((e, i) => (i + 1) + ' ' + e).join('\n'));
+                const idx = parseInt(pick, 10) - 1;
+                if (!isNaN(idx) && emojis[idx]) {
+                    setIcon(inputId, previewId, emojis[idx]);
+                }
+            }
+
+            // Prompt a remote image URL directly.
+            function pickUrl(inputId, previewId) {
+                const url = prompt('Icon image URL (https://…):');
+                if (url && url.trim()) setIcon(inputId, previewId, url.trim());
+            }
+
+            function setIcon(inputId, previewId, value) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+                input.value = value;
+                iconPreview(inputId, previewId);
+            }
         </script>
 
         <style>
@@ -1398,6 +1675,17 @@
                 transition: background .18s, border-color .18s, transform .15s;
                 --perm-color: #a78bfa;
                 margin: 0 auto;
+            }
+
+            /* The real checkbox drives state; the visible square is purely
+               cosmetic. It stays hidden from click (the <label> covers it) but
+               must REMAIN in the cascade so the label's :checked state works. */
+            .perm-toggle input.perm-hidden {
+                position: absolute;
+                left: -9999px;
+                width: 1px;
+                height: 1px;
+                opacity: 0;
             }
 
             .perm-check.perm-on {

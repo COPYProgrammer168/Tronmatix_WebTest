@@ -1,21 +1,20 @@
 @extends('dashboard.layout')
 
-@section('title', strtoupper('Brands'))
+@section('title', strtoupper('Brand Logos'))
 
 @section('content')
 @include('dashboard._permission_check', ['feature' => 'products'])
 @php
     $_permDenied = $GLOBALS['_tronmatix_perm_denied'] ?? false;
-    $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
 @endphp
 
 @if(!$_permDenied)
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
     <div>
-        <h1 style="font-size:var(--text-2xl); font-weight:800; letter-spacing:2px; color:var(--text); margin:0;">BRANDS</h1>
+        <h1 style="font-size:var(--text-2xl); font-weight:800; letter-spacing:2px; color:var(--text); margin:0;">BRAND LOGOS</h1>
         <p style="font-size:var(--text-sm); color:var(--text-muted); margin-top:4px;">
-            Level 4 — {{ $brands->count() }} total · each belongs to a Sub Category (Level 3)
+            {{ $brands->count() }} brand{{ $brands->count() !== 1 ? 's' : '' }} · click a logo to edit
         </p>
     </div>
     <a href="{{ route('dashboard.brands.create') }}" class="btn btn-orange">
@@ -33,58 +32,77 @@
 </div>
 @endif
 
-<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px;">
+{{-- Logo grid --}}
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px;">
     @forelse($brands as $brand)
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
-        <div style="height:90px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+                transition:transform .15s, box-shadow .15s; cursor:pointer;"
+         onmouseenter="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.18)'"
+         onmouseleave="this.style.transform=''; this.style.boxShadow=''"
+         onclick="window.location='{{ route('dashboard.brands.edit', $brand) }}'">
+
+        {{-- Logo area --}}
+        <div style="height:120px; background:var(--surface-2); display:flex; align-items:center; justify-content:center;
+                    position:relative; overflow:hidden; padding:16px;">
             @if($brand->image)
                 <img src="{{ storage_url($brand->image) }}" alt="{{ $brand->name }}"
-                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+                     style="max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
             @else
-                <div style="width:44px; height:44px; border-radius:12px; background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.25);
-                            display:flex; align-items:center; justify-content:center; font-size:20px;">🏷️</div>
+                <div style="width:56px; height:56px; border-radius:14px; background:rgba(249,115,22,0.10);
+                            border:1.5px solid rgba(249,115,22,0.25); display:flex; align-items:center;
+                            justify-content:center; font-size:24px;">🏷️</div>
             @endif
-            <div style="position:absolute; bottom:8px; left:8px; z-index:3;
-                 background:rgba(0,0,0,0.6); color:rgba(255,255,255,0.7);
-                 border-radius:6px; padding:2px 7px; font-size:var(--text-xs); font-weight:700;">
-                #{{ $brand->order }}
-            </div>
-            <form method="POST" action="{{ route('dashboard.brands.toggle', $brand) }}" style="position:absolute; top:8px; right:8px; z-index:3;">
+
+            {{-- ON/OFF badge --}}
+            <form method="POST" action="{{ route('dashboard.brands.toggle', $brand) }}"
+                  onclick="event.stopPropagation()" style="position:absolute; top:8px; right:8px;">
                 @csrf @method('PATCH')
-                <button type="submit"
-                    style="background:{{ $brand->is_active ? 'rgba(34,197,94,0.85)' : 'rgba(107,114,128,0.85)' }};
-                           color:#fff; border:none; border-radius:20px; padding:3px 10px;
-                           font-size:var(--text-xs); font-weight:700; cursor:pointer; letter-spacing:.5px;">
-                    {{ $brand->is_active ? '● ON' : '○ OFF' }}
+                <button type="submit" title="{{ $brand->is_active ? 'Active' : 'Hidden' }}"
+                    style="width:10px; height:10px; border-radius:50%; border:none; cursor:pointer;
+                           background:{{ $brand->is_active ? '#22c55e' : '#6b7280' }};">
                 </button>
             </form>
         </div>
 
-        <div style="padding:14px 16px;">
-            <div style="font-size:var(--text-md); font-weight:800; color:var(--text); letter-spacing:1px;">{{ $brand->name }}</div>
-            <div style="font-size:var(--text-xs); color:var(--text-xfaint); margin-top:2px;">/{{ $brand->slug }}</div>
-            <div style="font-size:var(--text-xs); color:var(--text-muted); margin-top:6px;">
-                Parent: <span style="color:var(--orange); font-weight:700;">{{ $brand->subCategory->name ?? '—' }}</span>
-                @if($brand->subCategory && $brand->subCategory->mainCategory && $brand->subCategory->mainCategory->category)
-                    <span style="color:var(--text-xfaint);"> → {{ $brand->subCategory->mainCategory->category->name }}</span>
-                @endif
+        {{-- Name + actions --}}
+        <div style="padding:10px 14px 14px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <div style="min-width:0; flex:1;">
+                <div style="font-size:var(--text-sm); font-weight:800; color:var(--text); letter-spacing:0.5px;
+                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    {{ $brand->name }}
+                </div>
+                <div style="font-size:11px; color:var(--text-xfaint); margin-top:1px;">
+                    · {{ $brand->order }}
+                </div>
             </div>
-        </div>
-
-        <div style="padding:0 16px 14px; display:flex; gap:8px;">
-            <a href="{{ route('dashboard.brands.edit', $brand) }}" class="btn btn-outline btn-sm" style="flex:1;">EDIT</a>
-            <form method="POST" action="{{ route('dashboard.brands.destroy', $brand) }}"
-                  onsubmit="return confirm('Delete &quot;{{ $brand->name }}&quot;?')" style="display:inline;">
-                @csrf @method('DELETE')
-                <button type="submit" class="btn btn-sm"
-                    style="border:1px solid #ef4444; color:#ef4444; background:transparent;">DELETE</button>
-            </form>
+            <div style="display:flex; gap:4px; flex-shrink:0;">
+                <a href="{{ route('dashboard.brands.edit', $brand) }}"
+                   style="width:30px; height:30px; border-radius:8px; border:1px solid var(--border-input);
+                          display:flex; align-items:center; justify-content:center; text-decoration:none;
+                          color:var(--text-muted); font-size:13px;"
+                   title="Edit">✏️</a>
+                <form method="POST" action="{{ route('dashboard.brands.destroy', $brand) }}"
+                      onsubmit="event.stopPropagation(); return confirm('Delete &quot;{{ $brand->name }}&quot;?')"
+                      style="display:inline;">
+                    @csrf @method('DELETE')
+                    <button type="submit" title="Delete"
+                        style="width:30px; height:30px; border-radius:8px; border:1px solid rgba(239,68,68,0.3);
+                               background:transparent; color:#ef4444; cursor:pointer; font-size:13px;
+                               display:flex; align-items:center; justify-content:center;">🗑</button>
+                </form>
+            </div>
         </div>
     </div>
     @empty
-    <div style="grid-column:1/-1; text-align:center; color:var(--text-xfaint); padding:60px 0; font-size:var(--text-md);">
-        No brands yet.
-        <a href="{{ route('dashboard.brands.create') }}" style="color:var(--orange); text-decoration:none; font-weight:700;">Add the first one</a>
+    <div style="grid-column:1/-1; text-align:center; padding:80px 20px;">
+        <div style="font-size:48px; margin-bottom:12px;">🏷️</div>
+        <p style="color:var(--text-xfaint); font-size:var(--text-md); margin-bottom:16px;">No brands yet.</p>
+        <a href="{{ route('dashboard.brands.create') }}" class="btn btn-orange">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            ADD FIRST BRAND
+        </a>
     </div>
     @endforelse
 </div>

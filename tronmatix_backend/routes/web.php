@@ -115,6 +115,8 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::patch('/sub-categories/{subCategory}/toggle', [SubCategoryController::class, 'toggle'])->name('sub-categories.toggle');
         Route::delete('/sub-categories/{subCategory}', [SubCategoryController::class, 'destroy'])->name('sub-categories.destroy');
 
+        Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+        Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
         Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
         Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
         Route::patch('/brands/{brand}/toggle', [BrandController::class, 'toggle'])->name('brands.toggle');
@@ -133,6 +135,7 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::post('/stock/receive', [StockController::class, 'receive'])->name('stock.receive');
         Route::post('/stock/adjust', [StockController::class, 'adjust'])->name('stock.adjust');
         Route::post('/stock/damaged', [StockController::class, 'damaged'])->name('stock.damaged');
+        Route::post('/stock/reset', [StockController::class, 'resetRandom'])->name('stock.reset');
         Route::get('/stock/{product}/history', [StockController::class, 'history'])->name('stock.history');
         Route::get('/stock/report', [StockController::class, 'report'])->name('stock.report');
         Route::get('/stock/export', [StockController::class, 'export'])->name('stock.export');

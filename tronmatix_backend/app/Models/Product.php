@@ -29,6 +29,9 @@ class Product extends Model
         'images',
         'specs',
         'specs_title',
+        // `stock` = backwards-compat alias → setStockAttribute() writes current_stock.
+        // Must be mass-assignable or Product::create()/update() silently drop it.
+        'stock',
         'current_stock',
         'cost_price',
         'low_stock_threshold',
@@ -54,7 +57,7 @@ class Product extends Model
     ];
 
     // ── Appended virtual attributes ───────────────────────────────────────────
-    protected $appends = ['all_images', 'in_stock', 'display_price'];
+    protected $appends = ['all_images', 'in_stock', 'display_price', 'stock'];
 
     // ── Boot ──────────────────────────────────────────────────────────────────
 

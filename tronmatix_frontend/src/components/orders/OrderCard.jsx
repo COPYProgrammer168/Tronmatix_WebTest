@@ -19,15 +19,15 @@ export default function OrderCard({
   const { dark } = useTheme();
   const { t, isKhmer } = useLang();
   const cardFont = isKhmer ? "Kh-Koulen, sans-serif" : "Rajdhani, sans-serif";
-  const cardBg   = dark ? "#1f2937" : "#ffffff";
-  const border   = dark ? "#374151" : "#e5e7eb";
+  const cardBg = dark ? "#1f2937" : "#ffffff";
+  const border = dark ? "#374151" : "#e5e7eb";
   const textMain = dark ? "#f9fafb" : "#111827";
-  const textSub  = dark ? "#9ca3af" : "#6b7280";
+  const textSub = dark ? "#9ca3af" : "#6b7280";
 
-  const orderId        = order.order_id || order.id;
-  const isExpanded     = expanded === orderId;
+  const orderId = order.order_id || order.id;
+  const isExpanded = expanded === orderId;
   const fulfillmentType = order.fulfillment_type ?? "delivery"; // ← pickup | delivery
-  const isPickup       = fulfillmentType === "pickup";
+  const isPickup = fulfillmentType === "pickup";
 
   return (
     <div
@@ -45,12 +45,12 @@ export default function OrderCard({
           onClick={() => onToggleExpand(orderId)}
         >
           <div>
-            <div className="font-black" style={{ fontSize: 16, color: textMain }}>#{orderId}</div>
-            <div style={{ fontSize: isKhmer ? 13 : 14, color: textSub }}>
+            <div className="font-black" style={{ fontSize: isKhmer ? 12 : 20, color: textMain }}>#{orderId}</div>
+            <div style={{ fontSize: isKhmer ? 13 : 18, color: textSub }}>
               {new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", {
                 day: "2-digit", month: "short", year: "numeric",
               })}{" "}
-              <span style={{ fontSize: isKhmer ? 11 : 12 }}>
+              <span style={{ fontSize: isKhmer ? 11 : 18 }}>
                 {new Date(order.created_at || Date.now()).toLocaleTimeString("en-GB", {
                   hour: "2-digit", minute: "2-digit",
                 })}
@@ -74,8 +74,8 @@ export default function OrderCard({
               ${Number(order.total).toFixed(2)}
             </div>
             {/* Handle both API field name (discount_amount) and local snapshot (_discountAmount) */}
-             {Number(order.discount_amount || order._discountAmount || 0) > 0 && (
-               <div className="text-green-500 font-bold" style={{ fontSize: isKhmer ? 12 : 13 }}>
+            {Number(order.discount_amount || order._discountAmount || 0) > 0 && (
+              <div className="text-green-500 font-bold" style={{ fontSize: isKhmer ? 12 : 13 }}>
                 🏷 {order.discount_code || order._discountCode
                   ? `${order.discount_code || order._discountCode} · `
                   : ''}

@@ -293,9 +293,11 @@ class TelegramUserService
             $itemLines,
             '',
             $discountDetail,
+            $order->isPickup() || ! $order->delivery_provider_id ? null : $this->deliveryFeeLine($order),
             "✅ <b>Total Paid: \${$total} USD</b>",
             '',
             $fulfillment,
+            $order->isPickup() || ! $order->delivery_provider_id ? null : $this->providerLine($order),
             $order->delivery_date
                 ? '🗓 ' . ($isPickup ? 'Pickup' : 'Delivery') . ': '
                     . $this->e($order->delivery_date)
@@ -349,7 +351,8 @@ class TelegramUserService
 
     /**
      * One-line delivery provider summary for customer messages:
-     *   🚚 Provider · ETA: 20-40 min   (or "· ETA: will contact" when negotiable)
+     *   🚚 Provider · ETA: 20-40 min · Delivery: $3.00
+     *   (or "· ETA: will contact" when negotiable / "· Fee varies" when fee is NULL)
      */
     private function providerLine(Order $order): string
     {
@@ -363,7 +366,23 @@ class TelegramUserService
             ? ' · ETA: will contact to schedule'
             : ' · ETA: '.$this->e($details['estimated_time']);
 
+        $line .= $details['fee'] !== null
+            ? ' · Delivery: $'.number_format((float) $details['fee'], 2)
+            : ' · Fee varies';
+
         return $line;
+    }
+
+    /** Delivery fee line for customer messages ('' for pickup / no provider). */
+    private function deliveryFeeLine(Order $order): string
+    {
+        if ($order->isPickup()) {
+            return '';
+        }
+        if ((float) $order->delivery > 0) {
+            return '🚚 Delivery fee: $'.number_format((float) $order->delivery, 2);
+        }
+        return $order->delivery_provider_id ? '🚚 Delivery fee: Fee varies' : '';
     }
 
     private function sendToUser(string $chatId, string $text): bool
@@ -450,11 +469,13 @@ class TelegramUserService
                 ? '🗓 Delivery: '.$this->e($order->delivery_date)
                     .($order->delivery_time_slot ? ' | '.$this->e($order->delivery_time_slot) : '')
                 : null,
-            "💳 Payment: {$method}", '',
+            "💳 Payment: {$method}",
+            $order->isPickup() || ! $order->delivery_provider_id ? null : $this->providerLine($order), '',
             '<b>Items:</b>',
             $itemLines, '',
             "💰 Subtotal: \${$subtotal}",
             ...$discountLines,
+            $order->isPickup() || ! $order->delivery_provider_id ? null : $this->deliveryFeeLine($order),
             "✅ <b>Total: \${$total}</b>", '',
             "We'll notify you when your order ships. 💙",
             '🕐 '.$this->ts(),

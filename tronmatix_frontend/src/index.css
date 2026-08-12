@@ -113,6 +113,30 @@ body.lang-en {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   GLOBAL SEMIBOLD (font-semibold) — all body text, EXCEPT titles.
+   Applies weight 600 to every text element by default. Excludes:
+     • h1, h2, h3, h4, h5, h6 — heading/title elements keep their own
+       class-based weight (text-3xl, text-4xl, font-bold, etc.)
+     • elements that already declare a heavier Tailwind weight
+       (font-bold=700, font-extrabold=800, font-black=900) via classList
+     • elements with an inline style setting font-weight
+     • code/pre/monospace blocks (SKUs, codes)
+   English mode: every paragraph, list, span, td, label, button, etc.
+                 becomes semibold unless excluded above.
+   Khmer mode:  body.lang-km forces font-weight: 400 !important globally
+                 (line 122), which keeps glyphs readable. The rule below
+                 uses the SAME approach (600 weight) but does NOT use
+                 !important, so the Khmer mode 400 override still wins on
+                 text elements that need to stay regular. For elements
+                 that should be 600 even in Khmer (buttons, badges,
+                 which already have explicit Khmer font-weight rules),
+                 the existing per-class !important rules take precedence.
+───────────────────────────────────────────────────────────────────────── */
+*:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.font-bold):not(.font-extrabold):not(.font-black):not([style*="font-weight"]):not(code):not(pre):not([style*="monospace"]) {
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    KHMER MODE — activated by body.lang-km (set by LanguageContext)
 ───────────────────────────────────────────────────────────────────────── */
 body.lang-km {

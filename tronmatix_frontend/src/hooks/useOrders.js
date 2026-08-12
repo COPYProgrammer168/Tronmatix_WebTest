@@ -107,7 +107,7 @@ export default function useOrders() {
         <table border="1" style="width:100%; border-collapse:collapse; margin:20px 0;">
           <thead><tr style="background:#f9fafb;"><th>ITEM</th><th>QTY</th><th>UNIT</th><th>TOTAL</th></tr></thead>
           <tbody>${items.map((i) => `<tr>
-            <td>${i.name || i.product?.name || "—"}${ (i.warranty_start && i.warranty_end) ? `<br><small style="color:#F97316">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</small>` : ""}</td>
+            <td>${i.brand ? `<span style="font-size:10px;font-weight:800;color:#F97316;background:#fff7ed;border:1px solid #fed7aa;border-radius:3px;padding:1px 5px;margin-right:4px;">${i.brand}</span>` : ''}${i.name || i.product?.name || "—"}${ (i.warranty_start && i.warranty_end) ? `<br><small style="color:#F97316">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</small>` : ""}</td>
             <td style="text-align:center">×${i.qty}</td>
             <td style="text-align:right">$${Number(i.price || i.unit_price || 0).toFixed(2)}</td>
             <td style="text-align:right">$${(Number(i.price || i.unit_price || 0) * i.qty).toFixed(2)}</td>
@@ -135,7 +135,7 @@ export default function useOrders() {
           <tbody>
             ${items.map((i) => `
               <tr>
-                <td class="item-name">${i.name || i.product?.name || "—"}${ (i.warranty_start && i.warranty_end) ? `<br><small style="font-size:9px">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</small>` : ""}</td>
+                <td class="item-name">${i.brand ? `<span style="font-size:9px;font-weight:800;color:#F97316;">${i.brand}</span> ` : ''}${i.name || i.product?.name || "—"}${ (i.warranty_start && i.warranty_end) ? `<br><small style="font-size:9px">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</small>` : ""}</td>
                 <td class="item-qty">x${i.qty}</td>
                 <td class="item-total">$${(Number(i.price || i.unit_price || 0) * i.qty).toFixed(2)}</td>
               </tr>

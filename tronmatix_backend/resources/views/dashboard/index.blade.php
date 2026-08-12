@@ -16,11 +16,11 @@
         <select id="periodSelect" name="period" onchange="applyPeriod(this.value)"
                 class="export-input export-select"
                 style="padding:7px 30px 7px 12px; cursor:pointer;">
-            <option value="about"       {{ ($period ?? 'this-month') === 'about' ? 'selected' : '' }}>📅 All-Time</option>
-            <option value="today"       {{ ($period ?? 'this-month') === 'today' ? 'selected' : '' }}>🗓️ Today</option>
-            <option value="this-month"  {{ ($period ?? 'this-month') === 'this-month' ? 'selected' : '' }}>📆 This Month</option>
-            <option value="6-months"    {{ ($period ?? 'this-month') === '6-months' ? 'selected' : '' }}>🗓️ Last 6 Months</option>
-            <option value="this-year"   {{ ($period ?? 'this-month') === 'this-year' ? 'selected' : '' }}>📅 This Year</option>
+            <option value="about"       {{ ($period ?? 'today') === 'about' ? 'selected' : '' }}>📅 All-Time</option>
+            <option value="today"       {{ ($period ?? 'today') === 'today' ? 'selected' : '' }}>🗓️ Today</option>
+            <option value="this-month"  {{ ($period ?? 'today') === 'this-month' ? 'selected' : '' }}>📆 This Month</option>
+            <option value="6-months"    {{ ($period ?? 'today') === '6-months' ? 'selected' : '' }}>🗓️ Last 6 Months</option>
+            <option value="this-year"   {{ ($period ?? 'today') === 'this-year' ? 'selected' : '' }}>📅 This Year</option>
         </select>
 
         <x-month-selector :month="$month" label="" :margin="false" />
@@ -54,7 +54,7 @@
             <svg fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24" width="20" height="20"><path d="M4 7V5a1 1 0 011-1h14a1 1 0 011 1v2"/><path d="M4 7h16v14H4z"/><path d="M9 11h6"/></svg>
         </div>
         <div>
-            <div class="stat-value">${{ number_format($stats['inventory_value'], 2) }}</div>
+            <div class="stat-value">{{ compact_number($stats['inventory_value'], '$') }}</div>
             <div class="stat-label">{{ __('dashboard.stats.inventoryValue') }}</div>
             @if ($stats['no_cost_products'] > 0)
                 <div style="font-size: var(--title-size); color: rgba(245,158,11,0.7); margin-top:4px;">{{ $stats['no_cost_products'] }} {{ __('dashboard.stats.noCostNote') }}</div>
@@ -372,12 +372,12 @@ function isLight() {
 function themeColors() {
     const l = isLight();
     return {
-        text:      l ? 'rgba(15,23,42,0.50)'   : 'rgba(255,255,255,0.45)',
-        grid:      l ? 'rgba(15,23,42,0.06)'   : 'rgba(255,255,255,0.06)',
+        text:      l ? 'rgba(15,23,42,0.65)'   : 'rgba(255,255,255,0.45)',
+        grid:      l ? 'rgba(15,23,42,0.08)'   : 'rgba(255,255,255,0.06)',
         tooltipBg: l ? '#FFFFFF'                : '#1A1A1A',
         tooltipBdr:l ? 'rgba(249,115,22,0.35)' : 'rgba(249,115,22,0.4)',
-        pieBorder: l ? '#F1F5F9'               : '#111',
-        bodyClr:   l ? 'rgba(15,23,42,0.75)'  : 'rgba(255,255,255,0.8)',
+        pieBorder: l ? '#FFFFFF'                : '#111',
+        bodyClr:   l ? 'rgba(15,23,42,0.80)'   : 'rgba(255,255,255,0.8)',
     };
 }
 function applyChartDefaults() {
@@ -451,7 +451,11 @@ if (!document.getElementById('revenueChart')) { return; }
 try {
 // 1. Daily Revenue for selected month — Bar (big, smooth)
 const rCtx = document.getElementById('revenueChart').getContext('2d');
-const revenueGradient = makeGradient(rCtx, 'rgba(249,115,22,0.5)', 'rgba(249,115,22,0.1)');
+const revenueGradient = makeGradient(
+        rCtx,
+        isLight() ? 'rgba(249,115,22,0.55)' : 'rgba(249,115,22,0.5)',
+        isLight() ? 'rgba(249,115,22,0.06)' : 'rgba(249,115,22,0.1)'
+    );
 const revenueChart = new Chart(rCtx, {
     type: 'line',
     data: { labels: monthDailyLabels, datasets: [{ label:'Revenue ($)', data:monthRevenueDaily,
@@ -468,7 +472,7 @@ const oCtx = document.getElementById('ordersChart').getContext('2d');
 const ordersChart = new Chart(oCtx, {
     type: 'bar',
     data: { labels: monthDailyLabels, datasets: [{ label:'Orders', data:monthOrdersDaily,
-        backgroundColor:makeGradient(oCtx,'rgba(249,115,22,0.6)','rgba(249,115,22,0.1)'), fill:true,
+        backgroundColor:makeGradient(oCtx, isLight() ? 'rgba(249,115,22,0.68)' : 'rgba(249,115,22,0.6)', isLight() ? 'rgba(249,115,22,0.10)' : 'rgba(249,115,22,0.1)'), fill:true,
         borderColor:orange, borderWidth:2, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:8, maxRotation:45, font:{size: window.innerWidth < 768 ? 10 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -480,9 +484,9 @@ const dCtx = document.getElementById('dailyChart').getContext('2d');
 const dailyChart = new Chart(dCtx, {
     type: 'line',
     data: { labels: monthlySalesLabels, datasets: [{ label:'Revenue ($)', data:monthlySalesRevenue,
-        borderColor:blue, borderWidth:3, pointBackgroundColor:'#fff',
+        borderColor:blue, borderWidth:3, pointBackgroundColor: isLight() ? blue : '#fff',
         pointBorderColor:blue, pointBorderWidth:3, pointRadius:5, pointHoverRadius:9,
-        fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.3)','rgba(59,130,246,0.01)'), tension:0.35 }] },
+        fill:true, backgroundColor:makeGradient(dCtx, isLight() ? 'rgba(59,130,246,0.36)' : 'rgba(59,130,246,0.3)', isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0.01)'), tension:0.35 }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -494,7 +498,7 @@ const uCtx = document.getElementById('usersChart').getContext('2d');
 const usersChart = new Chart(uCtx, {
     type: 'bar',
     data: { labels: monthlyUserLabels, datasets: [{ label:'New Users', data:monthlyUsers,
-        backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
+        backgroundColor:makeGradient(uCtx, isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)', isLight() ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -506,7 +510,7 @@ const statusChart = new Chart(document.getElementById('statusChart').getContext(
     type: 'pie',
     data: { labels: statusLabels.map(s => s.toUpperCase()),
         datasets:[{ data:statusCounts, backgroundColor:[yellow,green,blue,purple,red],
-            borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
+            borderColor: isLight() ? '#FFFFFF' : '#111', borderWidth:3, hoverOffset:8 }] },
     options: { responsive:true, plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
         tooltip:{ callbacks:{ label: c => ' '+c.label+': '+c.parsed+' orders' }}}}
 });
@@ -516,7 +520,7 @@ const categoryChart = new Chart(document.getElementById('categoryChart').getCont
     type: 'doughnut',
     data: { labels: categoryLabels,
         datasets:[{ data:categoryRevData, backgroundColor:pieColors,
-            borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
+            borderColor: isLight() ? '#FFFFFF' : '#111', borderWidth:3, hoverOffset:8 }] },
     options: { responsive:true, cutout:'60%', plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
         tooltip:{ callbacks:{ label: c => ' '+c.label+': $'+c.parsed.toLocaleString() }}}}
 });
@@ -538,26 +542,34 @@ window.__updateChartTheme = function(t) {
 
     // Regenerate gradients for line charts
     revenueChart.data.datasets[0].backgroundColor = makeGradient(
-        revenueChart.ctx, 'rgba(249,115,22,0.25)', 'rgba(249,115,22,0)'
+        revenueChart.ctx,
+        isLight() ? 'rgba(249,115,22,0.42)' : 'rgba(249,115,22,0.25)',
+        isLight() ? 'rgba(249,115,22,0.04)' : 'rgba(249,115,22,0)'
     );
     revenueChart.data.datasets[0].pointBorderColor = bd;
     revenueChart.data.datasets[0].pointBackgroundColor = orange;
     revenueChart.update('none');
 
     dailyChart.data.datasets[0].backgroundColor = makeGradient(
-        dailyChart.ctx, 'rgba(59,130,246,0.25)', 'rgba(59,130,246,0)'
+        dailyChart.ctx,
+        isLight() ? 'rgba(59,130,246,0.40)' : 'rgba(59,130,246,0.25)',
+        isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0)'
     );
     dailyChart.data.datasets[0].pointBorderColor = bd;
     dailyChart.data.datasets[0].pointBackgroundColor = blue;
     dailyChart.update('none');
     // Regenerate gradients for bar charts
     ordersChart.data.datasets[0].backgroundColor = makeGradient(
-        ordersChart.ctx, 'rgba(249,115,22,0.6)', 'rgba(249,115,22,0.15)'
+        ordersChart.ctx,
+        isLight() ? 'rgba(249,115,22,0.68)' : 'rgba(249,115,22,0.6)',
+        isLight() ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.15)'
     );
     ordersChart.update('none');
 
     usersChart.data.datasets[0].backgroundColor = makeGradient(
-        usersChart.ctx, 'rgba(34,197,94,0.6)', 'rgba(34,197,94,0.1)'
+        usersChart.ctx,
+        isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)',
+        isLight() ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.1)'
     );
     usersChart.update('none');
 
@@ -614,8 +626,9 @@ setInterval(async () => {
 }
 
 [data-theme="light"] .chart-badge {
-    color: rgba(15,23,42,0.45);
+    color: rgba(15,23,42,0.60);
     background: rgba(15,23,42,0.06);
+    border: 1px solid rgba(15,23,42,0.08);
 }
 [data-theme="light"] td[style*="color:rgba(255,255,255,0.4)"],
 [data-theme="light"] td[style*="var(--date-cell-color"] {

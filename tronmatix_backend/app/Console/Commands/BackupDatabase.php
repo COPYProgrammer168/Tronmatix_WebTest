@@ -48,6 +48,8 @@ class BackupDatabase extends Command
             '--no-owner',
             '--no-acl',
             '--format=plain',
+            '--clean',
+            '--if-exists',
             '--file',     $filepath,
             $database,
         ]);

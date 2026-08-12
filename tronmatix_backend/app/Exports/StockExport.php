@@ -20,7 +20,7 @@ class StockExport implements FromQuery, WithHeadings, WithMapping, WithStyles, S
     protected Carbon $to;
     protected ?string $type;
 
-    public function __construct(string $from = '', string $to = '', ?string $type = null)
+    public function __construct(?string $from = '', ?string $to = '', ?string $type = null)
     {
         $this->from = $from ? Carbon::parse($from)->startOfDay() : Carbon::now()->subMonth()->startOfDay();
         $this->to   = $to   ? Carbon::parse($to)->endOfDay()   : Carbon::now()->endOfDay();

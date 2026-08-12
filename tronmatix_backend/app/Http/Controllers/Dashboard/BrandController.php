@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
-use App\Models\SubCategory;
 use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
 
@@ -14,11 +13,14 @@ class BrandController extends Controller
 
     public function index()
     {
-        $brands = Brand::with('subCategory.mainCategory')
-            ->orderBy('order')
-            ->get();
+        $brands = Brand::orderBy('order')->get();
 
         return view('dashboard.brands.index', compact('brands'));
+    }
+
+    public function create()
+    {
+        return view('dashboard.brands.create');
     }
 
     public function store(Request $request)
@@ -29,9 +31,10 @@ class BrandController extends Controller
         $validated['order']     = (int) $request->input('order', 0);
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        $brand = Brand::create($validated);
+        Brand::create($validated);
 
-        return response()->json(['success' => true, 'data' => $brand]);
+        return redirect()->route('dashboard.brands.index')
+            ->with('success', 'Brand created successfully.');
     }
 
     public function update(Request $request, Brand $brand)
@@ -44,14 +47,16 @@ class BrandController extends Controller
 
         $brand->update($validated);
 
-        return response()->json(['success' => true, 'data' => $brand]);
+        return redirect()->route('dashboard.brands.index')
+            ->with('success', 'Brand updated successfully.');
     }
 
     public function toggle(Brand $brand)
     {
         $brand->update(['is_active' => ! $brand->is_active]);
 
-        return response()->json(['success' => true, 'data' => $brand]);
+        return redirect()->route('dashboard.brands.index')
+            ->with('success', $brand->is_active ? 'Brand activated.' : 'Brand hidden.');
     }
 
     public function destroy(Brand $brand)
@@ -59,21 +64,13 @@ class BrandController extends Controller
         $this->storage->delete($brand->image);
         $brand->delete();
 
-        return response()->json(['success' => true]);
+        return redirect()->route('dashboard.brands.index')
+            ->with('success', 'Brand deleted.');
     }
 
     private function validateBrand(Request $request): array
     {
         return $request->validate([
-            'sub_category_id' => [
-                'required',
-                'exists:sub_categories,id',
-                function ($attribute, $value, $fail) {
-                    if ($value && ! SubCategory::whereKey($value)->where('is_active', true)->exists()) {
-                        $fail('The selected sub category is not active.');
-                    }
-                },
-            ],
             'name'       => 'required|string|max:100',
             'image_file' => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
             'image_url'  => 'nullable|string|max:500',

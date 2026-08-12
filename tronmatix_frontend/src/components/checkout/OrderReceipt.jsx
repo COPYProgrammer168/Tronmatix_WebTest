@@ -65,6 +65,7 @@ export default function OrderReceipt({ order }) {
       <div class="subtitle">ORDER RECEIPT</div>
       <div class="info-row"><span>Order ID</span><span style="color:#F97316;font-family:monospace">#${order.order_id || order.id}</span></div>
       <div class="info-row"><span>Fulfillment</span><span>${isPickup ? '<span class="pickup-badge">🏪 STORE PICKUP</span>' : '🚚 Delivery'}</span></div>
+      ${!isPickup && order.delivery_provider_details?.name ? `<div class="info-row"><span>Delivery by</span><span>🚚 ${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ' · ' + order.delivery_provider_details.estimated_time : ''}</span></div>` : ""}
       <div class="info-row"><span>Date</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
       <div class="info-row"><span>Customer</span><span>${order.location?.name || "—"}</span></div>
       <div class="info-row"><span>Phone</span><span>${order.location?.phone || "—"}</span></div>
@@ -77,9 +78,10 @@ export default function OrderReceipt({ order }) {
         ${(order.items || []).map((i) => `
         <tr>
         <td>
+        ${i.brand ? `<span style="font-size:10px;font-weight:800;color:#F97316;background:#fff7ed;border:1px solid #fed7aa;border-radius:3px;padding:1px 5px;margin-right:4px;letter-spacing:.5px;">${i.brand}</span>` : ''}
         ${i.name}
-        ${(i.warranty_start && i.warranty_end) 
-          ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</div>` 
+        ${(i.warranty_start && i.warranty_end)
+          ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 Warranty: ${new Date(i.warranty_start).toLocaleDateString('en-GB')} - ${new Date(i.warranty_end).toLocaleDateString('en-GB')}</div>`
           : (i.warranty ? `<div style="font-size:10px;font-weight:700;color:#F97316;margin-top:2px;">🛡 ${i.warranty}</div>` : "")}
         </td>
         <td style="text-align:center">×${i.qty}</td>
@@ -90,6 +92,7 @@ export default function OrderReceipt({ order }) {
         <tfoot>
           <tr><td colspan="3" style="text-align:right;color:#666">Subtotal</td><td style="text-align:right">$${Number(order.subtotal || order.total).toFixed(2)}</td></tr>
           ${snapDiscount > 0 ? `<tr class="discount-row"><td colspan="3" style="text-align:right">🏷 Discount (${snapCode})</td><td style="text-align:right">−$${snapDiscount.toFixed(2)}</td></tr>` : ""}
+          ${!isPickup && Number(order.delivery) > 0 ? `<tr><td colspan="3" style="text-align:right;color:#666">Delivery</td><td style="text-align:right">$${Number(order.delivery).toFixed(2)}</td></tr>` : ""}
           <tr class="total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right">$${Number(order.total).toFixed(2)}</td></tr>
         </tfoot>
       </table>
@@ -157,6 +160,10 @@ export default function OrderReceipt({ order }) {
             ],
             ...(order.delivery_date ? [[isPickup ? "Preferred Pickup" : "Delivery Date",
               `${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}`]] : []),
+            ...(!isPickup && order.delivery_provider_details?.name
+              ? [["Delivery",
+                  `${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ` · ${order.delivery_provider_details.estimated_time}` : ""}`]]
+              : []),
             ...(order.location?.note ? [["Note", order.location.note]] : []),
           ].map(([k, v]) => (
             <div key={k} className="px-6 py-3 border-b border-gray-50">
@@ -206,6 +213,12 @@ export default function OrderReceipt({ order }) {
               {(order.items || []).map((item) => (
                 <tr key={item.id} style={{ borderBottom: "1px solid #f9fafb" }}>
                   <td className="py-2 font-semibold text-gray-700">
+                    {item.brand && (
+                      <span className="inline-block text-[11px] font-bold tracking-wider uppercase mr-1.5"
+                        style={{ color: '#F97316', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 4, padding: '1px 6px' }}>
+                        {item.brand}
+                      </span>
+                    )}
                     {item.name}
                     {(item.warranty_start && item.warranty_end) ? (
                       <div className="text-[13px] font-bold mt-0.5" style={{ color: "#F97316" }}>
@@ -232,6 +245,16 @@ export default function OrderReceipt({ order }) {
             {snapDiscount > 0 && (
               <div className="flex justify-between font-bold text-green-600" style={{ fontSize: isKhmer ? 13 : 14 }}>
                 <span>🏷 {discLabel}</span><span>−${snapDiscount.toFixed(2)}</span>
+              </div>
+            )}
+            {!isPickup && (Number(order.delivery) > 0) && (
+              <div className="flex justify-between text-gray-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
+                <span>Delivery</span><span>${Number(order.delivery).toFixed(2)}</span>
+              </div>
+            )}
+            {!isPickup && order.delivery_provider_details?.name && Number(order.delivery) === 0 && (
+              <div className="flex justify-between text-gray-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
+                <span>Delivery</span><span style={{ color: "#d97706" }}>Fee varies</span>
               </div>
             )}
             <div className="flex justify-between font-black text-primary" style={{ fontSize: 18, borderTop: "1px solid #f0f0f0", paddingTop: 8 }}>

@@ -43,7 +43,7 @@
         <div class="cm-tree-row" data-id="{{ $id }}" data-type="{{ $typeLabel }}">
             {{-- Drag handle --}}
             <div class="cm-drag-handle" title="{{ __('dashboard.categories.dragReorder') }}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="9" cy="6" r="2"/><circle cx="15" cy="6" r="2"/>
                     <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
                     <circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>
@@ -55,7 +55,7 @@
                 <div class="cm-chevron"
                      onclick="toggleNode(this)"
                      title="{{ __('dashboard.categories.expandCollapse') }}">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                         <path d="M9 5l7 7-7 7"/>
                     </svg>
                 </div>

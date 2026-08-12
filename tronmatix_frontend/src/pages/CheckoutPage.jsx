@@ -81,8 +81,9 @@ export default function CheckoutPage() {
   const [mapPin,         setMapPin]         = useState(null)
   const [locationId,     setLocationId]     = useState(null)
   const [selectedProvince, setSelectedProvince] = useState(null)
-  const [selectedProviderId, setSelectedProviderId] = useState(null)
+  const [selectedProvider, setSelectedProvider] = useState(null)
   const [deliveryPhoneVerified, setDeliveryPhoneVerified] = useState(false)
+  const selectedProviderId = selectedProvider?.id ?? null
 
   const isPickup = fulfillment === "pickup"
 
@@ -105,9 +106,10 @@ export default function CheckoutPage() {
 
   const handleSaveToProfile = async (loc, isDefault = false) => {
     if (!user) throw new Error("Not logged in")
+    const provinceName = selectedProvince ? (isKhmer ? selectedProvince.name_kh : selectedProvince.name_en) : null
     await axios.post("/api/user/locations", {
       name: loc.name, phone: loc.phone, address: loc.address,
-      city: loc.city || null, note: loc.note || null,
+      city: loc.city || provinceName || null, note: loc.note || null,
       is_default: isDefault,
     })
     // Also sync phone to user profile so it auto-appears in ProfileTab
@@ -120,6 +122,10 @@ export default function CheckoutPage() {
   }
 
   const discountAmount = calcDiscount(subtotal, items)
+  // Delivery provider fee — display-only in the checkout UI (NOT added to
+  // finalTotal). The server persists the real fee into order.total after the
+  // order is created, so the receipt/QR amount is the authoritative total.
+  const deliveryFee = !isPickup && selectedProvider?.fee != null ? Number(selectedProvider.fee) : 0
   const finalTotal     = Math.max(0, subtotal - discountAmount)
 
   const handleLocation = (e) => {
@@ -162,6 +168,9 @@ export default function CheckoutPage() {
 
     const summaryHtml = `<div style="text-align:left;line-height:1.8;font-size:1rem;color:#1f2937;padding:0 12px;">
       <strong>Fulfillment:</strong> ${isPickup ? "🏪 Store Pickup" : "🚚 Delivery"}<br>
+      ${!isPickup && !selectedProvider ? `<span style="color:#d97706">⚠ No delivery provider selected — we will contact you to arrange delivery.</span><br>` : ""}
+      ${!isPickup && selectedProvider ? `<strong>Delivery:</strong> ${selectedProvider.name}${selectedProvider.estimated_time ? ` · ⏱ ${selectedProvider.estimated_time}` : ""}<br>` : ""}
+      ${deliveryFee > 0 ? `<strong>Delivery fee:</strong> $${deliveryFee.toFixed(2)}<br>` : (deliveryFee === 0 && !isPickup && selectedProvider ? `<span style="color:#6b7280">Delivery fee varies</span><br>` : "")}
       <strong>Total:</strong> $${finalTotal.toFixed(2)}${discountAmount > 0 ? ` <span style="color:#16a34a">(−$${discountAmount.toFixed(2)} discount)</span>` : ""}<br>
       <strong>Payment:</strong> ${effectivePayMethod === "cash" ? "Cash on Delivery" : "ABA BAKONG KHQR"}<br>
       <strong>${isPickup ? "Pickup by" : "Deliver to"}:</strong> ${deliverTo}<br>
@@ -215,17 +224,35 @@ export default function CheckoutPage() {
         fulfillment_type: fulfillment,
         province_id: !isPickup ? (selectedProvince?.id || null) : null,
         delivery_provider_id: !isPickup ? (selectedProviderId || null) : null,
+        // Send the zone the customer actually picked so the server resolves the
+        // SAME provider-zone fee row the customer saw in checkout.
+        delivery_zone: !isPickup
+          ? (selectedProvince?.delivery_zone_id === 5 ? "phnom_penh" : "province")
+          : null,
         delivery_phone_verified: deliveryPhoneVerified,
       })
 
       const orderData = {
-        ...res.data, items, location, payment_method: effectivePayMethod, total: finalTotal, subtotal,
+        ...res.data, items, location, payment_method: effectivePayMethod,
+        // Prefer the server total (fee-inclusive server-side); fall back to the
+        // checkout total if the response doesn't carry a total.
+        total: res.data.total ?? finalTotal, subtotal,
         discount_amount: discountAmount > 0 ? discountAmount : null,
         discount_code: discount?.code || null,
         _discountAmount: discountAmount, _discountCode: discount?.code || null,
         _discountType: discount?.type || null, _discountValue: discount?.value || null,
         delivery_date: delivery.date || null, delivery_time_slot: delivery.timeSlot || null,
         fulfillment_type: fulfillment,
+        // Snapshot provider + fee + payment_status so the receipt/QR screens can
+        // render them immediately without a re-fetch.
+        delivery: res.data.delivery ?? deliveryFee,
+        delivery_provider_id: res.data.delivery_provider_id ?? (selectedProvider?.id ?? null),
+        delivery_provider_details: res.data.delivery_provider_details || (selectedProvider ? {
+          id: selectedProvider.id,
+          name: selectedProvider.name,
+          estimated_time: selectedProvider.estimated_time,
+          fee: selectedProvider.fee,
+        } : null),
       }
 
       const initialDeliveryStatus = getStatusStepIndex(res.data.status, fulfillment) ?? 0
@@ -617,10 +644,16 @@ export default function CheckoutPage() {
           // NEW: province / provider
           onProvinceSelect={(prov) => {
             setSelectedProvince(prov);
-            setSelectedProviderId(null); // reset provider when province changes
+            setSelectedProvider(null); // reset provider when province changes
+            if (prov) {
+              setLocation((p) => ({
+                ...p,
+                city: isKhmer ? prov.name_kh : prov.name_en,
+              }))
+            }
           }}
           selectedProvince={selectedProvince}
-          onProviderSelect={(prov) => setSelectedProviderId(prov.id)}
+          onProviderSelect={(prov) => setSelectedProvider(prov)}
           selectedProviderId={selectedProviderId}
           // NEW: phone verification callback
           onPhoneVerified={(verified) => setDeliveryPhoneVerified(verified)}
@@ -649,6 +682,8 @@ export default function CheckoutPage() {
           onPlace={placeOrder}
           isPickup={isPickup}
           selectedProvince={selectedProvince}
+          deliveryFee={deliveryFee}
+          selectedProvider={selectedProvider}
         />
       )}
 

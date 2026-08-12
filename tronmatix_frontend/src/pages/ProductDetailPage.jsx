@@ -340,8 +340,17 @@ export default function ProductDetailPage() {
         <div className="flex-1 flex flex-col">
           {product.brand && (
             <div
-              className="font-semibold mb-1 tracking-widest uppercase"
-              style={{ fontSize: 15, color: subCol }}
+              className="inline-block font-bold uppercase tracking-wider mb-2"
+              style={{
+                fontSize: 12,
+                color: '#F97316',
+                background: '#fff7ed',
+                border: '1.5px solid #fed7aa',
+                borderRadius: 6,
+                padding: '3px 12px',
+                letterSpacing: 1.5,
+                alignSelf: 'flex-start',
+              }}
             >
               {product.brand}
             </div>
@@ -487,7 +496,7 @@ export default function ProductDetailPage() {
 
           {product.description && (
             <p
-              className="whitespace-pre-line mb-5 leading-relaxed"
+              className="whitespace-pre-line break-words mb-5 leading-relaxed"
               style={{
                 fontFamily: headingFont,
                 fontSize: 15,

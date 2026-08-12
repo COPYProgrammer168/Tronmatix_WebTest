@@ -7,7 +7,7 @@ import DiscountInput from "../DiscountInput"
 export default function Step2Payment({
   payMethod, onPayMethod, items, subtotal, discountAmount,
   discount, finalTotal, loading, onBack, onPlace,
-  isPickup, selectedProvince,
+  isPickup, selectedProvince, deliveryFee, selectedProvider,
 }) {
   const { dark } = useTheme()
   const { t, isKhmer } = useLang()
@@ -220,6 +220,9 @@ export default function Step2Payment({
             <div key={item.id} className="flex justify-between" style={{ fontSize: 14 }}>
               <span style={{ color: c.itemName }}>
                 {item.name}{" "}
+                {item.brand && (
+                  <span style={{ color: "#F97316", fontWeight: 700, fontSize: 12 }}>· {item.brand}</span>
+                )}
                 <span style={{ color: c.itemQty }}>×{item.qty}</span>
                 {item.warranty && (
                   <div className="text-[13px] font-bold mt-0.5" style={{ color: "#F97316" }}>
@@ -249,6 +252,18 @@ export default function Step2Payment({
                   : ` (−$${discountAmount.toFixed(2)} OFF)`}
               </span>
               <span>−${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {!isPickup && selectedProvider && (
+            <div className="flex justify-between" style={{ fontSize: isKhmer ? 13 : 14, color: c.textMuted }}>
+              <span>
+                🚚 Delivery · {selectedProvider.name}
+              </span>
+              <span>
+                {selectedProvider.fee != null
+                  ? `$${deliveryFee.toFixed(2)}`
+                  : <span style={{ color: "#d97706" }}>Fee varies</span>}
+              </span>
             </div>
           )}
           <div

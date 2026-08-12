@@ -86,6 +86,31 @@ class OrderController extends Controller
         return $data;
     }
 
+    /**
+     * Derive the delivery zone ('phnom_penh' | 'province') from the customer's
+     * map pin via the distance-based DeliveryFeeCalculator. Used when the
+     * frontend didn't send an explicit delivery_zone. Returns null on failure.
+     */
+    private function resolveDeliveryZone(array $validated, array $shippingSnapshot): ?string
+    {
+        $cLat = $shippingSnapshot['lat'] ?? $validated['delivery_lat'] ?? null;
+        $cLng = $shippingSnapshot['lng'] ?? $validated['delivery_lng'] ?? null;
+        if ($cLat === null || $cLng === null) {
+            return null;
+        }
+
+        try {
+            $feeResult = app(\App\Services\DeliveryFeeCalculator::class)
+                ->calculate((float) $cLat, (float) $cLng);
+            return str_contains(strtolower($feeResult['zone_name'] ?? ''), 'phnom penh')
+                ? 'phnom_penh'
+                : 'province';
+        } catch (\Throwable $e) {
+            Log::warning('[Order] Delivery zone resolution failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     // ── Create order ──────────────────────────────────────────────────────────
     public function store(Request $request): JsonResponse
     {
@@ -114,6 +139,7 @@ class OrderController extends Controller
             'province_id'            => ['nullable', 'integer', 'exists:provinces,id'],
             'delivery_provider_id'   => ['nullable', 'integer', 'exists:delivery_providers,id'],
             'delivery_phone_verified'=> ['nullable', 'boolean'],
+            'delivery_zone'          => ['nullable', 'in:phnom_penh,province'],
         ]);
 
         $user = $request->user();
@@ -215,16 +241,6 @@ class OrderController extends Controller
 
                 $total = max(0, $subtotal - $discountAmount);
 
-                // ── Delivery fee logic ────────────────────────────────────────────────
-                $deliveryFee = 0;
-                if (!empty($validated['delivery_provider_id']) && ($fulfillmentType ?? 'delivery') !== 'pickup') {
-                    $provider = \App\Models\DeliveryProvider::find($validated['delivery_provider_id']);
-                    if ($provider && $provider->fee !== null) {
-                        $deliveryFee = $provider->fee;
-                    }
-                }
-                $total += $deliveryFee;
-
                 // ── Resolve fulfillment type ──────────────────────────────────────────
                 $fulfillmentType = $validated['fulfillment_type'] ?? 'delivery';
                 $isPickup        = $fulfillmentType === 'pickup';
@@ -286,25 +302,35 @@ class OrderController extends Controller
 
                 $shippingSnapshot['delivery_phone_verified'] = $validated['delivery_phone_verified'] ?? false;
 
-                // ── Persist the delivery zone (phnom_penh | province) ────────────────
-                // Computed at checkout by the distance-based DeliveryFeeCalculator so the
-                // order stores the zone for zone-aware provider fee/time resolution later.
+                // ── Resolve the delivery zone (phnom_penh | province) ────────────────
+                // The customer picks a province (→ zone) in checkout; prefer that so the
+                // persisted provider-zone row matches what the customer saw. Fall back to
+                // the distance-based DeliveryFeeCalculator (lat/lng) for the fee/ETA.
                 $deliveryZone = null;
                 if (! $isPickup) {
-                    $cLat = $shippingSnapshot['lat'] ?? $validated['delivery_lat'] ?? null;
-                    $cLng = $shippingSnapshot['lng'] ?? $validated['delivery_lng'] ?? null;
-                    if ($cLat !== null && $cLng !== null) {
-                        try {
-                            $feeResult = app(\App\Services\DeliveryFeeCalculator::class)
-                                ->calculate((float) $cLat, (float) $cLng);
-                            $deliveryZone = str_contains(strtolower($feeResult['zone_name'] ?? ''), 'phnom penh')
-                                ? 'phnom_penh'
-                                : 'province';
-                        } catch (\Throwable $e) {
-                            \Illuminate\Support\Facades\Log::warning('[Order] Delivery zone resolution failed: ' . $e->getMessage());
+                    $deliveryZone = $validated['delivery_zone']
+                        ?? $this->resolveDeliveryZone($validated, $shippingSnapshot);
+                }
+
+                // ── Delivery fee logic ────────────────────────────────────────────────
+                // Resolve the per-zone provider fee (delivery_provider_zones.fee). The
+                // legacy flat `delivery_providers.fee` is always NULL (admin form stores
+                // per-zone fees in the child table), so we must read the zone row here or
+                // the fee would always be 0. NULL zone fee = negotiable → fee stays 0.
+                $deliveryFee = 0;
+                if (! $isPickup && ! empty($validated['delivery_provider_id'])) {
+                    $provider = \App\Models\DeliveryProvider::with('zones')->find($validated['delivery_provider_id']);
+                    if ($provider) {
+                        $zone = $deliveryZone ?? 'phnom_penh';
+                        $zd   = $provider->zones->firstWhere('zone', $zone);
+                        if ($zd && $zd->fee !== null) {
+                            $deliveryFee = (float) $zd->fee;
+                        } elseif ($provider->fee !== null) {
+                            $deliveryFee = (float) $provider->fee; // legacy flat fallback
                         }
                     }
                 }
+                $total += $deliveryFee;
 
                 $order = Order::create([
                     'user_id'            => $user->id,
@@ -357,6 +383,7 @@ class OrderController extends Controller
                         'price'          => $product->price,
                         'qty'            => $item['qty'],
                         'image'          => $product->image,
+                        'brand'          => $product->brand,
                         'warranty_start' => $warrantyStart,
                         'warranty_end'   => $warrantyEnd,
                     ]);
@@ -429,7 +456,11 @@ class OrderController extends Controller
             'delivery'         => $order->delivery,
             'total'            => $order->total,
             'payment_method'   => $order->payment_method,
+            'payment_status'   => $order->payment_status,
             'status'           => $order->status,
+            'delivery_zone'           => $order->delivery_zone,
+            'delivery_provider_id'    => $order->delivery_provider_id,
+            'delivery_provider_details' => $order->delivery_provider_details,
             'delivery_lat'         => $order->shipping['lat']         ?? null,
             'delivery_lng'         => $order->shipping['lng']         ?? null,
             'delivery_map_address' => $order->shipping['map_address'] ?? null,

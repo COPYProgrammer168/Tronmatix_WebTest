@@ -464,12 +464,12 @@ function isLight() {
 function themeColors() {
     const l = isLight();
     return {
-        text:      l ? 'rgba(15,23,42,0.50)'   : 'rgba(255,255,255,0.45)',
-        grid:      l ? 'rgba(15,23,42,0.06)'   : 'rgba(255,255,255,0.06)',
+        text:      l ? 'rgba(15,23,42,0.65)'   : 'rgba(255,255,255,0.45)',
+        grid:      l ? 'rgba(15,23,42,0.08)'   : 'rgba(255,255,255,0.06)',
         tooltipBg: l ? '#FFFFFF'                : '#1A1A1A',
         tooltipBdr:l ? 'rgba(249,115,22,0.35)' : 'rgba(249,115,22,0.4)',
-        pieBorder: l ? '#F1F5F9'               : '#111',
-        bodyClr:   l ? 'rgba(15,23,42,0.75)'  : 'rgba(255,255,255,0.8)',
+        pieBorder: l ? '#FFFFFF'                : '#111',
+        bodyClr:   l ? 'rgba(15,23,42,0.80)'   : 'rgba(255,255,255,0.8)',
     };
 }
 function applyChartDefaults() {
@@ -540,8 +540,8 @@ const revenueChart = new Chart(rCtx, {
     type: 'line',
     data: { labels: monthDailyLabels, datasets: [{ label:'Revenue ($)', data:monthRevenueDaily,
         borderColor:orange, borderWidth:2.5, pointBackgroundColor:orange,
-        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
-        fill:true, backgroundColor:makeGradient(rCtx,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), tension:0.4 }] },
+        pointBorderColor: isLight() ? '#FFFFFF' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
+        fill:true, backgroundColor:makeGradient(rCtx, isLight() ? 'rgba(249,115,22,0.42)' : 'rgba(249,115,22,0.25)', isLight() ? 'rgba(249,115,22,0.04)' : 'rgba(249,115,22,0)'), tension:0.4 }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
@@ -553,7 +553,7 @@ const oCtx = document.getElementById('ordersChart').getContext('2d');
 const ordersChart = new Chart(oCtx, {
     type: 'bar',
     data: { labels: monthDailyLabels, datasets: [{ label:'Orders', data:monthOrdersDaily,
-        backgroundColor:makeGradient(oCtx, orangeMid,'rgba(249,115,22,0.15)'),
+        backgroundColor:makeGradient(oCtx, isLight() ? 'rgba(249,115,22,0.68)' : orangeMid, isLight() ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.15)'),
         borderColor:orange, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
@@ -566,8 +566,8 @@ const dailyChart = new Chart(dCtx, {
     type: 'line',
     data: { labels: monthlySalesLabels, datasets: [{ label:'Revenue ($)', data:monthlySalesRevenue,
         borderColor:blue, borderWidth:2.5, pointBackgroundColor:blue,
-        pointBorderColor: isLight() ? '#F1F5F9' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
-        fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.25)','rgba(59,130,246,0)'), tension:0.4 }] },
+        pointBorderColor: isLight() ? '#FFFFFF' : '#111', pointBorderWidth:2, pointRadius:4, pointHoverRadius:7,
+        fill:true, backgroundColor:makeGradient(dCtx, isLight() ? 'rgba(59,130,246,0.40)' : 'rgba(59,130,246,0.25)', isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0)'), tension:0.4 }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
         tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
@@ -579,7 +579,7 @@ const uCtx = document.getElementById('usersChart').getContext('2d');
 const usersChart = new Chart(uCtx, {
     type: 'bar',
     data: { labels: monthlySalesLabels, datasets: [{ label:'New Users', data:monthlyUsers,
-        backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
+        backgroundColor:makeGradient(uCtx, isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)', isLight() ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.1)'),
         borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
         scales:{ x:{grid:{color: themeColors().grid}}, y:{grid:{color: themeColors().grid},
@@ -591,7 +591,7 @@ const statusChart = new Chart(document.getElementById('statusChart').getContext(
     type: 'pie',
     data: { labels: statusLabels.map(s => s.toUpperCase()),
         datasets:[{ data:statusCounts, backgroundColor:[yellow,green,blue,purple,red],
-            borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
+            borderColor: isLight() ? '#FFFFFF' : '#111', borderWidth:3, hoverOffset:8 }] },
     options: { responsive:true, plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
         tooltip:{ callbacks:{ label: c => ' '+c.label+': '+c.parsed+' orders' }}}}
 });
@@ -601,7 +601,7 @@ const categoryChart = new Chart(document.getElementById('categoryChart').getCont
     type: 'doughnut',
     data: { labels: categoryLabels,
         datasets:[{ data:categoryRevData, backgroundColor:pieColors,
-            borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
+            borderColor: isLight() ? '#FFFFFF' : '#111', borderWidth:3, hoverOffset:8 }] },
     options: { responsive:true, cutout:'60%', plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
         tooltip:{ callbacks:{ label: c => ' '+c.label+': $'+c.parsed.toLocaleString() }}}}
 });
@@ -610,7 +610,7 @@ const categoryChart = new Chart(document.getElementById('categoryChart').getCont
 window.__updateChartTheme = function(t) {
     applyChartDefaults();
     const c  = themeColors();
-    const bd = t === 'light' ? '#F1F5F9' : '#111';
+    const bd = t === 'light' ? '#FFFFFF' : '#111';
     [revenueChart, ordersChart, dailyChart, usersChart].forEach(ch => {
         ch.options.scales.x.grid.color = c.grid;
         ch.options.scales.y.grid.color = c.grid;
@@ -624,6 +624,31 @@ window.__updateChartTheme = function(t) {
         ch.data.datasets[0].pointBorderColor = bd;
         ch.update('none');
     });
+    // Regenerate gradients so a mid-session toggle matches the light saturation
+    revenueChart.data.datasets[0].backgroundColor = makeGradient(
+        revenueChart.ctx,
+        isLight() ? 'rgba(249,115,22,0.42)' : 'rgba(249,115,22,0.25)',
+        isLight() ? 'rgba(249,115,22,0.04)' : 'rgba(249,115,22,0)'
+    );
+    revenueChart.update('none');
+    ordersChart.data.datasets[0].backgroundColor = makeGradient(
+        ordersChart.ctx,
+        isLight() ? 'rgba(249,115,22,0.68)' : orangeMid,
+        isLight() ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.15)'
+    );
+    ordersChart.update('none');
+    dailyChart.data.datasets[0].backgroundColor = makeGradient(
+        dailyChart.ctx,
+        isLight() ? 'rgba(59,130,246,0.40)' : 'rgba(59,130,246,0.25)',
+        isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0)'
+    );
+    dailyChart.update('none');
+    usersChart.data.datasets[0].backgroundColor = makeGradient(
+        usersChart.ctx,
+        isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)',
+        isLight() ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.1)'
+    );
+    usersChart.update('none');
 };
 </script>
 @endpush

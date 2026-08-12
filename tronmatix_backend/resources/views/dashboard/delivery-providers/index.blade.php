@@ -193,7 +193,7 @@
                 style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
                 <div>
                     <h1
-                        style="font-size:var(--text-2xl); font-weight:800; letter-spacing:2px; color:var(--text); margin:0;">
+                        style="font-size:var(--text-2xl); font-weight:600; letter-spacing:2px; color:var(--text); margin:0;">
                         {{ __('dashboard.nav.deliveryProviders') }}</h1>
                     <p style="font-size:var(--text-sm); color:var(--text-muted); margin-top:4px;">
                         {{ __('Manage delivery zones, providers, fees and estimated times') }}</p>

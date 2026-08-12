@@ -7,23 +7,23 @@ import { useLang } from "../context/LanguageContext";
 import { useCart } from "../context/CartContext";
 import Swal from "sweetalert2";
 
-import useOrders    from "../hooks/useOrders";
-import OrderHeader  from "../components/orders/OrderHeader";
+import useOrders from "../hooks/useOrders";
+import OrderHeader from "../components/orders/OrderHeader";
 import OrderFilters from "../components/orders/OrderFilters";
-import OrderCard    from "../components/orders/OrderCard";
+import OrderCard from "../components/orders/OrderCard";
 import ConfirmModal from "../components/orders/ConfirmModal";
-import QRModal      from "../components/orders/QRModal";
+import QRModal from "../components/orders/QRModal";
 
 export default function OrdersPage() {
-  const { user }  = useAuth();
-  const { dark }  = useTheme();
-  const { t, isKhmer}     = useLang();
+  const { user } = useAuth();
+  const { dark } = useTheme();
+  const { t, isKhmer } = useLang();
   const { setNotification } = useCart();
-  const [filter,   setFilter]  = useState("all");
+  const [filter, setFilter] = useState("all");
   const [expanded, setExpanded] = useState(null);
-  const [qrOrder,  setQrOrder]  = useState(null);
-  const headfont  = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
-  const bodyFont  = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
+  const [qrOrder, setQrOrder] = useState(null);
+  const headfont = isKhmer ? 'Kh_Jrung_Thom, Khmer OS, sans-serif' : 'HurstBagod, Rajdhani, sans-serif'
+  const bodyFont = isKhmer ? 'Kdam Thmor Pro, sans-serif' : 'Rajdhani, sans-serif'
 
   const {
     orders, loading, cancelling, deleting,
@@ -82,7 +82,7 @@ export default function OrdersPage() {
       )}
 
       {/* Page */}
-      <div className="max-w-[900px] mx-auto px-4 py-8" style={{ minHeight: "60vh" }}>
+      <div className="max-w-[1240px] mx-auto px-4 py-8" style={{ minHeight: "80vh" }}>
         <OrderHeader username={user.username} />
         <OrderFilters filter={filter} setFilter={setFilter} orders={orders} />
 

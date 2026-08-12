@@ -7,6 +7,7 @@ import "swiper/css/navigation";
 import "swiper/css/scrollbar";
 import ProductCard from "../components/ProductCard";
 import TelegramConnectMarquee from "../components/TelegramConnectMarquee";
+import BrandMarquee from "../components/BrandMarquee";
 import { useTheme } from "../context/ThemeContext";
 import axios from "../lib/axios";
 import { useLang } from "../context/LanguageContext";
@@ -518,6 +519,7 @@ export default function HomePage() {
       </div>
 
       <TelegramConnectMarquee />
+      {/* <BrandMarquee /> */}
 
       <div className="max-w-[1280px] mx-auto px-4 pt-2 pb-2">
         {/* NEW ARRIVAL heading */}

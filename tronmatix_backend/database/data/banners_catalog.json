@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "title": "មួយឈុត កប់ណាស់ ❄️ ដំណឹងស្វែងរកម្ចាស់",
+    "subtitle": "- ROG Cronox GR701 White \r\n- ROG Glacial X870E White \r\n- AROUS RTX5080 Infinity White \r\n- TRYX HOLO 360 ARGB White",
+    "badge": "NEW ARRIVAL",
+    "bg_color": "#111111",
+    "text_color": "#f97316",
+    "image": "/storage/banners/ba473e32-8d2c-4d74-ab2b-7ccd5aab840b.png",
+    "order": 0,
+    "active": true,
+    "video": null,
+    "video_type": null,
+    "product_id": null,
+    "category": "PC BUILD UNDER 5K",
+    "created_at": "2026-08-09 17:20:56",
+    "updated_at": "2026-08-09 20:37:40"
+  },
+  {
+    "id": 2,
+    "title": "ឈុតម៉ាសុីន Classic Build",
+    "subtitle": "- AMD Ryzen 9 9950X3D \\r\\n- ROG CROSSHAIR 2006 X870E \\r\\n- LianLi 011 Vision Compact \\r\\n- LianLi 1300W Edge \\r\\n- NXZT Kraken 360 ARGB \\r\\n- SAMSUNG 9100 PRO 2TB \\r\\n- Noutca Fan / Lianli Strimer / Lianli LCD",
+    "badge": "Classic",
+    "bg_color": "#111111",
+    "text_color": "#F97316",
+    "image": "/storage/banners/566958f6-445a-4af1-9434-e2acfb1bd5e2.png",
+    "order": 0,
+    "active": true,
+    "video": null,
+    "video_type": null,
+    "product_id": 1165,
+    "category": null,
+    "created_at": "2026-08-10 01:25:41",
+    "updated_at": "2026-08-10 01:25:41"
+  }
+]

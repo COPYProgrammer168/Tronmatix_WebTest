@@ -100,6 +100,12 @@ export default function CartSlider() {
                   onError={e => { e.target.src = '/placeholder.png' }}
                 />
                 <div className="flex-1 min-w-0">
+                  {item.brand && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
+                      color: '#F97316', marginBottom: 2, display: 'inline-block',
+                    }}>{item.brand}</span>
+                  )}
                   <p className="text-white font-bold leading-tight mb-1" style={{ fontSize: 18 }}>{item.name}</p>
 
                   {/* Discount badges */}

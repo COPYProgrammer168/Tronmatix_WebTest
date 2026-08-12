@@ -244,12 +244,12 @@ function isLight() {
 function themeColors() {
     const l = isLight();
     return {
-        text:      l ? 'rgba(15,23,42,0.50)'   : 'rgba(255,255,255,0.45)',
-        grid:      l ? 'rgba(15,23,42,0.06)'   : 'rgba(255,255,255,0.06)',
+        text:      l ? 'rgba(15,23,42,0.65)'   : 'rgba(255,255,255,0.45)',
+        grid:      l ? 'rgba(15,23,42,0.08)'   : 'rgba(255,255,255,0.06)',
         tooltipBg: l ? '#FFFFFF'                : '#1A1A1A',
         tooltipBdr:l ? 'rgba(249,115,22,0.35)' : 'rgba(249,115,22,0.4)',
-        pieBorder: l ? '#F1F5F9'               : '#111',
-        bodyClr:   l ? 'rgba(15,23,42,0.75)'  : 'rgba(255,255,255,0.8)',
+        pieBorder: l ? '#FFFFFF'               : '#111',
+        bodyClr:   l ? 'rgba(15,23,42,0.80)'  : 'rgba(255,255,255,0.8)',
     };
 }
 function applyChartDefaults() {
@@ -317,7 +317,7 @@ const detailCtx = document.getElementById('detailChart');
 // #detailChart and the range-scoped labels/values above.
 if (chart === 'revenue') {
     const rCtx = detailCtx.getContext('2d');
-    const revenueGradient = makeGradient(rCtx, 'rgba(249,115,22,0.5)', 'rgba(249,115,22,0.1)');
+    const revenueGradient = makeGradient(rCtx, isLight() ? 'rgba(249,115,22,0.55)' : 'rgba(249,115,22,0.5)', isLight() ? 'rgba(249,115,22,0.06)' : 'rgba(249,115,22,0.1)');
     detailChart = new Chart(rCtx, {
         type: 'line',
         data: { labels: labels, datasets: [{ label:'Revenue ($)', data:values,
@@ -333,7 +333,7 @@ if (chart === 'revenue') {
     detailChart = new Chart(oCtx, {
         type: 'bar',
         data: { labels: labels, datasets: [{ label:'Orders', data:values,
-            backgroundColor:makeGradient(oCtx,'rgba(249,115,22,0.6)','rgba(249,115,22,0.1)'), fill:true,
+            backgroundColor:makeGradient(oCtx, isLight() ? 'rgba(249,115,22,0.68)' : 'rgba(249,115,22,0.6)', isLight() ? 'rgba(249,115,22,0.10)' : 'rgba(249,115,22,0.1)'), fill:true,
             borderColor:orange, borderWidth:2, borderRadius:6, borderSkipped:false }] },
         options: { responsive:true, maintainAspectRatio:false, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
             scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:8, maxRotation:45, font:{size: window.innerWidth < 768 ? 10 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -344,9 +344,9 @@ if (chart === 'revenue') {
     detailChart = new Chart(dCtx, {
         type: 'line',
         data: { labels: labels, datasets: [{ label:'Revenue ($)', data:values,
-            borderColor:blue, borderWidth:3, pointBackgroundColor:'#fff',
+            borderColor:blue, borderWidth:3, pointBackgroundColor: isLight() ? blue : '#fff',
             pointBorderColor:blue, pointBorderWidth:3, pointRadius:5, pointHoverRadius:9,
-            fill:true, backgroundColor:makeGradient(dCtx,'rgba(59,130,246,0.3)','rgba(59,130,246,0.01)'), tension:0.35 }] },
+            fill:true, backgroundColor:makeGradient(dCtx, isLight() ? 'rgba(59,130,246,0.36)' : 'rgba(59,130,246,0.3)', isLight() ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0.01)'), tension:0.35 }] },
         options: { responsive:true, maintainAspectRatio:false, layout:{ padding:{ top: 24 } }, plugins:{ legend:{display:false}, datalabels:dlDollar,
             tooltip:{ callbacks:{ label: c => ' $'+c.parsed.y.toLocaleString() }}},
             scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -357,7 +357,7 @@ if (chart === 'revenue') {
     detailChart = new Chart(uCtx, {
         type: 'bar',
         data: { labels: labels, datasets: [{ label:'New Users', data:values,
-            backgroundColor:makeGradient(uCtx,'rgba(34,197,94,0.6)','rgba(34,197,94,0.1)'),
+            backgroundColor:makeGradient(uCtx, isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)', isLight() ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.1)'),
             borderColor:green, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
         options: { responsive:true, maintainAspectRatio:false, layout:{ padding:{ top: 24 } }, plugins:{legend:{display:false}, datalabels:dlNumber},
             scales:{ x:{grid:{color: themeColors().grid}, ticks:{ maxTicksLimit:6, maxRotation:45, font:{size: window.innerWidth < 768 ? 9 : 12} }}, y:{grid:{color: themeColors().grid},
@@ -368,7 +368,7 @@ if (chart === 'revenue') {
         type: 'pie',
         data: { labels: labels,
             datasets:[{ data:values, backgroundColor:[yellow,green,blue,purple,red],
-                borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
+                borderColor: isLight() ? '#FFFFFF' : '#111', borderWidth:3, hoverOffset:8 }] },
         options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
             tooltip:{ callbacks:{ label: c => ' '+c.label+': '+c.parsed+' orders' }}}}
     });
@@ -377,7 +377,7 @@ if (chart === 'revenue') {
         type: 'doughnut',
         data: { labels: labels,
             datasets:[{ data:values, backgroundColor:pieColors,
-                borderColor: isLight() ? '#F1F5F9' : '#111', borderWidth:3, hoverOffset:8 }] },
+                borderColor: isLight() ? '#FFFFFF' : '#111', borderWidth:3, hoverOffset:8 }] },
         options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{position:'bottom',labels:{padding:14,font:{size:11}}},
             tooltip:{ callbacks:{ label: c => ' '+c.label+': $'+c.parsed.toLocaleString() }}}}
     });
@@ -400,11 +400,11 @@ window.__updateChartTheme = function(t) {
         detailChart.data.datasets[0].backgroundColor = makeGradient(
             detailChart.ctx,
             type === 'bar'
-                ? (chart === 'orders' ? 'rgba(249,115,22,0.6)' : 'rgba(34,197,94,0.6)')
-                : (chart === 'sales'  ? 'rgba(59,130,246,0.25)' : 'rgba(249,115,22,0.25)'),
+                ? (chart === 'orders' ? (isLight() ? 'rgba(249,115,22,0.68)' : 'rgba(249,115,22,0.6)') : (isLight() ? 'rgba(34,197,94,0.68)' : 'rgba(34,197,94,0.6)'))
+                : (chart === 'sales'  ? (isLight() ? 'rgba(59,130,246,0.40)'  : 'rgba(59,130,246,0.25)') : (isLight() ? 'rgba(249,115,22,0.42)' : 'rgba(249,115,22,0.25)')),
             type === 'bar'
-                ? (chart === 'orders' ? 'rgba(249,115,22,0.15)' : 'rgba(34,197,94,0.1)')
-                : (chart === 'sales'  ? 'rgba(59,130,246,0)'    : 'rgba(249,115,22,0)')
+                ? (chart === 'orders' ? (isLight() ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.15)') : (isLight() ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.1)'))
+                : (chart === 'sales'  ? (isLight() ? 'rgba(59,130,246,0.04)'  : 'rgba(59,130,246,0)')     : (isLight() ? 'rgba(249,115,22,0.04)' : 'rgba(249,115,22,0)'))
         );
         if (type === 'line') {
             detailChart.data.datasets[0].pointBorderColor = bd;

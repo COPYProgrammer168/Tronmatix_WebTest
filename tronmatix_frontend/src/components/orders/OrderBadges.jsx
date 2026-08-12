@@ -45,9 +45,11 @@ export function getStatusSteps(fulfillmentType) {
 }
 
 // Step-index of the current order status for the 4-step stepper.
+// `pending` (fresh BAKONG orders before payment) → −1 so no timeline step is
+// lit — an unpaid order must NOT look "Confirmed".
 export function getStatusStepIndex(status, fulfillmentType) {
   const map = fulfillmentType === "pickup" ? STATUS_STEP_MAP.pickup : STATUS_STEP_MAP.delivery;
-  return map[status] ?? 0;
+  return map[status] ?? (status === "pending" ? -1 : 0);
 }
 
 // Human-readable label per status, varies for pickup vs delivery

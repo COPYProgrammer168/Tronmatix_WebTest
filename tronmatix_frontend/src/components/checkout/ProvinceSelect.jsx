@@ -61,30 +61,30 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
   // Filter provinces by search
   const filtered = search.trim()
     ? provinces.filter((p) => {
-        const q = search.toLowerCase()
-        return p.name_en.toLowerCase().includes(q) || p.name_kh.toLowerCase().includes(q)
-      })
+      const q = search.toLowerCase()
+      return p.name_en.toLowerCase().includes(q) || p.name_kh.toLowerCase().includes(q)
+    })
     : provinces
 
   const c = {
-    label:    dark ? "#9ca3af" : "#6b7280",
-    inputBg:  dark ? "#111827" : "#ffffff",
+    label: dark ? "#9ca3af" : "#6b7280",
+    inputBg: dark ? "#111827" : "#ffffff",
     inputBorder: dark ? "#374151" : "#d1d5db",
     inputText: dark ? "#f9fafb" : "#1f2937",
     dropdownBg: dark ? "#1a1a1a" : "#ffffff",
     dropdownBorder: dark ? "#374151" : "#e5e7eb",
-    hoverBg:  dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-    selBg:    dark ? "rgba(249,115,22,0.12)" : "#fff7ed",
+    hoverBg: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+    selBg: dark ? "rgba(249,115,22,0.12)" : "#fff7ed",
     selColor: dark ? "#f9fafb" : "#1f2937",
-    muted:    dark ? "#9ca3af" : "#6b7280",
-    emptyBg:  dark ? "#111827" : "#f9fafb",
+    muted: dark ? "#9ca3af" : "#6b7280",
+    emptyBg: dark ? "#111827" : "#f9fafb",
     emptyBorder: dark ? "#374151" : "#e5e7eb",
   }
 
   if (loading) return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 18, color: c.label, fontFamily: font }}>
-        {isKhmer ? t("locations.province") : "Province *"}
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 16 : 18, color: c.label, fontFamily: font }}>
+        {isKhmer ? t("locations.province") : "Province/City *"}
       </label>
       <div style={{ padding: "10px 14px", borderRadius: 8, background: c.emptyBg, border: `1px solid ${c.emptyBorder}`, color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 20 }}>
         ⏳ {isKhmer ? t("locations.loading") : "Loading provinces..."}
@@ -94,8 +94,8 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
 
   if (error) return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label, fontFamily: font }}>
-        {isKhmer ? t("locations.province") : "Province *"}
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 16 : 18, color: c.label, fontFamily: font }}>
+        {isKhmer ? t("locations.province") : "Province/City *"}
       </label>
       <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", fontFamily: font, fontSize: isKhmer ? 13 : 15 }}>
         ⚠ {error}
@@ -105,8 +105,8 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
 
   return (
     <div ref={wrapperRef} style={{ position: "relative" }}>
-      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 13 : 15, color: c.label, fontFamily: font }}>
-        {isKhmer ? t("locations.province") : "Province *"}
+      <label className="block font-bold mb-1" style={{ fontSize: isKhmer ? 16 : 18, color: c.label, fontFamily: font }}>
+        {isKhmer ? t("locations.province") : "Province/City *"}
       </label>
 
       {/* Search input — click to show full dropdown */}
@@ -115,27 +115,26 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); if (!open) setOpen(true); if (selected) { setSelected(null); onSelect?.(null) } }}
-          onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
           placeholder={isKhmer ? t("locations.searchProvince") || "ស្វែងរកខេត្ត/ក្រុង..." : "Select or search province/City..."}
-        style={{
-          width: "100%", padding: "10px 14px", borderRadius: 8,
-          border: `1px solid ${selected ? "#F97316" : c.inputBorder}`,
-          background: c.inputBg, color: c.inputText,
-          fontFamily: font, fontSize: 17, outline: "none",
-          boxSizing: "border-box", paddingRight: 36,
-        }}
-        onFocus={(e) => { e.target.style.borderColor = "#F97316" }}
-        onBlur={(e) => { if (!selected) e.target.style.borderColor = c.inputBorder }}
-      />
-      {/* Dropdown arrow */}
-      <div style={{
-        position: "absolute", right: 12, top: "50%", transform: open ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
-        fontSize: 12, color: c.muted, pointerEvents: "none", transition: "transform 0.2s",
-      }}>
-        ▼
+          style={{
+            width: "100%", padding: "10px 14px", borderRadius: 8,
+            border: `1px solid ${selected ? "#F97316" : c.inputBorder}`,
+            background: c.inputBg, color: c.inputText,
+            fontFamily: font, fontSize: 17, outline: "none",
+            boxSizing: "border-box", paddingRight: 36,
+          }}
+          onFocus={(e) => { setOpen(true); e.target.style.borderColor = "#F97316" }}
+          onBlur={(e) => { if (!selected) e.target.style.borderColor = c.inputBorder }}
+        />
+        {/* Dropdown arrow */}
+        <div style={{
+          position: "absolute", right: 12, top: "50%", transform: open ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
+          fontSize: 12, color: c.muted, pointerEvents: "none", transition: "transform 0.2s",
+        }}>
+          ▼
+        </div>
       </div>
-    </div>
 
       {/* Dropdown list */}
       {open && (
@@ -143,11 +142,13 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
           position: "absolute", top: "100%", left: 0, right: 0, zIndex: 100,
           maxHeight: 220, overflowY: "auto", marginTop: 4,
           background: c.dropdownBg, border: `1px solid ${c.dropdownBorder}`,
-          borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+          borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.3)", fontWeight: 800,
+          fontSize: "17px",
+
         }}>
           {filtered.length === 0 ? (
             <div style={{ padding: "14px 16px", color: c.muted, fontFamily: font, fontSize: isKhmer ? 13 : 15, textAlign: "center" }}>
-              {isKhmer ? "រកមិនឃើញខេត្ត" : "No provinces found"}
+              {isKhmer ? "រកមិនឃើញខេត្ត/ក្រុង" : "No provinces/Cities found"}
             </div>
           ) : (
             filtered.map((p) => {
@@ -158,10 +159,10 @@ export default function ProvinceSelect({ onSelect, selectedValue }) {
                   onClick={() => handleSelect(p)}
                   style={{
                     padding: "10px 16px", cursor: "pointer",
-                    fontFamily: font, fontSize: 14,
+                    fontFamily: font, fontSize: '20px',
                     background: sel ? c.selBg : "transparent",
                     color: sel ? "#F97316" : c.inputText,
-                    fontWeight: sel ? 700 : 400,
+                    fontWeight: sel ? 600 : 700,
                     borderBottom: `1px solid ${c.dropdownBorder}22`,
                     transition: "background 0.1s",
                   }}

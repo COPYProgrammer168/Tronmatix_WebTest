@@ -1,5 +1,5 @@
 @extends('dashboard.layout')
-@section('title', ' #' . $order->order_id)
+@section('title', strtoupper(__('dashboard.nav.ordershow')) . ' #' . $order->order_id)
 
 {{-- Suppress the layout's inline flash — this page uses floating toast messages instead --}}
 @section('suppress_flash') @endsection
@@ -21,7 +21,7 @@
 <div id="flash-success" style="
     position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
     background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff;
-    border-radius:14px; padding:14px 28px; font-family:Rajdhani, var(--font-kh), sans-serif;
+    border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
     font-size: var(--title-size); font-weight:700; letter-spacing:1px;
     box-shadow:0 8px 32px rgba(34,197,94,0.4);
     display:flex; align-items:center; gap:10px;
@@ -41,7 +41,7 @@
 <div id="flash-error" style="
     position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
     background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
-    border-radius:14px; padding:14px 28px; font-family:Rajdhani, var(--font-kh), sans-serif;
+    border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
     font-size: var(--title-size); font-weight:700; letter-spacing:1px;
     box-shadow:0 8px 32px rgba(239,68,68,0.4);
     display:flex; align-items:center; gap:10px;
@@ -59,7 +59,7 @@
 
 {{-- ── Back button ───────────────────────────────────────────────────────────── --}}
 <a href="{{ route('dashboard.orders') }}" class="btn btn-outline btn-sm" style="margin-bottom:20px;">
-    ← {{ strtoupper(__('dashboard.orders.backToOrders')) }}
+    ← BACK TO ORDERS
 </a>
 
 <style>
@@ -84,10 +84,7 @@
         {{-- Order Info --}}
         <div class="card">
             <div class="card-header">
-                <span class="card-title">{{ strtoupper(__('dashboard.orders.orderInfo')) }}</span>
-                <span style="font-size: var(--title-size); font-weight:800; letter-spacing:1px; color:#F97316;">
-                    #{{ $order->order_id }}
-                </span>
+                <span class="card-title">ORDER INFORMATION</span>
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                     {{-- Fulfillment type badge & Payment status --}}
                     @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
@@ -102,22 +99,15 @@
                             background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">
                             🚚 DELIVERY
                         </span>
-                        @if($order->isDelivery() && $order->deliveryProvider?->name)
-                            <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
-                                border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
-                                background:rgba(167,139,250,0.06);border:1px dashed rgba(167,139,250,0.4);color:#a78bfa;">
-                                🚚 {{ $order->deliveryProvider->name }}
-                            </span>
-                        @endif
                     @endif
-                    <span data-payment-status="{{ $order->payment_status ?? 'pending' }}" id="live-payment-badge" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
                         border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
                         background:{{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }};
                         border:1px solid {{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }};
                         color:{{ ($order->payment_status ?? 'pending') === 'paid' ? '#22c55e' : '#ef4444' }};">
                         {{ strtoupper($order->payment_status ?? 'pending') }}
                     </span>
-                    <span data-order-status="{{ $order->status }}" id="live-status-badge" class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">
+                    <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">
                         {{ strtoupper($order->status) }}
                     </span>
                 </div>
@@ -125,7 +115,7 @@
             <div class="card-body">
                 <div class="order-info-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
                     @foreach([
-                        'Order'        => '#' . $order->order_id,
+                        'Order ID'       => $order->order_id,
                         'Customer'       => $order->user?->username ?? 'Guest',
                         'Payment Method' => strtoupper($order->payment_method),
                         'Date'           => $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i').' (ICT)',
@@ -135,11 +125,7 @@
                             {{ strtoupper($label) }}
                         </div>
                         <div style="font-weight:700; color:{{ $label === 'Payment Status' && $value === 'PAID' ? '#22c55e' : '#fff' }};">
-                            @if($label === 'Customer' && ($order->user?->role ?? '') === 'vip')
-                                {{ $value }} <span style="font-size:10px; font-weight:800; color:#fff; background:#F97316; padding:1px 6px; border-radius:3px; white-space:nowrap; line-height:1.2;">⭐ VIP</span>
-                            @else
-                                {{ $value }}
-                            @endif
+                            {{ $value }}
                         </div>
                     </div>
                     @endforeach
@@ -150,23 +136,6 @@
                         <div style="font-weight:700; color:#F97316;">
                             🗓 {{ \Carbon\Carbon::parse($order->delivery_date)->format('d M Y') }}
                             @if($order->delivery_time_slot) · {{ $order->delivery_time_slot }} @endif
-                        </div>
-                    </div>
-                    @endif
-
-                    @if($order->isDelivery())
-                    <div>
-                        <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:5px;">DELIVERY PROVIDER</div>
-                        <div style="font-weight:700; color:#a78bfa;">
-                            @if($order->deliveryProvider)
-                                🚚 {{ $order->deliveryProvider->name }}
-                                @php $dpZone = $order->getDeliveryProviderDetailsAttribute(); @endphp
-                                @if(!empty($dpZone['estimated_time']))
-                                    · ETA: {{ $dpZone['estimated_time'] }}
-                                @endif
-                            @else
-                                <span style="color:rgba(255,255,255,0.35);">—</span>
-                            @endif
                         </div>
                     </div>
                     @endif
@@ -187,9 +156,9 @@
         <div class="card">
             <div class="card-header">
                 @if($order->isPickup())
-                    <span class="card-title">{{ strtoupper(__('dashboard.orders.deliveryTimeline')) }}</span>
+                    <span class="card-title">🏪 PICKUP TIMELINE</span>
                 @else
-                    <span class="card-title">{{ strtoupper(__('dashboard.orders.deliveryTimeline')) }}</span>
+                    <span class="card-title">🚚 DELIVERY TIMELINE</span>
                 @endif
             </div>
             <div class="card-body">
@@ -267,7 +236,7 @@
         {{-- Order Items --}}
         <div class="card">
             <div class="card-header">
-                <span class="card-title">{{ strtoupper(__('dashboard.orders.orderItems')) }}</span>
+                <span class="card-title">ORDER ITEMS</span>
                 <span style="color:rgba(255,255,255,0.4); font-size: var(--title-size);">
                     {{ $order->items->count() }} item(s)
                 </span>
@@ -287,10 +256,10 @@
                     <thead>
                         <tr>
                             <th>PRODUCT</th>
-                            <th>{{ strtoupper(__('dashboard.orders.unitPrice')) }}</th>
-                            @if($hasDiscount) <th style="color:#4ade80;">{{ strtoupper(__('dashboard.orders.afterDiscount')) }}</th> @endif
-                            <th>{{ strtoupper(__('dashboard.orders.qty')) }}</th>
-                            <th>{{ strtoupper(__('dashboard.table.total')) }}</th>
+                            <th>UNIT PRICE</th>
+                            @if($hasDiscount) <th style="color:#4ade80;">AFTER DISCOUNT</th> @endif
+                            <th>QTY</th>
+                            <th>TOTAL</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -392,14 +361,14 @@
         <div class="card">
             <div class="card-header">
                 @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
-                    <span class="card-title">🏪 {{ strtoupper(__('dashboard.orders.orderInfo')) }}</span>
+                    <span class="card-title">🏪 STORE PICKUP — CUSTOMER INFO</span>
                 @else
-                    <span class="card-title">🚚 {{ strtoupper(__('dashboard.orders.shippingAddress')) }}</span>
+                    <span class="card-title">🚚 SHIPPING ADDRESS & DELIVERY MAP</span>
                 @endif
                 @if($order->location)
                 <span style="font-size: var(--title-size); color:#F97316; letter-spacing:1px;">
-                    📌 #{{ $order->location->id }}
-                    @if($order->location->is_default) · {{ strtoupper(__('dashboard.common.default')) }} @endif
+                    📌 SAVED #{{ $order->location->id }}
+                    @if($order->location->is_default) · DEFAULT @endif
                 </span>
                 @endif
             </div>
@@ -410,21 +379,21 @@
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">👤</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ strtoupper(__('dashboard.orders.name')) }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">NAME</div>
                             <div style="font-weight:500; color:#fff; font-size: var(--title-size);">{{ $name }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">📞</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ strtoupper(__('dashboard.orders.phone')) }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">PHONE</div>
                             <div style="font-weight:700; color:#F97316; font-size: var(--title-size);">{{ $phone }}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:flex-start; gap:10px;">
                         <span style="font-size: var(--title-size);">📍</span>
                         <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">{{ strtoupper(__('dashboard.orders.address')) }}</div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">ADDRESS</div>
                             <div style="font-weight:500; color:#fff; font-size: var(--title-size); line-height:1.5;">
                                 {{ $address }}{{ $city ? ', '.$city : '' }}
                             </div>
@@ -438,26 +407,12 @@
                             <div style="color:rgba(255,255,255,0.5); font-size: var(--title-size); font-style:italic; word-break: break-word;">{{ $note }}</div>
                         </div>
                     </div>
-                    @if($order->isDelivery() && $order->deliveryProvider)
-                    <div style="display:flex; align-items:flex-start; gap:10px; {{ !$note ? 'margin-top:14px;' : '' }}">
-                        <span style="font-size: var(--title-size);">🚚</span>
-                        <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:2px;">DELIVERY PROVIDER</div>
-                            <div style="font-weight:700; color:#a78bfa; font-size: var(--title-size);">
-                                {{ $order->deliveryProvider->name }}
-                                @php $dyZone = $order->getDeliveryProviderDetailsAttribute(); @endphp
-                                @if(!empty($dyZone['estimated_time']))
-                                    <span style="color:rgba(167,139,250,0.55);"> · ETA: {{ $dyZone['estimated_time'] }}</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
                     @endif
                         {{-- ── Print Receipt Button ──────────────────────────────────────── --}}
                     <button onclick="window.print()" style="
                         width:100%; padding:13px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.12);
                         background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7);
-                        font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
+                        font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
                         letter-spacing:2px; cursor:pointer; transition:all .2s;
                         display:flex; align-items:center; justify-content:center; gap:8px;
                     " onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
@@ -470,7 +425,7 @@
                 @if($mapLat && $mapLng)
                 <div>
                     <div style="font-size: var(--title-size); letter-spacing:2px; color:rgba(255,255,255,0.3); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-                        📍 {{ strtoupper(__('dashboard.orders.shippingAddress')) }}
+                        📍 PINNED DELIVERY ROUTE
                     </div>
                     <div id="order-map" style="height:400px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);"></div>
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; flex-wrap:wrap; gap:8px;">
@@ -481,78 +436,39 @@
                 </div>
 
                 {{-- Leaflet Setup --}}
-                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-                      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-                      crossorigin="" />
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-                        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-                        crossorigin=""
-                        onerror="document.getElementById('order-map').innerHTML='<div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:14px;gap:8px;\"><span>⚠️</span> Map failed to load — check internet connection</div>'">
-                </script>
+                <link rel="stylesheet" href="{{ asset('css/leaflet/leaflet.css') }}" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <script>
                 (function(){
-                    let mapInstance = null;
-                    try {
-                        const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
-                        const USER_LAT  = {{ (float) $mapLat }};
-                        const USER_LNG  = {{ (float) $mapLng }};
+                    const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
+                    const USER_LAT  = {{ (float) $mapLat }};
+                    const USER_LNG  = {{ (float) $mapLng }};
 
-                        if (!window.L || !USER_LAT || !USER_LNG) return;
+                    const map = L.map('order-map').setView([USER_LAT, USER_LNG], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
 
-                        const container = document.getElementById('order-map');
-                        if (!container || container._leaflet_id) return;
+                    // Markers
+                    L.circleMarker([STORE_LAT, STORE_LNG], { radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Store');
+                    L.circleMarker([USER_LAT, USER_LNG], { radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Customer');
 
-                        mapInstance = L.map(container, {
-                            fadeAnimation: false,
-                            zoomAnimation: false
-                        });
+                    // Polyline route
+                    const routeLine = L.polyline([], { color: '#F97316', weight: 4, opacity: 0.9, dashArray: '10, 10' }).addTo(map);
 
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; OpenStreetMap contributors',
-                            detectRetina: true
-                        }).addTo(mapInstance);
-
-                        L.circleMarker([STORE_LAT, STORE_LNG], { radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(mapInstance).bindPopup('Store');
-                        L.circleMarker([USER_LAT, USER_LNG], { radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(mapInstance).bindPopup('Customer');
-
-                        const routeLine = L.polyline([], { color: '#F97316', weight: 4, opacity: 0.9, dashArray: '10, 10' }).addTo(mapInstance);
-
-                        fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full`)
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.routes && data.routes.length > 0) {
-                                    routeLine.setLatLngs(decodeOSRM(data.routes[0].geometry));
-                                } else {
-                                    routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]);
-                                }
-                            })
-                            .catch(() => routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]));
-
-                        mapInstance.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
-                    } catch (e) {
-                        console.warn('Leaflet init error:', e);
-                    }
-
-                    // ── Fix tile glitch: re-check container size after layout settles ──
-                    // The map is inside a grid layout (1col / 2col @ 900px). If Leaflet
-                    // initializes before the grid finishes resizing, tiles render at wrong
-                    // dimensions. Poll invalidateSize() until size stabilises.
-                    if (mapInstance) {
-                        let prevW = 0, prevH = 0, stable = 0;
-                        const fixTimer = setInterval(function(){
-                            const c = document.getElementById('order-map');
-                            if (!c || !mapInstance) { clearInterval(fixTimer); return; }
-                            const w = c.offsetWidth, h = c.offsetHeight;
-                            if (w === prevW && h === prevH) {
-                                stable++;
-                                if (stable >= 3) { clearInterval(fixTimer); }
+                    // Fetch real route from OSRM
+                    fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.routes && data.routes.length > 0) {
+                                routeLine.setLatLngs(decodeOSRM(data.routes[0].geometry));
                             } else {
-                                stable = 0;
+                                routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]);
                             }
-                            prevW = w; prevH = h;
-                            mapInstance.invalidateSize();
-                        }, 200);
-                    }
+                        })
+                        .catch(() => routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]));
+
+                    map.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
                 })();
 
                 function decodeOSRM(str, precision = 5) {
@@ -592,8 +508,8 @@
                 'confirmed'  => [
                     'status'   => 'processing',
                     'icon'     => $isPickupOrder ? '📦' : '⚙️',
-                    'label'    => $isPickupOrder ? strtoupper(__('dashboard.orders.markReady')) : strtoupper(__('dashboard.orders.startProcessing')),
-                    'title'    => $isPickupOrder ? strtoupper(__('dashboard.orders.readyPickup')) : strtoupper(__('dashboard.orders.confirmProcess')),
+                    'label'    => $isPickupOrder ? 'MARK AS READY' : 'START PROCESSING',
+                    'title'    => $isPickupOrder ? 'ORDER READY FOR PICKUP' : 'CONFIRM &amp; PROCESS',
                     'desc'     => $isPickupOrder
                         ? 'Mark order as <strong style="color:#3b82f6;">Ready</strong> — customer will be notified to come collect.'
                         : 'Move order to <strong style="color:#3b82f6;">Processing</strong> → Shipped → Delivered.',
@@ -610,8 +526,8 @@
                 $nextActions['processing'] = [
                     'status'   => 'shipped',
                     'icon'     => '🚚',
-                    'label'    => strtoupper(__('dashboard.orders.shipOrder')),
-                    'title'    => strtoupper(__('dashboard.orders.markShipped')),
+                    'label'    => 'SHIP ORDER',
+                    'title'    => 'MARK AS SHIPPED',
                     'desc'     => 'Confirm the order has been <strong style="color:#a78bfa;">dispatched</strong> to the customer.',
                     'color'    => '#a78bfa',
                     'gradient' => 'linear-gradient(135deg,#a78bfa,#7c3aed)',
@@ -622,8 +538,8 @@
                 $nextActions['shipped'] = [
                     'status'   => 'delivered',
                     'icon'     => '📦',
-                    'label'    => strtoupper(__('dashboard.orders.confirmDelivery')),
-                    'title'    => strtoupper(__('dashboard.orders.markDelivered')),
+                    'label'    => 'CONFIRM DELIVERY',
+                    'title'    => 'MARK AS DELIVERED',
                     'desc'     => 'Confirm the order has been <strong style="color:#22c55e;">delivered</strong> successfully.',
                     'color'    => '#22c55e',
                     'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
@@ -636,8 +552,8 @@
                 $nextActions['processing'] = [
                     'status'   => 'delivered',
                     'icon'     => '🏪',
-                    'label'    => strtoupper(__('dashboard.orders.confirmPickup')),
-                    'title'    => strtoupper(__('dashboard.orders.markPickedUp')),
+                    'label'    => 'CONFIRM PICKUP',
+                    'title'    => 'MARK AS PICKED UP',
                     'desc'     => 'Confirm the customer has <strong style="color:#22c55e;">collected</strong> their order at the store.',
                     'color'    => '#22c55e',
                     'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
@@ -650,27 +566,7 @@
             $nextAction = $nextActions[$order->status] ?? null;
         @endphp
 
-        @if($order->delivery_confirm_requested_at && !$order->delivery_confirmed_at)
-        {{-- Awaiting customer confirmation in Telegram — button is hidden until they confirm or staff forces it. --}}
-        <div class="card" style="border-color:rgba(167,139,250,0.3); background:rgba(167,139,250,0.04);">
-            <div class="card-body" style="text-align:center;">
-                <div style="font-size: var(--title-size); margin-bottom:8px;">⏳</div>
-                <div style="font-weight:700; color:#a78bfa; font-size: var(--title-size); margin-bottom:6px; letter-spacing:1px;">AWAITING CUSTOMER CONFIRMATION</div>
-                <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-bottom:14px;">
-                    Delivery run marked complete. The customer was asked to
-                    <strong style="color:#a78bfa;">Confirm Received</strong> in Telegram.
-                    The order becomes <strong style="color:#22c55e;">Delivered</strong> when they tap it.
-                </div>
-                {{-- Fallback: staff can still force-mark delivered without the customer's tap. --}}
-                <button onclick="openPopup('confirm-delivery-force')" style="
-                    background:#4b5563; color:#fff; font-weight:700;
-                    width:100%; border:none; padding:11px; border-radius:10px; font-size: var(--title-size);
-                    letter-spacing:1px; cursor:pointer; font-family:Rajdhani, var(--font-kh), sans-serif;
-                ">{{ $nextAction['icon'] ?? '📦' }} FORCE MARK DELIVERED</button>
-            </div>
-        </div>
-
-        @elseif($nextAction && !$order->delivery_confirmed_at)
+        @if($nextAction && !$order->delivery_confirmed_at)
         <div class="card" style="border-color:{{ $nextAction['border'] }}; background:{{ $nextAction['bg'] }};">
             <div class="card-body" style="text-align:center;">
                 <div style="font-size: var(--title-size); margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
@@ -683,7 +579,7 @@
                 <button onclick="openPopup('confirm-delivery')" style="
                     background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
                     width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
-                    letter-spacing:1px; cursor:pointer; font-family:Rajdhani, var(--font-kh), sans-serif;
+                    letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
                     box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
                 " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                     {{ $nextAction['icon'] }} {{ $nextAction['label'] }}
@@ -703,15 +599,18 @@
         </div>
         @endif
 
-        {{-- Update Status — always shown in the right column --}}
-        <div class="card" id="live-status-card">
+        {{-- Update Status — only for roles with orders_edit permission --}}
+        @php
+            $_editRole = $_pRole ?? (Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role ?? 'editor';
+            $_editKey  = "perm_{$_editRole}_orders_edit";
+            $_editDefs = \App\Models\AdminSetting::getDefaults();
+            $_canEdit  = $_editRole === 'superadmin'
+                || (\App\Models\AdminSetting::get($_editKey, $_editDefs["{$_editRole}_orders_edit"] ?? '0') === '1');
+        @endphp
+        @if($_canEdit)
+        <div class="card">
             <div class="card-header">
-                <span class="card-title km-english">UPDATE STATUS</span>
-                <span id="live-poll-indicator"
-                    style="font-size:10px; font-weight:700; letter-spacing:0.5px; color:#22c55e; display:inline-flex; align-items:center; gap:4px; margin-left:auto;">
-                    <span id="live-poll-dot" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
-                    <span id="live-poll-text">LIVE</span>
-                </span>
+                <span class="card-title">UPDATE STATUS</span>
             </div>
             <div class="card-body">
                 @php
@@ -740,10 +639,9 @@
                     <button onclick="openStatusPopup('{{ $key }}')"
                         @if($isCurrentStatus) disabled @endif
                         style="
-                        --meta-color: {{ $meta['color'] }};
                         display:flex; align-items:center; gap:7px;
-                        padding:9px 12px; border-radius:10px; font-family:Rajdhani, var(--font-kh), sans-serif;
-                        font-size: var(--label-status); font-weight:700; letter-spacing:1px;
+                        padding:9px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
+                        font-size: var(--title-size); font-weight:700; letter-spacing:1px;
                         cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
                         border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.1)' }};
                         background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.03)' }};
@@ -752,10 +650,10 @@
                         transition:all .15s;
                         box-shadow: {{ $isCurrentStatus ? '0 0 10px '.$meta['color'].'44' : 'none' }};
                     "
-                    onmouseover="if(!this.disabled){ this.style.borderColor='var(--meta-color)'; this.style.color='var(--meta-color)'; this.style.background='rgba(255,255,255,0.06)'; }"
+                    onmouseover="if(!this.disabled){ this.style.borderColor='{{ $meta['color'] }}'; this.style.color='{{ $meta['color'] }}'; this.style.background='rgba(255,255,255,0.06)'; }"
                     onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.45)'; this.style.background='rgba(255,255,255,0.03)'; }">
-                        <span style="font-size: var(--label-status);">{{ $meta['icon'] }}</span>
-                        <span class="km-english">{{ $meta['label'] }}</span>
+                        <span style="font-size: var(--title-size);">{{ $meta['icon'] }}</span>
+                        {{ $meta['label'] }}
                         @if($isCurrentStatus)
                             <span style="margin-left:auto; width:7px; height:7px; border-radius:50%;
                                 background:{{ $meta['color'] }}; box-shadow:0 0 6px {{ $meta['color'] }};"></span>
@@ -763,14 +661,29 @@
                     </button>
                     @endforeach
                 </div>
+                {{-- Payment Verification Button --}}
+                <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07);">
+                    <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
+                        @csrf
+                        <button type="submit" style="
+                            width: 100%; padding: 10px; border-radius: 10px; border: none;
+                            background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
+                            font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
+                            align-items: center; justify-content: center; gap: 8px;
+                        ">
+                            💳 VERIFY PAYMENT
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
+        @endif {{-- orders_edit permission --}}
 
         {{-- Payment Verification Card — visible if order status is pending and payment is not paid --}}
         @if($order->status === 'pending' && ($order->payment_status ?? 'pending') !== 'paid')
         <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
             <div class="card-body">
-                <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order->order_id) }}">
+                <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
                     @csrf
                     <button type="submit" style="
                         width: 100%; padding: 12px; border-radius: 10px; border: none;
@@ -840,8 +753,90 @@
             </div>
         </div>
 
-        {{-- Shipping Address / Pickup Contact --}}
+        {{-- Delivery Information --}}
+        @if(!$order->isPickup() && ($order->province_id || $order->delivery_provider_id))
         <div class="card">
+            <div class="card-header">
+                <span class="card-title">🚚 DELIVERY</span>
+            </div>
+            <div class="card-body">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+
+                    {{-- Zone badge --}}
+                    @if($order->province?->deliveryZone)
+                    <div>
+                        <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">ZONE</div>
+                        <span class="badge" style="
+                            background:{{ $order->province->deliveryZone->slug === 'phnom_penh' ? 'rgba(59,130,246,0.15)' : 'rgba(34,197,94,0.15)' }};
+                            border:1px solid {{ $order->province->deliveryZone->slug === 'phnom_penh' ? 'rgba(59,130,246,0.3)' : 'rgba(34,197,94,0.3)' }};
+                            color:{{ $order->province->deliveryZone->slug === 'phnom_penh' ? '#3b82f6' : '#22c55e' }};">
+                            {{ $order->province->deliveryZone->name }}
+                        </span>
+                    </div>
+                    @endif
+
+                    {{-- Province --}}
+                    @if($order->province)
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size: var(--title-size);">📍</span>
+                        <div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">PROVINCE</div>
+                            <div style="font-weight:600; color:#fff; font-size: var(--title-size);">
+                                {{ $order->province->name_en }}
+                                @if($order->province->name_kh)
+                                    <span style="color:var(--text-faint);">({{ $order->province->name_kh }})</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Provider --}}
+                    @if($order->deliveryProvider)
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        @if($order->deliveryProvider->logo)
+                            <img src="{{ $order->deliveryProvider->logo }}" alt=""
+                                style="width:28px; height:28px; object-fit:contain; border-radius:4px; margin-top:2px;"
+                                onerror="this.style.display='none'">
+                        @else
+                            <span style="font-size: var(--title-size);">🚚</span>
+                        @endif
+                        <div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">PROVIDER</div>
+                            <div style="font-weight:700; color:#F97316; font-size: var(--title-size);">{{ $order->deliveryProvider->name }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Fee --}}
+                    @if($order->deliveryProvider && $order->deliveryProvider->fee !== null)
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size: var(--title-size);">💰</span>
+                        <div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">FEE</div>
+                            <div style="font-weight:700; color:#fff; font-size: var(--title-size);">${{ number_format($order->deliveryProvider->fee, 2) }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Estimated time --}}
+                    @if($order->deliveryProvider && $order->deliveryProvider->estimated_time)
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="font-size: var(--title-size);">⏱</span>
+                        <div>
+                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">ESTIMATED TIME</div>
+                            <div style="font-weight:600; color:#fff; font-size: var(--title-size);">{{ $order->deliveryProvider->estimated_time }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Shipping Address / Pickup Contact --}}
+        {{-- <div class="card">
             <div class="card-header">
                 @if($order->isPickup())
                     <span class="card-title">🏪 PICKUP CONTACT</span>
@@ -850,8 +845,8 @@
                 @endif
                 @if($order->location)
                 <span style="font-size: var(--title-size); color:#F97316; letter-spacing:1px;">
-                    📌 #{{ $order->location->id }}
-                    @if($order->location->is_default) · {{ strtoupper(__('dashboard.common.default')) }} @endif
+                    📌 SAVED #{{ $order->location->id }}
+                    @if($order->location->is_default) · DEFAULT @endif
                 </span>
                 @endif
             </div>
@@ -882,26 +877,11 @@
                         </div>
                     </div>
                     @endif
-                    @if($order->isDelivery() && $order->deliveryProvider)
-                    <div style="display:flex; align-items:flex-start; gap:10px;">
-                        <span style="font-size: var(--title-size);">🚚</span>
-                        <div>
-                            <div style="font-size: var(--title-size); letter-spacing:2px; color:var(--text-faint); margin-bottom:2px;">DELIVERY PROVIDER</div>
-                            <div style="font-weight:700; color:#a78bfa; font-size: var(--title-size);">
-                                {{ $order->deliveryProvider->name }}
-                                @php $dyZone2 = $order->getDeliveryProviderDetailsAttribute(); @endphp
-                                @if(!empty($dyZone2['estimated_time']))
-                                    <span style="color:rgba(167,139,250,0.55);"> · ETA: {{ $dyZone2['estimated_time'] }}</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>
 
-    </div>{{-- /right --}}
+    </div>/right --}}
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════
@@ -920,7 +900,7 @@
                 font-size: var(--title-size); box-shadow:0 0 32px {{ $nextAction['shadow'] }};
                 animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $nextAction['icon'] }}</div>
-            <div style="font-size: var(--title-size); font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani, var(--font-kh), sans-serif;">
+            <div style="font-size: var(--title-size); font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
                 {!! $nextAction['title'] !!}
             </div>
             <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-top:6px;">
@@ -974,104 +954,13 @@
             </div>
         </div>
 
-        {{-- Provider picker — required when the smart action targets DELIVERED --}}
-        @if($nextAction['status'] === 'delivered' && $order->isDelivery() && !$order->deliveryProvider)
-        @php
-            $nextZone  = $order->delivery_zone ?? 'phnom_penh';
-            $providers = \App\Models\DeliveryProvider::active()->get();
-        @endphp
-        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.45); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
-            <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
-                🚚 DELIVERY PROVIDER (REQUIRED) <span class="km-english">(Zone: {{ $nextZone }})</span>
-            </div>
-            <select name="delivery_provider_id" id="ship-provider-select-next" onchange="showShipProviderZone(this, 'ship-provider-confirm-next')"
-                style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
-                background:rgba(255,255,255,0.05); color:var(--text-main); font-family:Rajdhani, var(--font-kh), sans-serif;
-                font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
-                <option value="">— Select a delivery provider —</option>
-                @foreach($providers as $nextProvider)
-                <option value="{{ $nextProvider->id }}" data-zone="{{ $nextZone }}"
-                    data-fee="{{ $nextProvider->zoneDetails($nextZone)?->fee }}"
-                    data-time="{{ $nextProvider->zoneDetails($nextZone)?->estimated_time }}">
-                    {{ $nextProvider->name }}
-                </option>
-                @endforeach
-            </select>
-            <div id="ship-provider-confirm-next" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
-                <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
-            </div>
-        </div>
-        @endif
-
         <div style="display:flex; gap:10px;">
             <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
-            <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
+            <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
                 @csrf @method('PUT')
                 <input type="hidden" name="status" value="{{ $nextAction['status'] }}">
                 <button type="submit" class="popup-btn-confirm" style="background:{{ $nextAction['gradient'] }}; width:100%;">
                     {{ $nextAction['icon'] }} YES, {{ $nextAction['label'] }}
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-@endif
-
-@if($order->delivery_confirm_requested_at && !$order->delivery_confirmed_at)
-{{-- Force Mark Delivered (fallback when customer hasn't confirmed in Telegram) --}}
-<div id="popup-confirm-delivery-force" class="popup-overlay" onclick="if(event.target===this) closePopup('confirm-delivery-force')">
-    <div class="popup-box" id="popup-confirm-delivery-force-box">
-        <div style="text-align:center; margin-bottom:20px;">
-            <div style="
-                width:80px; height:80px; border-radius:50%; margin:0 auto 12px;
-                background:linear-gradient(135deg,#ef4444,#b91c1c);
-                display:flex; align-items:center; justify-content:center;
-                font-size: var(--title-size); box-shadow:0 0 32px rgba(239,68,68,0.35);
-                animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
-            ">📦</div>
-            <div style="font-size: var(--title-size); font-weight:900; color:#ef4444; letter-spacing:2px; font-family:Rajdhani, var(--font-kh), sans-serif;">
-                FORCE MARK DELIVERED
-            </div>
-            <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-top:6px;">
-                Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong> will be set to
-                <strong style="color:#22c55e;">Delivered</strong> WITHOUT the customer confirming in Telegram.
-            </div>
-        </div>
-        @if($order->isDelivery() && !$order->deliveryProvider)
-        @php
-            $forceZone  = $order->delivery_zone ?? 'phnom_penh';
-            $providers  = \App\Models\DeliveryProvider::active()->get();
-        @endphp
-        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.45); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
-            <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
-                🚚 DELIVERY PROVIDER (REQUIRED) <span class="km-english">(Zone: {{ $forceZone }})</span>
-            </div>
-            <select name="delivery_provider_id" id="ship-provider-select-force" onchange="showShipProviderZone(this, 'ship-provider-confirm-force')"
-                style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
-                background:rgba(255,255,255,0.05); color:var(--text-main); font-family:Rajdhani, var(--font-kh), sans-serif;
-                font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
-                <option value="">— Select a delivery provider —</option>
-                @foreach($providers as $forceProvider)
-                <option value="{{ $forceProvider->id }}" data-zone="{{ $forceZone }}"
-                    data-fee="{{ $forceProvider->zoneDetails($forceZone)?->fee }}"
-                    data-time="{{ $forceProvider->zoneDetails($forceZone)?->estimated_time }}">
-                    {{ $forceProvider->name }}
-                </option>
-                @endforeach
-            </select>
-            <div id="ship-provider-confirm-force" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
-                <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
-            </div>
-        </div>
-        @endif
-        <div style="display:flex; gap:10px;">
-            <button onclick="closePopup('confirm-delivery-force')" class="popup-btn-cancel">CANCEL</button>
-            <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
-                @csrf @method('PUT')
-                <input type="hidden" name="status" value="delivered">
-                <input type="hidden" name="force_deliver" value="1">
-                <button type="submit" class="popup-btn-confirm" style="background:linear-gradient(135deg,#ef4444,#b91c1c); width:100%;">
-                    📦 YES, MARK DELIVERED
                 </button>
             </form>
         </div>
@@ -1103,8 +992,8 @@
                 box-shadow:0 0 28px {{ $meta['color'] }}55;
                 animation:popIn .45s cubic-bezier(0.34,1.56,0.64,1);
             ">{{ $meta['icon'] }}</div>
-            <div style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani, var(--font-kh), sans-serif;">
-                <span class="km-english">SET TO</span> {{ $meta['label'] }}
+            <div style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
+                SET TO {{ $meta['label'] }}
             </div>
             <div style="color:rgba(255,255,255,0.4); font-size: var(--title-size); margin-top:6px;">
                 Order <strong style="color:#F97316;">#{{ $order->order_id }}</strong>
@@ -1113,12 +1002,12 @@
 
         <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; font-size: var(--title-size); margin-bottom:8px;">
-                <span style="color:rgba(255,255,255,0.4);"><span class="km-english">Current status</span></span>
+                <span style="color:rgba(255,255,255,0.4);">Current status</span>
                 <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">{{ strtoupper($order->status) }}</span>
             </div>
             <div style="display:flex; justify-content:space-between; font-size: var(--title-size);">
-                <span style="color:rgba(255,255,255,0.4);"><span class="km-english">New status</span></span>
-                <span style="font-weight:800; color:{{ $meta['color'] }}; font-size: var(--title-size);">{{ $meta['icon'] }} <span class="km-english">{{ $meta['label'] }}</span></span>
+                <span style="color:rgba(255,255,255,0.4);">New status</span>
+                <span style="font-weight:800; color:{{ $meta['color'] }}; font-size: var(--title-size);">{{ $meta['icon'] }} {{ $meta['label'] }}</span>
             </div>
             <div style="margin-top:10px; font-size: var(--title-size); color:rgba(255,255,255,0.4); border-top:1px solid rgba(255,255,255,0.07); padding-top:10px;">
                 {{ $meta['msg'] }}
@@ -1131,63 +1020,13 @@
         </div>
         @endif
 
-        {{-- Provider picker — shipping OR delivering a DELIVERY order --}}
-        @if(($key === 'shipped' || $key === 'delivered') && $order->isDelivery())
-        @php
-            $orderZone = $order->delivery_zone ?? 'phnom_penh';
-            $providers = \App\Models\DeliveryProvider::active()->get();
-            $orderProviderId = $order->delivery_provider_id;
-            $provRequire = $key === 'delivered';
-        @endphp
-        <div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2); border-radius:12px; padding:14px 16px; margin-bottom:16px; {{ $provRequire ? 'border-color:rgba(167,139,250,0.45);' : '' }}">
-            <div style="font-size: var(--title-size); font-weight:700; letter-spacing:1px; color:#a78bfa; margin-bottom:10px;">
-                🚚 {{ $provRequire ? 'DELIVERY PROVIDER (REQUIRED TO CONFIRM)' : 'ASSIGN DELIVERY PROVIDER' }} <span class="km-english">(Zone: {{ $orderZone }})</span>
-            </div>
-            <select name="delivery_provider_id" id="ship-provider-select-{{ $key }}" onchange="showShipProviderZone(this, 'ship-provider-confirm-{{ $key }}')"
-                style="width:100%; padding:11px 14px; border-radius:10px; border:1px solid rgba(167,139,250,0.3);
-                background:rgba(255,255,255,0.05); color:var(--text-main); font-family:Rajdhani, var(--font-kh), sans-serif;
-                font-size: var(--title-size); margin-bottom:10px; cursor:pointer;">
-                <option value="">— No provider (assign later) —</option>
-                @foreach($providers as $provider)
-                <option value="{{ $provider->id }}" data-zone="{{ $orderZone }}"
-                    data-fee="{{ $provider->zoneDetails($orderZone)?->fee }}"
-                    data-time="{{ $provider->zoneDetails($orderZone)?->estimated_time }}"
-                    {{ $orderProviderId === $provider->id ? 'selected' : '' }}>
-                    {{ $provider->name }}
-                </option>
-                @endforeach
-            </select>
-            <div id="ship-provider-confirm-{{ $key }}" style="font-size: var(--title-size); color:rgba(255,255,255,0.5); min-height:38px;">
-                @if($orderProviderId)
-                    @php $p = \App\Models\DeliveryProvider::find($orderProviderId); @endphp
-                    @if($p)
-                        @php $dz = $p->zoneDetails($orderZone); @endphp
-                        <span class="km-english">Selected provider:</span>
-                        <strong style="color:#a78bfa;">{{ $p->name }}</strong>
-                        @if($dz)
-                            · Fee: <strong style="color:#a78bfa;">{{ $dz->fee !== null ? '$'.$dz->fee : 'varies' }}</strong>
-                            · ETA: <strong style="color:#a78bfa;">{{ $dz->estimated_time ?? '—' }}</strong>
-                        @endif
-                    @endif
-                @else
-                    <span style="color:rgba(255,255,255,0.3);" class="km-english">Select a provider to preview its fee &amp; ETA for this zone.</span>
-                @endif
-            </div>
-            @if($provRequire)
-            <div style="font-size: var(--title-size); color:#F97316; font-weight:700; margin-top:4px;" class="km-english">
-                ⚠ Choosing the provider first is required to mark this order delivered.
-            </div>
-            @endif
-        </div>
-        @endif
-
         <div style="display:flex; gap:10px;">
-                <button onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel km-english">CANCEL</button>
-            <form method="POST" action="{{ route('dashboard.orders.status', $order->order_id) }}" style="flex:2;">
+            <button onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel">CANCEL</button>
+            <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
                 @csrf @method('PUT')
                 <input type="hidden" name="status" value="{{ $key }}">
                 <button type="submit" class="popup-btn-confirm" style="background:{{ $meta['gradient'] }}; width:100%;">
-                    {{ $meta['icon'] }} <span class="km-english">CONFIRM</span>
+                    {{ $meta['icon'] }} CONFIRM
                 </button>
             </form>
         </div>
@@ -1214,9 +1053,19 @@
     <div class="tr-divider"></div>
 
     <div class="tr-row"><span>Order</span><span>#{{ $order->order_id }}</span></div>
-    <div class="tr-row"><span>Date</span><span>{{ $order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y H:i') }} (ICT)</span></div>
+    <div class="tr-row"><span>Date</span><span>{{ $order->created_at->setTimezone('+07:00')->format('d M Y H:i') }}</span></div>
     <div class="tr-row"><span>Payment</span><span>{{ strtoupper($order->payment_method) }}</span></div>
     <div class="tr-row"><span>Type</span><span>{{ $order->isPickup() ? '🏪 PICKUP' : '🚚 DELIVERY' }}</span></div>
+    <div style="font-weight:700;">{{ $item->name }}</div>
+    @if($item->warranty_start && $item->warranty_end)
+    <div style="font-size: var(--title-size); color:#444;">
+        Warranty: {{ $item->warranty_start->format('d M Y') }} - {{ $item->warranty_end->format('d M Y') }}
+    </div>
+    @elseif($item->warranty_start)
+    <div style="font-size: var(--title-size); color:#444;">
+        Warranty from: {{ $item->warranty_start->format('d M Y') }}
+    </div>
+    @endif
     <div class="tr-divider"></div>
 
     <div class="tr-bold" style="margin-bottom:6px; font-size: var(--title-size); letter-spacing:1px;">ITEMS</div>
@@ -1244,6 +1093,16 @@
     @if($rHasDiscount)
     <div class="tr-row"><span>Subtotal</span><span>${{ number_format($order->subtotal ?? $order->total, 2) }}</span></div>
     <div class="tr-row"><span>Discount{{ $order->discount_code ? ' ('.$order->discount_code.')' : '' }}</span><span>−${{ number_format($order->discount_amount,2) }}</span></div>
+    @endif
+    @php
+        $_rZoneName = $order->province?->deliveryZone?->name;
+        $_rProviderName = $order->deliveryProvider?->name;
+        $_rDeliveryLine = $_rZoneName
+            ? '🚚 Delivery: ' . $_rZoneName . ($_rProviderName ? ' · ' . mb_substr($_rProviderName, 0, 25) : '')
+            : '';
+    @endphp
+    @if($_rDeliveryLine)
+    <div style="font-size: var(--title-size); margin-top:2px; margin-bottom:2px;">{{ $_rDeliveryLine }}</div>
     @endif
     @if($order->delivery > 0)
     <div class="tr-row"><span>Delivery</span><span>${{ number_format($order->delivery,2) }}</span></div>
@@ -1314,7 +1173,7 @@
     width:100%; max-width:420px;
     box-shadow:0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
     animation:boxIn .3s cubic-bezier(0.34,1.2,0.64,1);
-    font-family:Rajdhani, var(--font-kh), sans-serif;
+    font-family:Rajdhani,sans-serif;
 }
 .popup-box.closing { animation:boxOut .25s ease forwards; }
 
@@ -1322,13 +1181,13 @@
     flex:1; padding:12px; border-radius:10px;
     border:1.5px solid rgba(255,255,255,0.12);
     background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.6);
-    font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
+    font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
     letter-spacing:1px; cursor:pointer; transition:all .15s;
 }
 .popup-btn-cancel:hover { background:rgba(255,255,255,0.1); color:#fff; }
 .popup-btn-confirm {
     flex:2; padding:12px; border-radius:10px; border:none;
-    color:#fff; font-family:Rajdhani, var(--font-kh), sans-serif; font-size: var(--title-size); font-weight:700;
+    color:#fff; font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
     letter-spacing:1px; cursor:pointer; transition:transform .15s;
     box-shadow:0 4px 16px rgba(0,0,0,0.3);
 }
@@ -1479,27 +1338,6 @@ function closePopup(id) {
 function openStatusPopup(status)  { openPopup('status-'  + status); }
 function closeStatusPopup(status) { closePopup('status-' + status); }
 
-// Show read-only fee/ETA for the selected provider's zone on the shipped/delivered popup.
-// targetId lets shipped + delivered popups each update their own preview box.
-function showShipProviderZone(select, targetId) {
-    const confirm = document.getElementById(targetId || 'ship-provider-confirm');
-    if (!confirm) return;
-    const opt = select.selectedOptions[0];
-    if (!opt || !opt.value) {
-        confirm.innerHTML = '<span style="color:rgba(255,255,255,0.3)">Select a provider to preview its fee & ETA for this zone.</span>';
-        return;
-    }
-    const zone = opt.dataset.zone || 'phnom_penh';
-    const fee  = opt.dataset.fee;
-    const time = opt.dataset.time;
-    confirm.innerHTML =
-        '<span>Zone: <strong style="color:#a78bfa">' + zone + '</strong></span>' +
-        (fee !== '' && fee !== undefined && fee !== 'null'
-            ? ' · Fee: <strong style="color:#a78bfa">$' + fee + '</strong>'
-            : ' · Fee: <strong style="color:#a78bfa">varies</strong>') +
-        ' · ETA: <strong style="color:#a78bfa">' + (time || '—') + '</strong>';
-}
-
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         document.querySelectorAll('.popup-overlay.open').forEach(el => {
@@ -1507,87 +1345,8 @@ document.addEventListener('keydown', e => {
         });
     }
 });
+</script>
 
-/* ── Live order status poller ───────────────────────────────────────────────
-   Watches for payment/status changes (e.g. customer pays via KHQR on MyOrder)
-   and reloads the page when a change is detected. */
-(function () {
-    const ORDER_ID = '{{ $order->order_id }}';
-    const INITIAL_PAYMENT = document.getElementById('live-payment-badge')?.dataset.paymentStatus ?? '{{ $order->payment_status ?? "pending" }}';
-    const INITIAL_STATUS  = document.getElementById('live-status-badge')?.dataset.orderStatus ?? '{{ $order->status }}';
-    const FINAL_STATES    = ['delivered', 'cancelled'];
-    const POLL_INTERVAL   = 30000; // 30s
-
-    const dot   = document.getElementById('live-poll-dot');
-    const text  = document.getElementById('live-poll-text');
-    let timerId = null;
-    let alive   = true;
-
-    function setIndicator(state, msg) {
-        if (!dot || !text) return;
-        if (state === 'ok') {
-            dot.style.background = '#22c55e';
-            text.style.color = '#22c55e';
-        } else if (state === 'err') {
-            dot.style.background = '#eab308';
-            text.style.color = '#eab308';
-        } else {
-            dot.style.background = '#6b7280';
-            text.style.color = '#6b7280';
-        }
-        text.textContent = msg;
-    }
-
-    function stop() {
-        alive = false;
-        if (timerId) { clearInterval(timerId); timerId = null; }
-        setIndicator('off', 'STOPPED');
-    }
-
-    async function check() {
-        if (!alive) return;
-        try {
-            // Use the dashboard route (web guard / session auth) since the admin
-            // is logged in via the browser, not Sanctum.
-            const url = '{{ route('dashboard.orders.show', ['order_id' => '__ID__']) }}'.replace('__ID__', encodeURIComponent(ORDER_ID)) + '?json=1';
-            const res = await fetch(url, {
-                headers: { 'Accept': 'application/json' },
-            });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const json = await res.json();
-            const order = json?.data ?? json;
-            const newPayment = order.payment_status ?? 'pending';
-            const newStatus  = order.status;
-
-            if (newPayment !== INITIAL_PAYMENT || newStatus !== INITIAL_STATUS) {
-                // Something changed — reload to re-render the full Blade template
-                setIndicator('ok', 'UPDATING…');
-                setTimeout(function () { location.reload(); }, 600);
-                stop();
-                return;
-            }
-
-            if (FINAL_STATES.includes(newStatus)) {
-                // Order is done — no need to keep polling
-                setIndicator('off', 'ENDED');
-                stop();
-                return;
-            }
-
-            setIndicator('ok', 'LIVE');
-        } catch (err) {
-            console.warn('[live-status] poll failed:', err.message);
-            setIndicator('err', 'RETRY…');
-        }
-    }
-
-    // First check after 15s, then every 30s
-    timerId = setInterval(check, POLL_INTERVAL);
-    setTimeout(check, 15000);
-    setIndicator('ok', 'LIVE');
-})();
-
-@endif
 @endif
 
 @push('styles')

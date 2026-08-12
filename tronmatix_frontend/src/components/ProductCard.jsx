@@ -531,7 +531,7 @@ export default function ProductCard({ product }) {
               <div className="flex items-center justify-center gap-2 flex-wrap">
                 <span
                   className="line-through font-semibold"
-                  style={{ fontSize: 18, color: dark ? "#6b7280" : "#9ca3af" }}
+                  style={{ fontSize: isKhmer ? 20 : 18, color: dark ? "#6b7280" : "#9ca3af" }}
                 >
                   {displayPrice(product.price)}
                 </span>

@@ -3,6 +3,7 @@
 // routes/api.php
 
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CategoryTreeController;
 use App\Http\Controllers\Api\ChatController;
@@ -45,10 +46,13 @@ Route::post('/auth/telegram-generate-token', [TelegramAuthController::class, 'ge
 Route::get('/auth/telegram-status',          [TelegramAuthController::class, 'checkLoginToken']);
 
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/suggestions', [ProductController::class, 'suggestions']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/tree', [CategoryTreeController::class, 'tree']);
 Route::get('/banners', [BannerController::class, 'index']);
+Route::get('/brands', [BrandController::class, 'index']);
+Route::get('/brands/product-list', [BrandController::class, 'productBrands']);
 Route::get('/videos', [VideoController::class, 'index']);
 Route::get('/marquees', [MarqueeController::class, 'index']);
 Route::get('/provinces', [DeliveryController::class, 'provinces']);

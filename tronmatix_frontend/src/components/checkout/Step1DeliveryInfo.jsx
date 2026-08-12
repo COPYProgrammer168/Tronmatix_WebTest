@@ -24,54 +24,54 @@ export default function Step1DeliveryInfo({
   const { t, isKhmer } = useLang()
   const step1Font = isKhmer
     ? "KantumruyPro, sans-serif"
-    : "HurstBagod, sans-serif";
+    : "Rajdhani, sans-serif";
   const [showMapPicker, setShowMapPicker] = useState(false)
 
   // ── Standalone phone verification (Firebase OTP) — not tied to account ──
-  const [phoneStep, setPhoneStep]         = useState("phone")
-  const [phoneBusy, setPhoneBusy]         = useState(false)
-  const [phoneError, setPhoneError]       = useState("")
-  const [otpCode, setOtpCode]             = useState("")
+  const [phoneStep, setPhoneStep] = useState("phone")
+  const [phoneBusy, setPhoneBusy] = useState(false)
+  const [phoneError, setPhoneError] = useState("")
+  const [otpCode, setOtpCode] = useState("")
   const [phoneVerified, setPhoneVerified] = useState(false)
-  const confirmationRef                   = useRef(null)
-  const verifierRef                       = useRef(null)
+  const confirmationRef = useRef(null)
+  const verifierRef = useRef(null)
 
   // ── Delivery requires name + phone + address + a map pin; pickup only name + phone ──
   // The map pin lives outside `location` (separate state), so handle it specially.
   const requiredFields = isPickup
     ? [
-        { key: "name",  label: "Full Name" },
-        { key: "phone", label: "Phone" },
-      ]
+      { key: "name", label: "Full Name" },
+      { key: "phone", label: "Phone" },
+    ]
     : [
-        { key: "name",    label: "Full Name" },
-        { key: "phone",   label: "Phone" },
-        { key: "address", label: "Address" },
-        { key: "mapPin",  label: "Pin Location on Map" },
-      ]
+      { key: "name", label: "Full Name" },
+      { key: "phone", label: "Phone" },
+      { key: "address", label: "Address" },
+      { key: "mapPin", label: "Pin Location on Map" },
+    ]
   const getValue = (key) => (key === "mapPin" ? mapPin?.lat : location[key])
   const missingFields = requiredFields.filter((f) => !getValue(f.key))
   const missingMapPin = !isPickup && !mapPin?.lat
-  const canProceed    = missingFields.length === 0
-  const [saving,   setSaving]   = useState(false)
-  const [saved,    setSaved]    = useState(false)
-  const [saveErr,  setSaveErr]  = useState(null)
+  const canProceed = missingFields.length === 0
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [saveErr, setSaveErr] = useState(null)
 
   // Theme tokens
   const c = {
-    heading:      dark ? '#f9fafb' : '#1f2937',
-    label:        dark ? '#9ca3af' : '#4b5563',
-    inputBg:      dark ? '#111827' : '#ffffff',
-    inputBorder:  dark ? '#374151' : '#d1d5db',
-    inputText:    dark ? '#f9fafb' : '#1f2937',
-    inputPh:      dark ? '#6b7280' : '#9ca3af',
-    scheduleBg:   dark ? '#111827' : '#f9fafb',
-    scheduleBor:  dark ? '#374151' : '#e5e7eb',
-    saveBg:       dark ? 'rgba(249,115,22,0.08)' : '#fff7ed',
-    saveBorder:   dark ? 'rgba(249,115,22,0.25)' : '#fed7aa',
-    saveText:     dark ? '#d1d5db' : '#374151',
-    textSub:      dark ? '#6b7280' : '#9ca3af',
-    pickupBg:     dark ? 'rgba(34,197,94,0.06)' : '#f0fdf4',
+    heading: dark ? '#f9fafb' : '#1f2937',
+    label: dark ? '#9ca3af' : '#4b5563',
+    inputBg: dark ? '#111827' : '#ffffff',
+    inputBorder: dark ? '#374151' : '#d1d5db',
+    inputText: dark ? '#f9fafb' : '#1f2937',
+    inputPh: dark ? '#6b7280' : '#9ca3af',
+    scheduleBg: dark ? '#111827' : '#f9fafb',
+    scheduleBor: dark ? '#374151' : '#e5e7eb',
+    saveBg: dark ? 'rgba(249,115,22,0.08)' : '#fff7ed',
+    saveBorder: dark ? 'rgba(249,115,22,0.25)' : '#fed7aa',
+    saveText: dark ? '#d1d5db' : '#374151',
+    textSub: dark ? '#6b7280' : '#9ca3af',
+    pickupBg: dark ? 'rgba(34,197,94,0.06)' : '#f0fdf4',
     pickupBorder: dark ? 'rgba(34,197,94,0.25)' : '#bbf7d0',
   }
 
@@ -84,7 +84,7 @@ export default function Step1DeliveryInfo({
 
   const focusHandlers = {
     onFocus: (e) => { e.target.style.borderColor = '#F97316' },
-    onBlur:  (e) => { e.target.style.borderColor = c.inputBorder },
+    onBlur: (e) => { e.target.style.borderColor = c.inputBorder },
   }
 
   const handleSaveToProfile = async () => {
@@ -201,7 +201,7 @@ export default function Step1DeliveryInfo({
           <button
             onClick={onPickLocation}
             className="flex items-center gap-1.5 text-sm font-bold text-white bg-primary hover:bg-orange-600 px-3 py-1.5 rounded-lg transition-colors"
-            style={{ fontFamily: step1Font}}
+            style={{ fontFamily: step1Font }}
           >
             📍 {isKhmer ? t("checkout.myLocations") : `My Locations (${savedLocations.length})`}
           </button>
@@ -340,7 +340,7 @@ export default function Step1DeliveryInfo({
                 fontFamily: 'Rajdhani, sans-serif', fontSize: 18, fontWeight: 700, cursor: 'pointer',
               }}>
               {mapPin?.lat
-                ? `✅ Pinned: ${mapPin.address ? mapPin.address.slice(0,40)+'...' : `${Number(mapPin.lat).toFixed(5)}, ${Number(mapPin.lng).toFixed(5)}`}`
+                ? `✅ Pinned: ${mapPin.address ? mapPin.address.slice(0, 40) + '...' : `${Number(mapPin.lat).toFixed(5)}, ${Number(mapPin.lng).toFixed(5)}`}`
                 : (isKhmer ? '📍 ចុចដើម្បីកំណត់ទីតាំង (ឬស្វែងរក/បិទភ្ជាប់តំណ) *' : '📍 Pin location (or search/paste link) *')
               }
             </button>
@@ -400,22 +400,22 @@ export default function Step1DeliveryInfo({
             {saving ? (
               <>
                 <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 {isKhmer ? t("profile.saving") : "Saving…"}
               </>
             ) : saved ? (
               <>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 {isKhmer ? t("checkout.savedToProfile") : "Saved to Profile!"}
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 {isKhmer ? t("checkout.saveToProfile") : "Save Address to My Profile"}
               </>

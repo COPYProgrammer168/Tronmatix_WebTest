@@ -210,7 +210,7 @@
                                     value="{{ old('brand', $product?->brand) }}" placeholder="e.g. AMD, Intel, NVIDIA"
                                     list="brandList" />
                                 <datalist id="brandList">
-                                    @foreach (['AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Gigabyte', 'Corsair', 'Razer', 'SteelSeries', 'HyperX'] as $brand)
+                                    @foreach ($brandList ?? [] as $brand)
                                         <option value="{{ $brand }}">
                                     @endforeach
                                 </datalist>
