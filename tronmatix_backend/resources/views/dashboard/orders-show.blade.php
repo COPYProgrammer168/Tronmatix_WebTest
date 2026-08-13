@@ -11,6 +11,12 @@
 
 @if(!$_permDenied)
 
+{{-- Leaflet CSS/JS — loaded once at top so tiles + markers render reliably on Render --}}
+@if($mapLat && $mapLng)
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+@endif
+
 @php
     $user   = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
     $_pRole = $user?->role ?? 'editor';
@@ -434,58 +440,6 @@
                         @endif
                     </div>
                 </div>
-
-                {{-- Leaflet Setup --}}
-                <link rel="stylesheet" href="{{ asset('css/leaflet/leaflet.css') }}" />
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                <script>
-                (function(){
-                    const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
-                    const USER_LAT  = {{ (float) $mapLat }};
-                    const USER_LNG  = {{ (float) $mapLng }};
-
-                    const map = L.map('order-map').setView([USER_LAT, USER_LNG], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(map);
-
-                    // Markers
-                    L.circleMarker([STORE_LAT, STORE_LNG], { radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Store');
-                    L.circleMarker([USER_LAT, USER_LNG], { radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map).bindPopup('Customer');
-
-                    // Polyline route
-                    const routeLine = L.polyline([], { color: '#F97316', weight: 4, opacity: 0.9, dashArray: '10, 10' }).addTo(map);
-
-                    // Fetch real route from OSRM
-                    fetch(`https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.routes && data.routes.length > 0) {
-                                routeLine.setLatLngs(decodeOSRM(data.routes[0].geometry));
-                            } else {
-                                routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]);
-                            }
-                        })
-                        .catch(() => routeLine.setLatLngs([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]]));
-
-                    map.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
-                })();
-
-                function decodeOSRM(str, precision = 5) {
-                    let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null, lat_change, lng_change, factor = Math.pow(10, precision);
-                    while (index < str.length) {
-                        byte = null; shift = 0; result = 0;
-                        do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
-                        lat_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
-                        byte = null; shift = 0; result = 0;
-                        do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
-                        lng_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
-                        lat += lat_change; lng += lng_change;
-                        coordinates.push([lat / factor, lng / factor]);
-                    }
-                    return coordinates;
-                }
-                </script>
                 @endif
 
             </div>
@@ -867,7 +821,7 @@
             </div>
         </div>
 
-    </div>/right --}}
+    </div>{{-- /right --}}
 </div>
 
 {{-- ══════════════════════════════════════════════════════════════════════════════
@@ -1388,5 +1342,84 @@ document.addEventListener('keydown', e => {
 }
 </style>
 @endpush
+
+@if($mapLat && $mapLng)
+<script>
+(function() {
+    function initOrderMap() {
+        if (typeof L === 'undefined') {
+            setTimeout(initOrderMap, 150);
+            return;
+        }
+        const el = document.getElementById('order-map');
+        if (!el) return;
+
+        const STORE_LAT = 11.5629735, STORE_LNG = 104.8995165;
+        const USER_LAT  = {{ (float) $mapLat }};
+        const USER_LNG  = {{ (float) $mapLng }};
+
+        const map = L.map('order-map', {
+            zoomControl: true,
+            scrollWheelZoom: false,
+        }).setView([USER_LAT, USER_LNG], 13);
+
+        // Single tile server — avoids subdomain DNS flakiness on Render
+        L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19,
+        }).addTo(map);
+
+        L.circleMarker([STORE_LAT, STORE_LNG], {
+            radius: 8, fillColor: '#F97316', color: '#fff', fillOpacity: 1, weight: 2
+        }).addTo(map).bindPopup('<b>Store</b>');
+
+        L.circleMarker([USER_LAT, USER_LNG], {
+            radius: 8, fillColor: '#3b82f6', color: '#fff', fillOpacity: 1, weight: 2
+        }).addTo(map).bindPopup('<b>Customer</b>');
+
+        const routeLine = L.polyline([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], {
+            color: '#F97316', weight: 4, opacity: 0.85, dashArray: '8, 8'
+        }).addTo(map);
+
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${STORE_LNG},${STORE_LAT};${USER_LNG},${USER_LAT}?overview=full&geometries=encodedpolyline`;
+        fetch(osrmUrl, { signal: AbortSignal.timeout(6000) })
+            .then(res => res.json())
+            .then(data => {
+                if (data.routes && data.routes[0] && data.routes[0].geometry) {
+                    try {
+                        const coords = decodeOSRM(data.routes[0].geometry);
+                        if (coords.length > 2) routeLine.setLatLngs(coords);
+                    } catch(e) { /* keep straight line */ }
+                }
+            })
+            .catch(() => { /* keep straight line */ });
+
+        map.fitBounds([[STORE_LAT, STORE_LNG], [USER_LAT, USER_LNG]], { padding: [60, 60] });
+        setTimeout(() => map.invalidateSize(), 250);
+    }
+
+    function decodeOSRM(str) {
+        let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte, lat_change, lng_change, factor = Math.pow(10, 5);
+        while (index < str.length) {
+            byte = 0; shift = 0; result = 0;
+            do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+            lat_change = (result & 1) ? ~(result >> 1) : (result >> 1);
+            byte = 0; shift = 0; result = 0;
+            do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+            lng_change = (result & 1) ? ~(result >> 1) : (result >> 1);
+            lat += lat_change; lng += lng_change;
+            coordinates.push([lat / factor, lng / factor]);
+        }
+        return coordinates;
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initOrderMap);
+    } else {
+        initOrderMap();
+    }
+})();
+</script>
+@endif
 
 @endsection
