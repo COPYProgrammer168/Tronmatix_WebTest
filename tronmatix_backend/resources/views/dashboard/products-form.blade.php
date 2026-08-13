@@ -211,7 +211,7 @@
                                     list="brandList" />
                                 <datalist id="brandList">
                                     @foreach ($brandList ?? [] as $brand)
-                                        <option value="{{ $brand }}">
+                                        <option value="{{ $brand['name'] ?? $brand }}">
                                     @endforeach
                                 </datalist>
                             </div>

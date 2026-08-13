@@ -37,6 +37,11 @@ class BrandController extends Controller
             ->with('success', 'Brand created successfully.');
     }
 
+    public function edit(Brand $brand)
+    {
+        return view('dashboard.brands.edit', compact('brand'));
+    }
+
     public function update(Request $request, Brand $brand)
     {
         $validated = $this->validateBrand($request);

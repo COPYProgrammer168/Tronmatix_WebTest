@@ -1194,12 +1194,6 @@
 .popup-btn-confirm:hover { transform:scale(1.02); }
 
 /* ── Responsive order-show layout ───────────────────────────────── */
-@media (max-width: 960px) {
-    div[style*="grid-template-columns:1fr 340px"] {
-        grid-template-columns: 1fr !important;
-    }
-}
-
 @media (max-width: 768px) {
     /* ── Right column: prevent content overflow ── */
     .order-right-col {
