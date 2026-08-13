@@ -11,11 +11,9 @@
 
 @if(!$_permDenied)
 
-{{-- Leaflet CSS/JS — loaded once at top so tiles + markers render reliably on Render --}}
-@if($mapLat && $mapLng)
+{{-- Leaflet CSS/JS — always loaded at top so tiles + markers render reliably on Render --}}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-@endif
 
 @php
     $user   = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
