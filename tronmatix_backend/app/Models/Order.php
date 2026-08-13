@@ -214,6 +214,22 @@ class Order extends Model
         });
     }
 
+    // ── Route binding ───────────────────────────────────────────────────────────
+
+    /**
+     * Resolve the model from the {order_id} route parameter.
+     * Tries the `order_id` column (TRX-…) first, then falls back to the
+     * numeric `id` so callers like StaffDashboard (which pass `o.id`) keep working.
+     */
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        if (preg_match('/^TRX-/i', (string) $value)) {
+            return static::where('order_id', $value)->first();
+        }
+
+        return static::where('id', (int) $value)->first();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     public function isPickup(): bool
