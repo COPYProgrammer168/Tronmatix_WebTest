@@ -812,9 +812,18 @@ class DashboardController extends Controller
         return view('dashboard.orders', compact('orders', 'statusCounts', 'status', 'search', 'userFilter', 'today', 'fulfillmentType', 'month'));
     }
 
+    private function findOrder(string $order_id): Order
+    {
+        if (preg_match('/^TRX-/i', $order_id)) {
+            return Order::where('order_id', $order_id)->firstOrFail();
+        }
+
+        return Order::where('id', (int) $order_id)->firstOrFail();
+    }
+
     public function showOrder($order_id)
     {
-        $order = Order::where('order_id', $order_id)->firstOrFail();
+        $order = $this->findOrder($order_id);
         $order->load(['user', 'items.product', 'location', 'deliveryProvider.zones']); // FIX [3]
 
         // Return JSON for the live status poller (avoids rendering full Blade)
@@ -830,7 +839,7 @@ class DashboardController extends Controller
 
     public function updateOrderStatus(Request $request, $order_id)
     {
-        $order = Order::where('order_id', $order_id)->firstOrFail();
+        $order = $this->findOrder($order_id);
         $request->validate([
             'status'               => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
             'delivery_provider_id' => 'nullable|integer|exists:delivery_providers,id',
@@ -954,7 +963,7 @@ class DashboardController extends Controller
 
     public function confirmDelivery($order_id)
     {
-        $order = Order::where('order_id', $order_id)->firstOrFail();
+        $order = $this->findOrder($order_id);
         if (!in_array($order->status, ['confirmed', 'processing', 'shipped'])) {
             return redirect()->route('dashboard.orders.show', $order->order_id)
                 ->with('error', 'Order cannot be marked as delivered from its current status.');
@@ -993,7 +1002,7 @@ class DashboardController extends Controller
 
     public function verifyOrderPayment($order_id)
     {
-        $order = Order::where('order_id', $order_id)->firstOrFail();
+        $order = $this->findOrder($order_id);
         Log::info('Verify payment requested for order: ' . $order->order_id);
 
         // Update both payment status and order status
