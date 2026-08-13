@@ -640,18 +640,18 @@
                         @if($isCurrentStatus) disabled @endif
                         style="
                         display:flex; align-items:center; gap:7px;
-                        padding:9px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
+                        padding:10px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
                         font-size: var(--title-size); font-weight:700; letter-spacing:1px;
                         cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
-                        border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.1)' }};
-                        background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.03)' }};
-                        color: {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.45)' }};
-                        opacity:{{ $isCurrentStatus ? '1' : '.85' }};
+                        border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.22)' }};
+                        background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.05)' }};
+                        color: {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.85)' }};
+                        opacity:{{ $isCurrentStatus ? '1' : '.95' }};
                         transition:all .15s;
                         box-shadow: {{ $isCurrentStatus ? '0 0 10px '.$meta['color'].'44' : 'none' }};
                     "
-                    onmouseover="if(!this.disabled){ this.style.borderColor='{{ $meta['color'] }}'; this.style.color='{{ $meta['color'] }}'; this.style.background='rgba(255,255,255,0.06)'; }"
-                    onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.45)'; this.style.background='rgba(255,255,255,0.03)'; }">
+                    onmouseover="if(!this.disabled){ this.style.borderColor='{{ $meta['color'] }}'; this.style.color='{{ $meta['color'] }}'; this.style.background='rgba(255,255,255,0.10)'; }"
+                    onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.22)'; this.style.color='rgba(255,255,255,0.85)'; this.style.background='rgba(255,255,255,0.05)'; }">
                         <span style="font-size: var(--title-size);">{{ $meta['icon'] }}</span>
                         {{ $meta['label'] }}
                         @if($isCurrentStatus)
@@ -660,20 +660,6 @@
                         @endif
                     </button>
                     @endforeach
-                </div>
-                {{-- Payment Verification Button --}}
-                <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07);">
-                    <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
-                        @csrf
-                        <button type="submit" style="
-                            width: 100%; padding: 10px; border-radius: 10px; border: none;
-                            background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
-                            font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
-                            align-items: center; justify-content: center; gap: 8px;
-                        ">
-                            💳 VERIFY PAYMENT
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
