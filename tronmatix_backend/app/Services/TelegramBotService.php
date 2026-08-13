@@ -672,16 +672,30 @@ class TelegramBotService
             return;
         $id = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
+        $pm = strtolower($order->payment_method ?? 'cash');
+        $isPaid = in_array($order->payment_status, ['paid', 'confirmed'], true);
 
-        $this->send($chatId, implode("\n", [
+        $lines = [
             '🚫 <b>Order Cancelled</b>',
             '',
             "📦 Order <code>#{$id}</code> has been cancelled.",
-            "💰 Amount: \${$total}",
-            '',
-            'If you have questions, please contact our support.',
-            '🕐 ' . $this->ts(),
-        ]), $this->mainKeyboard());
+        ];
+
+        if ($isPaid && ($pm === 'bakong' || $pm === 'card')) {
+            $lines[] = "💳 Paid via <b>" . strtoupper($pm) . "</b> — \${$total}";
+            $lines[] = '';
+            $lines[] = 'ℹ️ Our team will process your refund. You will receive a confirmation once it is complete.';
+        } elseif ($pm === 'cash') {
+            $lines[] = '💵 Cash on delivery — no payment was collected.';
+        } else {
+            $lines[] = "💰 Amount: \${$total}";
+        }
+
+        $lines[] = '';
+        $lines[] = 'If you have questions, please contact our support.';
+        $lines[] = '🕐 ' . $this->ts();
+
+        $this->send($chatId, implode("\n", $lines), $this->mainKeyboard());
     }
 
     // =========================================================================

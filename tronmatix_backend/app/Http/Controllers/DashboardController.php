@@ -910,6 +910,37 @@ class DashboardController extends Controller
             } catch (\Throwable $e) {
                 Log::warning('[Stock] Restore on cancel failed: ' . $e->getMessage());
             }
+
+            // ── Payment refund: mark the payment as refunded in DB so the
+            //    order record is consistent. For Bakong/card the actual
+            //    money transfer must still be done manually in the Bakong
+            //    portal — this records the intent and unblocks accounting.
+            $pm = strtolower($order->payment_method ?? 'cash');
+            if (in_array($pm, ['bakong', 'card'], true) && $order->payment_status === 'paid') {
+                try {
+                    $payment = \App\Models\Payment::where('order_id', $order->order_id)
+                        ->whereIn('status', ['paid', 'manual_pending'])
+                        ->latest()
+                        ->first();
+
+                    if ($payment && ! $payment->isRefunded()) {
+                        $payment->update([
+                            'status'       => \App\Models\Payment::STATUS_REFUNDED,
+                            'paid'         => false,
+                            'meta'         => array_merge($payment->meta ?? [], [
+                                'refunded_at'     => now()->toDateTimeString(),
+                                'refunded_by'     => auth('admin')->user()?->name
+                                    ?? auth('staff')->user()?->name
+                                    ?? 'staff',
+                                'refund_reason'   => 'order_cancelled',
+                            ]),
+                        ]);
+                        $order->update(['payment_status' => 'refunded']);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('[Refund] Auto-refund record failed: ' . $e->getMessage());
+                }
+            }
         }
 
         // ── Log activity ────────────────────────────────────────────────────────
@@ -926,15 +957,32 @@ class DashboardController extends Controller
         $adminAlert = "📋 *Order Status Updated*\n\n" .
             "📦 Order: `#{$order->order_id}`\n" .
             "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+            "💳 Method: " . strtoupper($order->payment_method ?? 'cash') . "\n" .
             "🔄 {$oldStatus} → *{$newStatus}*\n";
+
+        if ($newStatus === 'cancelled') {
+            $pm = strtolower($order->payment_method ?? 'cash');
+            if ($pm === 'bakong' || $pm === 'card') {
+                $refundRecorded = $order->payment_status === 'refunded';
+                $adminAlert .= "\n" . ($refundRecorded ? "✅" : "⚠️") . " *PAYMENT REFUND*\n";
+                $adminAlert .= "Paid via {$pm} — \${$order->total}";
+                if ($refundRecorded) {
+                    $adminAlert .= "\nRefund recorded in DB. Complete the transfer in Bakong portal and confirm to customer.";
+                } else {
+                    $adminAlert .= "\nPlease process refund manually and update payment record.";
+                }
+            } else {
+                $adminAlert .= "\nℹ️ COD cancel — no payment to refund.";
+            }
+        }
+
         if ($newProvider = $order->getDeliveryProviderDetailsAttribute()) {
-            $adminAlert .= "🚚 Provider: {$newProvider['name']}";
+            $adminAlert .= "\n🚚 Provider: {$newProvider['name']}";
             if (! empty($newProvider['estimated_time'])) {
                 $adminAlert .= " (ETA: {$newProvider['estimated_time']})";
             }
-            $adminAlert .= "\n";
         }
-        $adminAlert .= "🕐 " . now()->format('d M Y, H:i');
+        $adminAlert .= "\n🕐 " . now()->format('d M Y, H:i');
 
         try {
             app(TelegramService::class)->sendAlert($adminAlert);
