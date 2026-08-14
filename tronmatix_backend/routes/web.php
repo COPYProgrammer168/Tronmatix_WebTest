@@ -117,8 +117,8 @@ Route::prefix('dashboard')->name('dashboard.')
 
         Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
         Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
+        Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
         Route::get('/brands/{brand}', [BrandController::class, 'edit'])->name('brands.edit');
-        Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
         Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
         Route::patch('/brands/{brand}/toggle', [BrandController::class, 'toggle'])->name('brands.toggle');
         Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');

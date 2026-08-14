@@ -76,11 +76,12 @@ class BrandController extends Controller
     private function validateBrand(Request $request): array
     {
         return $request->validate([
-            'name'       => 'required|string|max:100',
-            'image_file' => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
-            'image_url'  => 'nullable|string|max:500',
-            'order'      => 'nullable|integer|min:0',
-            'is_active'  => 'nullable',
+            'name'         => 'required|string|max:100',
+            'image_file'   => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif',
+            'image_url'    => 'nullable|string|max:500',
+            'remove_image' => 'nullable',
+            'order'        => 'nullable|integer|min:0',
+            'is_active'    => 'nullable',
         ]);
     }
 

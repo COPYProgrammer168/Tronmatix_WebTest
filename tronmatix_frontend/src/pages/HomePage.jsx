@@ -519,7 +519,7 @@ export default function HomePage() {
       </div>
 
       <TelegramConnectMarquee />
-      {/* <BrandMarquee /> */}
+      <BrandMarquee />
 
       <div className="max-w-[1280px] mx-auto px-4 pt-2 pb-2">
         {/* NEW ARRIVAL heading */}
