@@ -32,9 +32,11 @@ import {
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
+import { useSearchOverlay, SearchOverlay } from '@/components/search-overlay';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
+import { useEffect, useRef, useState } from 'react';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -69,9 +71,39 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+
+    const { openOverlay, closeOverlay, open, query, onQueryChange, data, loading } = useSearchOverlay();
+    const [scrolled, setScrolled] = useState(false);
+    const headerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const root = headerRef.current?.closest('header') ?? headerRef.current?.parentElement;
+        if (!root) return;
+
+        const onScroll = () => {
+            const y = root.scrollTop ?? window.scrollY;
+            setScrolled(y > 8);
+        };
+
+        const target = root === document.body ? window : root;
+        target.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        return () => target.removeEventListener('scroll', onScroll);
+    }, []);
+
     return (
         <>
-            <div className="border-b border-sidebar-border/80">
+            <SearchOverlay
+                open={open}
+                closeOverlay={closeOverlay}
+                query={query}
+                onQueryChange={onQueryChange}
+                data={data}
+                loading={loading}
+            />
+
+            <div ref={headerRef} className="sticky top-0 z-50 border-b border-sidebar-border/80 bg-background/95 backdrop-blur-sm">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
@@ -178,14 +210,25 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
+                            {/* Search — desktop: hidden until scroll; mobile: always visible */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="group h-9 w-9 cursor-pointer"
+                                className={cn(
+                                    'group h-9 w-9 cursor-pointer',
+                                    'opacity-0 -translate-x-1 transition-all duration-200',
+                                    'lg:opacity-100 lg:translate-x-0',
+                                    scrolled ? 'lg:opacity-100 lg:translate-x-0' : 'lg:opacity-0 lg:-translate-x-1',
+                                )}
+                                onClick={openOverlay}
                             >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
-                            <div className="ml-1 hidden gap-1 lg:flex">
+                            <div className={cn(
+                                'ml-1 hidden gap-1 lg:flex',
+                                'transition-all duration-200',
+                                scrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1',
+                            )}>
                                 {rightNavItems.map((item) => (
                                     <TooltipProvider
                                         key={item.title}
@@ -219,7 +262,11 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="size-10 rounded-full p-1"
+                                    className={cn(
+                                        'size-10 rounded-full p-1 transition-opacity duration-200',
+                                        'max-lg:opacity-0 max-lg:duration-150',
+                                        scrolled ? 'max-lg:opacity-0' : 'max-lg:opacity-100',
+                                    )}
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage

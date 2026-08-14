@@ -8,6 +8,7 @@ import MainCategoryController from './MainCategoryController'
 import SubCategoryController from './SubCategoryController'
 import BrandController from './BrandController'
 import ProductController from './ProductController'
+import StockController from './StockController'
 import UserController from './UserController'
 import DiscountController from './DiscountController'
 import BannerController from './BannerController'
@@ -29,6 +30,7 @@ MainCategoryController: Object.assign(MainCategoryController, MainCategoryContro
 SubCategoryController: Object.assign(SubCategoryController, SubCategoryController),
 BrandController: Object.assign(BrandController, BrandController),
 ProductController: Object.assign(ProductController, ProductController),
+StockController: Object.assign(StockController, StockController),
 UserController: Object.assign(UserController, UserController),
 DiscountController: Object.assign(DiscountController, DiscountController),
 BannerController: Object.assign(BannerController, BannerController),

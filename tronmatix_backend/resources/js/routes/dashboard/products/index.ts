@@ -79,7 +79,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::store
- * @see app/Http/Controllers/Dashboard/ProductController.php:75
+ * @see app/Http/Controllers/Dashboard/ProductController.php:77
  * @route '/dashboard/products'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::store
- * @see app/Http/Controllers/Dashboard/ProductController.php:75
+ * @see app/Http/Controllers/Dashboard/ProductController.php:77
  * @route '/dashboard/products'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::store
- * @see app/Http/Controllers/Dashboard/ProductController.php:75
+ * @see app/Http/Controllers/Dashboard/ProductController.php:77
  * @route '/dashboard/products'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProductController::store
- * @see app/Http/Controllers/Dashboard/ProductController.php:75
+ * @see app/Http/Controllers/Dashboard/ProductController.php:77
  * @route '/dashboard/products'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProductController::store
- * @see app/Http/Controllers/Dashboard/ProductController.php:75
+ * @see app/Http/Controllers/Dashboard/ProductController.php:77
  * @route '/dashboard/products'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -134,7 +134,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
 export const edit = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
 edit.url = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -182,7 +182,7 @@ edit.url = (args: { product: string | { slug: string } } | [product: string | { 
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
 edit.get = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ edit.get = (args: { product: string | { slug: string } } | [product: string | { 
 })
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
 edit.head = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -201,7 +201,7 @@ edit.head = (args: { product: string | { slug: string } } | [product: string | {
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
     const editForm = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -211,7 +211,7 @@ edit.head = (args: { product: string | { slug: string } } | [product: string | {
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
         editForm.get = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -220,7 +220,7 @@ edit.head = (args: { product: string | { slug: string } } | [product: string | {
         })
             /**
 * @see \App\Http\Controllers\Dashboard\ProductController::edit
- * @see app/Http/Controllers/Dashboard/ProductController.php:87
+ * @see app/Http/Controllers/Dashboard/ProductController.php:89
  * @route '/dashboard/products/{product}/edit'
  */
         editForm.head = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -236,7 +236,7 @@ edit.head = (args: { product: string | { slug: string } } | [product: string | {
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::update
- * @see app/Http/Controllers/Dashboard/ProductController.php:114
+ * @see app/Http/Controllers/Dashboard/ProductController.php:117
  * @route '/dashboard/products/{product}'
  */
 export const update = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -251,7 +251,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::update
- * @see app/Http/Controllers/Dashboard/ProductController.php:114
+ * @see app/Http/Controllers/Dashboard/ProductController.php:117
  * @route '/dashboard/products/{product}'
  */
 update.url = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -284,7 +284,7 @@ update.url = (args: { product: string | { slug: string } } | [product: string | 
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::update
- * @see app/Http/Controllers/Dashboard/ProductController.php:114
+ * @see app/Http/Controllers/Dashboard/ProductController.php:117
  * @route '/dashboard/products/{product}'
  */
 update.put = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -294,7 +294,7 @@ update.put = (args: { product: string | { slug: string } } | [product: string | 
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProductController::update
- * @see app/Http/Controllers/Dashboard/ProductController.php:114
+ * @see app/Http/Controllers/Dashboard/ProductController.php:117
  * @route '/dashboard/products/{product}'
  */
     const updateForm = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -309,7 +309,7 @@ update.put = (args: { product: string | { slug: string } } | [product: string | 
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProductController::update
- * @see app/Http/Controllers/Dashboard/ProductController.php:114
+ * @see app/Http/Controllers/Dashboard/ProductController.php:117
  * @route '/dashboard/products/{product}'
  */
         updateForm.put = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -325,7 +325,7 @@ update.put = (args: { product: string | { slug: string } } | [product: string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::destroy
- * @see app/Http/Controllers/Dashboard/ProductController.php:136
+ * @see app/Http/Controllers/Dashboard/ProductController.php:139
  * @route '/dashboard/products/{product}'
  */
 export const destroy = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -340,7 +340,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::destroy
- * @see app/Http/Controllers/Dashboard/ProductController.php:136
+ * @see app/Http/Controllers/Dashboard/ProductController.php:139
  * @route '/dashboard/products/{product}'
  */
 destroy.url = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -373,7 +373,7 @@ destroy.url = (args: { product: string | { slug: string } } | [product: string |
 
 /**
 * @see \App\Http\Controllers\Dashboard\ProductController::destroy
- * @see app/Http/Controllers/Dashboard/ProductController.php:136
+ * @see app/Http/Controllers/Dashboard/ProductController.php:139
  * @route '/dashboard/products/{product}'
  */
 destroy.delete = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -383,7 +383,7 @@ destroy.delete = (args: { product: string | { slug: string } } | [product: strin
 
     /**
 * @see \App\Http\Controllers\Dashboard\ProductController::destroy
- * @see app/Http/Controllers/Dashboard/ProductController.php:136
+ * @see app/Http/Controllers/Dashboard/ProductController.php:139
  * @route '/dashboard/products/{product}'
  */
     const destroyForm = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -398,7 +398,7 @@ destroy.delete = (args: { product: string | { slug: string } } | [product: strin
 
             /**
 * @see \App\Http\Controllers\Dashboard\ProductController::destroy
- * @see app/Http/Controllers/Dashboard/ProductController.php:136
+ * @see app/Http/Controllers/Dashboard/ProductController.php:139
  * @route '/dashboard/products/{product}'
  */
         destroyForm.delete = (args: { product: string | { slug: string } } | [product: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

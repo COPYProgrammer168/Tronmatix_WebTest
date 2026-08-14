@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
- * @see routes/web.php:42
+ * @see routes/web.php:44
  * @route '/feedback'
  */
 export const submit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -14,7 +14,7 @@ submit.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
- * @see routes/web.php:42
+ * @see routes/web.php:44
  * @route '/feedback'
  */
 submit.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ submit.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:42
+ * @see routes/web.php:44
  * @route '/feedback'
  */
 submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -31,7 +31,7 @@ submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
     /**
- * @see routes/web.php:42
+ * @see routes/web.php:44
  * @route '/feedback'
  */
     const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -40,7 +40,7 @@ submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     })
 
             /**
- * @see routes/web.php:42
+ * @see routes/web.php:44
  * @route '/feedback'
  */
         submitForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -5,6 +5,7 @@ import Dashboard from './Dashboard'
 import AdminAuthController from './AdminAuthController'
 import DashboardController from './DashboardController'
 import StaffRequestController from './StaffRequestController'
+import DashboardChartController from './DashboardChartController'
 const Controllers = {
     AuthController: Object.assign(AuthController, AuthController),
 Api: Object.assign(Api, Api),
@@ -13,6 +14,7 @@ Dashboard: Object.assign(Dashboard, Dashboard),
 AdminAuthController: Object.assign(AdminAuthController, AdminAuthController),
 DashboardController: Object.assign(DashboardController, DashboardController),
 StaffRequestController: Object.assign(StaffRequestController, StaffRequestController),
+DashboardChartController: Object.assign(DashboardChartController, DashboardChartController),
 }
 
 export default Controllers

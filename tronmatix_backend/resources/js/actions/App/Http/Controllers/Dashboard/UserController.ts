@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\Dashboard\UserController::updateRole
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
 export const updateRole = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ updateRole.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\UserController::updateRole
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
 updateRole.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -127,7 +127,7 @@ updateRole.url = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\Dashboard\UserController::updateRole
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
 updateRole.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -137,7 +137,7 @@ updateRole.put = (args: { user: number | { id: number } } | [user: number | { id
 
     /**
 * @see \App\Http\Controllers\Dashboard\UserController::updateRole
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
     const updateRoleForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -152,7 +152,7 @@ updateRole.put = (args: { user: number | { id: number } } | [user: number | { id
 
             /**
 * @see \App\Http\Controllers\Dashboard\UserController::updateRole
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
         updateRoleForm.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

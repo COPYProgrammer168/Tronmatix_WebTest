@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::create
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:22
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:21
  * @route '/dashboard/delivery-providers/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::store
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:28
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:26
  * @route '/dashboard/delivery-providers'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::store
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:28
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:26
  * @route '/dashboard/delivery-providers'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::store
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:28
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:26
  * @route '/dashboard/delivery-providers'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::store
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:28
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:26
  * @route '/dashboard/delivery-providers'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::store
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:28
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:26
  * @route '/dashboard/delivery-providers'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
 export const edit = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
 edit.url = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -260,7 +260,7 @@ edit.url = (args: { deliveryProvider: number | { id: number } } | [deliveryProvi
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
 edit.get = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -269,7 +269,7 @@ edit.get = (args: { deliveryProvider: number | { id: number } } | [deliveryProvi
 })
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
 edit.head = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -279,7 +279,7 @@ edit.head = (args: { deliveryProvider: number | { id: number } } | [deliveryProv
 
     /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
     const editForm = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -289,7 +289,7 @@ edit.head = (args: { deliveryProvider: number | { id: number } } | [deliveryProv
 
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
         editForm.get = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -298,7 +298,7 @@ edit.head = (args: { deliveryProvider: number | { id: number } } | [deliveryProv
         })
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::edit
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:42
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:47
  * @route '/dashboard/delivery-providers/{deliveryProvider}/edit'
  */
         editForm.head = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -314,7 +314,7 @@ edit.head = (args: { deliveryProvider: number | { id: number } } | [deliveryProv
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::update
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:49
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:53
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
 export const update = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -329,7 +329,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::update
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:49
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:53
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
 update.url = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -362,7 +362,7 @@ update.url = (args: { deliveryProvider: number | { id: number } } | [deliveryPro
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::update
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:49
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:53
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
 update.put = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -372,7 +372,7 @@ update.put = (args: { deliveryProvider: number | { id: number } } | [deliveryPro
 
     /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::update
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:49
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:53
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
     const updateForm = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -387,7 +387,7 @@ update.put = (args: { deliveryProvider: number | { id: number } } | [deliveryPro
 
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::update
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:49
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:53
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
         updateForm.put = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -403,7 +403,7 @@ update.put = (args: { deliveryProvider: number | { id: number } } | [deliveryPro
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::toggleStatus
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:74
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:104
  * @route '/dashboard/delivery-providers/{deliveryProvider}/toggle'
  */
 export const toggleStatus = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -418,7 +418,7 @@ toggleStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::toggleStatus
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:74
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:104
  * @route '/dashboard/delivery-providers/{deliveryProvider}/toggle'
  */
 toggleStatus.url = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -451,7 +451,7 @@ toggleStatus.url = (args: { deliveryProvider: number | { id: number } } | [deliv
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::toggleStatus
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:74
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:104
  * @route '/dashboard/delivery-providers/{deliveryProvider}/toggle'
  */
 toggleStatus.patch = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -461,7 +461,7 @@ toggleStatus.patch = (args: { deliveryProvider: number | { id: number } } | [del
 
     /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::toggleStatus
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:74
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:104
  * @route '/dashboard/delivery-providers/{deliveryProvider}/toggle'
  */
     const toggleStatusForm = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -476,7 +476,7 @@ toggleStatus.patch = (args: { deliveryProvider: number | { id: number } } | [del
 
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::toggleStatus
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:74
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:104
  * @route '/dashboard/delivery-providers/{deliveryProvider}/toggle'
  */
         toggleStatusForm.patch = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -492,7 +492,7 @@ toggleStatus.patch = (args: { deliveryProvider: number | { id: number } } | [del
     toggleStatus.form = toggleStatusForm
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::destroy
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:80
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:110
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
 export const destroy = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -507,7 +507,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::destroy
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:80
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:110
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
 destroy.url = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -540,7 +540,7 @@ destroy.url = (args: { deliveryProvider: number | { id: number } } | [deliveryPr
 
 /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::destroy
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:80
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:110
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
 destroy.delete = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -550,7 +550,7 @@ destroy.delete = (args: { deliveryProvider: number | { id: number } } | [deliver
 
     /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::destroy
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:80
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:110
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
     const destroyForm = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -565,7 +565,7 @@ destroy.delete = (args: { deliveryProvider: number | { id: number } } | [deliver
 
             /**
 * @see \App\Http\Controllers\Dashboard\DeliveryProviderController::destroy
- * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:80
+ * @see app/Http/Controllers/Dashboard/DeliveryProviderController.php:110
  * @route '/dashboard/delivery-providers/{deliveryProvider}'
  */
         destroyForm.delete = (args: { deliveryProvider: number | { id: number } } | [deliveryProvider: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -9,18 +9,21 @@ import mainCategories from './main-categories'
 import subCategories from './sub-categories'
 import brands from './brands'
 import products237d17 from './products'
+import stock from './stock'
 import ordersB47e5f from './orders'
 import users48860f from './users'
 import discounts5ba67e from './discounts'
 import bannersEe4e07 from './banners'
 import videos3b3162 from './videos'
 import profile937a89 from './profile'
+import notifications1ce82a from './notifications'
 import settings69f00b from './settings'
 import deliveryProviders from './delivery-providers'
 import staffC58c8e from './staff'
 import admin from './admin'
 import staffRequests from './staff-requests'
 import telegram from './telegram'
+import charts from './charts'
 /**
 * @see \App\Http\Controllers\AdminAuthController::login
  * @see app/Http/Controllers/AdminAuthController.php:17
@@ -257,7 +260,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
 export const exportMethod = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,7 +275,7 @@ exportMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
 exportMethod.url = (options?: RouteQueryOptions) => {
@@ -281,7 +284,7 @@ exportMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
 exportMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -290,7 +293,7 @@ exportMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
 exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -300,7 +303,7 @@ exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
     const exportMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -310,7 +313,7 @@ exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
         exportMethodForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -319,7 +322,7 @@ exportMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::exportMethod
- * @see app/Http/Controllers/DashboardController.php:841
+ * @see app/Http/Controllers/DashboardController.php:1318
  * @route '/dashboard/export'
  */
         exportMethodForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -546,7 +549,7 @@ products.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     products.form = productsForm
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
 export const orders = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -561,7 +564,7 @@ orders.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
 orders.url = (options?: RouteQueryOptions) => {
@@ -570,7 +573,7 @@ orders.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
 orders.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -579,7 +582,7 @@ orders.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
 orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -589,7 +592,7 @@ orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
     const ordersForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -599,7 +602,7 @@ orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
         ordersForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -608,7 +611,7 @@ orders.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::orders
- * @see app/Http/Controllers/DashboardController.php:442
+ * @see app/Http/Controllers/DashboardController.php:742
  * @route '/dashboard/orders'
  */
         ordersForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -702,7 +705,7 @@ users.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     users.form = usersForm
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
 export const discounts = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -717,7 +720,7 @@ discounts.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
 discounts.url = (options?: RouteQueryOptions) => {
@@ -726,7 +729,7 @@ discounts.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
 discounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -735,7 +738,7 @@ discounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
 discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -745,7 +748,7 @@ discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
     const discountsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -755,7 +758,7 @@ discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
         discountsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -764,7 +767,7 @@ discounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::discounts
- * @see app/Http/Controllers/DashboardController.php:733
+ * @see app/Http/Controllers/DashboardController.php:1210
  * @route '/dashboard/discounts'
  */
         discountsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1404,7 +1407,7 @@ feedback.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     feedback.form = feedbackForm
 /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
 export const report = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1419,7 +1422,7 @@ report.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
 report.url = (options?: RouteQueryOptions) => {
@@ -1428,7 +1431,7 @@ report.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
 report.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1437,7 +1440,7 @@ report.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
 report.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1447,7 +1450,7 @@ report.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
     const reportForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1457,7 +1460,7 @@ report.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
         reportForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1466,7 +1469,7 @@ report.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::report
- * @see app/Http/Controllers/DashboardController.php:61
+ * @see app/Http/Controllers/DashboardController.php:73
  * @route '/dashboard/report'
  */
         reportForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1481,8 +1484,86 @@ report.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     report.form = reportForm
 /**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+export const revenue = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: revenue.url(options),
+    method: 'get',
+})
+
+revenue.definition = {
+    methods: ["get","head"],
+    url: '/dashboard/revenue',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+revenue.url = (options?: RouteQueryOptions) => {
+    return revenue.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+revenue.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: revenue.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+revenue.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: revenue.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+    const revenueForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: revenue.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+        revenueForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: revenue.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\DashboardController::revenue
+ * @see app/Http/Controllers/DashboardController.php:111
+ * @route '/dashboard/revenue'
+ */
+        revenueForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: revenue.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    revenue.form = revenueForm
+/**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1497,7 +1578,7 @@ stats.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
 stats.url = (options?: RouteQueryOptions) => {
@@ -1506,7 +1587,7 @@ stats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1515,7 +1596,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1525,7 +1606,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
     const statsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1535,7 +1616,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
         statsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1544,7 +1625,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DashboardController::stats
- * @see app/Http/Controllers/DashboardController.php:974
+ * @see app/Http/Controllers/DashboardController.php:1451
  * @route '/dashboard/stats'
  */
         statsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1572,13 +1653,14 @@ mainCategories: Object.assign(mainCategories, mainCategories),
 subCategories: Object.assign(subCategories, subCategories),
 brands: Object.assign(brands, brands),
 products: Object.assign(products, products237d17),
+stock: Object.assign(stock, stock),
 orders: Object.assign(orders, ordersB47e5f),
 users: Object.assign(users, users48860f),
 discounts: Object.assign(discounts, discounts5ba67e),
 banners: Object.assign(banners, bannersEe4e07),
 videos: Object.assign(videos, videos3b3162),
 profile: Object.assign(profile, profile937a89),
-notifications: Object.assign(notifications, notifications),
+notifications: Object.assign(notifications, notifications1ce82a),
 settings: Object.assign(settings, settings69f00b),
 deliveryProviders: Object.assign(deliveryProviders, deliveryProviders),
 activityLogs: Object.assign(activityLogs, activityLogs),
@@ -1588,7 +1670,9 @@ staffRequests: Object.assign(staffRequests, staffRequests),
 telegram: Object.assign(telegram, telegram),
 feedback: Object.assign(feedback, feedback),
 report: Object.assign(report, report),
+revenue: Object.assign(revenue, revenue),
 stats: Object.assign(stats, stats),
+charts: Object.assign(charts, charts),
 }
 
 export default dashboard

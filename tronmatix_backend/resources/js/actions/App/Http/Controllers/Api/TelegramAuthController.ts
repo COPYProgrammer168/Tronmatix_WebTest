@@ -55,8 +55,63 @@ handleCallback.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
     
     handleCallback.form = handleCallbackForm
 /**
+* @see \App\Http\Controllers\Api\TelegramAuthController::handleMiniApp
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:208
+ * @route '/api/auth/telegram/mini-app'
+ */
+export const handleMiniApp = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: handleMiniApp.url(options),
+    method: 'post',
+})
+
+handleMiniApp.definition = {
+    methods: ["post"],
+    url: '/api/auth/telegram/mini-app',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Api\TelegramAuthController::handleMiniApp
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:208
+ * @route '/api/auth/telegram/mini-app'
+ */
+handleMiniApp.url = (options?: RouteQueryOptions) => {
+    return handleMiniApp.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\TelegramAuthController::handleMiniApp
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:208
+ * @route '/api/auth/telegram/mini-app'
+ */
+handleMiniApp.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: handleMiniApp.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \App\Http\Controllers\Api\TelegramAuthController::handleMiniApp
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:208
+ * @route '/api/auth/telegram/mini-app'
+ */
+    const handleMiniAppForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: handleMiniApp.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\Api\TelegramAuthController::handleMiniApp
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:208
+ * @route '/api/auth/telegram/mini-app'
+ */
+        handleMiniAppForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: handleMiniApp.url(options),
+            method: 'post',
+        })
+    
+    handleMiniApp.form = handleMiniAppForm
+/**
 * @see \App\Http\Controllers\Api\TelegramAuthController::generateLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:228
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:376
  * @route '/api/auth/telegram-generate-token'
  */
 export const generateLoginToken = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -71,7 +126,7 @@ generateLoginToken.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::generateLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:228
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:376
  * @route '/api/auth/telegram-generate-token'
  */
 generateLoginToken.url = (options?: RouteQueryOptions) => {
@@ -80,7 +135,7 @@ generateLoginToken.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::generateLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:228
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:376
  * @route '/api/auth/telegram-generate-token'
  */
 generateLoginToken.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -90,7 +145,7 @@ generateLoginToken.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
     /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::generateLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:228
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:376
  * @route '/api/auth/telegram-generate-token'
  */
     const generateLoginTokenForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -100,7 +155,7 @@ generateLoginToken.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
             /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::generateLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:228
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:376
  * @route '/api/auth/telegram-generate-token'
  */
         generateLoginTokenForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -111,7 +166,7 @@ generateLoginToken.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
     generateLoginToken.form = generateLoginTokenForm
 /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
 export const checkLoginToken = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -126,7 +181,7 @@ checkLoginToken.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
 checkLoginToken.url = (options?: RouteQueryOptions) => {
@@ -135,7 +190,7 @@ checkLoginToken.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
 checkLoginToken.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -144,7 +199,7 @@ checkLoginToken.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
 checkLoginToken.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -154,7 +209,7 @@ checkLoginToken.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
     /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
     const checkLoginTokenForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -164,7 +219,7 @@ checkLoginToken.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
             /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
         checkLoginTokenForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -173,7 +228,7 @@ checkLoginToken.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
         })
             /**
 * @see \App\Http\Controllers\Api\TelegramAuthController::checkLoginToken
- * @see app/Http/Controllers/Api/TelegramAuthController.php:242
+ * @see app/Http/Controllers/Api/TelegramAuthController.php:390
  * @route '/api/auth/telegram-status'
  */
         checkLoginTokenForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -187,6 +242,6 @@ checkLoginToken.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
         })
     
     checkLoginToken.form = checkLoginTokenForm
-const TelegramAuthController = { handleCallback, generateLoginToken, checkLoginToken }
+const TelegramAuthController = { handleCallback, handleMiniApp, generateLoginToken, checkLoginToken }
 
 export default TelegramAuthController

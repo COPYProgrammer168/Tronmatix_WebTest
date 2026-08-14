@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::store
- * @see app/Http/Controllers/Dashboard/SettingsController.php:569
- * @route '/dashboard/settings/marquees'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:331
+ * @route '/dashboard/settings/roles'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -11,13 +11,13 @@ export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 store.definition = {
     methods: ["post"],
-    url: '/dashboard/settings/marquees',
+    url: '/dashboard/settings/roles',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::store
- * @see app/Http/Controllers/Dashboard/SettingsController.php:569
- * @route '/dashboard/settings/marquees'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:331
+ * @route '/dashboard/settings/roles'
  */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::store
- * @see app/Http/Controllers/Dashboard/SettingsController.php:569
- * @route '/dashboard/settings/marquees'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:331
+ * @route '/dashboard/settings/roles'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -35,8 +35,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::store
- * @see app/Http/Controllers/Dashboard/SettingsController.php:569
- * @route '/dashboard/settings/marquees'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:331
+ * @route '/dashboard/settings/roles'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(options),
@@ -45,8 +45,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::store
- * @see app/Http/Controllers/Dashboard/SettingsController.php:569
- * @route '/dashboard/settings/marquees'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:331
+ * @route '/dashboard/settings/roles'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(options),
@@ -56,8 +56,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::update
- * @see app/Http/Controllers/Dashboard/SettingsController.php:593
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:369
+ * @route '/dashboard/settings/roles/{id}'
  */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
@@ -66,13 +66,13 @@ export const update = (args: { id: string | number } | [id: string | number ] | 
 
 update.definition = {
     methods: ["put"],
-    url: '/dashboard/settings/marquees/{id}',
+    url: '/dashboard/settings/roles/{id}',
 } satisfies RouteDefinition<["put"]>
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::update
- * @see app/Http/Controllers/Dashboard/SettingsController.php:593
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:369
+ * @route '/dashboard/settings/roles/{id}'
  */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -99,8 +99,8 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::update
- * @see app/Http/Controllers/Dashboard/SettingsController.php:593
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:369
+ * @route '/dashboard/settings/roles/{id}'
  */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
@@ -109,8 +109,8 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::update
- * @see app/Http/Controllers/Dashboard/SettingsController.php:593
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:369
+ * @route '/dashboard/settings/roles/{id}'
  */
     const updateForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
@@ -124,8 +124,8 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::update
- * @see app/Http/Controllers/Dashboard/SettingsController.php:593
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:369
+ * @route '/dashboard/settings/roles/{id}'
  */
         updateForm.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
@@ -140,8 +140,8 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroy
- * @see app/Http/Controllers/Dashboard/SettingsController.php:619
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @route '/dashboard/settings/roles/{id}'
  */
 export const destroy = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
@@ -150,13 +150,13 @@ export const destroy = (args: { id: string | number } | [id: string | number ] |
 
 destroy.definition = {
     methods: ["delete"],
-    url: '/dashboard/settings/marquees/{id}',
+    url: '/dashboard/settings/roles/{id}',
 } satisfies RouteDefinition<["delete"]>
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroy
- * @see app/Http/Controllers/Dashboard/SettingsController.php:619
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @route '/dashboard/settings/roles/{id}'
  */
 destroy.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -183,8 +183,8 @@ destroy.url = (args: { id: string | number } | [id: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroy
- * @see app/Http/Controllers/Dashboard/SettingsController.php:619
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @route '/dashboard/settings/roles/{id}'
  */
 destroy.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
@@ -193,8 +193,8 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroy
- * @see app/Http/Controllers/Dashboard/SettingsController.php:619
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @route '/dashboard/settings/roles/{id}'
  */
     const destroyForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
@@ -208,8 +208,8 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::destroy
- * @see app/Http/Controllers/Dashboard/SettingsController.php:619
- * @route '/dashboard/settings/marquees/{id}'
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:417
+ * @route '/dashboard/settings/roles/{id}'
  */
         destroyForm.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
@@ -222,10 +222,10 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
         })
     
     destroy.form = destroyForm
-const marquees = {
+const roles = {
     store: Object.assign(store, store),
 update: Object.assign(update, update),
 destroy: Object.assign(destroy, destroy),
 }
 
-export default marquees
+export default roles

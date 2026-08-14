@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Dashboard\UserController::role
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
 export const role = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ role.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\UserController::role
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
 role.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ role.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\Dashboard\UserController::role
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
 role.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -59,7 +59,7 @@ role.put = (args: { user: number | { id: number } } | [user: number | { id: numb
 
     /**
 * @see \App\Http\Controllers\Dashboard\UserController::role
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
     const roleForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -74,7 +74,7 @@ role.put = (args: { user: number | { id: number } } | [user: number | { id: numb
 
             /**
 * @see \App\Http\Controllers\Dashboard\UserController::role
- * @see app/Http/Controllers/Dashboard/UserController.php:63
+ * @see app/Http/Controllers/Dashboard/UserController.php:75
  * @route '/dashboard/users/{user}/role'
  */
         roleForm.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

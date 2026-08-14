@@ -1338,11 +1338,6 @@
             background: rgba(249, 115, 22, 0.18);
         }
 
-        [data-theme="light"] .search-input {
-            background: #F8FAFC;
-            border-color: rgba(15, 23, 42, 0.12);
-            color: #0F172A;
-        }
 
         [data-theme="light"] .search-input::placeholder {
             color: rgba(15, 23, 42, 0.35);

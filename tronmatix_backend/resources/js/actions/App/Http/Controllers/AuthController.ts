@@ -111,7 +111,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     register.form = registerForm
 /**
 * @see \App\Http\Controllers\AuthController::forgotPassword
- * @see app/Http/Controllers/AuthController.php:300
+ * @see app/Http/Controllers/AuthController.php:303
  * @route '/api/auth/forgot-password'
  */
 export const forgotPassword = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -126,7 +126,7 @@ forgotPassword.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::forgotPassword
- * @see app/Http/Controllers/AuthController.php:300
+ * @see app/Http/Controllers/AuthController.php:303
  * @route '/api/auth/forgot-password'
  */
 forgotPassword.url = (options?: RouteQueryOptions) => {
@@ -135,7 +135,7 @@ forgotPassword.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::forgotPassword
- * @see app/Http/Controllers/AuthController.php:300
+ * @see app/Http/Controllers/AuthController.php:303
  * @route '/api/auth/forgot-password'
  */
 forgotPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -145,7 +145,7 @@ forgotPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 
     /**
 * @see \App\Http\Controllers\AuthController::forgotPassword
- * @see app/Http/Controllers/AuthController.php:300
+ * @see app/Http/Controllers/AuthController.php:303
  * @route '/api/auth/forgot-password'
  */
     const forgotPasswordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -155,7 +155,7 @@ forgotPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 
             /**
 * @see \App\Http\Controllers\AuthController::forgotPassword
- * @see app/Http/Controllers/AuthController.php:300
+ * @see app/Http/Controllers/AuthController.php:303
  * @route '/api/auth/forgot-password'
  */
         forgotPasswordForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -166,7 +166,7 @@ forgotPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
     forgotPassword.form = forgotPasswordForm
 /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:399
+ * @see app/Http/Controllers/AuthController.php:402
  * @route '/api/auth/reset-password'
  */
 export const resetPassword = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -181,7 +181,7 @@ resetPassword.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:399
+ * @see app/Http/Controllers/AuthController.php:402
  * @route '/api/auth/reset-password'
  */
 resetPassword.url = (options?: RouteQueryOptions) => {
@@ -190,7 +190,7 @@ resetPassword.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:399
+ * @see app/Http/Controllers/AuthController.php:402
  * @route '/api/auth/reset-password'
  */
 resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -200,7 +200,7 @@ resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
     /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:399
+ * @see app/Http/Controllers/AuthController.php:402
  * @route '/api/auth/reset-password'
  */
     const resetPasswordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -210,7 +210,7 @@ resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
             /**
 * @see \App\Http\Controllers\AuthController::resetPassword
- * @see app/Http/Controllers/AuthController.php:399
+ * @see app/Http/Controllers/AuthController.php:402
  * @route '/api/auth/reset-password'
  */
         resetPasswordForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -221,7 +221,7 @@ resetPassword.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
     resetPassword.form = resetPasswordForm
 /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:431
+ * @see app/Http/Controllers/AuthController.php:434
  * @route '/api/auth/reset-by-phone'
  */
 export const resetByPhone = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -236,7 +236,7 @@ resetByPhone.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:431
+ * @see app/Http/Controllers/AuthController.php:434
  * @route '/api/auth/reset-by-phone'
  */
 resetByPhone.url = (options?: RouteQueryOptions) => {
@@ -245,7 +245,7 @@ resetByPhone.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:431
+ * @see app/Http/Controllers/AuthController.php:434
  * @route '/api/auth/reset-by-phone'
  */
 resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -255,7 +255,7 @@ resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:431
+ * @see app/Http/Controllers/AuthController.php:434
  * @route '/api/auth/reset-by-phone'
  */
     const resetByPhoneForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -265,7 +265,7 @@ resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\AuthController::resetByPhone
- * @see app/Http/Controllers/AuthController.php:431
+ * @see app/Http/Controllers/AuthController.php:434
  * @route '/api/auth/reset-by-phone'
  */
         resetByPhoneForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -276,7 +276,7 @@ resetByPhone.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     resetByPhone.form = resetByPhoneForm
 /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:134
+ * @see app/Http/Controllers/AuthController.php:137
  * @route '/api/auth/logout'
  */
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -291,7 +291,7 @@ logout.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:134
+ * @see app/Http/Controllers/AuthController.php:137
  * @route '/api/auth/logout'
  */
 logout.url = (options?: RouteQueryOptions) => {
@@ -300,7 +300,7 @@ logout.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:134
+ * @see app/Http/Controllers/AuthController.php:137
  * @route '/api/auth/logout'
  */
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -310,7 +310,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:134
+ * @see app/Http/Controllers/AuthController.php:137
  * @route '/api/auth/logout'
  */
     const logoutForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -320,7 +320,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:134
+ * @see app/Http/Controllers/AuthController.php:137
  * @route '/api/auth/logout'
  */
         logoutForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -331,7 +331,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     logout.form = logoutForm
 /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
 export const me = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -346,7 +346,7 @@ me.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
 me.url = (options?: RouteQueryOptions) => {
@@ -355,7 +355,7 @@ me.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
 me.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -364,7 +364,7 @@ me.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
 me.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -374,7 +374,7 @@ me.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
     const meForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -384,7 +384,7 @@ me.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
         meForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -393,7 +393,7 @@ me.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\AuthController::me
- * @see app/Http/Controllers/AuthController.php:141
+ * @see app/Http/Controllers/AuthController.php:144
  * @route '/api/auth/me'
  */
         meForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -409,7 +409,7 @@ me.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     me.form = meForm
 /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
 export const portalMe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -424,7 +424,7 @@ portalMe.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
 portalMe.url = (options?: RouteQueryOptions) => {
@@ -433,7 +433,7 @@ portalMe.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
 portalMe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -442,7 +442,7 @@ portalMe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
 portalMe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -452,7 +452,7 @@ portalMe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
     const portalMeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -462,7 +462,7 @@ portalMe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
         portalMeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -471,7 +471,7 @@ portalMe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\AuthController::portalMe
- * @see app/Http/Controllers/AuthController.php:154
+ * @see app/Http/Controllers/AuthController.php:157
  * @route '/api/portal/me'
  */
         portalMeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

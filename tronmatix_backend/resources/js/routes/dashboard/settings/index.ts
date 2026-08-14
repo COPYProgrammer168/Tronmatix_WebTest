@@ -1,4 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import roles from './roles'
+import features from './features'
 import marquees7cf7b9 from './marquees'
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::update
@@ -67,7 +69,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::resetVip
- * @see app/Http/Controllers/Dashboard/SettingsController.php:318
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:516
  * @route '/dashboard/settings/reset-vip'
  */
 export const resetVip = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -82,7 +84,7 @@ resetVip.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::resetVip
- * @see app/Http/Controllers/Dashboard/SettingsController.php:318
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:516
  * @route '/dashboard/settings/reset-vip'
  */
 resetVip.url = (options?: RouteQueryOptions) => {
@@ -91,7 +93,7 @@ resetVip.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::resetVip
- * @see app/Http/Controllers/Dashboard/SettingsController.php:318
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:516
  * @route '/dashboard/settings/reset-vip'
  */
 resetVip.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -101,7 +103,7 @@ resetVip.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::resetVip
- * @see app/Http/Controllers/Dashboard/SettingsController.php:318
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:516
  * @route '/dashboard/settings/reset-vip'
  */
     const resetVipForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -111,7 +113,7 @@ resetVip.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::resetVip
- * @see app/Http/Controllers/Dashboard/SettingsController.php:318
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:516
  * @route '/dashboard/settings/reset-vip'
  */
         resetVipForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -200,7 +202,7 @@ reset.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     reset.form = resetForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::permissions
- * @see app/Http/Controllers/Dashboard/SettingsController.php:286
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:276
  * @route '/dashboard/settings/permissions'
  */
 export const permissions = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -215,7 +217,7 @@ permissions.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::permissions
- * @see app/Http/Controllers/Dashboard/SettingsController.php:286
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:276
  * @route '/dashboard/settings/permissions'
  */
 permissions.url = (options?: RouteQueryOptions) => {
@@ -224,7 +226,7 @@ permissions.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::permissions
- * @see app/Http/Controllers/Dashboard/SettingsController.php:286
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:276
  * @route '/dashboard/settings/permissions'
  */
 permissions.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -234,7 +236,7 @@ permissions.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::permissions
- * @see app/Http/Controllers/Dashboard/SettingsController.php:286
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:276
  * @route '/dashboard/settings/permissions'
  */
     const permissionsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -249,7 +251,7 @@ permissions.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::permissions
- * @see app/Http/Controllers/Dashboard/SettingsController.php:286
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:276
  * @route '/dashboard/settings/permissions'
  */
         permissionsForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -265,7 +267,7 @@ permissions.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     permissions.form = permissionsForm
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
 export const marquees = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -280,7 +282,7 @@ marquees.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
 marquees.url = (options?: RouteQueryOptions) => {
@@ -289,7 +291,7 @@ marquees.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
 marquees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -298,7 +300,7 @@ marquees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
 marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -308,7 +310,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
     const marqueesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -318,7 +320,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
         marqueesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -327,7 +329,7 @@ marquees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Dashboard\SettingsController::marquees
- * @see app/Http/Controllers/Dashboard/SettingsController.php:354
+ * @see app/Http/Controllers/Dashboard/SettingsController.php:552
  * @route '/dashboard/settings/marquees'
  */
         marqueesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -346,6 +348,8 @@ const settings = {
 resetVip: Object.assign(resetVip, resetVip),
 reset: Object.assign(reset, reset),
 permissions: Object.assign(permissions, permissions),
+roles: Object.assign(roles, roles),
+features: Object.assign(features, features),
 marquees: Object.assign(marquees, marquees7cf7b9),
 }
 
