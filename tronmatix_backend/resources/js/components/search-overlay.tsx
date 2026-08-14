@@ -50,6 +50,7 @@ export function useSearchOverlay() {
         setOpen(true);
         setQuery('');
         setData(null);
+        setLoading(false);
         document.body.style.overflow = 'hidden';
     }, []);
 
@@ -57,7 +58,15 @@ export function useSearchOverlay() {
         setOpen(false);
         setQuery('');
         setData(null);
+        setLoading(false);
         document.body.style.overflow = '';
+    }, []);
+
+    const reset = useCallback(() => {
+        setQuery('');
+        setData(null);
+        setLoading(false);
+        clearTimeout(debounceRef.current!);
     }, []);
 
     const onQueryChange = useCallback((val: string) => {
@@ -68,18 +77,6 @@ export function useSearchOverlay() {
         if (val.trim().length < 2) {
             setData(null);
             setLoading(false);
-            // fetch popular/recommended on empty
-            if (val.trim().length === 0) {
-                debounceRef.current = setTimeout(() => {
-                    fetch(API_BASE)
-                        .then((r) => r.json())
-                        .then((d: SearchResponse) => {
-                            setData(d);
-                            setLoading(false);
-                        })
-                        .catch(() => setLoading(false));
-                }, 100);
-            }
             return;
         }
 
@@ -106,7 +103,7 @@ export function useSearchOverlay() {
         return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
     }, []);
 
-    return { open, closeOverlay, openOverlay, query, onQueryChange, data, loading };
+    return { open, closeOverlay, openOverlay, reset, query, onQueryChange, data, loading };
 }
 
 export function SearchOverlay({
@@ -173,7 +170,7 @@ export function SearchOverlay({
                     />
                     {query && (
                         <button
-                            onClick={() => onQueryChange('')}
+                            onClick={reset}
                             className="text-xl text-muted-foreground hover:text-destructive transition-colors shrink-0"
                             aria-label="Clear search"
                         >

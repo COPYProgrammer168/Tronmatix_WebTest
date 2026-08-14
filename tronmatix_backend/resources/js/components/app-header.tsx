@@ -72,24 +72,19 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
-    const { openOverlay, closeOverlay, open, query, onQueryChange, data, loading } = useSearchOverlay();
+    const { openOverlay, closeOverlay, reset, open, query, onQueryChange, data, loading } = useSearchOverlay();
     const [scrolled, setScrolled] = useState(false);
     const headerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const root = headerRef.current?.closest('header') ?? headerRef.current?.parentElement;
-        if (!root) return;
-
         const onScroll = () => {
-            const y = root.scrollTop ?? window.scrollY;
-            setScrolled(y > 8);
+            setScrolled(window.scrollY > 8);
         };
 
-        const target = root === document.body ? window : root;
-        target.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
 
-        return () => target.removeEventListener('scroll', onScroll);
+        return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
     return (
@@ -216,9 +211,10 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 size="icon"
                                 className={cn(
                                     'group h-9 w-9 cursor-pointer',
-                                    'opacity-0 -translate-x-1 transition-all duration-200',
-                                    'lg:opacity-100 lg:translate-x-0',
-                                    scrolled ? 'lg:opacity-100 lg:translate-x-0' : 'lg:opacity-0 lg:-translate-x-1',
+                                    'transition-all duration-200',
+                                    'max-lg:opacity-100 max-lg:translate-x-0',
+                                    'lg:opacity-0 lg:-translate-x-1',
+                                    scrolled && 'lg:opacity-100 lg:translate-x-0',
                                 )}
                                 onClick={openOverlay}
                             >
@@ -264,8 +260,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     variant="ghost"
                                     className={cn(
                                         'size-10 rounded-full p-1 transition-opacity duration-200',
-                                        'max-lg:opacity-0 max-lg:duration-150',
-                                        scrolled ? 'max-lg:opacity-0' : 'max-lg:opacity-100',
+                                        'max-lg:duration-150',
+                                        'max-lg:opacity-100',
+                                        scrolled && 'max-lg:opacity-0',
                                     )}
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">

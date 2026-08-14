@@ -275,6 +275,8 @@ export default function Navbar({ onAuthOpen }) {
   const [hoveredNav, setHoveredNav] = useState(null)
   const [suggestionsOpen, setSuggestionsOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const mobileSearchRef = useRef(null)
   const { user, logout, ready } = useAuth()
   const { items, setCartOpen } = useCart()
   const { favorites } = useFavorites()
@@ -419,6 +421,24 @@ export default function Navbar({ onAuthOpen }) {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return
+    const onKey = (e) => { if (e.key === 'Escape') setMobileSearchOpen(false) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [mobileSearchOpen])
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return
+    const handler = (e) => {
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target)) {
+        setMobileSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler, true)
+    return () => document.removeEventListener('mousedown', handler, true)
+  }, [mobileSearchOpen])
 
   useEffect(() => {
     const handler = e => {
@@ -728,6 +748,23 @@ export default function Navbar({ onAuthOpen }) {
                 )}
               </IconBtn>
 
+              {/* Mobile search toggle */}
+              <button className="md:hidden p-2"
+                style={{ color: textColor, transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                onMouseLeave={e => e.currentTarget.style.color = textColor}
+                onClick={() => setMobileSearchOpen(p => !p)}>
+                {mobileSearchOpen ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </button>
+
               {/* Compact user menu */}
               <div className="relative" ref={compactUserMenuRef}>
                 <button className="flex items-center gap-1 px-1 py-2"
@@ -738,7 +775,7 @@ export default function Navbar({ onAuthOpen }) {
                   {user ? (
                     <>
                       <UserAvatar size={9} fontSize={15} />
-                      <span className="font-bold hidden lg:block truncate" style={{ fontSize: 17, color: '#F97316', display: 'inline-flex', alignItems: 'center', gap: 3, maxWidth: 200 }}>
+                      <span className="font-bold hidden lg:inline-flex truncate" style={{ fontSize: 17, color: '#F97316', alignItems: 'center', gap: 3, maxWidth: 200 }}>
                         {user.username || user.name}
                       </span>
                     </>
@@ -799,6 +836,38 @@ export default function Navbar({ onAuthOpen }) {
                 </svg>
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* ══════════ EXPANDABLE MOBILE SEARCH ══════════════════════════════════ */}
+        <div ref={mobileSearchRef}
+          style={{
+            display: mobileSearchOpen ? 'block' : 'none',
+            background: dark ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(12px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+            borderBottom: `1px solid ${navBorder}`,
+            boxShadow: '0 4px 30px rgba(0,0,0,0.08)',
+          }}>
+          <div className="w-full max-w-[1550px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-2" style={{ height: 56 }}>
+            <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2 min-w-0">
+              <div className="relative flex-1 min-w-0">
+                <input ref={mobileInputRef} value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder={t('nav.search')}
+                  autoFocus={mobileSearchOpen}
+                  className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none transition-colors"
+                  style={{ fontFamily: navFont, fontSize: 15, fontWeight: 700, background: inputBg, border: `1px solid ${inputBorder}`, color: textColor }}
+                />
+                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                  onMouseLeave={e => e.currentTarget.style.color = subTextColor}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+                <SearchSuggestions query={search} onClose={() => setSuggestionsOpen(false)} onClear={() => setSearch('')} inputRef={mobileInputRef} />
+              </div>
+            </form>
           </div>
         </div>
 
