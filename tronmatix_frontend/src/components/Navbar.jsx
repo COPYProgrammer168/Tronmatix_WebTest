@@ -850,6 +850,15 @@ export default function Navbar({ onAuthOpen }) {
             boxShadow: '0 4px 30px rgba(0,0,0,0.08)',
           }}>
           <div className="w-full max-w-[1550px] mx-auto px-4 lg:px-6 xl:px-8 flex items-center gap-2" style={{ height: 56 }}>
+            <button type="button"
+              onClick={() => setMobileSearchOpen(false)}
+              className="flex-shrink-0 p-1"
+              style={{ color: textColor }}
+              aria-label="Close search">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
             <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2 min-w-0">
               <div className="relative flex-1 min-w-0">
                 <input ref={mobileInputRef} value={search} onChange={e => setSearch(e.target.value)}
@@ -948,6 +957,22 @@ export default function Navbar({ onAuthOpen }) {
                     </span>
                   )}
                 </IconBtn>
+
+                <button className="xl:hidden p-2"
+                  style={{ color: textColor, transition: 'color 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#F97316'}
+                  onMouseLeave={e => e.currentTarget.style.color = textColor}
+                  onClick={() => setMobileSearchOpen(p => !p)}>
+                  {mobileSearchOpen ? (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  )}
+                </button>
 
                 <UserDropdown menuRef={userMenuRef} />
 
@@ -1124,29 +1149,6 @@ export default function Navbar({ onAuthOpen }) {
                 </div>
               </div>
             </div>
-
-            {/* Mobile search */}
-            <form onSubmit={handleSearch} className="px-4 py-3 flex-shrink-0" style={{
-              borderBottom: dark ? '1px solid rgba(249,115,22,0.15)' : '1px solid rgba(249,115,22,0.1)',
-              background: dark ? 'rgba(249,115,22,0.03)' : 'rgba(249,115,22,0.02)',
-            }}>
-              <div className="relative">
-                <input ref={mobileInputRef} value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder={t('nav.search')}
-                  className="w-full rounded-full px-5 py-2.5 pr-11 focus:outline-none"
-                  style={{
-                    fontFamily: navbFont, fontSize: 15, color: textColor,
-                    background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.04)',
-                    border: dark ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(249,115,22,0.2)',
-                  }} />
-                <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: subTextColor }}>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-                <SearchSuggestions query={search} onClose={() => setSuggestionsOpen(false)} onClear={() => setSearch('')} inputRef={mobileInputRef} />
-              </div>
-            </form>
 
             {/* Nav items */}
             <div className="flex-1 overflow-y-auto" style={{ overflowX: 'hidden' }}>
