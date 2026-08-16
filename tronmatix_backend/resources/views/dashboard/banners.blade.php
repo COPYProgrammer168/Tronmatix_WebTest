@@ -465,17 +465,14 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 // ── Product map (id → name) ───────────────────────────────────────────────────
-const _allProducts = [{
-        id: '',
-        name: '-- All products (sitewide) --'
-    },
-    @foreach ($products as $product)
-        {
-            id: '{{ $product->id }}',
-            name: '{{ addslashes($product->name) }}'
-        },
-    @endforeach
-]
+@php
+    $jsProducts = [];
+    $jsProducts[] = ['id' => '', 'name' => '-- All products (sitewide) --'];
+    foreach ($products as $product) {
+        $jsProducts[] = ['id' => (string) $product->id, 'name' => $product->name];
+    }
+@endphp
+const _allProducts = @json($jsProducts)
 
 function buildProductList(query) {
     const list = document.getElementById('productList')
@@ -489,18 +486,20 @@ function buildProductList(query) {
             '<div style="padding:12px 14px;color:rgba(255,255,255,0.3);font-size: var(--title-size);">No products found</div>'
         return
     }
-    list.innerHTML = filtered.map(p => `
-        <div onclick="selectProduct('${p.id}', '${p.name.replace(/'/g,"&#39;")}')"
-             style="padding:9px 14px; cursor:pointer; font-size: var(--title-size); color:${p.id === document.getElementById('fProductId').value ? '#F97316' : 'rgba(255,255,255,0.85)'}; font-weight:${p.id === document.getElementById('fProductId').value ? '700' : '400'};
-                    background:${p.id === document.getElementById('fProductId').value ? 'rgba(249,115,22,0.08)' : 'transparent'}; transition:background .15s;"
-             onmouseover="this.style.background='rgba(249,115,22,0.12)'"
-             onmouseout="this.style.background='${p.id === document.getElementById('fProductId').value ? 'rgba(249,115,22,0.08)' : 'transparent'}'">
-            ${p.name}
-        </div>
-    `).join('')
+    list.innerHTML = filtered.map(p => {
+        const selected = p.id === document.getElementById('fProductId').value
+        return `<div data-id="${p.id}" data-name="${p.name.replace(/"/g, '&quot;')}"
+                     class="product-dropdown-item"
+                     style="padding:9px 14px; cursor:pointer; font-size: var(--title-size); color:${selected ? '#F97316' : 'rgba(255,255,255,0.85)'}; font-weight:${selected ? '700' : '400'};
+                            background:${selected ? 'rgba(249,115,22,0.08)' : 'transparent'}; transition:background .15s;">
+                    ${p.name}
+                </div>`
+    }).join('')
 }
 
-function selectProduct(id, name) {
+function selectProduct(el) {
+    const id = el.getAttribute('data-id')
+    const name = el.getAttribute('data-name')
     document.getElementById('fProductId').value = id
     document.getElementById('productSearch').value = id ? name : ''
     hideProductDropdown()
@@ -508,7 +507,8 @@ function selectProduct(id, name) {
 
 function showProductDropdown() {
     buildProductList(document.getElementById('productSearch').value)
-    document.getElementById('productDropdown').style.display = 'block'
+    const dd = document.getElementById('productDropdown')
+    if (dd) dd.style.display = 'block'
 }
 
 function hideProductDropdown() {
@@ -520,6 +520,28 @@ function filterProducts(q) {
     buildProductList(q)
     showProductDropdown()
 }
+
+// Dropdown item hover + click via event delegation
+document.addEventListener('DOMContentLoaded', function () {
+    const dd = document.getElementById('productDropdown')
+    if (!dd) return
+    dd.addEventListener('click', function (e) {
+        const item = e.target.closest('.product-dropdown-item')
+        if (!item) return
+        selectProduct(item)
+    })
+    dd.addEventListener('mouseover', function (e) {
+        const item = e.target.closest('.product-dropdown-item')
+        if (!item) return
+        item.style.background = 'rgba(249,115,22,0.12)'
+    })
+    dd.addEventListener('mouseout', function (e) {
+        const item = e.target.closest('.product-dropdown-item')
+        if (!item) return
+        const selected = item.getAttribute('data-id') === document.getElementById('fProductId').value
+        item.style.background = selected ? 'rgba(249,115,22,0.08)' : 'transparent'
+    })
+})
 
 // ── Modal open / close ────────────────────────────────────────────────────────
 function openModal(id, title, subtitle, badge, bgColor, textColor, image, order, active, video, videoType, productId, productName, category) {
@@ -544,10 +566,14 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         // The color inputs are optional (currently hidden from the form), so
         // guard each — a missing element must not throw and block the image
         // preview code below.
-        document.getElementById('fBgColor')?.value       = bg
-        document.getElementById('fBgColorText')?.value   = bg
-        document.getElementById('fTextColor')?.value     = tc
-        document.getElementById('fTextColorText')?.value = tc
+        const bgInput    = document.getElementById('fBgColor')
+        const bgText     = document.getElementById('fBgColorText')
+        const textInput  = document.getElementById('fTextColor')
+        const textText   = document.getElementById('fTextColorText')
+        if (bgInput)    bgInput.value    = bg
+        if (bgText)     bgText.value     = bg
+        if (textInput)  textInput.value  = tc
+        if (textText)   textText.value   = tc
 
         // Image
         if (image) {
@@ -577,10 +603,14 @@ function openModal(id, title, subtitle, badge, bgColor, textColor, image, order,
         document.getElementById('productSearch').value      = ''
         document.getElementById('fCategory').value          = ''
         document.getElementById('fActive').checked         = true
-        document.getElementById('fBgColor')?.value          = '#111111'
-        document.getElementById('fBgColorText')?.value      = '#111111'
-        document.getElementById('fTextColor')?.value        = '#F97316'
-        document.getElementById('fTextColorText')?.value    = '#F97316'
+        const bgInput2   = document.getElementById('fBgColor')
+        const bgText2    = document.getElementById('fBgColorText')
+        const textInput2 = document.getElementById('fTextColor')
+        const textText2  = document.getElementById('fTextColorText')
+        if (bgInput2)   bgInput2.value   = '#111111'
+        if (bgText2)    bgText2.value    = '#111111'
+        if (textInput2) textInput2.value = '#F97316'
+        if (textText2)  textText2.value  = '#F97316'
         document.getElementById('currentImageWrap').style.display   = 'none'
         document.getElementById('newImagePreviewWrap').style.display = 'none'
         document.getElementById('newImagePreview').src               = ''

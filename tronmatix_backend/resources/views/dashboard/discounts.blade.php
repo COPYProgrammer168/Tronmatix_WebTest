@@ -372,7 +372,7 @@
                                 <td>
                                     <div style="display:flex; gap:6px; flex-wrap:nowrap;">
                                         <button
-                                            onclick="openBadgeModal({{ $d->id }}, {{ json_encode($d->badge_config) }}, '{{ $d->type }}', {{ $d->value }})"
+                                            onclick="openBadgeModal({{ $d->id }}, {{ @js($d->badge_config) }}, '{{ $d->type }}', {{ $d->value }})"
                                             style="padding:5px 10px; border-radius:7px; font-size: var(--title-size); font-weight:700; cursor:pointer; letter-spacing:1px;
                                        background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.3); color:#a78bfa;
                                        font-family:Rajdhani,sans-serif; white-space:nowrap;"
@@ -381,7 +381,7 @@
                                             BADGE
                                         </button>
                                         <button
-                                            onclick="openCouponModal({{ $d->id }}, '{{ addslashes($d->code) }}', '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ json_encode($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ $d->product_id ?? 'null' }}, '{{ addslashes($d->product->name ?? '') }}')"
+                                            onclick="openCouponModal({{ $d->id }}, {{ @js($d->code) }}, '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ @js($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ $d->product_id ?? 'null' }}, {{ @js($d->product->name ?? '') }})"
                                             style="padding:5px 10px; border-radius:7px; font-size: var(--title-size); font-weight:700; cursor:pointer; letter-spacing:1px;
                                        background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.3); color:#F97316;
                                        font-family:Rajdhani,sans-serif; white-space:nowrap;"
@@ -544,7 +544,7 @@
                             <div
                                 style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px; display:flex; gap:8px;">
                                 <button
-                                    onclick="openBadgeModal({{ $d->id }}, {{ json_encode($bc2) }}, '{{ $d->type }}', {{ $d->value }})"
+                                    onclick="openBadgeModal({{ $d->id }}, {{ @js($bc2) }}, '{{ $d->type }}', {{ $d->value }})"
                                     style="flex:1; padding:7px; border-radius:8px; cursor:pointer; font-size: var(--title-size); font-weight:700;
                            background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.3); color:#a78bfa; font-family:Rajdhani,sans-serif;"
                                     onmouseover="this.style.background='rgba(167,139,250,0.2)'"
@@ -552,7 +552,7 @@
                                     ✏ EDIT BADGE
                                 </button>
                                 <button
-                                    onclick="openCouponModal({{ $d->id }}, '{{ addslashes($d->code) }}', '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ json_encode($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ $d->product_id ?? 'null' }}, '{{ addslashes($d->product->name ?? '') }}')"
+                                    onclick="openCouponModal({{ $d->id }}, {{ @js($d->code) }}, '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ @js($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ $d->product_id ?? 'null' }}, {{ @js($d->product->name ?? '') }})"
                                     style="flex:1; padding:7px; border-radius:8px; cursor:pointer; font-size: var(--title-size); font-weight:700;
                            background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.25); color:#F97316; font-family:Rajdhani,sans-serif;"
                                     onmouseover="this.style.background='rgba(249,115,22,0.18)'"
