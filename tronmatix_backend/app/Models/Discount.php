@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Discount extends Model
@@ -37,9 +39,68 @@ class Discount extends Model
         return $this->hasMany(Order::class);
     }
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Multiple products this discount targets (pivot table discount_product).
+     * Legacy rows may instead carry a single product_id column — see product_ids.
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
+    // ── Product targeting ─────────────────────────────────────────────────────
+
+    /**
+     * Effective list of targeted product ids (int[]).
+     * Prefers the pivot; falls back to the legacy single product_id column so
+     * pre-pivot rows behave identically. Empty array = sitewide.
+     */
+    public function getProductIdsAttribute(): array
+    {
+        // Freshly synced rows may not have the relation loaded in memory yet —
+        // query the pivot directly in that case.
+        if (! $this->relationLoaded('products')) {
+            $ids = $this->products()->pluck('products.id');
+            if ($ids->isNotEmpty()) {
+                return $ids->map(fn ($id) => (int) $id)->all();
+            }
+        } elseif ($this->products->isNotEmpty()) {
+            return $this->products->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+
+        if ($this->product_id) {
+            return [(int) $this->product_id];
+        }
+
+        return [];
+    }
+
+    /**
+     * Whether this discount targets the given product id.
+     * Empty targeting = sitewide → applies to everything.
+     */
+    public function appliesToProduct(int $productId): bool
+    {
+        $ids = $this->product_ids;
+
+        return empty($ids) || in_array($productId, $ids, true);
+    }
+
+    /**
+     * Persist the multi-product targeting. The legacy product_id column is
+     * nulled on any authoritative save so the two sources never disagree.
+     */
+    public function syncProducts(array $ids): void
+    {
+        $normalized = array_values(array_unique(array_filter(array_map('intval', $ids))));
+
+        $this->products()->sync($normalized);
+        $this->forceFill(['product_id' => null])->saveQuietly();
     }
 
     // ── Scopes ────────────────────────────────────────────────────────────────

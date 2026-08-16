@@ -37,7 +37,7 @@
             /* nav items  */
             --text-xs: 14px;
             /* badges, faint labels          */
-            --text-sm: 16px;
+            --text-sm: 15px;
             /* table cells, secondary text   */
             --text-base: 17px;
             /* body, buttons      */
@@ -2162,7 +2162,8 @@
             <a href="{{ route('dashboard.brands.index') }}"
                 class="nav-item {{ request()->routeIs('dashboard.brands*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                    <path
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
                 </svg>
                 {{ strtoupper(__('dashboard.nav.brands')) }}
             </a>
@@ -2215,7 +2216,8 @@
             </a>
 
             <div class="nav-section-label">
-                {{ __('dashboard.common.catalog') == 'catalog' ? 'Users' : __('dashboard.nav.users') }}</div>
+                {{ __('dashboard.common.catalog') == 'catalog' ? 'Users' : __('dashboard.nav.users') }}
+            </div>
             <a href="{{ route('dashboard.users') }}"
                 class="nav-item {{ request()->routeIs('dashboard.users*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -3094,17 +3096,17 @@
     {{-- Staff Request Modal (superadmin only) --}}
     @if((Auth::guard('admin')->user() ?? Auth::guard('staff')->user())?->role === 'superadmin')
         <div id="staffReqModal" style="
-            display:none; opacity:0; transition:opacity .2s;
-            position:fixed; inset:0; z-index:99000;
-            background:var(--overlay); backdrop-filter:blur(4px);
-            align-items:center; justify-content:center; padding:20px;
-        " onclick="if(event.target===this)closeStaffReqModal()">
+                display:none; opacity:0; transition:opacity .2s;
+                position:fixed; inset:0; z-index:99000;
+                background:var(--overlay); backdrop-filter:blur(4px);
+                align-items:center; justify-content:center; padding:20px;
+            " onclick="if(event.target===this)closeStaffReqModal()">
             <div style="
-                background:var(--modal-bg); border:1px solid var(--border);
-                border-radius:20px; width:100%; max-width:460px;
-                box-shadow:0 30px 80px rgba(0,0,0,0.4);
-                overflow:hidden; font-family:Rajdhani,sans-serif;
-            ">
+                    background:var(--modal-bg); border:1px solid var(--border);
+                    border-radius:20px; width:100%; max-width:460px;
+                    box-shadow:0 30px 80px rgba(0,0,0,0.4);
+                    overflow:hidden; font-family:Rajdhani,sans-serif;
+                ">
                 <div style="height:3px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);"></div>
                 <div style="padding:28px 32px 32px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
@@ -3117,10 +3119,10 @@
                                 id="srm-name">—</div>
                         </div>
                         <button onclick="closeStaffReqModal()" style="
-                            width:36px;height:36px;border-radius:10px;border:1px solid var(--border-input);
-                            background:var(--hover-bg);color:var(--text-muted);
-                            font-size: var(--font-size);cursor:pointer;display:flex;align-items:center;justify-content:center;
-                        ">×</button>
+                                width:36px;height:36px;border-radius:10px;border:1px solid var(--border-input);
+                                background:var(--hover-bg);color:var(--text-muted);
+                                font-size: var(--font-size);cursor:pointer;display:flex;align-items:center;justify-content:center;
+                            ">×</button>
                     </div>
 
                     <div style="display:grid;gap:12px;margin-bottom:22px;">
@@ -3163,20 +3165,20 @@
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                         <button id="srm-reject" style="
-                            padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);
-                            background:rgba(239,68,68,0.08);color:#ef4444;
-                            font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
-                            letter-spacing:2px;cursor:pointer;transition:all .2s;
-                        " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
+                                padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);
+                                background:rgba(239,68,68,0.08);color:#ef4444;
+                                font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
+                                letter-spacing:2px;cursor:pointer;transition:all .2s;
+                            " onmouseover="this.style.background='rgba(239,68,68,0.18)'"
                             onmouseout="this.style.background='rgba(239,68,68,0.08)'">
                             ✕ {{ strtoupper(__('dashboard.btn.cancel')) }}
                         </button>
                         <button id="srm-accept" style="
-                            padding:13px;border-radius:12px;border:none;
-                            background:#22c55e;color:#fff;
-                            font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
-                            letter-spacing:2px;cursor:pointer;transition:all .2s;
-                        " onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">
+                                padding:13px;border-radius:12px;border:none;
+                                background:#22c55e;color:#fff;
+                                font-family:Rajdhani,sans-serif;font-size: var(--font-size);font-weight:700;
+                                letter-spacing:2px;cursor:pointer;transition:all .2s;
+                            " onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">
                             ✓ {{ strtoupper(__('dashboard.btn.confirm')) }}
                         </button>
                     </div>

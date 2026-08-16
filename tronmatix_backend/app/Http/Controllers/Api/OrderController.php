@@ -229,9 +229,34 @@ class OrderController extends Controller
                         );
                     }
 
+                    // Product/category-scoped discounts apply only to the subtotal
+                    // of matching items — mirrors the per-item calcDiscount() the
+                    // frontend uses for the UI total.
+                    $discountIds   = $discount->product_ids;   // falls back to legacy product_id
+                    $discountCats  = array_map('strtolower', $discount->categories ?? []);
+                    $eligibleSubtotal = collect($mergedItems)->sum(function ($item) use ($products, $discountIds, $discountCats) {
+                        $product = $products[$item['product_id']] ?? null;
+                        if (! $product) return 0;
+
+                        if (! empty($discountIds)) {
+                            return in_array((int) $item['product_id'], $discountIds, true)
+                                ? $product->price * $item['qty']
+                                : 0;
+                        }
+
+                        if (! empty($discountCats)) {
+                            $cat = strtolower((string) ($product->category ?? ''));
+                            return in_array($cat, $discountCats, true)
+                                ? $product->price * $item['qty']
+                                : 0;
+                        }
+
+                        return $product->price * $item['qty']; // sitewide
+                    });
+
                     $discountAmount = $discount->type === 'percentage'
-                        ? round($subtotal * ($discount->value / 100), 2)
-                        : min($discount->value, $subtotal);
+                        ? round($eligibleSubtotal * ($discount->value / 100), 2)
+                        : min($discount->value, $eligibleSubtotal);
 
                     $discountId = $discount->id;
 

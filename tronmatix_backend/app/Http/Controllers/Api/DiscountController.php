@@ -24,6 +24,9 @@ class DiscountController extends Controller
             'type'                => 'required|in:percentage,fixed',
             'value'               => 'required|numeric|min:0',
             'kind'                => 'nullable|in:code,badge',
+            'product_id'          => 'nullable|integer|exists:products,id',
+            'product_ids'         => 'nullable|array',
+            'product_ids.*'       => 'integer|exists:products,id',
             'min_order'           => 'nullable|numeric|min:0',
             'max_uses'            => 'nullable|integer|min:1',
             'expires_at'          => 'nullable|date',
@@ -38,10 +41,12 @@ class DiscountController extends Controller
             'badge_config.color'  => 'nullable|string|max:30',
         ]);
         $data['kind']         = $request->input('kind', 'code');
-        $data['product_id']   = $request->input('product_id') ?: null;
-        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+        $productIds           = array_map('intval', $request->input('product_ids', []));
+        $data['product_id']   = null; // normalized to pivot
+        $data['categories']   = !empty($productIds) ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
         $discount = Discount::create($data);
+        $discount->syncProducts($productIds);
 
         return response()->json(['success' => true, 'data' => $this->format($discount)], 201);
     }
@@ -53,6 +58,9 @@ class DiscountController extends Controller
             'type'                => 'required|in:percentage,fixed',
             'value'               => 'required|numeric|min:0',
             'kind'                => 'nullable|in:code,badge',
+            'product_id'          => 'nullable|integer|exists:products,id',
+            'product_ids'         => 'nullable|array',
+            'product_ids.*'       => 'integer|exists:products,id',
             'min_order'           => 'nullable|numeric|min:0',
             'max_uses'            => 'nullable|integer|min:1',
             'expires_at'          => 'nullable|date',
@@ -67,10 +75,12 @@ class DiscountController extends Controller
             'badge_config.color'  => 'nullable|string|max:30',
         ]);
         $data['kind']         = $request->input('kind', $discount->kind ?? 'code');
-        $data['product_id']   = $request->input('product_id') ?: null;
-        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+        $productIds           = array_map('intval', $request->input('product_ids', []));
+        $data['product_id']   = null; // normalized to pivot
+        $data['categories']   = !empty($productIds) ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
         $discount->update($data);
+        $discount->syncProducts($productIds);
 
         return response()->json(['success' => true, 'data' => $this->format($discount)]);
     }
@@ -109,7 +119,7 @@ class DiscountController extends Controller
     // Code-kind discounts are NOT returned here; they require manual entry.
     public function storefront()
     {
-        $discounts = Discount::where('is_active', true)
+        $discounts = Discount::with('products')->where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
@@ -121,6 +131,7 @@ class DiscountController extends Controller
                 'type'         => $d->type,
                 'value'        => $d->value,
                 'product_id'   => $d->product_id,
+                'product_ids'  => $d->product_ids,
                 'categories'   => $d->categories ?? [],
                 'badge_config' => $d->badge_config,
             ])
@@ -184,6 +195,8 @@ class DiscountController extends Controller
             'type'            => $discount->type,
             'value'           => $discount->value,
             'min_order'       => $discount->min_order,
+            'product_id'      => $discount->product_id,
+            'product_ids'     => $discount->product_ids,
             'categories'      => $discount->categories ?? [],
             'discount_amount' => $amount,
             'final_total'     => max(0, (float) $request->subtotal - $amount),
@@ -199,6 +212,7 @@ class DiscountController extends Controller
             'type'         => $d->type,
             'value'        => $d->value,
             'product_id'   => $d->product_id,
+            'product_ids'  => $d->product_ids,
             'min_order'    => $d->min_order,
             'max_uses'     => $d->max_uses,
             'used_count'   => $d->used_count,

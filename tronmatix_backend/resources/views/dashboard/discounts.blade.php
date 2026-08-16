@@ -278,13 +278,29 @@
                                 </td>
 
                                 {{-- PRODUCT --}}
-                                <td style="color:rgba(255,255,255,0.7); font-size: var(--title-size); font-weight:700;">
-                                    {{ $d->product->name ?? '—' }}
+                                <td>
+                                    @php $dProdIds = $d->product_ids; @endphp
+                                    @if (count($dProdIds) > 0)
+                                        <div style="display:flex; flex-wrap:wrap; gap:4px; max-width:220px;">
+                                            @foreach ($d->products->take(4) as $p)
+                                                <span class="badge badge-gray"
+                                                    style="font-size: var(--title-size);">{{ $p->name }}</span>
+                                            @endforeach
+                                            @if (count($dProdIds) > 4)
+                                                <span class="badge badge-orange"
+                                                    style="font-size: var(--title-size);">+{{ count($dProdIds) - 4 }} more</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span
+                                            style="color:rgba(255,255,255,0.35); font-size: var(--title-size); font-style:italic;">All
+                                            products</span>
+                                    @endif
                                 </td>
 
                                 {{-- CATEGORIES --}}
                                 <td>
-                                    @if ($d->product_id)
+                                    @if (count($dProdIds) > 0)
                                         <span
                                             style="color:rgba(255,255,255,0.25); font-size: var(--title-size); font-style:italic;">—</span>
                                     @elseif($d->categories && count($d->categories) > 0)
@@ -372,7 +388,7 @@
                                 <td>
                                     <div style="display:flex; gap:6px; flex-wrap:nowrap;">
                                         <button
-                                            onclick="openBadgeModal({{ $d->id }}, {{ @js($d->badge_config) }}, '{{ $d->type }}', {{ $d->value }})"
+                                            onclick="openBadgeModal({{ $d->id }}, {{ Illuminate\Support\Js::from($d->badge_config) }}, '{{ $d->type }}', {{ $d->value }})"
                                             style="padding:5px 10px; border-radius:7px; font-size: var(--title-size); font-weight:700; cursor:pointer; letter-spacing:1px;
                                        background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.3); color:#a78bfa;
                                        font-family:Rajdhani,sans-serif; white-space:nowrap;"
@@ -381,7 +397,7 @@
                                             BADGE
                                         </button>
                                         <button
-                                            onclick="openCouponModal({{ $d->id }}, {{ @js($d->code) }}, '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ @js($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ $d->product_id ?? 'null' }}, {{ @js($d->product->name ?? '') }})"
+                                            onclick="openCouponModal({{ $d->id }}, {{ Illuminate\Support\Js::from($d->code) }}, '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ Illuminate\Support\Js::from($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ Illuminate\Support\Js::from($d->product_ids) }})"
                                             style="padding:5px 10px; border-radius:7px; font-size: var(--title-size); font-weight:700; cursor:pointer; letter-spacing:1px;
                                        background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.3); color:#F97316;
                                        font-family:Rajdhani,sans-serif; white-space:nowrap;"
@@ -522,9 +538,16 @@
                                 <div
                                     style="font-size: var(--title-size); color:rgba(255,255,255,0.3); letter-spacing:1px; margin-bottom:5px;">
                                     APPLIES TO</div>
-                                @if ($d->product_id)
-                                    <div style="color:#F97316; font-size: var(--title-size); font-weight:700;">
-                                        {{ $d->product->name ?? 'Product ID: ' . $d->product_id }}
+                                @if (count($d->product_ids) > 0)
+                                    <div style="color:#F97316; font-size: var(--title-size); font-weight:700; display:flex; flex-wrap:wrap; gap:4px;">
+                                        @foreach ($d->products->take(2) as $p)
+                                            <span
+                                                style="background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3); color:#F97316; font-size: var(--title-size); font-weight:700; border-radius:20px; padding:2px 8px;">{{ $p->name }}</span>
+                                        @endforeach
+                                        @if (count($d->product_ids) > 2)
+                                            <span
+                                                style="background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3); color:#F97316; font-size: var(--title-size); font-weight:700; border-radius:20px; padding:2px 8px;">+{{ count($d->product_ids) - 2 }} more</span>
+                                        @endif
                                     </div>
                                 @elseif($d->categories && count($d->categories) > 0)
                                     <div style="display:flex; flex-wrap:wrap; gap:4px;">
@@ -544,7 +567,7 @@
                             <div
                                 style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px; display:flex; gap:8px;">
                                 <button
-                                    onclick="openBadgeModal({{ $d->id }}, {{ @js($bc2) }}, '{{ $d->type }}', {{ $d->value }})"
+                                    onclick="openBadgeModal({{ $d->id }}, {{ Illuminate\Support\Js::from($bc2) }}, '{{ $d->type }}', {{ $d->value }})"
                                     style="flex:1; padding:7px; border-radius:8px; cursor:pointer; font-size: var(--title-size); font-weight:700;
                            background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.3); color:#a78bfa; font-family:Rajdhani,sans-serif;"
                                     onmouseover="this.style.background='rgba(167,139,250,0.2)'"
@@ -552,7 +575,7 @@
                                     ✏ EDIT BADGE
                                 </button>
                                 <button
-                                    onclick="openCouponModal({{ $d->id }}, {{ @js($d->code) }}, '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ @js($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ $d->product_id ?? 'null' }}, {{ @js($d->product->name ?? '') }})"
+                                    onclick="openCouponModal({{ $d->id }}, {{ Illuminate\Support\Js::from($d->code) }}, '{{ $d->type }}', {{ $d->value }}, {{ $d->min_order ?? 0 }}, {{ $d->max_uses ?? 'null' }}, '{{ $d->expires_at ? $d->expires_at->format('Y-m-d') : '' }}', {{ $d->is_active ? 'true' : 'false' }}, {{ Illuminate\Support\Js::from($d->categories ?? []) }}, '{{ $d->kind ?? 'code' }}', {{ Illuminate\Support\Js::from($d->product_ids) }})"
                                     style="flex:1; padding:7px; border-radius:8px; cursor:pointer; font-size: var(--title-size); font-weight:700;
                            background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.25); color:#F97316; font-family:Rajdhani,sans-serif;"
                                     onmouseover="this.style.background='rgba(249,115,22,0.18)'"
@@ -642,28 +665,41 @@
                                 style="width:100%; box-sizing:border-box;">
                         </div>
                         <div class="modal-full">
-                            <label class="form-label">APPLY TO PRODUCT</label>
-                            <div style="position:relative;">
-                                <input type="text" id="productSearch" placeholder="🔍 Search product…"
-                                    autocomplete="off" oninput="filterProducts(this.value)"
-                                    onfocus="showProductDropdown()"
-                                    style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; padding:10px 14px; box-sizing:border-box; outline:none;"
-                                    onfocusin="this.style.borderColor='#F97316'"
-                                    onblur="setTimeout(hideProductDropdown,200); this.style.borderColor='rgba(255,255,255,0.15)'">
-                                {{-- hidden real select for form submit --}}
-                                <select name="product_id" id="fProduct" style="display:none;">
-                                    <option value="">-- All products (sitewide) --</option>
-                                    @foreach ($products as $product)
-                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
-                                    @endforeach
-                                </select>
-                                {{-- custom dropdown list --}}
-                                <div id="productDropdown"
-                                    style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:99999;
-                                    background:#1e1e1e; border:1px solid rgba(249,115,22,0.4); border-radius:10px;
-                                    max-height:220px; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.85);">
-                                    <div id="productList"></div>
+                            <label class="form-label">
+                                APPLY TO PRODUCTS
+                                <span
+                                    style="color:rgba(255,255,255,0.3); font-size: var(--title-size); font-weight:400;">(empty
+                                    = all products)</span>
+                            </label>
+                            <div id="prodHiddenInputs"></div>
+                            <div id="prodTags" onclick="toggleProdDropdown(event)"
+                                style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15);
+                                border-radius:8px; padding:6px 36px 6px 10px; cursor:pointer;
+                                display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+                                position:relative; transition:border-color .2s; box-sizing:border-box;">
+                                <span id="prodPlaceholder"
+                                    style="color:rgba(255,255,255,0.3); font-size: var(--title-size); user-select:none;">
+                                    Select products…
+                                </span>
+                                <svg style="position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none;"
+                                    width="14" height="14" fill="none" stroke="rgba(255,255,255,0.4)"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </div>
+                            <div id="prodDropdown"
+                                style="display:none; position:absolute; z-index:99999; min-width:280px;
+                                background:#1e1e1e; border:1px solid rgba(249,115,22,0.4); border-radius:10px;
+                                max-height:260px; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.85);">
+                                <div style="padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.08);">
+                                    <input type="text" id="productSearch" placeholder="🔍 Search product…"
+                                        autocomplete="off" oninput="buildProductList(this.value)"
+                                        onclick="event.stopPropagation()"
+                                        style="width:100%; background:#111; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; padding:8px 12px; box-sizing:border-box; outline:none;"
+                                        onfocusin="this.style.borderColor='#F97316'"
+                                        onfocusout="this.style.borderColor='rgba(255,255,255,0.15)'">
                                 </div>
+                                <div id="productList"></div>
                             </div>
                         </div>
                         <div class="modal-full">
@@ -989,43 +1025,23 @@
             }
 
             function toggleCat(cat, group) {
-                // If product selected, prevent cat selection
-                if (document.getElementById('fProduct').value) return;
+                // If products selected, prevent cat selection
+                if (selectedProducts.length > 0) return;
 
                 const idx = selectedCats.indexOf(cat)
                 if (idx === -1) selectedCats.push(cat);
                 else selectedCats.splice(idx, 1)
 
                 // If we have selected categories, clear the product selection
-                if (selectedCats.length > 0) {
-                    document.getElementById('fProduct').value = '';
-                    document.getElementById('fProductShadow').value = '';
+                if (selectedCats.length > 0 && selectedProducts.length > 0) {
+                    selectedProducts = []
+                    renderProdState()
                 }
 
                 renderCatState();
                 updateGroupCheckbox(group)
+                updateExclusivity()
             }
-
-            function updateProductSelect() {
-                const product = document.getElementById('fProduct').value;
-                const catTags = document.getElementById('catTags');
-                const ph = document.getElementById('catPlaceholder');
-
-                if (product) {
-                    selectedCats = [];
-                    renderCatState();
-                    catTags.style.pointerEvents = 'none';
-                    catTags.style.opacity = '0.5';
-                    ph.textContent = 'Category selection disabled (product discount applied)';
-                } else {
-                    catTags.style.pointerEvents = 'auto';
-                    catTags.style.opacity = '1';
-                    ph.textContent = 'Select categories…';
-                }
-            }
-
-            // Ensure it runs on change
-            document.getElementById('fProduct').addEventListener('change', updateProductSelect);
 
             function toggleGroup(group, checked) {
                 document.querySelectorAll(`[data-group="${group}"]`).forEach(chip => {
@@ -1121,6 +1137,20 @@
                 @endforeach
             ]
 
+            // ── Multi-product selection (mirrors the category chip picker) ──────
+            let selectedProducts = [] // array of product ids (strings from inputs)
+
+            function toggleProdDropdown(e) {
+                const dd = document.getElementById('prodDropdown')
+                if (!dd) return
+                const rect = document.getElementById('prodTags').getBoundingClientRect()
+                dd.style.top = (rect.bottom + 6) + 'px'
+                dd.style.left = rect.left + 'px'
+                dd.style.display = dd.style.display === 'block' ? 'none' : 'block'
+                buildProductList(document.getElementById('productSearch').value)
+                setTimeout(() => document.getElementById('productSearch').focus(), 50)
+            }
+
             function buildProductList(query) {
                 const list = document.getElementById('productList')
                 if (!list) return
@@ -1133,43 +1163,100 @@
                         '<div style="padding:12px 14px;color:rgba(255,255,255,0.3);font-size: var(--title-size);">No products found</div>'
                     return
                 }
-                list.innerHTML = filtered.map(p => `
-        <div onclick="selectProduct('${p.id}', '${p.name.replace(/'/g,"&#39;")}')"
-             style="padding:9px 14px; cursor:pointer; font-size: var(--title-size); color:${p.id === document.getElementById('fProduct').value ? '#F97316' : 'rgba(255,255,255,0.85)'}; font-weight:${p.id === document.getElementById('fProduct').value ? '700' : '400'};
-                    background:${p.id === document.getElementById('fProduct').value ? 'rgba(249,115,22,0.08)' : 'transparent'}; transition:background .15s;"
+                list.innerHTML = filtered.map(p => {
+                    const selected = selectedProducts.includes(String(p.id))
+                    return `
+        <div onclick="toggleProduct('${p.id}', '${p.name.replace(/'/g,"&#39;")}')"
+             style="padding:9px 14px; cursor:pointer; font-size: var(--title-size); color:${selected ? '#F97316' : 'rgba(255,255,255,0.85)'}; font-weight:${selected ? '700' : '400'};
+                    background:${selected ? 'rgba(249,115,22,0.08)' : 'transparent'}; transition:background .15s;"
              onmouseover="this.style.background='rgba(249,115,22,0.12)'"
-             onmouseout="this.style.background='${p.id === document.getElementById('fProduct').value ? 'rgba(249,115,22,0.08)' : 'transparent'}'">
-            ${p.name}
+             onmouseout="this.style.background='${selected ? 'rgba(249,115,22,0.08)' : 'transparent'}'">
+            ${selected ? '✅ ' : '⬜ '}${p.name}
         </div>
-    `).join('')
+    `
+                }).join('')
             }
 
-            function selectProduct(id, name) {
-                document.getElementById('fProduct').value = id
-                document.getElementById('fProductShadow').value = id
-                document.getElementById('productSearch').value = id ? name : ''
-                hideProductDropdown()
-                updateProductSelect()
-            }
-
-            function showProductDropdown() {
+            function toggleProduct(id, name) {
+                id = String(id)
+                const idx = selectedProducts.indexOf(id)
+                if (idx === -1) {
+                    // Adding a product → clear any selected categories (mutual exclusion)
+                    if (selectedProducts.length === 0 && selectedCats.length > 0) {
+                        selectedCats = []
+                        renderCatState()
+                        updateExclusivity()
+                    }
+                    selectedProducts.push(id)
+                } else {
+                    selectedProducts.splice(idx, 1)
+                }
+                renderProdState()
                 buildProductList(document.getElementById('productSearch').value)
-                document.getElementById('productDropdown').style.display = 'block'
             }
 
-            function hideProductDropdown() {
-                const dd = document.getElementById('productDropdown')
-                if (dd) dd.style.display = 'none'
+            function removeProduct(id) {
+                selectedProducts = selectedProducts.filter(p => p !== String(id))
+                renderProdState()
+                buildProductList(document.getElementById('productSearch').value)
             }
 
-            function filterProducts(q) {
-                buildProductList(q)
-                showProductDropdown()
-                // If user clears the box, also clear the product selection
-                if (!q.trim()) {
-                    document.getElementById('fProduct').value = ''
-                    document.getElementById('fProductShadow').value = ''
-                    updateProductSelect()
+            function renderProdState() {
+                const tagsEl = document.getElementById('prodTags'),
+                    ph = document.getElementById('prodPlaceholder')
+                if (!tagsEl) return
+                tagsEl.querySelectorAll('.selected-prod-tag').forEach(t => t.remove())
+                if (selectedProducts.length === 0) {
+                    ph.style.display = ''
+                } else {
+                    ph.style.display = 'none'
+                    selectedProducts.forEach(id => {
+                        const name = _productMap[id] || ('Product #' + id)
+                        const tag = document.createElement('span')
+                        tag.className = 'selected-prod-tag'
+                        tag.style.cssText =
+                            'background:#F97316;color:#fff;font-size: var(--title-size);font-weight:700;border-radius:20px;padding:2px 10px;display:inline-flex;align-items:center;gap:5px;letter-spacing:.5px;white-space:nowrap;'
+                        tag.innerHTML =
+                            `${name} <span onclick="removeProduct('${id}');event.stopPropagation()" style="cursor:pointer;opacity:.8;font-size: var(--title-size);line-height:1;">&times;</span>`
+                        tagsEl.insertBefore(tag, tagsEl.lastElementChild)
+                    })
+                }
+                const hd = document.getElementById('prodHiddenInputs')
+                if (hd) hd.innerHTML = selectedProducts.map(id =>
+                    `<input type="hidden" name="product_ids[]" value="${id}">`).join('')
+            }
+
+            function updateExclusivity() {
+                const prodTags = document.getElementById('prodTags'),
+                    catTags = document.getElementById('catTags')
+
+                if (selectedProducts.length > 0) {
+                    selectedCats = []
+                    renderCatState()
+                    if (catTags) {
+                        catTags.style.pointerEvents = 'none'
+                        catTags.style.opacity = '0.5'
+                        document.getElementById('catPlaceholder').textContent =
+                            'Category selection disabled (product discount applied)'
+                    }
+                } else if (selectedCats.length > 0) {
+                    if (prodTags) {
+                        prodTags.style.pointerEvents = 'none'
+                        prodTags.style.opacity = '0.5'
+                        document.getElementById('prodPlaceholder').textContent =
+                            'Product selection disabled (category discount applied)'
+                    }
+                } else {
+                    if (catTags) {
+                        catTags.style.pointerEvents = 'auto'
+                        catTags.style.opacity = '1'
+                        document.getElementById('catPlaceholder').textContent = 'Select categories…'
+                    }
+                    if (prodTags) {
+                        prodTags.style.pointerEvents = 'auto'
+                        prodTags.style.opacity = '1'
+                        document.getElementById('prodPlaceholder').textContent = 'Select products…'
+                    }
                 }
             }
 
@@ -1189,20 +1276,27 @@
                 const dd = document.getElementById('catDropdown'),
                     tags = document.getElementById('catTags')
                 if (dd && !dd.contains(e.target) && tags && !tags.contains(e.target)) dd.style.display = 'none'
+                const pdd = document.getElementById('prodDropdown'),
+                    ptags = document.getElementById('prodTags')
+                if (pdd && !pdd.contains(e.target) && ptags && !ptags.contains(e.target)) pdd.style.display = 'none'
             })
 
             // ── Coupon Modal ──────────────────────────────────────────────────────────────
             function syncProductId() {
-                document.getElementById('fProductShadow').value = document.getElementById('fProduct').value;
+                // Legacy shadow — first selected product id (or '' = sitewide)
+                document.getElementById('fProductShadow').value = selectedProducts[0] || '';
             }
 
-            function openCouponModal(id, code, type, value, minOrder, maxUses, expires, isActive, categories, kind, productId,
-                productName) {
+            function openCouponModal(id, code, type, value, minOrder, maxUses, expires, isActive, categories, kind,
+                productIds) {
                 // Always reset first so no stale values remain from a previous open
                 document.getElementById('couponForm').reset()
                 document.getElementById('fProductShadow').value = ''
                 document.getElementById('productSearch').value = ''
-                hideProductDropdown()
+                document.getElementById('prodDropdown').style.display = 'none'
+
+                selectedProducts = Array.isArray(productIds) ? productIds.map(String) : []
+                renderProdState()
 
                 selectedCats = categories && categories.length ? [...categories] : []
                 renderCatState()
@@ -1226,15 +1320,9 @@
                     document.getElementById('fMaxUses').value = maxUses !== null && maxUses !== undefined ? maxUses : ''
                     document.getElementById('fExpires').value = expires || ''
                     document.getElementById('fActive').checked = isActive
-                    document.getElementById('fProduct').value = productId ? productId.toString() : ''
-                    document.getElementById('fProductShadow').value = productId ? productId.toString() : ''
-                    // Show product name in search box
-                    if (productId && productName) {
-                        document.getElementById('productSearch').value = productName
-                    }
                     syncActiveVisual()
                     setKind(kind || 'code')
-                    updateProductSelect()
+                    updateExclusivity()
                 } else {
                     document.getElementById('couponModalTitle').textContent = 'ADD COUPON'
                     document.getElementById('couponForm').action = '{{ route('dashboard.discounts.store') }}'
@@ -1245,7 +1333,7 @@
                     selectedCats = [];
                     renderCatState()
                     setKind('code')
-                    updateProductSelect()
+                    updateExclusivity()
                 }
             }
 

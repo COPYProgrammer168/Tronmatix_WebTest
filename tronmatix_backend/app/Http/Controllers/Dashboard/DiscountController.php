@@ -19,6 +19,8 @@ class DiscountController extends Controller
             'value'               => 'required|numeric|min:0',
             'kind'                => 'nullable|in:code,badge',
             'product_id'          => 'nullable|exists:products,id',
+            'product_ids'         => 'nullable|array',
+            'product_ids.*'       => 'integer|exists:products,id',
             'min_order'           => 'nullable|numeric|min:0',
             'max_uses'            => 'nullable|integer|min:1',
             'expires_at'          => 'nullable|date',
@@ -41,13 +43,15 @@ class DiscountController extends Controller
 
         $data['kind']         = $request->input('kind', 'code');
         $data['is_active']    = $request->boolean('is_active', true);
-        $data['product_id']   = $request->input('product_id') ?: null;
-        
-        // Ensure exclusivity: if product_id is provided, ignore categories
-        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+        $productIds           = array_map('intval', $request->input('product_ids', []));
+        $data['product_id']   = null; // normalized to pivot
+
+        // Ensure exclusivity: if products selected, ignore categories
+        $data['categories']   = !empty($productIds) ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
 
         $discount = Discount::create($data);
+        $discount->syncProducts($productIds);
 
         \App\Services\ActivityLogger::log([
             'action'      => 'discount_created',
@@ -75,14 +79,16 @@ class DiscountController extends Controller
 
         $data['kind']         = $request->input('kind', $discount->kind ?? 'code');
         $data['is_active']    = $request->boolean('is_active', false);
-        $data['product_id']   = $request->input('product_id') ?: null;
-        
-        // Ensure exclusivity: if product_id is provided, ignore categories
-        $data['categories']   = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+        $productIds           = array_map('intval', $request->input('product_ids', []));
+        $data['product_id']   = null; // normalized to pivot
+
+        // Ensure exclusivity: if products selected, ignore categories
+        $data['categories']   = !empty($productIds) ? null : ($request->input('categories', []) ?: null);
         $data['badge_config'] = $request->input('badge_config') ?: null;
 
         $badgeBefore = $discount->badge_config;
         $discount->update($data);
+        $discount->syncProducts($productIds);
 
         \App\Services\ActivityLogger::log([
             'action'      => 'discount_updated',
@@ -185,6 +191,8 @@ class DiscountController extends Controller
             'code'         => $d->code,
             'type'         => $d->type,
             'value'        => $d->value,
+            'product_id'   => $d->product_id,
+            'product_ids'  => $d->product_ids,
             'min_order'    => $d->min_order,
             'max_uses'     => $d->max_uses,
             'used_count'   => $d->used_count,

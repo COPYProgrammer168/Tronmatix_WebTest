@@ -1209,7 +1209,7 @@ class DashboardController extends Controller
     // ── Discounts ─────────────────────────────────────────────────────────────
     public function discounts()
     {
-        $discounts = \App\Models\Discount::latest()->get();
+        $discounts = \App\Models\Discount::with('products')->latest()->get();
         $products  = \App\Models\Product::all();
 
         // Dynamic category groups for the "applies to categories" chip picker —
@@ -1229,6 +1229,8 @@ class DashboardController extends Controller
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date',
             'product_id' => 'nullable|exists:products,id',
+            'product_ids' => 'nullable|array',
+            'product_ids.*' => 'integer|exists:products,id',
             'categories' => 'nullable|array',
             'categories.*' => 'string|max:100',
             'kind' => 'nullable|in:code,badge', // Ensure kind is validated
@@ -1236,12 +1238,14 @@ class DashboardController extends Controller
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->has('is_active');
         $data['kind'] = $request->input('kind', 'code'); // Handle kind
-        $data['product_id'] = $request->input('product_id') ?: null;
+        $productIds = array_map('intval', $request->input('product_ids', []));
+        $data['product_id'] = null; // normalized to pivot
         $data['min_order'] = $request->input('min_order') ?: 0;
         $data['max_uses'] = $request->input('max_uses') ?: null;
-        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+        $data['categories'] = !empty($productIds) ? null : ($request->input('categories', []) ?: null);
 
-        \App\Models\Discount::create($data);
+        $discount = \App\Models\Discount::create($data);
+        $discount->syncProducts($productIds);
 
         return redirect()->route('dashboard.discounts')->with('success', 'Discount created.');
     }
@@ -1256,6 +1260,8 @@ class DashboardController extends Controller
             'max_uses' => 'nullable|integer|min:1',
             'expires_at' => 'nullable|date',
             'product_id' => 'nullable|exists:products,id',
+            'product_ids' => 'nullable|array',
+            'product_ids.*' => 'integer|exists:products,id',
             'categories' => 'nullable|array',
             'categories.*' => 'string|max:100',
             'kind' => 'nullable|in:code,badge', // Ensure kind is validated
@@ -1263,12 +1269,14 @@ class DashboardController extends Controller
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->has('is_active');
         $data['kind'] = $request->input('kind', $discount->kind ?? 'code'); // Handle kind
-        $data['product_id'] = $request->input('product_id') ?: null;
+        $productIds = array_map('intval', $request->input('product_ids', []));
+        $data['product_id'] = null; // normalized to pivot
         $data['min_order'] = $request->input('min_order') ?: 0;
         $data['max_uses'] = $request->input('max_uses') ?: null;
-        $data['categories'] = $data['product_id'] ? null : ($request->input('categories', []) ?: null);
+        $data['categories'] = !empty($productIds) ? null : ($request->input('categories', []) ?: null);
 
         $discount->update($data);
+        $discount->syncProducts($productIds);
 
         return redirect()->route('dashboard.discounts')->with('success', 'Discount updated.');
     }

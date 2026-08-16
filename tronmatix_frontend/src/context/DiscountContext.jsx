@@ -71,17 +71,17 @@ export function DiscountProvider({ children }) {
     // 1. User-applied code discount
     if (discount) {
       const cats = discount.categories
-      const productId = discount.product_id
-      
+      const productIds = discount.product_ids ?? (discount.product_id ? [discount.product_id] : [])
+
       let categoryMatch = false;
-      if (productId) {
-        categoryMatch = true; 
+      if (productIds.length > 0) {
+        categoryMatch = true;
       } else {
         categoryMatch = !cats || cats.length === 0
           || cats.map(c => c.toLowerCase()).includes((item.category || '').toLowerCase());
       }
-      
-      const productMatch = !productId || (productId == item.id)
+
+      const productMatch = productIds.length === 0 || productIds.some(id => id == item.id)
 
       if (categoryMatch && productMatch) result.push({ ...discount, source: 'code' })
     }
@@ -89,18 +89,18 @@ export function DiscountProvider({ children }) {
     // 2. Public badge discounts — auto-shown, no code required
     publicDiscounts.forEach(pd => {
       const cats = pd.categories
-      const productId = pd.product_id
-      
+      const productIds = pd.product_ids ?? (pd.product_id ? [pd.product_id] : [])
+
       let categoryMatch = false;
-      if (productId) {
+      if (productIds.length > 0) {
         categoryMatch = true;
       } else {
         categoryMatch = !cats || cats.length === 0
           || cats.map(c => c.toLowerCase()).includes((item.category || '').toLowerCase());
       }
-        
-      const productMatch = !productId || (productId == item.id)
-      
+
+      const productMatch = productIds.length === 0 || productIds.some(id => id == item.id)
+
       if (categoryMatch && productMatch) result.push({ ...pd, source: 'badge' })
     })
 
@@ -144,7 +144,8 @@ export function DiscountProvider({ children }) {
     // Fallback: legacy code-discount-only logic (no items provided)
     if (!discount) return 0
     
-    const isSitewide = !discount.product_id && (!discount.categories || discount.categories.length === 0);
+    const productIds = discount.product_ids ?? (discount.product_id ? [discount.product_id] : [])
+    const isSitewide = productIds.length === 0 && (!discount.categories || discount.categories.length === 0);
     if (!isSitewide) return 0;
 
     if (discount.type === 'percentage')

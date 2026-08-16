@@ -23,14 +23,14 @@
         {{-- ── Floating flash toasts (fixed-position, page-specific) ───────────────── --}}
         @if(session('success'))
             <div id="flash-success" style="
-                            position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
-                            background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff;
-                            border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
-                            font-size: var(--title-size); font-weight:700; letter-spacing:1px;
-                            box-shadow:0 8px 32px rgba(34,197,94,0.4);
-                            display:flex; align-items:center; gap:10px;
-                            animation:slideDown .35s cubic-bezier(0.34,1.56,0.64,1);
-                        ">
+                                        position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
+                                        background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff;
+                                        border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
+                                        font-size: var(--title-size); font-weight:700; letter-spacing:1px;
+                                        box-shadow:0 8px 32px rgba(34,197,94,0.4);
+                                        display:flex; align-items:center; gap:10px;
+                                        animation:slideDown .35s cubic-bezier(0.34,1.56,0.64,1);
+                                    ">
                 <span style="font-size: var(--title-size);">✅</span> {{ session('success') }}
             </div>
             <script>
@@ -43,14 +43,14 @@
 
         @if(session('error'))
             <div id="flash-error" style="
-                            position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
-                            background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
-                            border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
-                            font-size: var(--title-size); font-weight:700; letter-spacing:1px;
-                            box-shadow:0 8px 32px rgba(239,68,68,0.4);
-                            display:flex; align-items:center; gap:10px;
-                            animation:slideDown .35s cubic-bezier(0.34,1.56,0.64,1);
-                        ">
+                                        position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999;
+                                        background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
+                                        border-radius:14px; padding:14px 28px; font-family:Rajdhani,sans-serif;
+                                        font-size: var(--title-size); font-weight:700; letter-spacing:1px;
+                                        box-shadow:0 8px 32px rgba(239,68,68,0.4);
+                                        display:flex; align-items:center; gap:10px;
+                                        animation:slideDown .35s cubic-bezier(0.34,1.56,0.64,1);
+                                    ">
                 <span style="font-size: var(--title-size);">⚠️</span> {{ session('error') }}
             </div>
             <script>
@@ -95,23 +95,24 @@
                             @if(($order->fulfillment_type ?? 'delivery') === 'pickup')
                                 <span
                                     style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
-                                                    border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
-                                                    background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;">
+                                                                border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
+                                                                background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;">
                                     🏪 PICKUP
                                 </span>
                             @else
                                 <span
                                     style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
-                                                    border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
-                                                    background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">
+                                                                border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
+                                                                background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;">
                                     🚚 DELIVERY
                                 </span>
                             @endif
-                            <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
-                                        border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
-                                        background:{{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }};
-                                        border:1px solid {{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }};
-                                        color:{{ ($order->payment_status ?? 'pending') === 'paid' ? '#22c55e' : '#ef4444' }};">
+                            <span
+                                style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+                                                border-radius:20px;font-size: var(--title-size);font-weight:700;letter-spacing:1px;
+                                                background:{{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)' }};
+                                                border:1px solid {{ ($order->payment_status ?? 'pending') === 'paid' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }};
+                                                color:{{ ($order->payment_status ?? 'pending') === 'paid' ? '#22c55e' : '#ef4444' }};">
                                 {{ strtoupper($order->payment_status ?? 'pending') }}
                             </span>
                             <span class="badge badge-{{ $order->status }}" style="font-size: var(--title-size);">
@@ -198,7 +199,7 @@
                         {{-- Cancelled banner --}}
                         @if($order->status === 'cancelled')
                             <div style="text-align:center; padding:20px; border-radius:12px;
-                                            background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);">
+                                                        background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2);">
                                 <div style="font-size: var(--title-size); margin-bottom:6px;">❌</div>
                                 <div style="font-size: var(--title-size); font-weight:800; color:#ef4444; letter-spacing:2px;">ORDER
                                     CANCELLED</div>
@@ -213,15 +214,15 @@
                                                 style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:60px;">
                                                 {{-- Step circle --}}
                                                 <div class="timeline-circle" style="
-                                                                width:46px; height:46px; border-radius:50%;
-                                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
-                                                                background: {{ $i < $current ? $colors[$i] . '22' : ($i === $current ? $colors[$i] : 'var(--surface-3)') }};
-                                                                border: 2px solid {{ $i <= $current ? $colors[$i] : 'var(--border)' }};
-                                                                box-shadow: {{ $i === $current ? '0 0 20px ' . $colors[$i] . '55' : 'none' }};
-                                                                transition: all .5s ease;
-                                                                {{ $i === $current ? 'animation:stepPulse 2s ease-in-out infinite;' : '' }}
-                                                                position:relative; z-index:2;
-                                                            ">
+                                                                                width:46px; height:46px; border-radius:50%;
+                                                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
+                                                                                background: {{ $i < $current ? $colors[$i] . '22' : ($i === $current ? $colors[$i] : 'var(--surface-3)') }};
+                                                                                border: 2px solid {{ $i <= $current ? $colors[$i] : 'var(--border)' }};
+                                                                                box-shadow: {{ $i === $current ? '0 0 20px ' . $colors[$i] . '55' : 'none' }};
+                                                                                transition: all .5s ease;
+                                                                                {{ $i === $current ? 'animation:stepPulse 2s ease-in-out infinite;' : '' }}
+                                                                                position:relative; z-index:2;
+                                                                            ">
                                                     @if($i < $current)
                                                         <span style="color:{{ $colors[$i] }}; font-size: var(--title-size);">✓</span>
                                                     @else
@@ -229,12 +230,14 @@
                                                     @endif
                                                 </div>
                                                 {{-- Step label --}}
-                                                <div style="margin-top:8px; font-size: var(--title-size); text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
-                                                                color: {{ $i <= $current ? $colors[$i] : 'var(--text-xfaint)' }};">
+                                                <div
+                                                    style="margin-top:8px; font-size: var(--title-size); text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
+                                                                                color: {{ $i <= $current ? $colors[$i] : 'var(--text-xfaint)' }};">
                                                     {{ $labels[$i] }}
                                                     @if($i === $current)
-                                                        <div style="width:6px;height:6px;border-radius:50%;background:{{ $colors[$i] }};
-                                                                            margin:4px auto 0;animation:stepPulse 1.5s ease infinite;">
+                                                        <div
+                                                            style="width:6px;height:6px;border-radius:50%;background:{{ $colors[$i] }};
+                                                                                                margin:4px auto 0;animation:stepPulse 1.5s ease infinite;">
                                                         </div>
                                                     @endif
                                                 </div>
@@ -242,8 +245,8 @@
                                             {{-- Connector line --}}
                                             @if($i < count($steps) - 1)
                                                 <div style="height:2px; flex:1; margin:0 2px; border-radius:1px; margin-bottom:26px;
-                                                                    background: {{ $i < $current ? 'linear-gradient(90deg,' . $colors[$i] . ',' . $colors[$i + 1] . ')' : 'var(--border)' }};
-                                                                    transition: all .6s ease; min-width:10px;"></div>
+                                                                                        background: {{ $i < $current ? 'linear-gradient(90deg,' . $colors[$i] . ',' . $colors[$i + 1] . ')' : 'var(--border)' }};
+                                                                                        transition: all .6s ease; min-width:10px;"></div>
                                             @endif
                                         </div>
                                     @endforeach
@@ -452,12 +455,12 @@
                             @endif
                             {{-- ── Print Receipt Button ──────────────────────────────────────── --}}
                             <button onclick="window.print()" style="
-                                        width:100%; padding:13px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.12);
-                                        background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7);
-                                        font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
-                                        letter-spacing:2px; cursor:pointer; transition:all .2s;
-                                        display:flex; align-items:center; justify-content:center; gap:8px;
-                                    " onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
+                                                width:100%; padding:13px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.12);
+                                                background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7);
+                                                font-family:Rajdhani,sans-serif; font-size: var(--title-size); font-weight:700;
+                                                letter-spacing:2px; cursor:pointer; transition:all .2s;
+                                                display:flex; align-items:center; justify-content:center; gap:8px;
+                                            " onmouseover="this.style.borderColor='#F97316';this.style.color='#F97316'"
                                 onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.7)'">
                                 🖨️ PRINT RECEIPT
                             </button>
@@ -572,11 +575,11 @@
                                 {!! $nextAction['desc'] !!}
                             </div>
                             <button onclick="openPopup('confirm-delivery')" style="
-                                            background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
-                                            width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
-                                            letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
-                                            box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
-                                        " onmouseover="this.style.transform='scale(1.02)'"
+                                                        background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
+                                                        width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
+                                                        letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
+                                                        box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
+                                                    " onmouseover="this.style.transform='scale(1.02)'"
                                 onmouseout="this.style.transform='scale(1)'">
                                 {{ $nextAction['icon'] }} {{ $nextAction['label'] }}
                             </button>
@@ -633,17 +636,17 @@
                                 @foreach($statusMeta as $key => $meta)
                                     @php $isCurrentStatus = $order->status === $key; @endphp
                                     <button onclick="openStatusPopup('{{ $key }}')" @if($isCurrentStatus) disabled @endif style="
-                                                        display:flex; align-items:center; gap:7px;
-                                                        padding:10px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
-                                                        font-size: var(--text-base); font-weight:700; letter-spacing:1px;
-                                                        cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
-                                                        border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.22)' }};
-                                                        background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.05)' }};
-                                                        color: {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.85)' }};
-                                                        opacity:{{ $isCurrentStatus ? '1' : '.95' }};
-                                                        transition:all .15s;
-                                                        box-shadow: {{ $isCurrentStatus ? '0 0 10px ' . $meta['color'] . '44' : 'none' }};
-                                                    "
+                                                                        display:flex; align-items:center; gap:7px;
+                                                                        padding:10px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
+                                                                        font-size: var(--text-sm); font-weight:700; letter-spacing:1px;
+                                                                        cursor:{{ $isCurrentStatus ? 'default' : 'pointer' }};
+                                                                        border: 1.5px solid {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.22)' }};
+                                                                        background: {{ $isCurrentStatus ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.05)' }};
+                                                                        color: {{ $isCurrentStatus ? $meta['color'] : 'rgba(255,255,255,0.85)' }};
+                                                                        opacity:{{ $isCurrentStatus ? '1' : '.95' }};
+                                                                        transition:all .15s;
+                                                                        box-shadow: {{ $isCurrentStatus ? '0 0 10px ' . $meta['color'] . '44' : 'none' }};
+                                                                    "
                                         onmouseover="if(!this.disabled){ this.style.borderColor='{{ $meta['color'] }}'; this.style.color='{{ $meta['color'] }}'; this.style.background='rgba(255,255,255,0.10)'; }"
                                         onmouseout="if(!this.disabled){ this.style.borderColor='rgba(255,255,255,0.22)'; this.style.color='rgba(255,255,255,0.85)'; this.style.background='rgba(255,255,255,0.05)'; }">
                                         <span style="font-size: var(--text-base);">{{ $meta['icon'] }}</span>
@@ -651,7 +654,7 @@
                                         @if($isCurrentStatus)
                                             <span
                                                 style="margin-left:auto; width:7px; height:7px; border-radius:50%;
-                                                                        background:{{ $meta['color'] }}; box-shadow:0 0 6px {{ $meta['color'] }};"></span>
+                                                                                            background:{{ $meta['color'] }}; box-shadow:0 0 6px {{ $meta['color'] }};"></span>
                                         @endif
                                     </button>
                                 @endforeach
@@ -667,11 +670,11 @@
                             <form method="POST" action="{{ route('dashboard.orders.verify-payment', $order) }}">
                                 @csrf
                                 <button type="submit" style="
-                                                width: 100%; padding: 12px; border-radius: 10px; border: none;
-                                                background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
-                                                font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
-                                                align-items: center; justify-content: center; gap: 8px;
-                                            ">
+                                                            width: 100%; padding: 12px; border-radius: 10px; border: none;
+                                                            background: #22c55e; color: #fff; font-weight: 700; font-family: Rajdhani,sans-serif;
+                                                            font-size: var(--title-size); letter-spacing: 1px; cursor: pointer; display: flex;
+                                                            align-items: center; justify-content: center; gap: 8px;
+                                                        ">
                                     💳 VERIFY PAYMENT
                                 </button>
                             </form>
@@ -701,8 +704,8 @@
                                         @if($order->discount_code)
                                             <span
                                                 style="font-family:monospace; font-size: var(--title-size); background:rgba(74,222,128,0.1);
-                                                                    border:1px solid rgba(74,222,128,0.25); border-radius:4px; padding:1px 6px;
-                                                                    color:#4ade80; margin-left:4px; word-break: break-all;">{{ $order->discount_code }}</span>
+                                                                                    border:1px solid rgba(74,222,128,0.25); border-radius:4px; padding:1px 6px;
+                                                                                    color:#4ade80; margin-left:4px; word-break: break-all;">{{ $order->discount_code }}</span>
                                         @else
                                             <span
                                                 style="font-size: var(--title-size); color:rgba(74,222,128,0.6); margin-left:4px;">(auto)</span>
@@ -732,7 +735,7 @@
                             @endif
 
                             <div style="border-top:1px solid rgba(255,255,255,0.07); padding-top:12px;
-                                                display:flex; justify-content:space-between; font-weight:700;">
+                                                        display:flex; justify-content:space-between; font-weight:700;">
                                 <span style="flex-shrink: 0; margin-right: 10px;">TOTAL</span>
                                 <span
                                     style="word-break: break-all; text-align: right; color:#F97316; font-size: var(--title-size);">${{ number_format($order->total, 2) }}</span>
@@ -758,9 +761,9 @@
                                             ZONE</div>
                                         <span class="badge"
                                             style="
-                                                            background:{{ $order->province->deliveryZone->slug === 'phnom_penh' ? 'rgba(59,130,246,0.15)' : 'rgba(34,197,94,0.15)' }};
-                                                            border:1px solid {{ $order->province->deliveryZone->slug === 'phnom_penh' ? 'rgba(59,130,246,0.3)' : 'rgba(34,197,94,0.3)' }};
-                                                            color:{{ $order->province->deliveryZone->slug === 'phnom_penh' ? '#3b82f6' : '#22c55e' }};">
+                                                                            background:{{ $order->province->deliveryZone->slug === 'phnom_penh' ? 'rgba(59,130,246,0.15)' : 'rgba(34,197,94,0.15)' }};
+                                                                            border:1px solid {{ $order->province->deliveryZone->slug === 'phnom_penh' ? 'rgba(59,130,246,0.3)' : 'rgba(34,197,94,0.3)' }};
+                                                                            color:{{ $order->province->deliveryZone->slug === 'phnom_penh' ? '#3b82f6' : '#22c55e' }};">
                                             {{ $order->province->deliveryZone->name }}
                                         </span>
                                     </div>
@@ -907,12 +910,12 @@
                 <div class="popup-box" id="popup-confirm-delivery-box">
                     <div style="text-align:center; margin-bottom:20px;">
                         <div style="
-                                        width:80px; height:80px; border-radius:50%; margin:0 auto 12px;
-                                        background:{{ $nextAction['gradient'] }};
-                                        display:flex; align-items:center; justify-content:center;
-                                        font-size: var(--title-size); box-shadow:0 0 32px {{ $nextAction['shadow'] }};
-                                        animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
-                                    ">{{ $nextAction['icon'] }}</div>
+                                                    width:80px; height:80px; border-radius:50%; margin:0 auto 12px;
+                                                    background:{{ $nextAction['gradient'] }};
+                                                    display:flex; align-items:center; justify-content:center;
+                                                    font-size: var(--title-size); box-shadow:0 0 32px {{ $nextAction['shadow'] }};
+                                                    animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1);
+                                                ">{{ $nextAction['icon'] }}</div>
                         <div
                             style="font-size: var(--title-size); font-weight:900; color:{{ $nextAction['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
                             {!! $nextAction['title'] !!}
@@ -959,10 +962,10 @@
                                 @endphp
                                 <div style="display:flex; align-items:center; gap:4px;">
                                     <div style="padding:4px 10px; border-radius:20px; font-size: var(--title-size); font-weight:700; letter-spacing:0.5px;
-                                                        background: {{ $sTarget ? $sData['color'] . '22' : ($sDone || $sCurrent ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)') }};
-                                                        border: 1px solid {{ $sTarget ? $sData['color'] : ($sDone || $sCurrent ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)') }};
-                                                        color: {{ $sTarget ? $sData['color'] : ($sDone || $sCurrent ? '#22c55e' : 'rgba(255,255,255,0.25)') }};
-                                                        opacity: {{ $sFuture ? '0.45' : '1' }};">
+                                                                        background: {{ $sTarget ? $sData['color'] . '22' : ($sDone || $sCurrent ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)') }};
+                                                                        border: 1px solid {{ $sTarget ? $sData['color'] : ($sDone || $sCurrent ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)') }};
+                                                                        color: {{ $sTarget ? $sData['color'] : ($sDone || $sCurrent ? '#22c55e' : 'rgba(255,255,255,0.25)') }};
+                                                                        opacity: {{ $sFuture ? '0.45' : '1' }};">
                                         {{ ($sDone || $sCurrent) && !$sTarget ? '✓ ' : '' }}{{ $sData['label'] }}{{ $sTarget ? ' ◀' : '' }}
                                     </div>
                                     @if(!$loop->last)<span
@@ -1006,12 +1009,12 @@
                     <div class="popup-box" id="popup-status-{{ $key }}-box">
                         <div style="text-align:center; margin-bottom:20px;">
                             <div style="
-                                                width:72px; height:72px; border-radius:50%; margin:0 auto 14px;
-                                                background:{{ $meta['gradient'] }};
-                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
-                                                box-shadow:0 0 28px {{ $meta['color'] }}55;
-                                                animation:popIn .45s cubic-bezier(0.34,1.56,0.64,1);
-                                            ">{{ $meta['icon'] }}</div>
+                                                                width:72px; height:72px; border-radius:50%; margin:0 auto 14px;
+                                                                background:{{ $meta['gradient'] }};
+                                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
+                                                                box-shadow:0 0 28px {{ $meta['color'] }}55;
+                                                                animation:popIn .45s cubic-bezier(0.34,1.56,0.64,1);
+                                                            ">{{ $meta['icon'] }}</div>
                             <div
                                 style="font-size: var(--title-size); font-weight:900; color:{{ $meta['color'] }}; letter-spacing:2px; font-family:Rajdhani,sans-serif;">
                                 SET TO {{ $meta['label'] }}
