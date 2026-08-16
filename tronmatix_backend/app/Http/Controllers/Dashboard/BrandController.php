@@ -66,6 +66,11 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
+        if ($brand->products()->exists()) {
+            return redirect()->route('dashboard.brands.index')
+                ->with('error', 'Cannot delete this brand — ' . $brand->products()->count() . ' product(s) are still assigned to it.');
+        }
+
         $this->storage->delete($brand->image);
         $brand->delete();
 

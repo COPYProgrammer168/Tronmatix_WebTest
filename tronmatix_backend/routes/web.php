@@ -104,16 +104,21 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::patch('/categories/{category}/toggle', [CategoryController::class, 'toggle'])->name('categories.toggle');
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::post('/category-management/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
+        // Tree page posts DELETE via FormData _method — add a POST fallback
+        // (body _method is NOT honored for a route that doesn't match by verb).
+        Route::post('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy.post');
 
         Route::post('/main-categories', [MainCategoryController::class, 'store'])->name('main-categories.store');
         Route::put('/main-categories/{mainCategory}', [MainCategoryController::class, 'update'])->name('main-categories.update');
         Route::patch('/main-categories/{mainCategory}/toggle', [MainCategoryController::class, 'toggle'])->name('main-categories.toggle');
         Route::delete('/main-categories/{mainCategory}', [MainCategoryController::class, 'destroy'])->name('main-categories.destroy');
+        Route::post('/main-categories/{mainCategory}', [MainCategoryController::class, 'destroy'])->name('main-categories.destroy.post');
 
         Route::post('/sub-categories', [SubCategoryController::class, 'store'])->name('sub-categories.store');
         Route::put('/sub-categories/{subCategory}', [SubCategoryController::class, 'update'])->name('sub-categories.update');
         Route::patch('/sub-categories/{subCategory}/toggle', [SubCategoryController::class, 'toggle'])->name('sub-categories.toggle');
         Route::delete('/sub-categories/{subCategory}', [SubCategoryController::class, 'destroy'])->name('sub-categories.destroy');
+        Route::post('/sub-categories/{subCategory}', [SubCategoryController::class, 'destroy'])->name('sub-categories.destroy.post');
 
         Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
         Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
@@ -122,6 +127,7 @@ Route::prefix('dashboard')->name('dashboard.')
         Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
         Route::patch('/brands/{brand}/toggle', [BrandController::class, 'toggle'])->name('brands.toggle');
         Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+        Route::post('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy.post');
 
         // ── Products ──────────────────────────────────────────────────────────
         Route::get('/products', [ProductController::class, 'index'])->name('products');

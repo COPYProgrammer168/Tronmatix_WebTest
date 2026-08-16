@@ -38,7 +38,7 @@
         };
     @endphp
 
-    <div class="cm-tree-node" data-id="{{ $id }}" data-type="{{ $typeLabel }}" data-parent-id="{{ $parentId }}">
+    <div class="cm-tree-node" data-id="{{ $id }}" data-type="{{ $typeLabel }}" data-parent-id="{{ $parentId }}" data-level="{{ $level }}">
         {{-- Tree row --}}
         <div class="cm-tree-row" data-id="{{ $id }}" data-type="{{ $typeLabel }}">
             {{-- Drag handle --}}

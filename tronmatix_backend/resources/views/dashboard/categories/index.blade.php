@@ -724,6 +724,8 @@
         .then(json => {
             closeModal('delete');
             // data-id / data-type live on the .cm-tree-node, so query that directly.
+            // Hide the whole node (incl. .cm-children) so a parent's children
+            // aren't left orphaned after deleting their parent.
             const node = document.querySelector('.cm-tree-node[data-id="' + id + '"][data-type="' + type + '"]');
             if (node) node.remove();
             showToast(t('deleted'));

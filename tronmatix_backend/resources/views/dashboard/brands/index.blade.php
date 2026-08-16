@@ -32,6 +32,13 @@
 </div>
 @endif
 
+@if(session('error'))
+<div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); color:#ef4444;
+     border-radius:10px; padding:12px 16px; margin-bottom:16px; font-weight:700; font-size: var(--text-sm);">
+    ⚠ {{ session('error') }}
+</div>
+@endif
+
 {{-- Logo grid --}}
 <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px;">
     @forelse($brands as $brand)
@@ -82,6 +89,7 @@
                           color:var(--text-muted); font-size:13px;"
                    title="Edit">✏️</a>
                 <form method="POST" action="{{ route('dashboard.brands.destroy', $brand) }}"
+                      onclick="event.stopPropagation()"
                       onsubmit="event.stopPropagation(); return confirm('Delete &quot;{{ $brand->name }}&quot;?')"
                       style="display:inline;">
                     @csrf @method('DELETE')

@@ -742,6 +742,8 @@
             const row = document.querySelector('.cm-tree-row[data-id="' + id + '"][data-type="' + type + '"]');
             if (row) {
                 const node = row.closest('.cm-tree-node');
+                // Hide the whole node (incl. its .cm-children) so a parent's
+                // children aren't left orphaned after deleting their parent.
                 if (node) node.remove();
             }
             showToast('Deleted');
