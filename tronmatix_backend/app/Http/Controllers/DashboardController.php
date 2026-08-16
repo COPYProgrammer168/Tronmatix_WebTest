@@ -904,9 +904,11 @@ class DashboardController extends Controller
 
         // ── Stock management: cancelling an order puts its stock back via the
         //    ledger. Reverses each not-yet-reversed movement referencing the order.
+        $restoredLines = 0;
+        $refundRecorded = false;
         if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
             try {
-                app(\App\Services\OrderStockService::class)->restoreOrderStock($order);
+                $restoredLines = app(\App\Services\OrderStockService::class)->restoreOrderStock($order);
             } catch (\Throwable $e) {
                 Log::warning('[Stock] Restore on cancel failed: ' . $e->getMessage());
             }
@@ -915,12 +917,17 @@ class DashboardController extends Controller
             //    order record is consistent. For Bakong/card the actual
             //    money transfer must still be done manually in the Bakong
             //    portal — this records the intent and unblocks accounting.
+            //
+            // NOTE: payments.order_id is a bigint FK to orders.id, NOT the
+            //    TRX-… public id — query through the relationship only. The old
+            //    Payment::where('order_id', $order->order_id) hit a Postgres
+            //    "invalid input syntax for type bigint" and silently skipped
+            //    the refund record on every cancel.
             $pm = strtolower($order->payment_method ?? 'cash');
             if (in_array($pm, ['bakong', 'card'], true) && $order->payment_status === 'paid') {
                 try {
-                    $payment = \App\Models\Payment::where('order_id', $order->order_id)
+                    $payment = $order->payments()
                         ->whereIn('status', ['paid', 'manual_pending'])
-                        ->latest()
                         ->first();
 
                     if ($payment && ! $payment->isRefunded()) {
@@ -936,6 +943,9 @@ class DashboardController extends Controller
                             ]),
                         ]);
                         $order->update(['payment_status' => 'refunded']);
+                        $refundRecorded = true;
+                    } elseif ($payment && $payment->isRefunded()) {
+                        $refundRecorded = true; // already refunded on an earlier cancel
                     }
                 } catch (\Throwable $e) {
                     Log::warning('[Refund] Auto-refund record failed: ' . $e->getMessage());
@@ -963,7 +973,6 @@ class DashboardController extends Controller
         if ($newStatus === 'cancelled') {
             $pm = strtolower($order->payment_method ?? 'cash');
             if ($pm === 'bakong' || $pm === 'card') {
-                $refundRecorded = $order->payment_status === 'refunded';
                 $adminAlert .= "\n" . ($refundRecorded ? "✅" : "⚠️") . " *PAYMENT REFUND*\n";
                 $adminAlert .= "Paid via {$pm} — \${$order->total}";
                 if ($refundRecorded) {
@@ -972,7 +981,19 @@ class DashboardController extends Controller
                     $adminAlert .= "\nPlease process refund manually and update payment record.";
                 }
             } else {
+                $adminAlert .= "\n💰 Amount: \${$order->total}";
                 $adminAlert .= "\nℹ️ COD cancel — no payment to refund.";
+            }
+            $adminAlert .= "\nAmount stays in records for accounting.";
+            $adminAlert .= $restoredLines > 0
+                ? "\n📦 Stock restored: {$restoredLines} product line(s)."
+                : "\n📦 No stock movements to restore.";
+            if ($restoredLines > 0 && $order->items->isNotEmpty()) {
+                $restoredNames = $order->items->take(6)->map(fn ($i) => "{$i->name} ×{$i->qty}")->join(' · ');
+                if ($order->items->count() > 6) {
+                    $restoredNames .= ' …';
+                }
+                $adminAlert .= "\n`" . $restoredNames . '`';
             }
         }
 

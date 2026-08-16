@@ -65,7 +65,7 @@ export default function OrderReceipt({ order }) {
       <div class="subtitle">ORDER RECEIPT</div>
       <div class="info-row"><span>Order ID</span><span style="color:#F97316;font-family:monospace">#${order.order_id || order.id}</span></div>
       <div class="info-row"><span>Fulfillment</span><span>${isPickup ? '<span class="pickup-badge">🏪 STORE PICKUP</span>' : '🚚 Delivery'}</span></div>
-      ${!isPickup && order.delivery_provider_details?.name ? `<div class="info-row"><span>Delivery by</span><span>🚚 ${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ' · ' + order.delivery_provider_details.estimated_time : ''}</span></div>` : ""}
+      ${!isPickup && order.delivery_provider_details?.name ? `<div class="info-row"><span>Delivery by</span><span>🚚 ${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ' · ' + order.delivery_provider_details.estimated_time : ''}${Number(order.delivery) > 0 ? ' · $' + Number(order.delivery).toFixed(2) : (Number(order.delivery) === 0 ? ' · Fee varies' : '')}</span></div>` : ""}
       <div class="info-row"><span>Date</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span></div>
       <div class="info-row"><span>Customer</span><span>${order.location?.name || "—"}</span></div>
       <div class="info-row"><span>Phone</span><span>${order.location?.phone || "—"}</span></div>
@@ -162,7 +162,7 @@ export default function OrderReceipt({ order }) {
               `${order.delivery_date}${order.delivery_time_slot ? " · " + order.delivery_time_slot : ""}`]] : []),
             ...(!isPickup && order.delivery_provider_details?.name
               ? [["Delivery",
-                  `${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ` · ${order.delivery_provider_details.estimated_time}` : ""}`]]
+                  `${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ` · ${order.delivery_provider_details.estimated_time}` : ""}${Number(order.delivery) > 0 ? ` · $${Number(order.delivery).toFixed(2)}` : (Number(order.delivery) === 0 ? " · Fee varies" : "")}`]]
               : []),
             ...(order.location?.note ? [["Note", order.location.note]] : []),
           ].map(([k, v]) => (
@@ -247,14 +247,20 @@ export default function OrderReceipt({ order }) {
                 <span>🏷 {discLabel}</span><span>−${snapDiscount.toFixed(2)}</span>
               </div>
             )}
-            {!isPickup && (Number(order.delivery) > 0) && (
+            {!isPickup && order.delivery_provider_details?.name && Number(order.delivery) > 0 && (
               <div className="flex justify-between text-gray-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
-                <span>Delivery</span><span>${Number(order.delivery).toFixed(2)}</span>
+                <span>Delivery · {order.delivery_provider_details.name}</span>
+                <span>${Number(order.delivery).toFixed(2)}</span>
               </div>
             )}
             {!isPickup && order.delivery_provider_details?.name && Number(order.delivery) === 0 && (
               <div className="flex justify-between text-gray-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
-                <span>Delivery</span><span style={{ color: "#d97706" }}>Fee varies</span>
+                <span>Delivery · {order.delivery_provider_details.name}</span><span style={{ color: "#d97706" }}>Fee varies</span>
+              </div>
+            )}
+            {!isPickup && !order.delivery_provider_details?.name && (Number(order.delivery) > 0) && (
+              <div className="flex justify-between text-gray-500" style={{ fontSize: isKhmer ? 13 : 14 }}>
+                <span>Delivery</span><span>${Number(order.delivery).toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between font-black text-primary" style={{ fontSize: 18, borderTop: "1px solid #f0f0f0", paddingTop: 8 }}>

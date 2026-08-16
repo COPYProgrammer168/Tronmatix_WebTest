@@ -1046,8 +1046,14 @@
                         @if($key === 'cancelled')
                             <div
                                 style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:11px 14px; margin-bottom:16px; font-size: var(--title-size); color:rgba(255,255,255,0.5); display:flex; gap:8px;">
-                                <span>⚠️</span> <span>Cancellation cannot be undone. Product stock will be fully restored. Order amount
-                                    stays in records for accounting.</span>
+                                <span>⚠️</span> <span>Cancellation cannot be undone. Product stock is <strong>automatically restored</strong>.
+                                    @if(in_array(strtolower($order->payment_method ?? 'cash'), ['bakong', 'card'], true) && $order->payment_status === 'paid')
+                                        The payment is marked <strong>refunded</strong> in records — complete the money transfer manually in the Bakong portal.
+                                    @else
+                                        No paid payment to refund.
+                                    @endif
+                                    Amount stays in records for accounting.
+                                </span>
                             </div>
                         @endif
 
@@ -1089,16 +1095,6 @@
             </div>
             <div class="tr-row"><span>Payment</span><span>{{ strtoupper($order->payment_method) }}</span></div>
             <div class="tr-row"><span>Type</span><span>{{ $order->isPickup() ? '🏪 PICKUP' : '🚚 DELIVERY' }}</span></div>
-            <div style="font-weight:700;">{{ $item->name }}</div>
-            @if($item->warranty_start && $item->warranty_end)
-                <div style="font-size: var(--title-size); color:#444;">
-                    Warranty: {{ $item->warranty_start->format('d M Y') }} - {{ $item->warranty_end->format('d M Y') }}
-                </div>
-            @elseif($item->warranty_start)
-                <div style="font-size: var(--title-size); color:#444;">
-                    Warranty from: {{ $item->warranty_start->format('d M Y') }}
-                </div>
-            @endif
             <div class="tr-divider"></div>
 
             <div class="tr-bold" style="margin-bottom:6px; font-size: var(--title-size); letter-spacing:1px;">ITEMS</div>
@@ -1132,16 +1128,22 @@
             @endif
             @php
                 $_rZoneName = $order->province?->deliveryZone?->name;
-                $_rProviderName = $order->deliveryProvider?->name;
+                $_rProvider = $order->deliveryProvider;
+                $_rProviderName = $_rProvider?->name;
+                $_rProviderEta = $_rProvider?->estimated_time;
                 $_rDeliveryLine = $_rZoneName
-                    ? '🚚 Delivery: ' . $_rZoneName . ($_rProviderName ? ' · ' . mb_substr($_rProviderName, 0, 25) : '')
-                    : '';
+                    ? '🚚 Delivery: ' . $_rZoneName . ($_rProviderName ? ' · ' . mb_substr($_rProviderName, 0, 25) : '') . ($_rProviderEta ? ' · ' . $_rProviderEta : '')
+                    : ($_rProviderName
+                        ? '🚚 Delivery by: ' . mb_substr($_rProviderName, 0, 25) . ($_rProviderEta ? ' · ' . $_rProviderEta : '')
+                        : '');
             @endphp
             @if($_rDeliveryLine)
                 <div style="font-size: var(--title-size); margin-top:2px; margin-bottom:2px;">{{ $_rDeliveryLine }}</div>
             @endif
-            @if($order->delivery > 0)
-                <div class="tr-row"><span>Delivery</span><span>${{ number_format($order->delivery, 2) }}</span></div>
+            @if(!$order->isPickup() && $order->delivery > 0)
+                <div class="tr-row"><span>Delivery ({{ $_rProviderName ? mb_substr($_rProviderName, 0, 25) : 'Fee' }})</span><span>${{ number_format($order->delivery, 2) }}</span></div>
+            @elseif(!$order->isPickup() && $_rProviderName && $order->delivery == 0)
+                <div class="tr-row"><span>Delivery ({{ mb_substr($_rProviderName, 0, 25) }})</span><span>Fee varies</span></div>
             @endif
             @if($order->tax > 0)
                 <div class="tr-row"><span>Tax</span><span>${{ number_format($order->tax, 2) }}</span></div>

@@ -99,6 +99,7 @@ export default function useOrders() {
         <div class="subtitle">SHOP - ORDER RECEIPT</div>
         <div class="info-row"><span>Order ID</span><span style="color:#F97316;font-family:monospace">#${order.order_id || order.id}</span></div>
         <div class="info-row"><span>Date</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" })}</span></div>
+        ${order.delivery_provider_details?.name ? `<div class="info-row"><span>Delivery</span><span>🚚 ${order.delivery_provider_details.name}${order.delivery_provider_details.estimated_time ? ' · ' + order.delivery_provider_details.estimated_time : ''}${Number(order.delivery) > 0 ? ' · $' + Number(order.delivery).toFixed(2) : (Number(order.delivery) === 0 ? ' · Fee varies' : '')}</span></div>` : ""}
         <div class="info-row"><span>Customer</span><span>${(order.shipping || order.location)?.name || "—"}</span></div>
         <div class="info-row"><span>Phone</span><span>${(order.shipping || order.location)?.phone || "—"}</span></div>
         <div class="info-row"><span>Address</span><span>${(order.shipping || order.location)?.address || ""}${(order.shipping || order.location)?.city ? ", " + (order.shipping || order.location).city : ""}</span></div>
@@ -130,6 +131,7 @@ export default function useOrders() {
         <div class="subtitle">CUSTOMER</div>
         <div class="info-row"><span>ID:</span><span>#${order.order_id || order.id}</span></div>
         <div class="info-row"><span>Date:</span><span>${new Date(order.created_at || Date.now()).toLocaleDateString("en-GB")}</span></div>
+        ${order.delivery_provider_details?.name ? `<div class="info-row"><span>Delivery:</span><span>🚚 ${order.delivery_provider_details.name}${Number(order.delivery) > 0 ? ' $' + Number(order.delivery).toFixed(2) : (Number(order.delivery) === 0 ? ' Fee varies' : '')}</span></div>` : ""}
         <div class="separator"></div>
         <table>
           <tbody>

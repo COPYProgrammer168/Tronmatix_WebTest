@@ -9,6 +9,8 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Payment;
+use App\Services\OrderStockService;    // stock ledger — restore on cancel
 use App\Services\TelegramService;      // Bot 1 — admin/owner alerts
 use App\Services\TelegramUserService;  // Bot 2 — user notifications  ← ADD
 use Illuminate\Http\JsonResponse;
@@ -614,19 +616,98 @@ class OrderController extends Controller
         $order->update(['status' => $newStatus]);
         $order->load(['items', 'user']);
 
+        // ── Cancel side-effects — mirrors DashboardController::updateOrderStatus:
+        //    1. Stock back in via the ledger (idempotent, reverses outstanding movements).
+        //    2. Mark the Bakong/card Payment row 'refunded' so the order record is
+        //       consistent — the actual transfer still happens manually in the portal.
+        $restoredLines = 0;
+        $refundRecorded = false;
+        if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+            try {
+                $restoredLines = app(OrderStockService::class)->restoreOrderStock($order);
+            } catch (\Throwable $e) {
+                Log::warning('[Stock] Restore on cancel failed: ' . $e->getMessage());
+            }
+
+            // payments.order_id is a bigint FK to orders.id — never query it with
+            // the TRX-… public id (Postgres type error). Use the relationship.
+            $pm = strtolower($order->payment_method ?? 'cash');
+            if (in_array($pm, ['bakong', 'card'], true) && $order->payment_status === 'paid') {
+                try {
+                    $payment = $order->payments()
+                        ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_MANUAL_PENDING])
+                        ->first();
+
+                    if ($payment && ! $payment->isRefunded()) {
+                        $payment->update([
+                            'status' => Payment::STATUS_REFUNDED,
+                            'paid'   => false,
+                            'meta'   => array_merge($payment->meta ?? [], [
+                                'refunded_at'   => now()->toDateTimeString(),
+                                'refunded_by'   => $user->name ?? ($user->username ?? 'staff'),
+                                'refund_reason' => 'order_cancelled',
+                            ]),
+                        ]);
+                        $order->update(['payment_status' => 'refunded']);
+                        $refundRecorded = true;
+                    } elseif ($payment && $payment->isRefunded()) {
+                        $refundRecorded = true; // already refunded on an earlier cancel
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('[Refund] Auto-refund record failed: ' . $e->getMessage());
+                }
+            }
+        }
+
         \App\Services\ActivityLogger::orderStatusChange($order, $oldStatus, $newStatus, $request);
 
-        // Bot alerts (same as backend Blade dashboard)
+        // Bot 1 — admin alert (same shape as the backend Blade Dashboard)
+        $adminAlert = "📋 *Order Status Updated*\n\n" .
+            "📦 Order: `#{$order->order_id}`\n" .
+            "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+            "💳 Method: " . strtoupper($order->payment_method ?? 'cash') . "\n" .
+            "🔄 {$oldStatus} → *{$newStatus}*\n";
+
+        if ($newStatus === 'cancelled') {
+            $pm = strtolower($order->payment_method ?? 'cash');
+            if ($pm === 'bakong' || $pm === 'card') {
+                $adminAlert .= "\n" . ($refundRecorded ? "✅" : "⚠️") . " *PAYMENT REFUND*\n";
+                $adminAlert .= "Paid via {$pm} — \${$order->total}";
+                if ($refundRecorded) {
+                    $adminAlert .= "\nRefund recorded in DB. Complete the transfer in Bakong portal and confirm to customer.";
+                } else {
+                    $adminAlert .= "\nPlease process refund manually and update payment record.";
+                }
+            } else {
+                $adminAlert .= "\n💰 Amount: \${$order->total}";
+                $adminAlert .= "\nℹ️ COD cancel — no payment to refund.";
+            }
+            $adminAlert .= "\nAmount stays in records for accounting.";
+            $adminAlert .= $restoredLines > 0
+                ? "\n📦 Stock restored: {$restoredLines} product line(s)."
+                : "\n📦 No stock movements to restore.";
+            if ($restoredLines > 0 && $order->items->isNotEmpty()) {
+                $restoredNames = $order->items->take(6)->map(fn ($i) => "{$i->name} ×{$i->qty}")->join(' · ');
+                if ($order->items->count() > 6) {
+                    $restoredNames .= ' …';
+                }
+                $adminAlert .= "\n`" . $restoredNames . '`';
+            }
+        }
+
         try {
-            app(TelegramService::class)->sendAlert(
-                "📋 *Order Status Updated*\n\n" .
-                "📦 Order: `#{$order->order_id}`\n" .
-                "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
-                "🔄 {$oldStatus} → *{$newStatus}*\n" .
-                "🕐 " . now()->format('d M Y, H:i')
-            );
+            app(TelegramService::class)->sendAlert($adminAlert);
         } catch (\Throwable $e) {
             Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
+        }
+
+        // Bot 2 — notify the customer in their Telegram (dashboard path does this too)
+        try {
+            if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+                app(TelegramUserService::class)->onOrderCancelled($order);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[Bot2] User status notification failed: ' . $e->getMessage());
         }
 
         return response()->json(['success' => true, 'data' => $order]);
