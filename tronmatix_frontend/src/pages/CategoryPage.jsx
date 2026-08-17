@@ -151,23 +151,9 @@ export function CategoryPage() {
         let items = Array.isArray(d) ? d : []
 
         if (items.length === 0 && !isSearch) {
-          // Brands like TABLE / CHAIR's (SECRETLAB, DX RACER, ...) are stored
-          // as the product's `category`, not in brand/brand_pc_part. If the
-          // initial request returned nothing, retry once treating the brand as
-          // an exact category value before falling through to the empty state.
-          if (brand) {
-            axios.get('/api/products', {
-              params: { cats: brand, per_page: 999, page: 1, sort: sortVal },
-            })
-              .then(res2 => {
-                if (cancelled) return
-                const d2 = res2.data.data ?? res2.data ?? []
-                setProducts(Array.isArray(d2) ? d2 : [])
-              })
-              .catch(() => { if (!cancelled) setProducts([]) })
-              .finally(() => { if (!cancelled) setLoading(false) })
-            return
-          }
+          // The backend ?brand= filter already matches brand, brand_pc_part,
+          // category (Table/Chair brands like SECRETLAB are stored there),
+          // and product name — one request is enough, no brand retry needed.
 
           // Deep level with an exact-name miss: try a keyword search on the
           // sub-category name. Brand is dropped here on purpose — the search

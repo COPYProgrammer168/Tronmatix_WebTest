@@ -31,9 +31,17 @@ class ProductController extends Controller
             $brand = strtolower($request->brand);
             $like = '%' . $brand . '%';
 
-            $query->where(function($q) use ($like) {
+            // Brand identity lives in several columns depending on how the
+            // product was entered: `brand`/`brand_pc_part` (dashboards), the
+            // free-text `category` (Table/Chair brands like SECRETLAB, DX RACER
+            // are stored there), and the product `name` (most imported products
+            // have no brand column set at all, e.g. "ASUS ROG...").
+            $query->where(function($q) use ($like, $brand) {
                 $q->whereRaw('LOWER(brand) LIKE ?', [$like])
-                  ->orWhereRaw('LOWER(brand_pc_part) LIKE ?', [$like]);
+                  ->orWhereRaw('LOWER(brand_pc_part) LIKE ?', [$like])
+                  ->orWhereRaw('LOWER(category) = ?', [$brand])
+                  ->orWhereRaw('LOWER(category) LIKE ?', [$brand . '%'])
+                  ->orWhereRaw('LOWER(name) LIKE ?', [$like]);
             });
         }
 

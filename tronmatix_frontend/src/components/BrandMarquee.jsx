@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import api from "../lib/axios";
@@ -31,15 +31,150 @@ export default function BrandMarquee() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Clear the swipe auto-resume timer if the component unmounts.
+  useEffect(() => {
+    return () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    };
+  }, []);
+
+  // ── Manual drag / swipe ──────────────────────────────────────────────────
+  // Dependency-free pointer drag on top of the CSS auto-scroll. The CSS
+  // keyframe animation owns `transform`, so while dragging we kill it
+  // (style.animation = "none") and drive the transform manually. Wrapping is
+  // modulo half the track width so the duplicated-half illusion never shows a
+  // seam. After a real drag the strip stays paused until the pointer leaves
+  // the marquee (user preference — no auto-resume timer).
+  const trackRef = useRef(null);
+  const dragState = useRef({ active: false, startX: 0, baseX: 0, moved: false, pointerId: null, pointerType: "" });
+  const resumeTimerRef = useRef(null);
+
+  const wrapX = useCallback((x) => {
+    const el = trackRef.current;
+    if (!el) return x;
+    const halfPx = Math.max(el.scrollWidth / 2, 1);
+    while (x > 0) x -= halfPx;
+    while (x < -halfPx) x += halfPx;
+    return x;
+  }, []);
+
+  const onPointerDown = useCallback((e) => {
+    const el = trackRef.current;
+    if (!el || dragState.current.active) return;
+    // Ignore non-primary buttons (e.g. right-click).
+    if (e.button !== undefined && e.button !== 0) return;
+
+    const style = getComputedStyle(el);
+    const m = style.transform.match(/matrix\(([^)]*)\)/);
+    const baseX = m ? parseFloat(m[1].split(",")[4] || "0") : 0;
+
+    dragState.current = {
+      active: true,
+      startX: e.clientX,
+      baseX,
+      moved: false,
+      pointerId: e.pointerId,
+      pointerType: e.pointerType || "mouse",
+    };
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  }, []);
+
+  const onPointerMove = useCallback((e) => {
+    const d = dragState.current;
+    const el = trackRef.current;
+    if (!d.active || !el) return;
+
+    const dx = e.clientX - d.startX;
+    if (!d.moved && Math.abs(dx) > 5) {
+      d.moved = true;
+      // A real drag starts: pause the animation AND kill the keyframes —
+      // a paused keyframe animation would still override the inline
+      // transform, so it must be removed while dragging.
+      el.style.animation = "none";
+      el.classList.add("dragging");
+    }
+    if (!d.moved) return;
+
+    el.style.transform = `translateX(${wrapX(d.baseX + dx)}px)`;
+  }, [wrapX]);
+
+  const endDrag = useCallback(() => {
+    const d = dragState.current;
+    const el = trackRef.current;
+    if (!d.active) return;
+    d.active = false;
+
+    try { el.releasePointerCapture(d.pointerId); } catch (_) {}
+    if (!d.moved) return;
+
+    // Real drag: keep the manual position and stay paused. `moved` stays
+    // set on purpose — the `click` event fires AFTER pointerup, so
+    // onTrackClick can still see it and suppress the brand-link navigation.
+    el.classList.remove("dragging");
+    el.classList.add("drag-paused");
+
+    if (d.pointerType === "touch") {
+      // Touch has no hover-out, so auto-resume a couple of seconds after the
+      // swipe ends unless the user grabs the strip again.
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = setTimeout(() => {
+        if (!trackRef.current) return;
+        trackRef.current.classList.remove("drag-paused");
+        trackRef.current.style.transform = "";
+        trackRef.current.style.animation = "";
+      }, 2000);
+    }
+  }, []);
+
+  const onPointerUp = useCallback((e) => {
+    endDrag();
+  }, [endDrag]);
+
+  const onPointerCancel = useCallback((e) => {
+    endDrag();
+  }, [endDrag]);
+
+  const resumeScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    if (resumeTimerRef.current) { clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null; }
+    if (el.classList.contains("drag-paused")) {
+      // Resume the auto-scroll. Removing the inline transform + animation
+      // hands control back to the keyframes (we wrapped into a duplicated
+      // region, so the jump is invisible).
+      el.classList.remove("drag-paused");
+      el.style.transform = "";
+      el.style.animation = "";
+    }
+  }, []);
+
+  const onPointerLeave = useCallback(() => {
+    resumeScroll();
+  }, [resumeScroll]);
+
+  const onTrackClick = useCallback((e) => {
+    // Suppress the click right after a drag so the brand link doesn't
+    // navigate (pointerup comes before click, so `moved` is still set).
+    if (dragState.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragState.current.moved = false;
+    }
+  }, []);
+
   // Duplicate the list so the scroll loops seamlessly.
   // If the brands are still too few to fill a wide viewport (each item is
   // ~150px wide), keep doubling — the loop still needs 2× the single-half
-  // width to translate -50% without showing empty space.
+  // width to translate -50% without showing empty space. The width must be
+  // recomputed AFTER every doubling, otherwise the loop stops on a stale
+  // width and the seam of the -50% loop shows a gap.
   const track = useMemo(() => {
     if (brands.length === 0) return [];
     let half = [...brands];
-    const halfWidth = half.reduce((sum, b) => sum + (b.name.length + 4) * 8 + 12, 0);
-    while (halfWidth * 2 < window.innerWidth) half = [...half, ...half];
+    const halfWidth = () => half.reduce((sum, b) => sum + (b.name.length + 4) * 8 + 12, 0);
+    while (halfWidth() * 2 < (typeof window !== "undefined" ? window.innerWidth : 0)) {
+      half = [...half, ...half];
+    }
 
     return [...half, ...half];
   }, [brands]);
@@ -104,7 +239,7 @@ export default function BrandMarquee() {
           padding-right: 32px;
           width: max-content;
           will-change: transform;
-          /* Longhand animation props — the `animation` shorthand with a var()
+          /* Longhand animation props — the animation shorthand with a var()
              inside silently fails to animate on some Safari / older Android
              browsers, leaving the logos static. Longhands are bulletproof. */
           animation-name: brandScroll;
@@ -112,8 +247,22 @@ export default function BrandMarquee() {
           animation-timing-function: linear;
           animation-iteration-count: infinite;
           animation-play-state: running;
+          /* Manual drag / swipe: grab cursor, allow vertical page scroll only
+             (horizontal drags go to the marquee), no text selection. */
+          touch-action: pan-y;
+          user-select: none;
+          -webkit-user-select: none;
+          cursor: grab;
         }
         .brand-track:hover {
+          animation-play-state: paused;
+        }
+        .brand-track.dragging {
+          cursor: grabbing;
+        }
+        /* After a real drag the strip stays paused until the pointer leaves
+           the marquee — removed from JS on pointerleave. */
+        .brand-track.drag-paused {
           animation-play-state: paused;
         }
         .brand-item {
@@ -159,7 +308,17 @@ export default function BrandMarquee() {
         }
       `}</style>
 
-      <div className="brand-track" style={{ "--scroll-duration": `${Math.max(25, brands.length * 3)}s` }}>
+      <div
+        ref={trackRef}
+        className="brand-track"
+        style={{ "--scroll-duration": `${Math.max(25, brands.length * 3)}s` }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
+        onPointerLeave={onPointerLeave}
+        onClick={onTrackClick}
+      >
         {track.map((brand, idx) => {
           const imgUrl = resolveImage(brand.image);
           // Navigate to the category page filtered by this brand. CategoryPage
