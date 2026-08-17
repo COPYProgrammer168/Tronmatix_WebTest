@@ -1,59 +1,471 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ─────────────────────────────────────────────────────────────────────────
+   @font-face BEFORE @tailwind base — required so Tailwind preflight
+   doesn't override custom font registration
+───────────────────────────────────────────────────────────────────────── */
 
+/* English / branding */
 @font-face {
   font-family: 'HurstBagod';
   src: url('/src/assets/HurstBagod.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
-* { box-sizing: border-box; }
+/* Khmer heading — bold, display, titles */
+@font-face {
+  font-family: 'Kh_Jrung_Thom';
+  src: url('/src/assets/Kh_Jrung_Thom.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
 
-html { font-size: 16px; }
+@font-face {
+  font-family: 'KantumruyPro';
+  src: url('/src/assets/KantumruyPro.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+.font-heading {
+  font-family: var(--font-en-body) !important;
+}
+
+body.lang-km .font-heading {
+  font-family: var(--font-kh-heading) !important;
+}
+
+.font-body {
+  font-family: var(--font-en-body) !important;
+}
+
+body.lang-km .font-body {
+  font-family: var(--font-kh-body) !important;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CSS variables
+───────────────────────────────────────────────────────────────────────── */
+:root {
+  --font-en-heading: 'HurstBagod', var(--font-kh-body), 'Rajdhani', sans-serif;
+  --font-en-body: 'Rajdhani', var(--font-kh-body), sans-serif;
+  --font-kh-style: 'Kh_Jrung_Thom', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --font-kh-heading: 'KantumruyPro', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --font-kh-body: 'Kdam Thmor Pro', 'Khmer OS', 'Khmer OS System', sans-serif;
+  --lh-kh-body: 1.5;
+  --lh-kh-heading: 1.5;
+  --lh-kh-btn: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   KHMER FALLBACK IN ENGLISH MODE — activated by body.lang-en
+   When the storefront is in English (body.lang-en), Khmer text anywhere
+   (banners, product names, category names, etc.) still renders in the
+   Khmer webfont instead of falling back to the OS default. Because
+   Kdam Thmor Pro only contains Khmer glyphs, Latin text is unaffected.
+   Monospace (SKUs, codes) and code/pre keep their intended font.
+───────────────────────────────────────────────────────────────────────── */
+body.lang-en *:not(code):not(pre):not([style*="monospace"]):not([style*="HurstBagod"]):not([style*="Rajdhani"]) {
+  font-family: 'Rajdhani', var(--font-kh-body), sans-serif !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Base reset
+───────────────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+}
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Rajdhani', var(--font-kh-body), sans-serif;
   background: #ffffff;
   color: #111;
-  font-size: 16px;
+  font-size: 18px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #F97316; border-radius: 3px; }
+/* ─────────────────────────────────────────────────────────────────────────
+   ENGLISH MODE — base font boost
+   Khmer mode stays at its tuned 18px (body.lang-km forces 18px !important
+   below). English uses the condensed Rajdhani font, which renders visibly
+   smaller than the tall Khmer glyphs, so we raise the base to 20px in
+   English. All rem-based Tailwind utilities (text-sm, text-base, ...) scale
+   with the root, so the whole English UI reads larger.
+───────────────────────────────────────────────────────────────────────── */
+body.lang-en {
+  font-size: 20px;
+}
 
-/* Animations */
-.modal-overlay { animation: fadeIn 0.2s ease; }
-.modal-box { animation: slideUp 0.3s ease; }
+/* ─────────────────────────────────────────────────────────────────────────
+   GLOBAL SEMIBOLD (font-semibold) — all body text, EXCEPT titles.
+   Applies weight 600 to every text element by default. Excludes:
+     • h1, h2, h3, h4, h5, h6 — heading/title elements keep their own
+       class-based weight (text-3xl, text-4xl, font-bold, etc.)
+     • elements that already declare a heavier Tailwind weight
+       (font-bold=700, font-extrabold=800, font-black=900) via classList
+     • elements with an inline style setting font-weight
+     • code/pre/monospace blocks (SKUs, codes)
+   English mode: every paragraph, list, span, td, label, button, etc.
+                 becomes semibold unless excluded above.
+   Khmer mode:  body.lang-km forces font-weight: 400 !important globally
+                 (line 122), which keeps glyphs readable. The rule below
+                 uses the SAME approach (600 weight) but does NOT use
+                 !important, so the Khmer mode 400 override still wins on
+                 text elements that need to stay regular. For elements
+                 that should be 600 even in Khmer (buttons, badges,
+                 which already have explicit Khmer font-weight rules),
+                 the existing per-class !important rules take precedence.
+───────────────────────────────────────────────────────────────────────── */
+*:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.font-bold):not(.font-extrabold):not(.font-black):not([style*="font-weight"]):not(code):not(pre):not([style*="monospace"]) {
+  font-weight: 600;
+}
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes pulse { from { opacity: 0.4; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+/* ─────────────────────────────────────────────────────────────────────────
+   KHMER MODE — activated by body.lang-km (set by LanguageContext)
+───────────────────────────────────────────────────────────────────────── */
+body.lang-km {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body);
+  font-size: 18px !important;
+  font-weight: 400 !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-synthesis: none;
+}
 
-/* Product card hover reveal ADD TO CART */
+body.lang-km h4 {
+  font-family: var(--font-kh-body) !important;
+  font-size: clamp(1em, 1vw + 1em, 1.4em) !important;
+}
+
+body.lang-km h2 {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 2px;
+  font-size: 25px !important;
+}
+
+/* Banner title — use heading font, NOT body font, and let inline styles take precedence */
+body.lang-km .banner-title,
+body.lang-km h2.banner-title {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+  font-size: clamp(36px, 4vw, 40px) !important;
+  line-height: 1 !important;
+}
+body .banner-title,
+body h2.banner-title {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+  font-size: clamp(36px, 4vw, 40px) !important;
+  line-height: 1 !important;
+}
+
+body.lang-km h3 span {
+  font-family: var(--font-kh-body) !important;
+  font-size: 16px !important;
+}
+
+body.lang-km h3,
+body.lang-km h1,
+body.lang-km h5,
+body.lang-km h6 {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  font-size: clamp(1.1em, 1.5vw + 1em, 1.9em) !important;
+}
+
+/* Elements with inline Rajdhani/HurstBagod/Kh_Jrung_Thom → switch to Khmer heading font */
+body.lang-km [style*="Rajdhani"],
+body.lang-km [style*="HurstBagod"],
+body.lang-km [style*="Kh_Jrung_Thom"] {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Specifications Table header — keep HurstBagod in Khmer mode too.
+   Scoped to the .specs-header class ONLY, so every other element with
+   inline HurstBagod keeps its normal Khmer fallback (heading font). */
+body.lang-km .specs-header {
+  font-family: 'HurstBagod', var(--font-kh-heading), sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Elements with inline Kdam Thmor Pro → stay as body font */
+body.lang-km [style*="Kdam Thmor Pro"] {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Elements with inline Kh_Jrung_Thom → heading font */
+body.lang-km [style*="Kh_Jrung_Thom"] {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Buttons */
+body.lang-km button:not(.banner-dot),
+body.lang-km [role="button"] {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-btn) !important;
+}
+
+/* Buttons that contain text / have padding — but NOT icon/dot buttons */
+body.lang-km button:not(.banner-dot):not(.icon-btn-bare) {
+  min-height: 40px;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* Banner dot indicators must stay tiny regardless of language */
+body.lang-km .banner-dot {
+  min-height: unset !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-family: inherit !important;
+  line-height: 1 !important;
+}
+
+/* ── NUCLEAR: inputs/textareas — highest specificity to beat Tailwind ── */
+body.lang-km input,
+body.lang-km textarea,
+body.lang-km select,
+body.lang-km input::placeholder,
+body.lang-km textarea::placeholder {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body) !important;
+}
+
+:is(body.lang-km) :is(input, textarea, select),
+:is(body.lang-km) :is(input, textarea, select):focus {
+  font-family: var(--font-kh-body) !important;
+  line-height: 1.95 !important;
+}
+
+/* Labels */
+body.lang-km label {
+  font-family: var(--font-kh-body) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: var(--lh-kh-body) !important;
+}
+
+/* Nav */
+body.lang-km nav a,
+body.lang-km nav span,
+body.lang-km nav button {
+  font-family: var(--font-kh-body) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Badges / pills */
+body.lang-km .badge,
+body.lang-km span[style*="borderRadius"],
+body.lang-km span[style*="border-radius"] {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-btn) !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* Product cards */
+body.lang-km .product-card h3 {
+  font-family: var(--font-kh-body) !important;
+  line-height: var(--lh-kh-body) !important;
+  letter-spacing: 0 !important;
+  font-size: inherit !important;
+}
+
+body.lang-km .product-card button {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+
+body.lang-km a {
+  font-family: inherit;
+  letter-spacing: 0;
+}
+
+body.lang-km .line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Banner classes */
+body.lang-km .banner-subtitle {
+  font-family: var(--font-kh-body) !important;
+  line-height: 1.8 !important;
+  letter-spacing: 0 !important;
+}
+
+body.lang-km .banner-btn {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+
+body.lang-km .cat-label {
+  font-family: var(--font-kh-heading) !important;
+  letter-spacing: 0 !important;
+}
+
+body.lang-km .section-heading {
+  font-family: var(--font-kh-heading) !important;
+  line-height: var(--lh-kh-heading) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+/* Bolding for specific elements in Khmer mode */
+body.lang-km button,
+body.lang-km [role="button"] {
+  font-weight: 700 !important;
+}
+
+/* Footer */
+body.lang-km footer,
+body.lang-km footer * {
+  font-family: var(--font-kh-body) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Scrollbar
+───────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F97316;
+  border-radius: 3px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Animations
+───────────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-box {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* Product card hover */
 .product-card:hover .cart-hover-btn {
   opacity: 1;
   transform: translateY(0);
 }
+
 .cart-hover-btn {
   opacity: 0;
   transform: translateY(8px);
   transition: all 0.2s ease;
 }
 
-/* Responsive helpers */
 @media (max-width: 768px) {
   .product-card .cart-hover-btn {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE PRODUCT CARD — compact sizing for the 2-column homepage grid.
+   Inline styles win normally, so these use !important to shrink the
+   title, price and CTA button on small screens only. Scoped to dedicated
+   classes so fav buttons / badges keep their tiny sizes.
+───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .product-card-title {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+    min-height: 2.2em !important;
+  }
+
+  .product-card-price {
+    font-size: 18px !important;
+  }
+
+  .product-card-cta {
+    font-size: 14px !important;
+    height: 38px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .product-card .p-3 {
+    padding: 8px !important;
   }
 }

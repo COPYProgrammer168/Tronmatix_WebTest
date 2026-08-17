@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Discount extends Model
@@ -13,19 +15,21 @@ class Discount extends Model
     protected $fillable = [
         'code', 'type', 'value',
         'min_order', 'max_uses', 'used_count',
-        'expires_at', 'is_active', 'categories',
+        'expires_at', 'is_active', 'categories', 'product_id',
         'badge_config',  // { text, icon, bg, border, color } — shown on product cards
+        'kind',          // 'code' (customer types it) | 'badge' (auto-shown, no code entry)
     ];
 
     protected $casts = [
-        'value' => 'float',
-        'min_order' => 'float',
-        'max_uses' => 'integer',
-        'used_count' => 'integer',
-        'is_active' => 'boolean',
-        'categories' => 'array',
-        'expires_at' => 'datetime',
-        'badge_config' => 'array',  // stored as JSON, cast to/from PHP array
+        'value'        => 'float',
+        'min_order'    => 'float',
+        'max_uses'     => 'integer',
+        'used_count'   => 'integer',
+        'is_active'    => 'boolean',
+        'categories'   => 'array',
+        'expires_at'   => 'datetime',
+        'badge_config' => 'array',
+        'kind'         => 'string',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────
@@ -33,6 +37,70 @@ class Discount extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Multiple products this discount targets (pivot table discount_product).
+     * Legacy rows may instead carry a single product_id column — see product_ids.
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
+    // ── Product targeting ─────────────────────────────────────────────────────
+
+    /**
+     * Effective list of targeted product ids (int[]).
+     * Prefers the pivot; falls back to the legacy single product_id column so
+     * pre-pivot rows behave identically. Empty array = sitewide.
+     */
+    public function getProductIdsAttribute(): array
+    {
+        // Freshly synced rows may not have the relation loaded in memory yet —
+        // query the pivot directly in that case.
+        if (! $this->relationLoaded('products')) {
+            $ids = $this->products()->pluck('products.id');
+            if ($ids->isNotEmpty()) {
+                return $ids->map(fn ($id) => (int) $id)->all();
+            }
+        } elseif ($this->products->isNotEmpty()) {
+            return $this->products->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+
+        if ($this->product_id) {
+            return [(int) $this->product_id];
+        }
+
+        return [];
+    }
+
+    /**
+     * Whether this discount targets the given product id.
+     * Empty targeting = sitewide → applies to everything.
+     */
+    public function appliesToProduct(int $productId): bool
+    {
+        $ids = $this->product_ids;
+
+        return empty($ids) || in_array($productId, $ids, true);
+    }
+
+    /**
+     * Persist the multi-product targeting. The legacy product_id column is
+     * nulled on any authoritative save so the two sources never disagree.
+     */
+    public function syncProducts(array $ids): void
+    {
+        $normalized = array_values(array_unique(array_filter(array_map('intval', $ids))));
+
+        $this->products()->sync($normalized);
+        $this->forceFill(['product_id' => null])->saveQuietly();
     }
 
     // ── Scopes ────────────────────────────────────────────────────────────────
@@ -94,6 +162,18 @@ class Discount extends Model
         if ($this->expires_at && $this->expires_at->isPast()) return false;
         if ($this->max_uses && $this->used_count >= $this->max_uses) return false;
         return true;
+    }
+
+    /** Whether this discount is badge-kind (auto-shown, no code entry needed) */
+    public function isBadgeKind(): bool
+    {
+        return ($this->kind ?? 'code') === 'badge';
+    }
+
+    /** Whether this discount is code-kind (customer types it at checkout) */
+    public function isCodeKind(): bool
+    {
+        return ($this->kind ?? 'code') === 'code';
     }
 
     /** Increment usage count after successful order */

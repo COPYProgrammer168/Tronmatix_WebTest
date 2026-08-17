@@ -9,6 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('tronmatix_lang') === 'km') {
+            document.documentElement.lang = 'km';
+            document.body.classList.add('lang-km');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

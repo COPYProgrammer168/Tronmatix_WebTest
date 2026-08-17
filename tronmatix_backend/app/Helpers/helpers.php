@@ -1,0 +1,150 @@
+<?php
+
+// app/helpers.php
+//
+// Global helpers auto-loaded by composer.json:
+//   "autoload": { "files": ["app/helpers.php"] }
+//
+// After adding, run: composer dump-autoload
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
+if (! function_exists('storage_url')) {
+    /**
+     * Resolve a DB image/video path to a public URL usable in <img src> and <video src>.
+     *
+     * Handles:
+     *   Local  : "/storage/products/uuid.webp" → "http://yoursite.com/storage/products/uuid.webp"
+     *   Cloud  : "https://bucket.r2.dev/..."   → returned as-is
+     *   null   : returns $fallback (default null)
+     *
+     * Usage in Blade:
+     *   <img src="{{ storage_url($b->image) }}">
+     *   <video src="{{ storage_url($b->video) }}">
+     *
+     * @param string|null $path     DB value
+     * @param string|null $fallback Returned when $path is empty
+     */
+    function storage_url(?string $path, ?string $fallback = null): ?string
+    {
+        if (!$path || trim($path) === '') return $fallback;
+
+        $path = trim($path);
+
+        // Already a full URL (cloud, CDN, or external paste) — use as-is
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        // Local storage path — prefix with app URL
+        return url(ltrim($path, '/'));
+    }
+}
+
+// ── Dashboard auth helpers ────────────────────────────────────────────────────
+// These helpers resolve the current dashboard user regardless of which guard
+// they authenticated under (admin guard for superadmin/admin, staff guard for
+// editor/seller/delivery/developer).
+
+if (! function_exists('unique_slug')) {
+    /**
+     * Generate a URL-safe slug for a given name, guaranteed unique across the
+     * given model/table by suffixing "-2", "-3", … when a collision occurs.
+     *
+     * @param string        $name  Source string (e.g. "PC BUILD")
+     * @param class-string  $model Eloquent model class to check against
+     * @param int|null      $ignoreId Row id to exclude (when updating)
+     */
+    function unique_slug(string $name, string $model, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name) ?: 'item';
+        $slug = $base;
+        $i    = 1;
+
+        while ($model::where('slug', $slug)->where('id', '!=', $ignoreId)->exists()) {
+            $slug = $base . '-' . ++$i;
+        }
+
+        return $slug;
+    }
+}
+
+if (! function_exists('dashboard_user')) {
+    /**
+     * Returns the currently authenticated dashboard user.
+     * Checks admin guard first, then staff guard.
+     *
+     * @return \App\Models\Admin|\App\Models\Staff|null
+     */
+    function dashboard_user(): ?\Illuminate\Contracts\Auth\Authenticatable
+    {
+        return Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
+    }
+}
+
+if (! function_exists('dashboard_role')) {
+    /**
+     * Returns the role string of the currently authenticated dashboard user.
+     * Falls back to 'editor' (most restrictive staff role) if nobody is authenticated.
+     */
+    function dashboard_role(): string
+    {
+        return dashboard_user()?->role ?? 'editor';
+    }
+}
+
+if (! function_exists('is_admin_guard')) {
+    /**
+     * True if the current user authenticated via the admin guard (superadmin/admin).
+     * Use this in Blade to gate admin-only UI elements.
+     */
+    function is_admin_guard(): bool
+    {
+        return Auth::guard('admin')->check();
+    }
+}
+
+if (! function_exists('is_staff_guard')) {
+    /**
+     * True if the current user authenticated via the staff guard
+     * (editor/seller/delivery/developer).
+     */
+    function is_staff_guard(): bool
+    {
+        return Auth::guard('staff')->check();
+    }
+}
+
+if (! function_exists('compact_number')) {
+    /**
+     * Compact number formatting for large values in Blade:
+     *   100,000   → "100K"
+     *   1,000,000 → "1.0M"
+     *   1,500,000 → "1.5M"
+     *   2,000,000 → "2M"
+     *   999       → "999"
+     *
+     * @param  int|float|null  $number
+     * @param  string  $prefix  optional currency/label prefix, e.g. '$'
+     */
+    function compact_number(int|float|null $number, string $prefix = ''): string
+    {
+        $n = (float) ($number ?? 0);
+        if (! is_finite($n)) {
+            return $prefix . '0';
+        }
+
+        $abs = abs($n);
+        if ($abs >= 1_000_000) {
+            $val = rtrim(rtrim(number_format($n / 1_000_000, 1, '.', ''), '0'), '.');
+            return $prefix . $val . 'M';
+        }
+        if ($abs >= 1_000) {
+            $val = rtrim(rtrim(number_format($n / 1_000, 1, '.', ''), '0'), '.');
+            return $prefix . $val . 'K';
+        }
+
+        return $prefix . number_format((int) $n);
+    }
+}

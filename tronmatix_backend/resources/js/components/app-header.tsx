@@ -32,9 +32,11 @@ import {
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
+import { useSearchOverlay, SearchOverlay } from '@/components/search-overlay';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
+import { useEffect, useRef, useState } from 'react';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -69,9 +71,34 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+
+    const { openOverlay, closeOverlay, reset, open, query, onQueryChange, data, loading } = useSearchOverlay();
+    const [scrolled, setScrolled] = useState(false);
+    const headerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const onScroll = () => {
+            setScrolled(window.scrollY > 8);
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     return (
         <>
-            <div className="border-b border-sidebar-border/80">
+            <SearchOverlay
+                open={open}
+                closeOverlay={closeOverlay}
+                query={query}
+                onQueryChange={onQueryChange}
+                data={data}
+                loading={loading}
+            />
+
+            <div ref={headerRef} className="sticky top-0 z-50 border-b border-sidebar-border/80 bg-background/95 backdrop-blur-sm">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
@@ -178,14 +205,26 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
+                            {/* Search — desktop: hidden until scroll; mobile: always visible */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="group h-9 w-9 cursor-pointer"
+                                className={cn(
+                                    'group h-9 w-9 cursor-pointer',
+                                    'transition-all duration-200',
+                                    'max-lg:opacity-100 max-lg:translate-x-0',
+                                    'lg:opacity-0 lg:-translate-x-1',
+                                    scrolled && 'lg:opacity-100 lg:translate-x-0',
+                                )}
+                                onClick={openOverlay}
                             >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
-                            <div className="ml-1 hidden gap-1 lg:flex">
+                            <div className={cn(
+                                'ml-1 hidden gap-1 lg:flex',
+                                'transition-all duration-200',
+                                scrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1',
+                            )}>
                                 {rightNavItems.map((item) => (
                                     <TooltipProvider
                                         key={item.title}
@@ -219,7 +258,12 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="size-10 rounded-full p-1"
+                                    className={cn(
+                                        'size-10 rounded-full p-1 transition-opacity duration-200',
+                                        'max-lg:duration-150',
+                                        'max-lg:opacity-100',
+                                        scrolled && 'max-lg:opacity-0',
+                                    )}
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage

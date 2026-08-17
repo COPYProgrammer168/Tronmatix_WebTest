@@ -11,11 +11,7 @@ export function LocationProvider({ children }) {
       return null
     }
   })
-
-  // FIX: always re-read from localStorage on window focus
-  // Previous version had `if (stored && !savedLocation)` — this meant it
-  // never re-synced after login because savedLocation was already populated.
-  // Now it always syncs so location persists across login/logout redirects.
+  
   useEffect(() => {
     const onFocus = () => {
       try {
