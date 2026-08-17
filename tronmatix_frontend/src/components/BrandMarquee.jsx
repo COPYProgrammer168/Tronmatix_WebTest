@@ -293,15 +293,14 @@ export default function BrandMarquee() {
           max-height: 38px;
           max-width: 96px;
           object-fit: contain;
-          filter: ${dark
-            ? "brightness(0) invert(1)"
-            : "brightness(0)"};
+          /* Show the logo in its original colors — the brand artwork
+             already sits on a transparent/light background, so a black/white
+             recolor looked wrong and hid the actual brand identity. */
+          filter: none;
           transition: filter 0.2s;
         }
         .brand-item:hover img {
-          filter: ${dark
-            ? "brightness(0) invert(1) drop-shadow(0 0 4px rgba(249,115,22,0.5))"
-            : "brightness(0) drop-shadow(0 0 4px rgba(249,115,22,0.4))"};
+          filter: drop-shadow(0 0 4px rgba(249,115,22,0.45));
         }
         .brand-name-fallback {
           font-family: 'Rajdhani', 'Kdam Thmor Pro', sans-serif;
