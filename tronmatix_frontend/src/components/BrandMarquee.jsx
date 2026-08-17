@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import api from "../lib/axios";
 
@@ -31,9 +32,16 @@ export default function BrandMarquee() {
   }, []);
 
   // Duplicate the list so the scroll loops seamlessly.
+  // If the brands are still too few to fill a wide viewport (each item is
+  // ~150px wide), keep doubling — the loop still needs 2× the single-half
+  // width to translate -50% without showing empty space.
   const track = useMemo(() => {
     if (brands.length === 0) return [];
-    return [...brands, ...brands];
+    let half = [...brands];
+    const halfWidth = half.reduce((sum, b) => sum + (b.name.length + 4) * 8 + 12, 0);
+    while (halfWidth * 2 < window.innerWidth) half = [...half, ...half];
+
+    return [...half, ...half];
   }, [brands]);
 
   const bg = dark ? "#111827" : "#f8fafc";
@@ -91,8 +99,19 @@ export default function BrandMarquee() {
         .brand-track {
           display: flex;
           gap: 32px;
+          /* Trailing padding equals the gap so the two duplicated halves are
+             pixel-identical → the -50% translateX loop is perfectly seamless. */
+          padding-right: 32px;
           width: max-content;
-          animation: brandScroll var(--scroll-duration, 35s) linear infinite;
+          will-change: transform;
+          /* Longhand animation props — the `animation` shorthand with a var()
+             inside silently fails to animate on some Safari / older Android
+             browsers, leaving the logos static. Longhands are bulletproof. */
+          animation-name: brandScroll;
+          animation-duration: var(--scroll-duration, 35s);
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          animation-play-state: running;
         }
         .brand-track:hover {
           animation-play-state: paused;
@@ -134,7 +153,7 @@ export default function BrandMarquee() {
           white-space: nowrap;
         }
         @media (max-width: 640px) {
-          .brand-track { gap: 20px; }
+          .brand-track { gap: 20px; padding-right: 20px; }
           .brand-item img { max-height: 28px; max-width: 70px; }
           .brand-name-fallback { font-size: 12px; }
         }
@@ -143,15 +162,18 @@ export default function BrandMarquee() {
       <div className="brand-track" style={{ "--scroll-duration": `${Math.max(25, brands.length * 3)}s` }}>
         {track.map((brand, idx) => {
           const imgUrl = resolveImage(brand.image);
-          const href = `/category/search?q=${encodeURIComponent(brand.name)}`;
+          // Navigate to the category page filtered by this brand. CategoryPage
+          // reads ?brand= and filters /api/products by it, with a fallback that
+          // treats the brand as an exact category (Table/Chair brands like
+          // SECRETLAB are stored in the product category column).
+          const href = `/category/all?brand=${encodeURIComponent(brand.name)}`;
 
           return (
-            <a
+            <Link
               key={`${brand.id}-${idx}`}
-              href={href}
+              to={href}
               className="brand-item"
-              title={brand.name}
-              onClick={(e) => e.preventDefault()}
+              title={`${brand.name} — view products`}
             >
               {imgUrl ? (
                 <img
@@ -170,7 +192,7 @@ export default function BrandMarquee() {
               >
                 {brand.name}
               </span>
-            </a>
+            </Link>
           );
         })}
       </div>
