@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useTheme } from "../context/ThemeContext";
+import api from "../lib/axios";
 
 const LARAVEL_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
@@ -17,10 +18,12 @@ export default function BrandMarquee() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/brands")
-      .then((res) => res.json())
-      .then((json) => {
-        const data = Array.isArray(json.data) ? json.data : [];
+    api
+      .get("/api/brands")
+      .then((res) => {
+        const data = Array.isArray(res.data)
+          ? res.data
+          : (res.data?.data ?? []);
         setBrands(data);
       })
       .catch(() => {})
