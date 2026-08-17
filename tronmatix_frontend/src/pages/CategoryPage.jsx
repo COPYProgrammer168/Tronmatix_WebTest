@@ -92,10 +92,17 @@ export function CategoryPage() {
   const slugLabel = rawSlug.replace(/-/g, ' ').toUpperCase()
   const brandParam = searchParams.get('brand')
 
+  // When a brand filter is active (e.g. /category/all?brand=ASUS from the
+  // BrandMarquee), the heading reflects the brand instead of the generic
+  // "All Products" label. Same inline i18n pattern as the rest of the page.
+  const brandLabel = brandParam
+    ? (isKhmer ? `${brandParam.toUpperCase()} ផលិតផល` : `${brandParam.toUpperCase()} PRODUCTS`)
+    : null
+
   const label = isSearch
     ? (isKhmer ? `ស្វែងរក: "${qParam.toUpperCase()}"` : `SEARCH: "${qParam.toUpperCase()}"`)
     : (!rawSlug || rawSlug === 'all')
-      ? (SORT_LABELS[sortParam] || t('common.allProducts'))
+      ? (brandLabel || SORT_LABELS[sortParam] || t('common.allProducts'))
       : (brandParam ? `${slugLabel} - ${brandParam.toUpperCase()}` : slugLabel)
 
   const parentLabel = (category || '').replace(/-/g, ' ').toUpperCase()

@@ -76,7 +76,11 @@ export default function BrandMarquee() {
       pointerId: e.pointerId,
       pointerType: e.pointerType || "mouse",
     };
-    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    // NOTE: no setPointerCapture here on purpose. Grabbing capture during
+    // pointerdown and releasing it during pointerup suppresses the compatible
+    // `click` event in desktop browsers — the brand <Link> would never
+    // navigate. Capture is only taken once the drag threshold is crossed
+    // (see onPointerMove), so plain clicks work like normal links.
   }, []);
 
   const onPointerMove = useCallback((e) => {
@@ -89,7 +93,9 @@ export default function BrandMarquee() {
       d.moved = true;
       // A real drag starts: pause the animation AND kill the keyframes —
       // a paused keyframe animation would still override the inline
-      // transform, so it must be removed while dragging.
+      // transform, so it must be removed while dragging. Only now take
+      // pointer capture so the drag keeps tracking outside the strip.
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
       el.style.animation = "none";
       el.classList.add("dragging");
     }
@@ -104,25 +110,29 @@ export default function BrandMarquee() {
     if (!d.active) return;
     d.active = false;
 
-    try { el.releasePointerCapture(d.pointerId); } catch (_) {}
-    if (!d.moved) return;
+    if (d.moved) {
+      try { el.releasePointerCapture(d.pointerId); } catch (_) {}
 
-    // Real drag: keep the manual position and stay paused. `moved` stays
-    // set on purpose — the `click` event fires AFTER pointerup, so
-    // onTrackClick can still see it and suppress the brand-link navigation.
-    el.classList.remove("dragging");
-    el.classList.add("drag-paused");
+      // Real drag: keep the manual position and stay paused. `moved` stays
+      // set on purpose — the `click` event fires AFTER pointerup, so
+      // onTrackClick can still see it and suppress the brand-link navigation.
+      el.classList.remove("dragging");
+      el.classList.add("drag-paused");
 
-    if (d.pointerType === "touch") {
-      // Touch has no hover-out, so auto-resume a couple of seconds after the
-      // swipe ends unless the user grabs the strip again.
-      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-      resumeTimerRef.current = setTimeout(() => {
-        if (!trackRef.current) return;
-        trackRef.current.classList.remove("drag-paused");
-        trackRef.current.style.transform = "";
-        trackRef.current.style.animation = "";
-      }, 2000);
+      if (d.pointerType === "touch") {
+        // Touch has no hover-out, so auto-resume a couple of seconds after
+        // the swipe ends unless the user grabs the strip again.
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = setTimeout(() => {
+          if (!trackRef.current) return;
+          trackRef.current.classList.remove("drag-paused");
+          trackRef.current.style.transform = "";
+          trackRef.current.style.animation = "";
+        }, 2000);
+      }
+    } else {
+      // Plain click (no drag): release nothing, `moved` stays false, and the
+      // natural click on the <Link> proceeds — desktop navigation works.
     }
   }, []);
 
