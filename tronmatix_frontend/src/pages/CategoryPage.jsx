@@ -23,22 +23,22 @@ export function CategoryPage() {
   // "table-chair" → DX RACER,SECRETLAB,TTR RACING,...
   const topLevelCats = useMemo(() => {
     const map = {}
-    ;(categoryTree || []).forEach(cat => {
-      const subs = []
-      ;(cat.main_categories || []).forEach(mc => {
-        // Always include the main-category name itself (CPU, RAM, ...)
-        subs.push(mc.name)
-        const subCates = mc.sub_categories || []
-        subCates.forEach(sc => {
-          // Include sub-category name
-          if (sc.name) subs.push(sc.name)
-          // Include brand names living under the sub-category
-          const brands = (sc.brands || []).map(b => b.name).filter(b => b && b !== 'TBD')
-          if (brands.length) subs.push(...brands)
-        })
+      ; (categoryTree || []).forEach(cat => {
+        const subs = []
+          ; (cat.main_categories || []).forEach(mc => {
+            // Always include the main-category name itself (CPU, RAM, ...)
+            subs.push(mc.name)
+            const subCates = mc.sub_categories || []
+            subCates.forEach(sc => {
+              // Include sub-category name
+              if (sc.name) subs.push(sc.name)
+              // Include brand names living under the sub-category
+              const brands = (sc.brands || []).map(b => b.name).filter(b => b && b !== 'TBD')
+              if (brands.length) subs.push(...brands)
+            })
+          })
+        map[cat.slug] = [...new Set(subs.filter(Boolean))]
       })
-      map[cat.slug] = [...new Set(subs.filter(Boolean))]
-    })
     return map
   }, [categoryTree])
 
@@ -96,7 +96,7 @@ export function CategoryPage() {
   // BrandMarquee), the heading reflects the brand instead of the generic
   // "All Products" label. Same inline i18n pattern as the rest of the page.
   const brandLabel = brandParam
-    ? (isKhmer ? `${brandParam.toUpperCase()} ផលិតផល` : `${brandParam.toUpperCase()} PRODUCTS`)
+    ? (isKhmer ? `${brandParam.toUpperCase()}` : `${brandParam.toUpperCase()}`)
     : null
 
   const label = isSearch
