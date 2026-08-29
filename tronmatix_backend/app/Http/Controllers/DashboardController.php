@@ -834,7 +834,9 @@ class DashboardController extends Controller
             ]);
         }
 
-        return view('dashboard.orders-show', compact('order'));
+        $deliveryProviders = \App\Models\DeliveryProvider::active()->get();
+
+        return view('dashboard.orders-show', compact('order', 'deliveryProviders'));
     }
 
     public function updateOrderStatus(Request $request, $order_id)

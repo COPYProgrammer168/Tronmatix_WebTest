@@ -18,6 +18,11 @@
         @php
             $user = Auth::guard('admin')->user() ?? Auth::guard('staff')->user();
             $_pRole = $user?->role ?? 'editor';
+            $_editKey = "perm_{$_pRole}_orders_edit";
+            $_editDefs = \App\Models\AdminSetting::getDefaults();
+            $_canEdit = $_pRole === 'superadmin'
+                || (\App\Models\AdminSetting::get($_editKey, $_editDefs["{$_pRole}_orders_edit"] ?? '0') === '1');
+            $allDeliveryProviders = $deliveryProviders ?? \App\Models\DeliveryProvider::active()->get();
         @endphp
 
         {{-- ── Floating flash toasts (fixed-position, page-specific) ───────────────── --}}
@@ -209,44 +214,61 @@
                                 style="overflow-x:auto; padding-bottom:8px; -webkit-overflow-scrolling:touch;">
                                 <div class="timeline-inner" style="display:flex; align-items:flex-start; min-width:420px;">
                                     @foreach($steps as $i => $s)
+                                        @php
+                                            $isStepCurrent = ($s === $order->status);
+                                            $isStepDone = ($i < $current);
+                                            $canClickStep = $_canEdit && !$isStepCurrent && ($order->status !== 'cancelled');
+                                        @endphp
                                         <div style="display:flex; align-items:center; flex:1; min-width:0;">
-                                            <div
-                                                style="display:flex; flex-direction:column; align-items:center; flex:1; min-width:60px;">
+                                            <button type="button"
+                                                @if($canClickStep)
+                                                    onclick="openStatusPopup('{{ $s }}')"
+                                                    title="Click to update status to {{ $labels[$i] }}"
+                                                @endif
+                                                style="
+                                                    background:none; border:none; padding:0; margin:0;
+                                                    display:flex; flex-direction:column; align-items:center; flex:1; min-width:60px;
+                                                    cursor: {{ $canClickStep ? 'pointer' : 'default' }};
+                                                    outline:none;
+                                                ">
                                                 {{-- Step circle --}}
                                                 <div class="timeline-circle" style="
-                                                                                width:46px; height:46px; border-radius:50%;
-                                                                                display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
-                                                                                background: {{ $i < $current ? $colors[$i] . '22' : ($i === $current ? $colors[$i] : 'var(--surface-3)') }};
-                                                                                border: 2px solid {{ $i <= $current ? $colors[$i] : 'var(--border)' }};
-                                                                                box-shadow: {{ $i === $current ? '0 0 20px ' . $colors[$i] . '55' : 'none' }};
-                                                                                transition: all .5s ease;
-                                                                                {{ $i === $current ? 'animation:stepPulse 2s ease-in-out infinite;' : '' }}
-                                                                                position:relative; z-index:2;
-                                                                            ">
-                                                    @if($i < $current)
+                                                    width:46px; height:46px; border-radius:50%;
+                                                    display:flex; align-items:center; justify-content:center; font-size: var(--title-size);
+                                                    background: {{ $isStepDone ? $colors[$i] . '22' : ($isStepCurrent ? $colors[$i] : 'var(--surface-3)') }};
+                                                    border: 2px solid {{ ($isStepDone || $isStepCurrent) ? $colors[$i] : 'var(--border)' }};
+                                                    box-shadow: {{ $isStepCurrent ? '0 0 20px ' . $colors[$i] . '55' : 'none' }};
+                                                    transition: all .25s ease;
+                                                    {{ $isStepCurrent ? 'animation:stepPulse 2s ease-in-out infinite;' : '' }}
+                                                    position:relative; z-index:2;
+                                                "
+                                                @if($canClickStep)
+                                                    onmouseover="this.style.transform='scale(1.12)'; this.style.borderColor='{{ $colors[$i] }}'; this.style.boxShadow='0 0 16px {{ $colors[$i] }}66';"
+                                                    onmouseout="this.style.transform='scale(1)'; this.style.borderColor='{{ $isStepDone ? $colors[$i] : 'var(--border)' }}'; this.style.boxShadow='none';"
+                                                @endif>
+                                                    @if($isStepDone)
                                                         <span style="color:{{ $colors[$i] }}; font-size: var(--title-size);">✓</span>
                                                     @else
                                                         {{ $icons[$i] }}
                                                     @endif
                                                 </div>
                                                 {{-- Step label --}}
-                                                <div
-                                                    style="margin-top:8px; font-size: var(--title-size); text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
-                                                                                color: {{ $i <= $current ? $colors[$i] : 'var(--text-xfaint)' }};">
+                                                <div style="
+                                                    margin-top:8px; font-size: var(--title-size); text-align:center; font-weight:700; letter-spacing:1px; line-height:1.3;
+                                                    color: {{ ($isStepDone || $isStepCurrent) ? $colors[$i] : 'var(--text-xfaint)' }};
+                                                    transition: color .2s ease;
+                                                ">
                                                     {{ $labels[$i] }}
-                                                    @if($i === $current)
-                                                        <div
-                                                            style="width:6px;height:6px;border-radius:50%;background:{{ $colors[$i] }};
-                                                                                                margin:4px auto 0;animation:stepPulse 1.5s ease infinite;">
-                                                        </div>
+                                                    @if($isStepCurrent)
+                                                        <div style="width:6px;height:6px;border-radius:50%;background:{{ $colors[$i] }};margin:4px auto 0;animation:stepPulse 1.5s ease infinite;"></div>
                                                     @endif
                                                 </div>
-                                            </div>
+                                            </button>
                                             {{-- Connector line --}}
                                             @if($i < count($steps) - 1)
                                                 <div style="height:2px; flex:1; margin:0 2px; border-radius:1px; margin-bottom:26px;
-                                                                                        background: {{ $i < $current ? 'linear-gradient(90deg,' . $colors[$i] . ',' . $colors[$i + 1] . ')' : 'var(--border)' }};
-                                                                                        transition: all .6s ease; min-width:10px;"></div>
+                                                    background: {{ $isStepDone ? 'linear-gradient(90deg,' . $colors[$i] . ',' . $colors[$i + 1] . ')' : 'var(--border)' }};
+                                                    transition: all .6s ease; min-width:10px;"></div>
                                             @endif
                                         </div>
                                     @endforeach
@@ -494,14 +516,26 @@
             <div class="order-right-col" style="display:flex; flex-direction:column; gap:20px; min-width:0;">
 
                 {{-- ── Smart next-action card ─────────────────────────────────────────────
-                Advances: confirmed → processing → shipped → delivered.
+                Advances: pending → confirmed → processing → shipped → delivered.
                 Shows ONE correct next button per status; never a generic "process" CTA.
                 --}}
                 @php
-                    // ── Smart next-action: pickup orders skip Shipped, go confirmed→processing→delivered
+                    // ── Smart next-action: pickup orders skip Shipped, go pending→confirmed→processing→delivered
                     $isPickupOrder = $order->isPickup();
 
                     $nextActions = [
+                        'pending' => [
+                            'status' => 'confirmed',
+                            'icon' => '✅',
+                            'label' => 'CONFIRM ORDER',
+                            'title' => 'CONFIRM ORDER',
+                            'desc' => 'Confirm this order and move it to <strong style="color:#22c55e;">Confirmed</strong> state.',
+                            'color' => '#22c55e',
+                            'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)',
+                            'shadow' => 'rgba(34,197,94,0.35)',
+                            'border' => 'rgba(34,197,94,0.3)',
+                            'bg' => 'rgba(34,197,94,0.04)',
+                        ],
                         'confirmed' => [
                             'status' => 'processing',
                             'icon' => $isPickupOrder ? '📦' : '⚙️',
@@ -563,36 +597,40 @@
                     $nextAction = $nextActions[$order->status] ?? null;
                 @endphp
 
-                @if($nextAction && !$order->delivery_confirmed_at)
-                    <div class="card" style="border-color:{{ $nextAction['border'] }}; background:{{ $nextAction['bg'] }};">
-                        <div class="card-body" style="text-align:center;">
-                            <div style="font-size: var(--title-size); margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
-                            <div
-                                style="font-weight:700; color:{{ $nextAction['color'] }}; font-size: var(--title-size); margin-bottom:6px; letter-spacing:1px;">
-                                {!! $nextAction['title'] !!}
+                @if($nextAction && !$order->delivery_confirmed_at && $order->status !== 'delivered' && $order->status !== 'cancelled')
+                    @if($_canEdit)
+                        <div class="card" style="border-color:{{ $nextAction['border'] }}; background:{{ $nextAction['bg'] }};">
+                            <div class="card-body" style="text-align:center;">
+                                <div style="font-size: var(--title-size); margin-bottom:8px;">{{ $nextAction['icon'] }}</div>
+                                <div
+                                    style="font-weight:700; color:{{ $nextAction['color'] }}; font-size: var(--title-size); margin-bottom:6px; letter-spacing:1px;">
+                                    {!! $nextAction['title'] !!}
+                                </div>
+                                <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-bottom:18px;">
+                                    {!! $nextAction['desc'] !!}
+                                </div>
+                                <button type="button" onclick="openPopup('confirm-delivery')" style="
+                                                            background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
+                                                            width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
+                                                            letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
+                                                            box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
+                                                        " onmouseover="this.style.transform='scale(1.02)'"
+                                    onmouseout="this.style.transform='scale(1)'">
+                                    {{ $nextAction['icon'] }} {{ $nextAction['label'] }}
+                                </button>
                             </div>
-                            <div style="color:rgba(255,255,255,0.45); font-size: var(--title-size); margin-bottom:18px;">
-                                {!! $nextAction['desc'] !!}
-                            </div>
-                            <button onclick="openPopup('confirm-delivery')" style="
-                                                        background:{{ $nextAction['gradient'] }}; color:#fff; font-weight:700;
-                                                        width:100%; border:none; padding:13px; border-radius:10px; font-size: var(--title-size);
-                                                        letter-spacing:1px; cursor:pointer; font-family:Rajdhani,sans-serif;
-                                                        box-shadow:0 4px 20px {{ $nextAction['shadow'] }}; transition:all .2s;
-                                                    " onmouseover="this.style.transform='scale(1.02)'"
-                                onmouseout="this.style.transform='scale(1)'">
-                                {{ $nextAction['icon'] }} {{ $nextAction['label'] }}
-                            </button>
                         </div>
-                    </div>
+                    @endif
 
-                @elseif($order->delivery_confirmed_at)
+                @elseif($order->delivery_confirmed_at || $order->status === 'delivered')
                     <div class="card" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04);">
                         <div class="card-body" style="text-align:center;">
-                            <div style="font-size: var(--title-size); margin-bottom:8px;">✅</div>
-                            <div style="font-weight:700; color:#22c55e; font-size: var(--title-size);">Delivery Confirmed</div>
+                            <div style="font-size: var(--title-size); margin-bottom:8px;">{{ $order->isPickup() ? '🏪' : '✅' }}</div>
+                            <div style="font-weight:700; color:#22c55e; font-size: var(--title-size);">
+                                {{ $order->isPickup() ? 'Order Picked Up' : 'Delivery Confirmed' }}
+                            </div>
                             <div style="color:rgba(255,255,255,0.35); font-size: var(--title-size); margin-top:4px;">
-                                {{ $order->delivery_confirmed_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i') }} (ICT)
+                                {{ ($order->delivery_confirmed_at ?? $order->updated_at)->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i') }} (ICT)
                             </div>
                         </div>
                     </div>
@@ -635,7 +673,7 @@
                             <div class="status-btn-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                                 @foreach($statusMeta as $key => $meta)
                                     @php $isCurrentStatus = $order->status === $key; @endphp
-                                    <button onclick="openStatusPopup('{{ $key }}')" @if($isCurrentStatus) disabled @endif style="
+                                    <button type="button" onclick="openStatusPopup('{{ $key }}')" @if($isCurrentStatus) disabled @endif style="
                                                                         display:flex; align-items:center; gap:7px;
                                                                         padding:10px 12px; border-radius:10px; font-family:Rajdhani,sans-serif;
                                                                         font-size: var(--text-sm); font-weight:700; letter-spacing:1px;
@@ -975,31 +1013,58 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:10px;">
-                        <button onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
-                        <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
-                            @csrf @method('PUT')
-                            <input type="hidden" name="status" value="{{ $nextAction['status'] }}">
+                    <form method="POST" action="{{ route('dashboard.orders.status', $order) }}">
+                        @csrf @method('PUT')
+                        <input type="hidden" name="status" value="{{ $nextAction['status'] }}">
+
+                        @if($order->isDelivery() && in_array($nextAction['status'], ['shipped', 'delivered']))
+                            <div style="margin-bottom:18px; text-align:left;">
+                                <label style="display:block; font-size:var(--title-size); color:rgba(255,255,255,0.6); margin-bottom:6px; font-weight:700; letter-spacing:1px;">
+                                    🚚 DELIVERY PROVIDER
+                                </label>
+                                <select name="delivery_provider_id" style="width:100%; padding:10px 12px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:Rajdhani,sans-serif; font-size:var(--title-size);" {{ !$order->delivery_provider_id ? 'required' : '' }}>
+                                    <option value="" style="background:#1a1a2e; color:#fff;">-- Select Delivery Provider --</option>
+                                    @foreach($allDeliveryProviders as $prov)
+                                        <option value="{{ $prov->id }}" {{ ($order->delivery_provider_id == $prov->id) ? 'selected' : '' }} style="background:#1a1a2e; color:#fff;">
+                                            {{ $prov->name }} {{ $prov->fee ? '($' . number_format($prov->fee, 2) . ')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        <div style="display:flex; gap:10px;">
+                            <button type="button" onclick="closePopup('confirm-delivery')" class="popup-btn-cancel">CANCEL</button>
                             <button type="submit" class="popup-btn-confirm"
-                                style="background:{{ $nextAction['gradient'] }}; width:100%;">
+                                style="background:{{ $nextAction['gradient'] }};">
                                 {{ $nextAction['icon'] }} YES, {{ $nextAction['label'] }}
                             </button>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         @endif
 
         {{-- Status Change Popups --}}
         @php
-            $statusMeta2 = [
-                'pending' => ['icon' => '⏳', 'color' => '#eab308', 'gradient' => 'linear-gradient(135deg,#eab308,#ca8a04)', 'label' => 'PENDING', 'msg' => 'Order is waiting to be confirmed.'],
-                'confirmed' => ['icon' => '✅', 'color' => '#22c55e', 'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)', 'label' => 'CONFIRMED', 'msg' => 'Order has been confirmed and will be processed.'],
-                'processing' => ['icon' => '⚙️', 'color' => '#3b82f6', 'gradient' => 'linear-gradient(135deg,#3b82f6,#2563eb)', 'label' => 'PROCESSING', 'msg' => 'Order is currently being prepared.'],
-                'shipped' => ['icon' => '🚚', 'color' => '#a78bfa', 'gradient' => 'linear-gradient(135deg,#a78bfa,#7c3aed)', 'label' => 'SHIPPED', 'msg' => 'Order has been dispatched to the customer.'],
-                'delivered' => ['icon' => '📦', 'color' => '#F97316', 'gradient' => 'linear-gradient(135deg,#F97316,#ea580c)', 'label' => 'DELIVERED', 'msg' => 'Order has been delivered successfully.'],
-                'cancelled' => ['icon' => '❌', 'color' => '#ef4444', 'gradient' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'label' => 'CANCELLED', 'msg' => 'This order will be cancelled and cannot be undone.'],
-            ];
+            if ($order->isPickup()) {
+                $statusMeta2 = [
+                    'pending' => ['icon' => '⏳', 'color' => '#eab308', 'gradient' => 'linear-gradient(135deg,#eab308,#ca8a04)', 'label' => 'PENDING', 'msg' => 'Order is waiting to be confirmed.'],
+                    'confirmed' => ['icon' => '✅', 'color' => '#22c55e', 'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)', 'label' => 'CONFIRMED', 'msg' => 'Order has been confirmed and will be prepared.'],
+                    'processing' => ['icon' => '📦', 'color' => '#3b82f6', 'gradient' => 'linear-gradient(135deg,#3b82f6,#2563eb)', 'label' => 'READY', 'msg' => 'Order is ready for customer pickup at store.'],
+                    'delivered' => ['icon' => '🏪', 'color' => '#F97316', 'gradient' => 'linear-gradient(135deg,#F97316,#ea580c)', 'label' => 'PICKED UP', 'msg' => 'Confirm the customer has collected the order at store.'],
+                    'cancelled' => ['icon' => '❌', 'color' => '#ef4444', 'gradient' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'label' => 'CANCELLED', 'msg' => 'This order will be cancelled and cannot be undone.'],
+                ];
+            } else {
+                $statusMeta2 = [
+                    'pending' => ['icon' => '⏳', 'color' => '#eab308', 'gradient' => 'linear-gradient(135deg,#eab308,#ca8a04)', 'label' => 'PENDING', 'msg' => 'Order is waiting to be confirmed.'],
+                    'confirmed' => ['icon' => '✅', 'color' => '#22c55e', 'gradient' => 'linear-gradient(135deg,#22c55e,#16a34a)', 'label' => 'CONFIRMED', 'msg' => 'Order has been confirmed and will be processed.'],
+                    'processing' => ['icon' => '⚙️', 'color' => '#3b82f6', 'gradient' => 'linear-gradient(135deg,#3b82f6,#2563eb)', 'label' => 'PROCESSING', 'msg' => 'Order is currently being prepared.'],
+                    'shipped' => ['icon' => '🚚', 'color' => '#a78bfa', 'gradient' => 'linear-gradient(135deg,#a78bfa,#7c3aed)', 'label' => 'SHIPPED', 'msg' => 'Order has been dispatched to the customer.'],
+                    'delivered' => ['icon' => '📦', 'color' => '#F97316', 'gradient' => 'linear-gradient(135deg,#F97316,#ea580c)', 'label' => 'DELIVERED', 'msg' => 'Order has been delivered successfully.'],
+                    'cancelled' => ['icon' => '❌', 'color' => '#ef4444', 'gradient' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'label' => 'CANCELLED', 'msg' => 'This order will be cancelled and cannot be undone.'],
+                ];
+            }
         @endphp
 
         @foreach($statusMeta2 as $key => $meta)
@@ -1057,16 +1122,33 @@
                             </div>
                         @endif
 
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel">CANCEL</button>
-                            <form method="POST" action="{{ route('dashboard.orders.status', $order) }}" style="flex:2;">
-                                @csrf @method('PUT')
-                                <input type="hidden" name="status" value="{{ $key }}">
-                                <button type="submit" class="popup-btn-confirm" style="background:{{ $meta['gradient'] }}; width:100%;">
+                        <form method="POST" action="{{ route('dashboard.orders.status', $order) }}">
+                            @csrf @method('PUT')
+                            <input type="hidden" name="status" value="{{ $key }}">
+
+                            @if($order->isDelivery() && in_array($key, ['shipped', 'delivered']))
+                                <div style="margin-bottom:18px; text-align:left;">
+                                    <label style="display:block; font-size:var(--title-size); color:rgba(255,255,255,0.6); margin-bottom:6px; font-weight:700; letter-spacing:1px;">
+                                        🚚 DELIVERY PROVIDER
+                                    </label>
+                                    <select name="delivery_provider_id" style="width:100%; padding:10px 12px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:Rajdhani,sans-serif; font-size:var(--title-size);" {{ !$order->delivery_provider_id ? 'required' : '' }}>
+                                        <option value="" style="background:#1a1a2e; color:#fff;">-- Select Delivery Provider --</option>
+                                        @foreach($allDeliveryProviders as $prov)
+                                            <option value="{{ $prov->id }}" {{ ($order->delivery_provider_id == $prov->id) ? 'selected' : '' }} style="background:#1a1a2e; color:#fff;">
+                                                {{ $prov->name }} {{ $prov->fee ? '($' . number_format($prov->fee, 2) . ')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+
+                            <div style="display:flex; gap:10px;">
+                                <button type="button" onclick="closeStatusPopup('{{ $key }}')" class="popup-btn-cancel">CANCEL</button>
+                                <button type="submit" class="popup-btn-confirm" style="background:{{ $meta['gradient'] }};">
                                     {{ $meta['icon'] }} CONFIRM
                                 </button>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             @endif
