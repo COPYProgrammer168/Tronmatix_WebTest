@@ -865,42 +865,12 @@ class DashboardController extends Controller
                 ->with('error', 'Choose a delivery provider before marking this order delivered.');
         }
 
-        // ── Delivery confirmation flow ────────────────────────────────────────
-        // When staff/courier marks the DELIVERY RUN complete (shipped → delivered)
-        // on a DELIVERY order, we do NOT flip straight to 'delivered'. Instead we
-        // request the customer's confirmation in Telegram ("Confirm Received"),
-        // keep the order at 'shipped', and only set 'delivered' once the customer
-        // taps (confirmDeliveryFromTelegram). Fallback: if the customer has no
-        // Telegram linked (or this is a pickup), proceed straight to delivered.
-        $forceDeliver = (bool) $request->input('force_deliver');
-
-        if (
-            ! $forceDeliver
-            && $oldStatus === 'shipped'
-            && $newStatus === 'delivered'
-            && ! $order->isPickup()
-            && $order->user?->telegram_chat_id
-            && ! $order->delivery_confirmed_at
-        ) {
-            try {
-                app(TelegramBotService::class)->sendDeliveryConfirmationPrompt($order);
-            } catch (\Throwable $e) {
-                Log::warning('[Bot2] Delivery confirmation prompt failed, falling back to delivered: ' . $e->getMessage());
-            }
-
-            // If the prompt was sent, await the customer confirmation.
-            if ($order->fresh()->delivery_confirm_requested_at) {
-                return redirect()
-                    ->route('dashboard.orders.show', $order->order_id)
-                    ->with('success', 'Delivery marked complete — awaiting customer confirmation in Telegram.');
-            }
-            // Else (no chat delivered the prompt) fall through to normal delivered.
-        }
-
         $updateData = ['status' => $newStatus];
         if ($newStatus === 'delivered' && !$order->delivery_confirmed_at) {
             $updateData['delivery_confirmed_at'] = now();
-            $updateData['delivery_confirmed_by'] = 'staff';
+            $updateData['delivery_confirmed_by'] = auth('admin')->user()?->name
+                ?? auth('staff')->user()?->name
+                ?? 'staff';
         }
         $order->update($updateData);
 
@@ -958,59 +928,70 @@ class DashboardController extends Controller
         // ── Log activity ────────────────────────────────────────────────────────
         try {
             \App\Services\ActivityLogger::orderStatusChange($order, $oldStatus, $newStatus, $request);
+            if ($newStatus === 'delivered') {
+                \App\Services\ActivityLogger::deliveryConfirmed($order, auth('admin')->user()?->name ?? auth('staff')->user()?->name ?? 'Admin', $request);
+            }
         } catch (\Throwable $e) {
             Log::warning('[ActivityLog] Status update log failed: ' . $e->getMessage());
         }
 
         // Load relations needed by Telegram message builders
-        $order->load(['items', 'user']);
+        $order->load(['items', 'user', 'location', 'deliveryProvider']);
 
         // ── Bot 1 — notify admin channel ──────────────────────────────────────
-        $adminAlert = "📋 *Order Status Updated*\n\n" .
-            "📦 Order: `#{$order->order_id}`\n" .
-            "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
-            "💳 Method: " . strtoupper($order->payment_method ?? 'cash') . "\n" .
-            "🔄 {$oldStatus} → *{$newStatus}*\n";
+        if ($newStatus === 'delivered') {
+            try {
+                app(TelegramService::class)->sendDeliveryConfirmed($order);
+            } catch (\Throwable $e) {
+                Log::warning('[Bot1] Delivery confirm alert failed: ' . $e->getMessage());
+            }
+        } else {
+            $adminAlert = "📋 *Order Status Updated*\n\n" .
+                "📦 Order: `#{$order->order_id}`\n" .
+                "👤 " . ($order->user?->username ?? 'Guest') . "\n" .
+                "💳 Method: " . strtoupper($order->payment_method ?? 'cash') . "\n" .
+                "🔄 {$oldStatus} → *{$newStatus}*\n";
 
-        if ($newStatus === 'cancelled') {
-            $pm = strtolower($order->payment_method ?? 'cash');
-            if ($pm === 'bakong' || $pm === 'card') {
-                $adminAlert .= "\n" . ($refundRecorded ? "✅" : "⚠️") . " *PAYMENT REFUND*\n";
-                $adminAlert .= "Paid via {$pm} — \${$order->total}";
-                if ($refundRecorded) {
-                    $adminAlert .= "\nRefund recorded in DB. Complete the transfer in Bakong portal and confirm to customer.";
+            if ($newStatus === 'cancelled') {
+                $pm = strtolower($order->payment_method ?? 'cash');
+                if ($pm === 'bakong' || $pm === 'card') {
+                    $adminAlert .= "\n" . ($refundRecorded ? "✅" : "⚠️") . " *PAYMENT REFUND*\n";
+                    $adminAlert .= "Paid via {$pm} — \${$order->total}";
+                    if ($refundRecorded) {
+                        $adminAlert .= "\nRefund recorded in DB. Complete the transfer in Bakong portal and confirm to customer.";
+                    } else {
+                        $adminAlert .= "\nPlease process refund manually and update payment record.";
+                    }
                 } else {
-                    $adminAlert .= "\nPlease process refund manually and update payment record.";
+                    $adminAlert .= "\n💰 Amount: \${$order->total}";
+                    $adminAlert .= "\nℹ️ COD cancel — no payment to refund.";
                 }
-            } else {
-                $adminAlert .= "\n💰 Amount: \${$order->total}";
-                $adminAlert .= "\nℹ️ COD cancel — no payment to refund.";
-            }
-            $adminAlert .= "\nAmount stays in records for accounting.";
-            $adminAlert .= $restoredLines > 0
-                ? "\n📦 Stock restored: {$restoredLines} product line(s)."
-                : "\n📦 No stock movements to restore.";
-            if ($restoredLines > 0 && $order->items->isNotEmpty()) {
-                $restoredNames = $order->items->take(6)->map(fn ($i) => "{$i->name} ×{$i->qty}")->join(' · ');
-                if ($order->items->count() > 6) {
-                    $restoredNames .= ' …';
+                $adminAlert .= "\nAmount stays in records for accounting.";
+                $adminAlert .= $restoredLines > 0
+                    ? "\n📦 Stock restored: {$restoredLines} product line(s)."
+                    : "\n📦 No stock movements to restore.";
+                if ($restoredLines > 0 && $order->items->isNotEmpty()) {
+                    $restoredNames = $order->items->take(6)->map(fn ($i) => "{$i->name} ×{$i->qty}")->join(' · ');
+                    if ($order->items->count() > 6) {
+                        $restoredNames .= ' …';
+                    }
+                    $adminAlert .= "\n`" . $restoredNames . '`';
                 }
-                $adminAlert .= "\n`" . $restoredNames . '`';
             }
-        }
 
-        if ($newProvider = $order->getDeliveryProviderDetailsAttribute()) {
-            $adminAlert .= "\n🚚 Provider: {$newProvider['name']}";
-            if (! empty($newProvider['estimated_time'])) {
-                $adminAlert .= " (ETA: {$newProvider['estimated_time']})";
+            if ($newProvider = $order->getDeliveryProviderDetailsAttribute()) {
+                $adminAlert .= "\n🚚 Provider: {$newProvider['name']}";
+                if (! empty($newProvider['estimated_time'])) {
+                    $adminAlert .= " (ETA: {$newProvider['estimated_time']})";
+                }
             }
-        }
-        $adminAlert .= "\n🕐 " . now()->format('d M Y, H:i');
+            $adminAlert .= "\n🕐 " . now()->format('d M Y, H:i');
 
-        try {
-            app(TelegramService::class)->sendAlert($adminAlert);
-        } catch (\Throwable $e) {
-            Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
+            try {
+                app(TelegramService::class)->sendAlert($adminAlert);
+            } catch (\Throwable $e) {
+                Log::warning('[Bot1] Status alert failed: ' . $e->getMessage());
+            }
         }
 
         // ── Bot 2 — notify customer in their Telegram ─────────────────────────
@@ -1029,6 +1010,19 @@ class DashboardController extends Controller
             Log::warning('[Bot2] User status notification failed: ' . $e->getMessage());
         }
 
+        try {
+            $userBot = app(TelegramUserService::class);
+            match ($newStatus) {
+                'confirmed' => $userBot->onOrderConfirmed($order),
+                'shipped' => $userBot->onOrderShipped($order),
+                'delivered' => $userBot->onOrderDelivered($order),
+                'cancelled' => $userBot->onOrderCancelled($order),
+                default => null,
+            };
+        } catch (\Throwable $e) {
+            Log::warning('[UserBot] User status notification failed: ' . $e->getMessage());
+        }
+
         return redirect()->route('dashboard.orders.show', $order->order_id)->with('success', 'Order status updated to ' . strtoupper($newStatus) . '.');
     }
 
@@ -1040,7 +1034,11 @@ class DashboardController extends Controller
                 ->with('error', 'Order cannot be marked as delivered from its current status.');
         }
 
-        $order->update(['status' => 'delivered', 'delivery_confirmed_at' => now()]);
+        $order->update([
+            'status' => 'delivered',
+            'delivery_confirmed_at' => $order->delivery_confirmed_at ?? now(),
+            'delivery_confirmed_by' => $order->delivery_confirmed_by ?? (auth('admin')->user()?->name ?? auth('staff')->user()?->name ?? 'staff'),
+        ]);
 
         // ── Log activity ────────────────────────────────────────────────────────
         try {
@@ -1051,7 +1049,7 @@ class DashboardController extends Controller
         }
 
         // Load relations needed by Telegram message builders
-        $order->load(['items', 'user']);
+        $order->load(['items', 'user', 'location', 'deliveryProvider']);
 
         // ── Bot 1 — notify admin channel ──────────────────────────────────────
         try {
@@ -1065,6 +1063,12 @@ class DashboardController extends Controller
             app(TelegramBotService::class)->onOrderDelivered($order);
         } catch (\Throwable $e) {
             Log::warning('[Bot2] User delivery notification failed: ' . $e->getMessage());
+        }
+
+        try {
+            app(TelegramUserService::class)->onOrderDelivered($order);
+        } catch (\Throwable $e) {
+            Log::warning('[UserBot] User delivery notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('dashboard.orders.show', $order->order_id)

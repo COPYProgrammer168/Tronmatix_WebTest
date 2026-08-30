@@ -181,6 +181,9 @@ class TelegramUserService
     public function onOrderDelivered(Order $order): void
     {
         if (! $tgId = $order->user?->telegram_chat_id) return;
+        if (! $order->relationLoaded('items')) {
+            $order->load(['items', 'user', 'location', 'deliveryProvider']);
+        }
         $id    = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
 
@@ -204,6 +207,12 @@ class TelegramUserService
             if ($providerLine = $this->providerLine($order)) {
                 $lines[] = $providerLine;
             }
+        }
+
+        if ($order->items && $order->items->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = '<b>Items Delivered:</b>';
+            $lines[] = $this->formatHtmlItemLines($order->items, $order);
         }
 
         $lines[] = '';
@@ -250,11 +259,7 @@ class TelegramUserService
             ? '🏪 You selected <b>Store Pickup</b> — please come to collect your order.'
             : '🚚 Your order will be <b>delivered</b> to your address.';
 
-        $itemLines = $order->items->map(function ($item) {
-            $lineTotal = number_format($item->price * $item->qty, 2);
-            $name      = $this->e($item->name);
-            return "  • {$name} ×{$item->qty} → \${$lineTotal}";
-        })->join("\n");
+        $itemLines = $this->formatHtmlItemLines($order->items, $order);
 
         $discountDetail = null;
         if (($order->discount_amount ?? 0) > 0 && $order->discount_id) {
@@ -432,16 +437,7 @@ class TelegramUserService
         $subtotal = $this->e((string) ($order->subtotal ?? $order->total));
         $total    = $this->e((string) $order->total);
 
-        $itemLines = $order->items->map(function ($item) {
-            $lineTotal = round($item->price * $item->qty, 2);
-            $name      = $this->e($item->name);
-            $warranty  = '';
-            if ($item->warranty_start && $item->warranty_end) {
-                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
-                          . ' - ' . $item->warranty_end->format('d.m.Y');
-            }
-            return "  • {$name} ×{$item->qty} → \${$lineTotal}{$warranty}";
-        })->join("\n");
+        $itemLines = $this->formatHtmlItemLines($order->items, $order);
 
         // Build discount detail lines — show which products/categories the code applied to
         $discountLines = [];
@@ -492,5 +488,25 @@ class TelegramUserService
     private function ts(): string
     {
         return now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
+    }
+
+    /**
+     * Format item lines with pricing and warranty start/end dates for HTML messages.
+     */
+    private function formatHtmlItemLines($items, Order $order): string
+    {
+        return $items->map(function ($item) use ($order) {
+            $lineTotal = number_format($item->price * $item->qty, 2);
+            $name = $this->e($item->name);
+            $wStart = $item->resolved_warranty_start ?? $order->created_at;
+            $wEnd = $item->resolved_warranty_end;
+            $warranty = '';
+            if ($wStart && $wEnd) {
+                $warranty = "\n     🛡 <i>Warranty: Buy: " . $wStart->format('d.m.Y') . " → End: " . $wEnd->format('d.m.Y') . "</i>";
+            } elseif ($wStart) {
+                $warranty = "\n     🛡 <i>Warranty: Buy: " . $wStart->format('d.m.Y') . "</i>";
+            }
+            return "  • <b>{$name}</b> ×{$item->qty} → \${$lineTotal}{$warranty}";
+        })->join("\n");
     }
 }

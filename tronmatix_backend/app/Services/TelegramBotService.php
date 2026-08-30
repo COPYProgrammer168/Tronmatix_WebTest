@@ -275,7 +275,7 @@ class TelegramBotService
         $method = $this->e(strtoupper($order->payment_method ?? ''));
         $placed = $this->e($order->created_at->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'));
         $status = $this->e(ucfirst($order->status));
-        $itemLines = $order->items->map(fn($i) => '  • ' . $this->e($i->name) . '  ×' . $i->qty)->join("\n");
+        $itemLines = $this->formatHtmlItemLines($order->items, $order);
 
         $lines = [
             "{$emoji} <b>Order #{$id}</b>",
@@ -633,6 +633,9 @@ class TelegramBotService
     {
         if (!$chatId = $order->user?->telegram_chat_id)
             return;
+        if (!$order->relationLoaded('items')) {
+            $order->load(['items', 'user', 'location', 'deliveryProvider']);
+        }
         $id = $this->e($order->order_id ?? (string) $order->id);
         $total = $this->e((string) $order->total);
 
@@ -657,6 +660,12 @@ class TelegramBotService
             if ($providerLine = $this->providerLine($order)) {
                 $lines[] = $providerLine;
             }
+        }
+
+        if ($order->items && $order->items->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = '<b>Items Delivered:</b>';
+            $lines[] = $this->formatHtmlItemLines($order->items, $order);
         }
 
         $lines[] = '';
@@ -694,6 +703,36 @@ class TelegramBotService
         $lines[] = '';
         $lines[] = 'If you have questions, please contact our support.';
         $lines[] = '🕐 ' . $this->ts();
+
+        $this->send($chatId, implode("\n", $lines), $this->mainKeyboard());
+
+        // Send refund notification to user Telegram if payment was refunded
+        if ($isPaid && ($pm === 'bakong' || $pm === 'card')) {
+            $this->onOrderRefunded($order);
+        }
+    }
+
+    /**
+     * Send refund notification to user Telegram.
+     */
+    public function onOrderRefunded(Order $order): void
+    {
+        if (!$chatId = $order->user?->telegram_chat_id)
+            return;
+        $id = $this->e($order->order_id ?? (string) $order->id);
+        $total = $this->e((string) $order->total);
+        $pm = strtolower($order->payment_method ?? 'cash');
+
+        $lines = [
+            '💰 <b>Refund Initiated</b>',
+            '',
+            "📦 Order: <code>#{$id}</code>",
+            "💳 Payment method: " . strtoupper($pm),
+            "💰 Refund amount: \${$total}",
+            '',
+            'Our team is processing your refund. You will receive a confirmation once it is complete.',
+            '🕐 ' . $this->ts(),
+        ];
 
         $this->send($chatId, implode("\n", $lines), $this->mainKeyboard());
     }
@@ -784,11 +823,7 @@ class TelegramBotService
         $subtotal = $this->e((string) ($order->subtotal ?? $order->total));
         $total = $this->e((string) $order->total);
 
-        $itemLines = $order->items->map(function ($item) {
-            $lineTotal = round($item->price * $item->qty, 2);
-            $name = $this->e($item->name);
-            return "  • {$name} ×{$item->qty} → \${$lineTotal}";
-        })->join("\n");
+        $itemLines = $this->formatHtmlItemLines($order->items, $order);
 
         $lines = array_filter([
             '🧾 <b>Your Order Receipt</b>',
@@ -1052,5 +1087,25 @@ class TelegramBotService
     private function ts(): string
     {
         return now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
+    }
+
+    /**
+     * Format item lines with pricing and warranty start/end dates for HTML messages.
+     */
+    private function formatHtmlItemLines($items, Order $order): string
+    {
+        return $items->map(function ($item) use ($order) {
+            $lineTotal = number_format($item->price * $item->qty, 2);
+            $name = $this->e($item->name);
+            $wStart = $item->resolved_warranty_start ?? $order->created_at;
+            $wEnd = $item->resolved_warranty_end;
+            $warranty = '';
+            if ($wStart && $wEnd) {
+                $warranty = "\n     🛡 <i>Warranty: Buy: " . $wStart->format('d.m.Y') . " → End: " . $wEnd->format('d.m.Y') . "</i>";
+            } elseif ($wStart) {
+                $warranty = "\n     🛡 <i>Warranty: Buy: " . $wStart->format('d.m.Y') . "</i>";
+            }
+            return "  • <b>{$name}</b> ×{$item->qty} → \${$lineTotal}{$warranty}";
+        })->join("\n");
     }
 }

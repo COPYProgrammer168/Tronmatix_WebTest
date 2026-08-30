@@ -386,21 +386,12 @@ class OrderController extends Controller
                 foreach ($validated['items'] as $item) {
                     $product = $products[$item['product_id']];
 
-                    $warrantyStart = null;
-                    $warrantyEnd = null;
-
-                    if (!empty($product->warranty)) {
-                        // Assume warranty format: "2 years" or "12 months"
-                        $warrantyStart = now();
-                        $warrantyEnd = now();
-
-                        if (str_contains(strtolower($product->warranty), 'year')) {
-                            $years = (int) filter_var($product->warranty, FILTER_SANITIZE_NUMBER_INT);
-                            $warrantyEnd = now()->addYears($years);
-                        } elseif (str_contains(strtolower($product->warranty), 'month')) {
-                            $months = (int) filter_var($product->warranty, FILTER_SANITIZE_NUMBER_INT);
-                            $warrantyEnd = now()->addMonths($months);
-                        }
+                    $warrantyStart = now();
+                    $warrantyEnd = !empty($product->warranty)
+                        ? OrderItem::calculateEndDate($warrantyStart, $product->warranty)
+                        : null;
+                    if (!$warrantyEnd && !empty($product->warranty)) {
+                        $warrantyEnd = now()->addYear();
                     }
 
                     OrderItem::create([

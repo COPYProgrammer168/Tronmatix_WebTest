@@ -36,15 +36,7 @@ class TelegramService
 
         $isPickup = $order->isPickup();
 
-        $itemLines = $order->items->map(function ($item) {
-            $lineTotal = round($item->price * $item->qty, 2);
-            $warranty = '';
-            if ($item->warranty_start && $item->warranty_end) {
-                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
-                    . ' - ' . $item->warranty_end->format('d.m.Y');
-            }
-            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
-        })->join("\n");
+        $itemLines = $this->formatItemLines($order->items, $order);
 
         if ($isPickup) {
             $fulfillmentLine = '🏪 *STORE PICKUP* — customer will come to collect';
@@ -122,6 +114,10 @@ class TelegramService
         if (!$this->token)
             return;
 
+        if (!$order->relationLoaded('items')) {
+            $order->load(['items', 'user', 'location', 'deliveryProvider']);
+        }
+
         $shipping = $order->shipping;
         if (is_string($shipping)) {
             $shipping = json_decode($shipping, true) ?? [];
@@ -155,6 +151,14 @@ class TelegramService
             $lines[] = '🏪 Store pickup';
         }
 
+        if ($order->items && $order->items->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = '*Items Delivered:*';
+            $lines[] = $this->formatItemLines($order->items, $order);
+        }
+
+        $lines[] = '';
+        $lines[] = "✅ *Total: \${$order->total}*";
         $lines[] = '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
 
         $message = implode("\n", $lines);
@@ -176,6 +180,10 @@ class TelegramService
         if (!$this->token)
             return;
 
+        if (!$order->relationLoaded('items')) {
+            $order->load(['items', 'user', 'location', 'deliveryProvider']);
+        }
+
         $shipping = $order->shipping;
         if (is_string($shipping)) {
             $shipping = json_decode($shipping, true) ?? [];
@@ -184,7 +192,7 @@ class TelegramService
         $customerName = $order->user?->username ?? ($shipping['name'] ?? 'Guest');
         $phone = $shipping['phone'] ?? $order->user?->phone ?? '—';
 
-        $message = implode("\n", array_filter([
+        $lines = array_filter([
             '✅ *Customer Confirmed Delivery*',
             '',
             "📦 Order: `#{$order->order_id}`",
@@ -192,11 +200,22 @@ class TelegramService
             '📞 Phone: ' . $phone,
             $order->isPickup() || ! $order->delivery_provider_id ? null : $this->providerLine($order),
             $order->isPickup() || ! $order->delivery_provider_id ? null : $this->deliveryFeeLine($order),
-            '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
-            '',
-            'The customer confirmed receipt directly in Telegram.',
-            '[🔗 View Order](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')',
-        ], fn($l) => $l !== null));
+        ], fn($l) => $l !== null);
+
+        if ($order->items && $order->items->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = '*Items:*';
+            $lines[] = $this->formatItemLines($order->items, $order);
+        }
+
+        $lines[] = '';
+        $lines[] = "✅ *Total: \${$order->total}*";
+        $lines[] = '🕐 Confirmed: ' . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, H:i');
+        $lines[] = '';
+        $lines[] = 'The customer confirmed receipt directly in Telegram.';
+        $lines[] = '[🔗 View Order](' . rtrim(config('app.url', 'https://tronmatixcomputer.com'), '/') . '/dashboard/orders/' . $order->id . ')';
+
+        $message = implode("\n", $lines);
 
         $this->send($message);
     }
@@ -212,21 +231,14 @@ class TelegramService
 
         // Eager-load items if not already loaded
         if (!$order->relationLoaded('items')) {
-            $order->load('items');
+            $order->load(['items', 'user', 'location', 'deliveryProvider']);
         }
 
         $isPickup = $order->isPickup();
         $fulfillment = $isPickup ? '🏪 STORE PICKUP' : '🚚 DELIVERY';
 
-        $itemLines = $order->items->map(function ($item) {
-            $lineTotal = number_format($item->price * $item->qty, 2);
-            $warranty = '';
-            if ($item->warranty_start && $item->warranty_end) {
-                $warranty = "\n     🛡 Warranty: " . $item->warranty_start->format('d.m.Y')
-                    . ' - ' . $item->warranty_end->format('d.m.Y');
-            }
-            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
-        })->join("\n");
+        $itemLines = $this->formatItemLines($order->items, $order);
+
 
         $shipping = $order->shipping;
         if (is_string($shipping)) {
@@ -320,6 +332,26 @@ class TelegramService
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * Format item lines with pricing and warranty start/end dates for Markdown messages.
+     */
+    private function formatItemLines($items, Order $order): string
+    {
+        return $items->map(function ($item) use ($order) {
+            $lineTotal = number_format($item->price * $item->qty, 2);
+            $wStart = $item->resolved_warranty_start ?? $order->created_at;
+            $wEnd = $item->resolved_warranty_end;
+            $warranty = '';
+            if ($wStart && $wEnd) {
+                $warranty = "\n     🛡 Warranty: Buy: " . $wStart->format('d.m.Y') . " → End: " . $wEnd->format('d.m.Y');
+            } elseif ($wStart) {
+                $warranty = "\n     🛡 Warranty: Buy: " . $wStart->format('d.m.Y');
+            }
+            return "  • {$item->name} ×{$item->qty}  →  \${$lineTotal}{$warranty}";
+        })->join("\n");
+    }
+
 
     /**
      * One-line delivery provider summary for ADMIN messages (Bot 1, Markdown).

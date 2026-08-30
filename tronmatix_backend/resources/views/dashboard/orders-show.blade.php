@@ -338,15 +338,18 @@
                                                 @endif
                                                 <div>
                                                     <div style="font-weight:600;">{{ $item->name }}</div>
-                                                    @if($item->warranty_start && $item->warranty_end)
+                                                    @php
+                                                        $wStart = $item->resolved_warranty_start ?? $order->created_at;
+                                                        $wEnd = $item->resolved_warranty_end;
+                                                    @endphp
+                                                    @if($wStart && $wEnd)
                                                         <div style="font-size: var(--title-size); color:#F97316; margin-top:3px;">
-                                                            🛡️ {{ $item->warranty_start->format('d M Y') }} →
-                                                            {{ $item->warranty_end->format('d M Y') }}
+                                                            🛡️ Buy: {{ $wStart->format('d M Y') }} → End: {{ $wEnd->format('d M Y') }}
                                                         </div>
-                                                    @elseif($item->warranty_start)
+                                                    @elseif($wStart)
                                                         <div
                                                             style="font-size: var(--title-size); color:rgba(255,255,255,0.4); margin-top:3px;">
-                                                            🛡️ From {{ $item->warranty_start->format('d M Y') }}
+                                                            🛡️ Buy: {{ $wStart->format('d M Y') }}
                                                         </div>
                                                     @endif
                                                 </div>
@@ -1195,6 +1198,19 @@
                     @if($rHasDiscount)
                         <div style="font-size: var(--title-size); color:#888; text-align:right;">
                             (orig. ${{ number_format($rLineTotal, 2) }})
+                        </div>
+                    @endif
+                    @php
+                        $rWStart = $item->resolved_warranty_start ?? $order->created_at;
+                        $rWEnd = $item->resolved_warranty_end;
+                    @endphp
+                    @if($rWStart && $rWEnd)
+                        <div style="font-size: var(--title-size); color:#444;">
+                            🛡 Buy: {{ $rWStart->format('d.m.Y') }} → End: {{ $rWEnd->format('d.m.Y') }}
+                        </div>
+                    @elseif($rWStart)
+                        <div style="font-size: var(--title-size); color:#444;">
+                            🛡 Buy: {{ $rWStart->format('d.m.Y') }}
                         </div>
                     @endif
                 </div>

@@ -537,6 +537,15 @@ export default function BakongQRPanel({
                           <span style={{ flex: "0 0 auto", fontWeight: 600, color: "#111827" }}>
                             ${(itemPrice * itemQty).toFixed(2)}
                           </span>
+                          {item.warranty_start && item.warranty_end && (
+                            <div style={{ fontSize: 11, color: "#F97316", marginTop: 2 }}>
+                              🛡 {new Date(item.warranty_start).toLocaleDateString('en-GB')} - {new Date(item.warranty_end).toLocaleDateString('en-GB')}
+                            </div>
+                          )} {item.warranty && (
+                            <div style={{ fontSize: 11, color: "#F97316", marginTop: 2 }}>
+                              🛡 {item.warranty}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
