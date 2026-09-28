@@ -73,6 +73,7 @@ export default function BakongQRPanel({
   items,
   onPaid,
   onSuccessAlert,
+  deliveryFee,
 }) {
   const { t, isKhmer } = useLang();
 
@@ -553,17 +554,21 @@ export default function BakongQRPanel({
                 )}
 
                 <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#6b7280", marginBottom: 6 }}>
+                    <span>Subtotal</span>
+                    <span>${Number(subtotal ?? total).toFixed(2)}</span>
+                  </div>
+                  {Number(deliveryFee) > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#6b7280", marginBottom: 6 }}>
+                      <span>🚚 Delivery Fee</span>
+                      <span>${Number(deliveryFee).toFixed(2)}</span>
+                    </div>
+                  )}
                   {Number(discountAmount) > 0 && (
-                    <>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#6b7280", marginBottom: 6 }}>
-                        <span>Subtotal</span>
-                        <span>${Number(subtotal ?? total).toFixed(2)}</span>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#16a34a", marginBottom: 6 }}>
-                        <span>Discount{discountCode ? ` (${discountCode})` : ""}</span>
-                        <span>−${Number(discountAmount).toFixed(2)}</span>
-                      </div>
-                    </>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#16a34a", marginBottom: 6 }}>
+                      <span>Discount{discountCode ? ` (${discountCode})` : ""}</span>
+                      <span>−${Number(discountAmount).toFixed(2)}</span>
+                    </div>
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 8, borderTop: "1px solid #f3f4f6" }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>

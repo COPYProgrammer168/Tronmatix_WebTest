@@ -73,6 +73,7 @@ export default function QRModal({ order, onClose, onPaid, onSuccessAlert }) {
             discountAmount={order.discount_amount}
             discountCode={order.discount_code}
             items={order.items}
+            deliveryFee={order.delivery}
             onPaid={handlePaid}
             onSuccessAlert={onSuccessAlert}
           />

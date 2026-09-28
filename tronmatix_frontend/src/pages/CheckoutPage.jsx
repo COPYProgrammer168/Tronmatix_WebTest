@@ -126,7 +126,7 @@ export default function CheckoutPage() {
   // finalTotal). The server persists the real fee into order.total after the
   // order is created, so the receipt/QR amount is the authoritative total.
   const deliveryFee = !isPickup && selectedProvider?.fee != null ? Number(selectedProvider.fee) : 0
-  const finalTotal     = Math.max(0, subtotal - discountAmount)
+  const finalTotal     = Math.max(0, subtotal - discountAmount + deliveryFee)
 
   const handleLocation = (e) => {
     setLocation((p) => ({ ...p, [e.target.name]: e.target.value }))
@@ -737,6 +737,7 @@ export default function CheckoutPage() {
               discountAmount={order.discount_amount}
               discountCode={order.discount_code}
               items={order.items}
+              deliveryFee={order.delivery}
               onPaid={() => {
                 clearCheckoutStorage();
                 clearCart();

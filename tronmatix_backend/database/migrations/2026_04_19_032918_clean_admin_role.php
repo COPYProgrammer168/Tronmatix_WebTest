@@ -9,13 +9,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Remove any old mixed-role check constraint and set admin-only roles
-        DB::statement('ALTER TABLE admins DROP CONSTRAINT IF EXISTS admins_role_check');
-        DB::statement("
-            ALTER TABLE admins
-            ADD CONSTRAINT admins_role_check
-            CHECK (role IN ('superadmin', 'admin'))
-        ");
+        // 1. Remove any old mixed-role check constraint and set admin-only roles (PostgreSQL only)
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE admins DROP CONSTRAINT IF EXISTS admins_role_check');
+            DB::statement("
+                ALTER TABLE admins
+                ADD CONSTRAINT admins_role_check
+                CHECK (role IN ('superadmin', 'admin'))
+            ");
+        }
 
         // 2. Drop leftover columns from the old single-table design (safe if they exist)
         Schema::table('admins', function (Blueprint $table) {
@@ -30,13 +32,15 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Restore the broader role constraint
-        DB::statement('ALTER TABLE admins DROP CONSTRAINT IF EXISTS admins_role_check');
-        DB::statement("
-            ALTER TABLE admins
-            ADD CONSTRAINT admins_role_check
-            CHECK (role IN ('superadmin', 'admin', 'editor', 'seller', 'delivery', 'developer'))
-        ");
+        // Restore the broader role constraint (PostgreSQL only)
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE admins DROP CONSTRAINT IF EXISTS admins_role_check');
+            DB::statement("
+                ALTER TABLE admins
+                ADD CONSTRAINT admins_role_check
+                CHECK (role IN ('superadmin', 'admin', 'editor', 'seller', 'delivery', 'developer'))
+            ");
+        }
 
         Schema::table('admins', function (Blueprint $table) {
             $table->boolean('is_pending')->default(false);
