@@ -1,150 +1,107 @@
 <?php
 
+// database/seeders/ProductSeeder.php
+
 namespace Database\Seeders;
 
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 
+/**
+ * Seeds the real Tronmatix product catalog from the JSON export.
+ *
+ * Source: database/data/products_catalog.json (1099 products, extracted from
+ * the production pg_dump backup tronmatix_db_2026-08-10_204647.sql).
+ *
+ * ⚠️ NON-DESTRUCTIVE BY DESIGN — this seeder NEVER truncates the products
+ * table and NEVER deletes rows. The catalog is upserted keyed on `slug`, so:
+ *   - products already in the DB keep their identity & get refreshed
+ *   - new/unseen entries from the JSON are inserted
+ *   - anything in the DB that is NOT in the JSON is left untouched
+ * This protects the live catalog: re-running `db:seed` cannot wipe real data.
+ *
+ * NOTE: the export has NO `sku` column, so slug is the identity key (matching
+ * the original ProductImportSeeder pattern). SKUs are assigned separately by
+ * the `skus:backfill` console command / the Product model's auto-generator.
+ *
+ * The JSON uses `stock` for inventory (mapped to the current_stock column via
+ * the Product model's stock mutator). Images/specs arrays are copied as-is.
+ */
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        Product::truncate();
+        $path = database_path('data/products_catalog.json');
 
-        $catalog = [
-            'CPU' => [
-                'brand' => 'AMD',
-                'specs' => ['socket' => 'AM5', 'tdp' => '120W', 'cores' => '8', 'memory' => 'DDR5'],
-                'items' => [
-                    ['name' => 'AMD Ryzen 7 9800X3D',     'price' => 479,  'is_hot' => true,  'stock' => 25],
-                    ['name' => 'AMD Ryzen 9 9950X3D',     'price' => 699,  'is_hot' => true,  'stock' => 15],
-                    ['name' => 'Intel Core Ultra 9 285K',  'price' => 589,  'is_hot' => false, 'stock' => 20],
-                    ['name' => 'AMD Ryzen 5 9600X',        'price' => 279,  'is_hot' => false, 'stock' => 40],
-                ],
-            ],
-            'RAM' => [
-                'brand' => 'Corsair',
-                'specs' => ['type' => 'DDR5', 'speed' => '6000MHz', 'voltage' => '1.35V'],
-                'items' => [
-                    ['name' => 'Corsair Vengeance DDR5 32GB', 'price' => 189, 'is_hot' => false, 'stock' => 35],
-                    ['name' => 'G.Skill Trident Z5 64GB',     'price' => 329, 'is_hot' => true,  'stock' => 18],
-                    ['name' => 'Kingston Fury Beast 16GB',    'price' => 89,  'is_hot' => false, 'stock' => 50],
-                ],
-            ],
-            'MAINBOARD' => [
-                'brand' => 'ASUS',
-                'specs' => ['socket' => 'AM5', 'form' => 'ATX', 'chipset' => 'B650', 'pcie' => 'PCIe 5.0'],
-                'items' => [
-                    ['name' => 'ASUS ROG Strix B650-E Gaming', 'price' => 299, 'is_hot' => true,  'stock' => 22],
-                    ['name' => 'MSI MEG Z790 ACE',              'price' => 499, 'is_hot' => false, 'stock' => 12],
-                    ['name' => 'Gigabyte B650 AORUS Elite AX',  'price' => 219, 'is_hot' => false, 'stock' => 30],
-                ],
-            ],
-            'COOLING' => [
-                'brand' => 'be quiet!',
-                'specs' => ['type' => 'Air', 'tdp' => '250W', 'height' => '168mm', 'fans' => '2x140mm'],
-                'items' => [
-                    ['name' => 'be quiet! Dark Rock Pro 5', 'price' => 99,  'is_hot' => false, 'stock' => 28],
-                    ['name' => 'Noctua NH-D15 G2',          'price' => 119, 'is_hot' => true,  'stock' => 20],
-                    ['name' => 'NZXT Kraken Elite 360 RGB', 'price' => 229, 'is_hot' => true,  'stock' => 14],
-                ],
-            ],
-            'M2' => [
-                'brand' => 'Samsung',
-                'specs' => ['interface' => 'PCIe 4.0 NVMe', 'read' => '7450MB/s', 'write' => '6900MB/s'],
-                'items' => [
-                    ['name' => 'Samsung 990 Pro 2TB',      'price' => 179, 'is_hot' => true,  'stock' => 32],
-                    ['name' => 'WD Black SN850X 1TB',      'price' => 99,  'is_hot' => false, 'stock' => 45],
-                    ['name' => 'Seagate FireCuda 530 2TB', 'price' => 189, 'is_hot' => false, 'stock' => 26],
-                ],
-            ],
-            'VGA' => [
-                'brand' => 'NVIDIA',
-                'specs' => ['memory' => '16GB GDDR7', 'bus' => '256-bit', 'pcie' => 'PCIe 5.0'],
-                'items' => [
-                    ['name' => 'NVIDIA GeForce RTX 5080',  'price' => 999,  'is_hot' => true,  'stock' => 8],
-                    ['name' => 'NVIDIA GeForce RTX 4090',  'price' => 1599, 'is_hot' => false, 'stock' => 5],
-                    ['name' => 'AMD Radeon RX 7900 XTX',   'price' => 799,  'is_hot' => false, 'stock' => 10],
-                    ['name' => 'NVIDIA RTX 4070 Ti Super', 'price' => 599,  'is_hot' => true,  'stock' => 15],
-                ],
-            ],
-            'CASE' => [
-                'brand' => 'Lian Li',
-                'specs' => ['form' => 'Mid Tower', 'material' => 'Aluminum/Glass', 'fans' => '3x120mm'],
-                'items' => [
-                    ['name' => 'Lian Li PC-O11 Dynamic EVO', 'price' => 149, 'is_hot' => true,  'stock' => 20],
-                    ['name' => 'Fractal Design Torrent RGB',  'price' => 189, 'is_hot' => false, 'stock' => 16],
-                    ['name' => 'NZXT H9 Elite',               'price' => 229, 'is_hot' => false, 'stock' => 12],
-                ],
-            ],
-            'POWER SUPPLY' => [
-                'brand' => 'EVGA',
-                'specs' => ['wattage' => '1000W', 'efficiency' => '80+ Gold', 'modular' => 'Full Modular'],
-                'items' => [
-                    ['name' => 'EVGA SuperNOVA 1000W G7',    'price' => 179, 'is_hot' => false, 'stock' => 22],
-                    ['name' => 'Seasonic Prime TX-1000',      'price' => 229, 'is_hot' => false, 'stock' => 18],
-                    ['name' => 'be quiet! Dark Power Pro 13', 'price' => 199, 'is_hot' => true,  'stock' => 14],
-                ],
-            ],
-            'MONITOR' => [
-                'brand' => 'ASUS',
-                'specs' => ['resolution' => '2560x1440', 'refresh' => '165Hz', 'panel' => 'IPS'],
-                'items' => [
-                    ['name' => 'ASUS ROG Swift PG27AQN', 'price' => 799, 'is_hot' => true,  'stock' => 12],
-                    ['name' => 'LG UltraGear 27GP950-B', 'price' => 649, 'is_hot' => false, 'stock' => 16],
-                    ['name' => 'Samsung Odyssey G7 32"', 'price' => 549, 'is_hot' => true,  'stock' => 10],
-                ],
-            ],
-            'KEYBOARD' => [
-                'brand' => 'Corsair',
-                'specs' => ['type' => 'Mechanical', 'switch' => 'Cherry MX Red', 'backlight' => 'RGB'],
-                'items' => [
-                    ['name' => 'Corsair K100 RGB',        'price' => 229, 'is_hot' => true,  'stock' => 25],
-                    ['name' => 'Razer BlackWidow V4 Pro', 'price' => 199, 'is_hot' => false, 'stock' => 30],
-                    ['name' => 'Logitech G915 TKL',       'price' => 169, 'is_hot' => false, 'stock' => 22],
-                ],
-            ],
-            'MOUSE' => [
-                'brand' => 'Logitech',
-                'specs' => ['dpi' => '25600', 'buttons' => '11', 'wireless' => 'Yes'],
-                'items' => [
-                    ['name' => 'Logitech G Pro X Superlight 2',  'price' => 159, 'is_hot' => true,  'stock' => 35],
-                    ['name' => 'Razer DeathAdder V3 HyperSpeed', 'price' => 99,  'is_hot' => false, 'stock' => 28],
-                    ['name' => 'SteelSeries Rival 650',          'price' => 119, 'is_hot' => false, 'stock' => 20],
-                ],
-            ],
-        ];
+        if (! file_exists($path)) {
+            $this->command->error("ProductSeeder: {$path} not found.");
+            return;
+        }
 
-        $count = 0;
+        $catalog = json_decode(file_get_contents($path), true);
+        if (! is_array($catalog) || $catalog === []) {
+            $this->command->error('ProductSeeder: catalog JSON is empty or invalid.');
+            return;
+        }
 
-        foreach ($catalog as $category => $data) {
-            foreach ($data['items'] as $index => $item) {
-                Product::create([
-                    'name' => $item['name'],
-                    'description' => 'High-performance '.$category
-                                   .' engineered for gaming and professional workloads. '
-                                   .'Features cutting-edge architecture with exceptional performance.',
-                    'price' => $item['price'],
-                    'category' => $category,
-                    'brand' => $data['brand'],
+        $this->command->info("📦 ProductSeeder: loading " . count($catalog) . " products from JSON…");
 
-                    'images' => [
-                        'https://picsum.photos/seed/'.md5($item['name']).'/400/400',
-                        'https://picsum.photos/seed/'.md5($item['name'].'_b').'/400/400',
-                        'https://picsum.photos/seed/'.md5($item['name'].'_c').'/400/400',
-                    ],
-                    // Pass specs as plain array — 'specs' cast: 'array' handles encoding
-                    'specs' => $data['specs'],
-                    'stock' => $item['stock'],
-                    'rating' => number_format(3.5 + mt_rand(0, 15) / 10, 1),
-                    'is_featured' => $index === 0,
-                    'is_hot' => $item['is_hot'],
-                ]);
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
 
-                $count++;
+        foreach ($catalog as $p) {
+            $slug = $p['slug'] ?? null;
+
+            // Slug is the identity key — products without one can't be upserted safely.
+            if (! $slug) {
+                $skipped++;
+                continue;
+            }
+
+            $data = [
+                'name'              => $p['name'] ?? null,
+                'slug'              => $slug,
+                'caption'           => $p['caption'] ?? null,
+                'description'       => $p['description'] ?? null,
+                'price'             => (string) ($p['price'] ?? ''),
+                'category'          => $p['category'] ?? null,
+                'brand'             => $p['brand'] ?? null,
+                'brand_pc_part'     => $p['brand_pc_part'] ?? null,
+                'warranty'          => $p['warranty'] ?? null,
+                'image'             => $p['image'] ?? null,
+                'image_disk'        => null,
+                'images'            => $p['images'] ?? ($p['image'] ? [$p['image']] : null),
+                'specs'             => $p['specs'] ?? [],
+                'specs_title'       => $p['specs_title'] ?? null,
+                'stock'             => $p['stock'] ?? 0,
+                'stock_status'      => $p['stock_status'] ?? null,
+                'stock_details'     => $p['stock_details'] ?? null,
+                'rating'            => (float) ($p['rating'] ?? 0),
+                'is_featured'       => (bool) ($p['is_featured'] ?? false),
+                'is_hot'            => (bool) ($p['is_hot'] ?? false),
+            ];
+
+            if ($exists = Product::where('slug', $slug)->first()) {
+                $exists->update($data);
+                $updated++;
+            } else {
+                Product::create($data);
+                $created++;
             }
         }
 
-        $this->command->info("✅ Products seeded: {$count} products across ".count($catalog).' categories');
+        // Reset the id sequence so product ids run sequentially from the current
+        // max id. Idempotent: setval to MAX(id) is safe to run on every deploy.
+        // Postgres-only (Render uses Postgres); SQLite has no separate sequence.
+        $maxId = Product::max('id');
+        if ($maxId > 0 && \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql') {
+            \Illuminate\Support\Facades\DB::statement(
+                "SELECT setval(pg_get_serial_sequence('products','id'), (SELECT MAX(id) FROM products))"
+            );
+        }
+
+        $this->command->info("✅ ProductSeeder: {$created} created, {$updated} updated, {$skipped} skipped (missing slug).");
+        $this->command->info("   products table now has " . Product::count() . " rows.");
     }
 }

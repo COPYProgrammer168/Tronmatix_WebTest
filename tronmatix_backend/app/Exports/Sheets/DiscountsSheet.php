@@ -11,13 +11,12 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldAutoSize, WithStyles, WithEvents
+class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldAutoSize, WithEvents
 {
     use BaseSheet;
 
@@ -35,22 +34,10 @@ class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
     public function headings(): array
     {
         return [
-            'ID',
-            'Code',
-            'Type',
-            'Value',
-            'Min Order ($)',
-            'Max Uses',
-            'Total Used (all time)',
-            'Status',
-            'Expires At',
+            'ID', 'Code', 'Type', 'Value', 'Min Order',
+            'Max Uses', 'Total Used', 'Status', 'Expires At',
             'Categories',
-            // Period columns
-            'Uses (Period)',
-            'Total Saved (Period) ($)',
-            'Revenue from Orders ($)',
-            'Avg Discount ($)',
-            'Period',
+            'Uses (Period)', 'Saved (Period)', 'Revenue (Period)', 'Avg Discount',
         ];
     }
 
@@ -74,18 +61,17 @@ class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
                 $d->id,
                 $d->code,
                 strtoupper($d->type),
-                $d->type === 'percentage' ? $d->value . '%' : '$' . number_format($d->value, 2),
-                $d->min_order  ? '$' . number_format($d->min_order, 2) : '—',
-                $d->max_uses   ?? 'Unlimited',
-                $d->used_count,
+                $d->type === 'percentage' ? $d->value . '%' : round($d->value, 2),
+                $d->min_order ?? 0,
+                $d->max_uses   ?? 0,
+                $d->used_count ?? 0,
                 strtoupper($d->status),
-                $d->expires_at ? $d->expires_at->format('d M Y H:i') : 'Never',
+                $d->expires_at ? $d->expires_at->format('d M Y') : 'Never',
                 $d->categories ? implode(', ', $d->categories) : 'All',
                 (int) $d->period_uses,
-                number_format((float) $d->period_saved, 2),
-                number_format((float) $d->period_revenue, 2),
-                number_format((float) $d->avg_discount, 2),
-                $this->from->format('d M Y') . ' – ' . $this->to->format('d M Y'),
+                round((float) $d->period_saved, 2),
+                round((float) $d->period_revenue, 2),
+                round((float) $d->avg_discount, 2),
             ]);
     }
 
@@ -96,14 +82,27 @@ class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
                 $sheet   = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
 
-                $this->applyBaseFormatting($event);
+                $this->addSheetTitle($event, '🏷️ Discount Codes — Period Analysis',
+                    $this->from->format('d M Y') . ' – ' . $this->to->format('d M Y'));
+                $lastRow = $sheet->getHighestRow();
 
-                // Period savings column (L) — purple
-                $this->accentColumn($sheet, 'L', $lastRow, 'FFA855F7');
-                // Uses column (K) — orange
-                $this->accentColumn($sheet, 'K', $lastRow);
+                $this->applyBaseFormatting($event, 3);
 
-                // Status colour-coding (col H)
+                // Period savings (L) — purple
+                $this->accentColumn($sheet, 'L', $lastRow, 'FFA855F7', 4);
+                $this->setCurrencyFormat($sheet, 'L', $lastRow, 4);
+                $this->setCurrencyFormat($sheet, 'M', $lastRow, 4);
+                $this->setCurrencyFormat($sheet, 'N', $lastRow, 4);
+
+                // Uses columns — integer
+                $this->setIntFormat($sheet, 'K', $lastRow, 4);
+                $this->setIntFormat($sheet, 'G', $lastRow, 4);
+                $this->setIntFormat($sheet, 'F', $lastRow, 4);
+
+                // Min order (E) — currency
+                $this->setCurrencyFormat($sheet, 'E', $lastRow, 4);
+
+                // Status colour-coding
                 $statusColors = [
                     'ACTIVE'    => ['bg' => 'FFD1FAE5', 'fg' => 'FF16A34A'],
                     'EXPIRED'   => ['bg' => 'FFFEE2E2', 'fg' => 'FFDC2626'],
@@ -111,7 +110,7 @@ class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
                     'DISABLED'  => ['bg' => 'FFF3F4F6', 'fg' => 'FF6B7280'],
                 ];
 
-                for ($row = 2; $row <= $lastRow; $row++) {
+                for ($row = 4; $row <= $lastRow; $row++) {
                     $status = strtoupper($sheet->getCell("H{$row}")->getValue());
                     $c      = $statusColors[$status] ?? ['bg' => 'FFF9F9F9', 'fg' => 'FF374151'];
                     $sheet->getStyle("H{$row}")->applyFromArray([
@@ -120,15 +119,12 @@ class DiscountsSheet implements FromCollection, WithTitle, WithHeadings, ShouldA
                     ]);
                 }
 
-                // Totals row
-                $this->addSummaryRow($sheet, $lastRow, [
+                $this->addSummaryRow($event, $lastRow, [
                     '', 'TOTAL', '', '', '', '',
-                    "=SUM(G2:G{$lastRow})",
-                    '', '', '',
-                    "=SUM(K2:K{$lastRow})",
-                    "=SUM(L2:L{$lastRow})",
-                    "=SUM(M2:M{$lastRow})",
-                    '',
+                    "=SUM(G4:G{$lastRow})", '', '', '',
+                    "=SUM(K4:K{$lastRow})",
+                    "=SUM(L4:L{$lastRow})",
+                    "=SUM(M4:M{$lastRow})",
                     '',
                 ]);
             },

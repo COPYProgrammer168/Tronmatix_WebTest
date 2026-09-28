@@ -15,10 +15,13 @@ class UserLocation extends Model
         'user_id', 'name', 'phone',
         'address', 'city', 'country', 'note',
         'is_default',
+        'lat', 'lng', 'map_address',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'lat'        => 'float',
+        'lng'        => 'float',
     ];
 
     // ── Relationships ─────────────────────────────────────────────────────────
@@ -59,6 +62,8 @@ class UserLocation extends Model
             'city' => $this->city,
             'country' => $this->country,
             'note' => $this->note,
+            'province' => $this->province?->name_en ?? $this->province?->name_kh ?? null,
+            'province_id' => $this->province_id,
         ];
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/Api/ProductController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -17,14 +15,36 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::query();
-
-        // 'all' is a special slug meaning no category filter — show everything
-        if ($request->filled('category') && strtolower($request->category) !== 'all') {
-            $query->whereRaw('LOWER(category) = ?', [strtolower($request->category)]);
+        if ($request->has('category') && is_array($request->input('category'))) {
+            $cats = array_values(array_filter(array_map('strtolower', $request->input('category'))));
+            if (count($cats) > 0) {
+                $query->where(function($q) use ($cats) {
+                    foreach ($cats as $cat) {
+                        $q->orWhereRaw('LOWER(category) LIKE ?', ['%' . $cat . '%']);
+                    }
+                });
+            }
+        } elseif ($request->filled('category') && strtolower($request->category) !== 'all') {
+            $query->whereRaw('LOWER(category) LIKE ?', ['%' . strtolower($request->category) . '%']);
         }
         if ($request->filled('brand')) {
-            $query->where('brand', $request->brand);
+            $brand = strtolower($request->brand);
+            $like = '%' . $brand . '%';
+
+            // Brand identity lives in several columns depending on how the
+            // product was entered: `brand`/`brand_pc_part` (dashboards), the
+            // free-text `category` (Table/Chair brands like SECRETLAB, DX RACER
+            // are stored there), and the product `name` (most imported products
+            // have no brand column set at all, e.g. "ASUS ROG...").
+            $query->where(function($q) use ($like, $brand) {
+                $q->whereRaw('LOWER(brand) LIKE ?', [$like])
+                  ->orWhereRaw('LOWER(brand_pc_part) LIKE ?', [$like])
+                  ->orWhereRaw('LOWER(category) = ?', [$brand])
+                  ->orWhereRaw('LOWER(category) LIKE ?', [$brand . '%'])
+                  ->orWhereRaw('LOWER(name) LIKE ?', [$like]);
+            });
         }
+
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -32,20 +52,28 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
         if ($request->filled('search')) {
-            $term = '%'.$request->search.'%';
+            $term = '%'.strtolower($request->search).'%';
             $query->where(fn ($q) => $q
-                ->where('name', 'LIKE', $term)
-                ->orWhere('category', 'LIKE', $term)
-                ->orWhere('brand', 'LIKE', $term)
-                ->orWhere('description', 'LIKE', $term)
+                ->whereRaw('LOWER(name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(category) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(brand) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(description) LIKE ?', [$term])
             );
         }
 
-        // Multi-category filter: ?cats=CPU,RAM,MAINBOARD (used by CategoryPage)
+        // Multi-category filter: ?cats=CPU,RAM,MAINBOARD (used by CategoryPage).
+        // Values are matched exactly (or as a word-boundary prefix, e.g.
+        // "SECRETLAB ..." variants) so a brand stored in the category column
+        // (e.g. "DX RACER") doesn't leak into other categories via substring.
         if ($request->filled('cats')) {
             $cats = array_map('strtolower', array_filter(explode(',', $request->cats)));
             if (count($cats) > 0) {
-                $query->whereIn(DB::raw('LOWER(category)'), $cats);
+                $query->where(function($q) use ($cats) {
+                    foreach ($cats as $cat) {
+                        $q->orWhereRaw('LOWER(category) = ?', [$cat])
+                          ->orWhereRaw('LOWER(category) LIKE ?', [$cat . '%']);
+                    }
+                });
             }
         }
 
@@ -58,7 +86,7 @@ class ProductController extends Controller
             default      => $query->latest(),
         };
 
-        $perPage = min((int) $request->input('per_page', 12), 100);
+        $perPage = min((int) $request->input('per_page', 12), 999);
         $products = $query->paginate($perPage);
 
         // use model's getAllImagesAttribute() (appended) instead of re-parsing JSON manually
@@ -71,11 +99,50 @@ class ProductController extends Controller
     }
 
     /**
+     * GET /api/products/suggestions
+     * Returns up to 4 product suggestions for the nav search dropdown.
+     */
+    public function suggestions(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $term = '%' . mb_strtolower($q) . '%';
+
+        $products = Product::query()
+            ->select('id', 'name', 'price', 'image', 'images')
+            ->where(fn ($q2) => $q2
+                ->whereRaw('LOWER(name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(category) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(brand) LIKE ?', [$term])
+            )
+            ->orderByRaw('CASE WHEN LOWER(name) LIKE ? THEN 0 ELSE 1 END', [mb_strtolower($q) . '%'])
+            ->limit(4)
+            ->get()
+            ->map(function ($p) {
+                $imgs = $p->all_images ?? [];
+                $first = $imgs[0] ?? ($p->image ?: null);
+                return [
+                    'id'    => $p->id,
+                    'name'  => $p->name,
+                    'price' => $p->price,
+                    'image' => $first,
+                ];
+            });
+
+        return response()->json(['success' => true, 'data' => $products]);
+    }
+
+    /**
      * GET /api/products/{id}
      */
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = is_numeric($id)
+            ? Product::findOrFail((int) $id)
+            : Product::where('slug', $id)->firstOrFail();
 
         //include all columns needed by ProductCard / ProductDetail
         $related = Product::where('category', $product->category)
@@ -88,5 +155,92 @@ class ProductController extends Controller
             'data' => $product,    // all_images, in_stock, display_price appended by model
             'related' => $related,
         ]);
+    }
+
+    /**
+     * POST /api/products — create a product (staff only via middleware)
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'            => 'required|string|max:255',
+            'caption'         => 'nullable|string|max:255',
+            'category'        => 'required|string|max:100',
+            'brand'           => 'nullable|string|max:100',
+            'brand_pc_part'   => 'nullable|string|max:100',
+            'warranty'        => 'nullable|string|max:100',
+            'price'           => 'required|numeric|min:0',
+            'stock'           => 'nullable|integer|min:0',
+            'stock_status'    => 'nullable|string|max:100',
+            'stock_details'   => 'nullable|string|max:255',
+            'description'     => 'nullable|string',
+            'is_featured'     => 'nullable|boolean',
+            'is_hot'          => 'nullable|boolean',
+            'image'           => 'nullable|string|max:500',
+            'images'          => 'nullable|array',
+            'images.*'        => 'nullable|string|max:500',
+            'specs'           => 'nullable|array',
+            'specs.*'         => 'nullable|string|max:500',
+            'specs_title'     => 'nullable|string|max:255',
+        ]);
+
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['is_hot']      = $request->boolean('is_hot');
+
+        $product = Product::create($validated);
+
+        return response()->json(['success' => true, 'data' => $product], 201);
+    }
+
+    /**
+     * PUT /api/products/{id} — update a product (staff only via middleware)
+     */
+    public function update(Request $request, $id)
+    {
+        $product = is_numeric($id)
+            ? Product::findOrFail((int) $id)
+            : Product::where('slug', $id)->firstOrFail();
+
+        $validated = $request->validate([
+            'name'            => 'sometimes|string|max:255',
+            'caption'         => 'nullable|string|max:255',
+            'category'        => 'sometimes|string|max:100',
+            'brand'           => 'nullable|string|max:100',
+            'brand_pc_part'   => 'nullable|string|max:100',
+            'warranty'        => 'nullable|string|max:100',
+            'price'           => 'sometimes|numeric|min:0',
+            'stock'           => 'nullable|integer|min:0',
+            'stock_status'    => 'nullable|string|max:100',
+            'stock_details'   => 'nullable|string|max:255',
+            'description'     => 'nullable|string',
+            'is_featured'     => 'nullable|boolean',
+            'is_hot'          => 'nullable|boolean',
+            'image'           => 'nullable|string|max:500',
+            'images'          => 'nullable|array',
+            'images.*'        => 'nullable|string|max:500',
+            'specs'           => 'nullable|array',
+            'specs.*'         => 'nullable|string|max:500',
+            'specs_title'     => 'nullable|string|max:255',
+        ]);
+
+        if ($request->has('is_featured')) $validated['is_featured'] = $request->boolean('is_featured');
+        if ($request->has('is_hot'))      $validated['is_hot']      = $request->boolean('is_hot');
+
+        $product->update($validated);
+
+        return response()->json(['success' => true, 'data' => $product]);
+    }
+
+    /**
+     * DELETE /api/products/{id} — delete a product (staff only via middleware)
+     */
+    public function destroy($id)
+    {
+        $product = is_numeric($id)
+            ? Product::findOrFail((int) $id)
+            : Product::where('slug', $id)->firstOrFail();
+        $product->delete();
+
+        return response()->json(['success' => true, 'message' => 'Product deleted.']);
     }
 }

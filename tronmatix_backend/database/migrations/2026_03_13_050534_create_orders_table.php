@@ -105,6 +105,9 @@ return new class extends Migration
 
             $table->index('order_id');
             $table->index('product_id');
+
+            $table->date('warranty_start')->nullable();
+            $table->date('warranty_end')->nullable();
         });
     }
 

@@ -8,40 +8,62 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Master seeder for the new demo system.
+ *
+ * Every `db:seed` run performs a full reset of the DEMO tables (with FK
+ * constraints disabled) before re-seeding, so the counts below stay pinned
+ * every time:
+ *
+ *   Users             100  (all VIP)
+ *   Staff              10  (Khmer names)
+ *   User locations    ~100–300  (real Cambodia addresses + coords)
+ *   Discounts           5  (stable codes)
+ *   Products          NOT TOUCHED — the real catalog (1099 products) is
+ *                     preserved. StockSeeder only seeds demo products when
+ *                     the products table is completely empty.
+ *   Orders            150  (all in the CURRENT month)
+ *   Order items       ~150–450  (1–3 per order)
+ *   Payments          ~150  (one per order)
+ *
+ * Dependency order matters: users → locations → discounts → products →
+ * orders(+items) → payments.
+ */
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // FIX: original used PostgreSQL syntax (SET session_replication_role,
-        // TRUNCATE … RESTART IDENTITY CASCADE) — this project uses MySQL.
-        // MySQL equivalent is FOREIGN_KEY_CHECKS=0 + plain truncate().
+        $this->resetDatabase();
+
+        $this->call([
+            UserSeeder::class,          // 100 VIP users
+            StaffSeeder::class,         // 10 staff (Khmer)
+            UserLocationSeeder::class,  // real Cambodia delivery addresses
+            DiscountSeeder::class,      // stable discount codes
+            // StockSeeder::class,       
+            OrderSeeder::class,         // 150 current-month orders + items
+            PaymentSeeder::class,       // payment rows for every order
+        ]);
+    }
+
+    private function resetDatabase(): void
+    {
         Schema::disableForeignKeyConstraints();
 
-        DB::table('chat_messages')->truncate();
-        DB::table('chat_sessions')->truncate();
         DB::table('payments')->truncate();
         DB::table('order_items')->truncate();
         DB::table('orders')->truncate();
-        DB::table('discounts')->truncate();          // FIX: was missing entirely
-        DB::table('delivery_schedules')->truncate(); // FIX: was missing entirely
+        // DB::table('stock_movements')->truncate();
+        DB::table('discounts')->truncate();
         DB::table('user_locations')->truncate();
-        DB::table('products')->truncate();
-        DB::table('banners')->truncate();
-        DB::table('admins')->truncate();
+        DB::table('staff')->truncate();
         DB::table('users')->truncate();
+        // NOTE: products intentionally NOT truncated — this is the real catalog
+        // (1099 products). Only StockSeeder refreshes demo rows when the table
+        // is empty; it never wipes the live catalog.
 
         Schema::enableForeignKeyConstraints();
 
-        // ── Run seeders in dependency order ───────────────────────────────────
-        $this->call([
-            AdminSeeder::class,
-            BannerSeeder::class,
-            ProductSeeder::class,           // products must exist before discounts
-            UserSeeder::class,
-            UserLocationSeeder::class,      // after UserSeeder
-            OrderSeeder::class,             // after UserLocationSeeder
-            DiscountSeeder::class,          // FIX: was missing — seeds all discount codes
-            DeliveryScheduleSeeder::class,  // FIX: was missing — seeds Mon–Sat time slots
-        ]);
+        $this->command->info('🧹 Database reset — all demo tables truncated.');
     }
 }

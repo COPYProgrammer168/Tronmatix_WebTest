@@ -5,22 +5,39 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\AdminSetting;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     // ── Mass assignable ───────────────────────────────────────────────────────
     protected $fillable = [
         'name',
+        'slug',
+        'sku',
+        'caption',
         'description',
         'price',
         'category',
         'brand',
+        'brand_id',
+        'warranty',
         'image',
         'image_disk',
         'images',
         'specs',
+        'specs_title',
+        // `stock` = backwards-compat alias → setStockAttribute() writes current_stock.
+        // Must be mass-assignable or Product::create()/update() silently drop it.
         'stock',
+        'current_stock',
+        'cost_price',
+        'low_stock_threshold',
+        'stock_status',
+        'stock_details',
+        'brand_pc_part',
         'rating',
         'is_featured',
         'is_hot',
@@ -28,9 +45,11 @@ class Product extends Model
 
     // ── Casts ─────────────────────────────────────────────────────────────────
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'string',
         'rating' => 'decimal:1',
-        'stock' => 'integer',
+        'current_stock' => 'integer',
+        'cost_price' => 'decimal:2',
+        'low_stock_threshold' => 'integer',
         'is_featured' => 'boolean',
         'is_hot' => 'boolean',
         'images' => 'array',
@@ -38,7 +57,50 @@ class Product extends Model
     ];
 
     // ── Appended virtual attributes ───────────────────────────────────────────
-    protected $appends = ['all_images', 'in_stock', 'display_price'];
+    protected $appends = ['all_images', 'in_stock', 'display_price', 'stock'];
+
+    // ── Boot ──────────────────────────────────────────────────────────────────
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Product $product) {
+            // Auto-fill a random 1–3 year warranty whenever none is set, so
+            // every product always carries one ("1 year" | "2 years" | "3 years").
+            // OrderController parses this string to derive each order item's
+            // warranty_start/end dates.
+            if (empty($product->warranty)) {
+                $years = [1, 2, 3][array_rand([1, 2, 3])];
+                $product->warranty = $years === 1 ? '1 year' : "{$years} years";
+            }
+
+            // Auto-update stock_status based on stock count
+            if ($product->stock !== null && $product->stock <= 0) {
+                $product->stock_status = 'Sold Out';
+            } elseif ($product->isDirty('current_stock') && $product->stock > 0 && ($product->stock_status === 'Sold Out' || empty($product->stock_status))) {
+                $product->stock_status = 'Available InStock Now';
+            }
+
+            // Auto-generate SKU from category ({PREFIX}{5 random chars}, e.g. CPUA7BQP).
+            // Only fills when empty — SKUs are permanent once created and never
+            // re-derived on update (sku is not part of the edit payload).
+            if (empty($product->sku)) {
+                $product->sku = \App\Services\SkuGenerator::generate($product->category);
+            }
+
+            // Auto-generate slug from name
+            if ($product->isDirty('name') || ! $product->slug) {
+                $base = Str::slug($product->name);
+                $slug = $base;
+                $i = 1;
+                while (static::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+                    $slug = $base . '-' . $i++;
+                }
+                $product->slug = $slug;
+            }
+        });
+    }
 
     // ── Relationships ─────────────────────────────────────────────────────────
 
@@ -47,7 +109,43 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class);
+    }
+
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
     // ── Accessors ─────────────────────────────────────────────────────────────
+
+    /**
+     * Backwards-compatible `stock` accessor → reads the current_stock column.
+     * The DB column was renamed to `current_stock` (system-of-record for the
+     * inventory ledger), but the entire storefront + API + order flow still
+     * reads `$product->stock`, so map it through here to avoid touching every
+     * consumer. Null still means "unlimited".
+     */
+    public function getStockAttribute(): ?int
+    {
+        return $this->current_stock;
+    }
+
+    /**
+     * Backwards-compatible `stock` mutator → writes current_stock.
+     * Lets existing code do `$product->stock = X` / mass-assign `'stock'`.
+     */
+    public function setStockAttribute(?int $value): void
+    {
+        $this->attributes['current_stock'] = $value;
+    }
 
     /**
      * Unified images array — bridges single `image` (old) and `images[]` (new).
@@ -102,7 +200,7 @@ class Product extends Model
             return false;
         }
         if ($this->stock !== null) {
-            $this->decrement('stock', $qty);
+            $this->decrement('current_stock', $qty);
         }
 
         return true;
@@ -126,10 +224,12 @@ class Product extends Model
         $this->save();
     }
 
-    // FIX [2]: reads AdminSetting instead of hardcoded 5
+    // Uses the per-product low_stock_threshold column (falls back to the global
+    // AdminSetting when the column is unset/0).
     public function isLowStock(): bool
     {
-        $threshold = (int) AdminSetting::get('notif_low_stock_threshold', 5);
+        $threshold = $this->low_stock_threshold
+            ?: (int) AdminSetting::get('notif_low_stock_threshold', 5);
 
         return $this->stock !== null && $this->stock > 0 && $this->stock <= $threshold;
     }
@@ -154,7 +254,7 @@ class Product extends Model
 
     public function scopeInStock($q)
     {
-        return $q->where(fn ($q) => $q->whereNull('stock')->orWhere('stock', '>', 0));
+        return $q->where(fn ($q) => $q->whereNull('current_stock')->orWhere('current_stock', '>', 0));
     }
 
     public function scopeByCategory($q, string $cat)
@@ -166,6 +266,6 @@ class Product extends Model
     {
         $threshold = (int) AdminSetting::get('notif_low_stock_threshold', 5);
 
-        return $q->where('stock', '>', 0)->where('stock', '<=', $threshold);
+        return $q->where('current_stock', '>', 0)->where('current_stock', '<=', $threshold);
     }
 }

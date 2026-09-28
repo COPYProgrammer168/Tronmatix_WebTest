@@ -1,0 +1,29 @@
+# General / OS / Editor
+.DS_Store
+Thumbs.db
+*.bak
+*.swp
+*.tmp
+*.log
+.idea/
+.vscode/
+
+# Environment & secrets — never commit real .env files
+.env
+.env.local
+.env.production
+.env.staging
+.env.render
+
+# Package managers
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# ── Vite/React Frontend ───────────────────────────────────────────────────────
+tronmatix_frontend/node_modules/
+tronmatix_frontend/.vite/
+tronmatix_frontend/dist/
+tronmatix_frontend/.env/
+tronmatix_frontend/npm-debug.log
+tronmatix_frontend/yarn-error.log

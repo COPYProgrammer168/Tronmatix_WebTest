@@ -1,0 +1,156 @@
+@startuml DFD_Level0
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 65
+
+' ── Process Style (Rounded = Process in DFD) ──
+skinparam rectangle<<process>> {
+    BackgroundColor #EFF6FF
+    BorderColor #1E3A8A
+    BorderThickness 2
+    FontColor #0F172A
+    FontStyle bold
+    roundcorner 40
+}
+
+' ── External Entity Style ──
+skinparam rectangle<<entity>> {
+    BackgroundColor #DBEAFE
+    BorderColor #1E4ED8
+    BorderThickness 2
+    FontColor #1E3A8A
+    FontStyle bold
+    roundcorner 0
+}
+
+' ── Data Store Style ──
+skinparam database<<store>> {
+    BackgroundColor #F0FDF4
+    BorderColor #15803D
+    BorderThickness 1.8
+    FontColor #14532D
+    FontStyle bold
+}
+
+skinparam arrow {
+    Color #1E3A8A
+    FontColor #334155
+    FontSize 9
+    FontName "Arial"
+    Thickness 1.4
+}
+
+' ══════════════════════════════════════════════
+' EXTERNAL ENTITIES
+' ══════════════════════════════════════════════
+rectangle "CUSTOMER" as Customer <<entity>>
+rectangle "DELIVERY\nCOURIER" as Delivery <<entity>>
+rectangle "STAFF / SELLER\n(Sales Representative)" as Seller <<entity>>
+rectangle "WAREHOUSE /\nINVENTORY (Editor)" as Warehouse <<entity>>
+rectangle "PAYMENT GATEWAY\n(ABA PayWay / Bakong)" as Gateway <<entity>>
+rectangle "TELEGRAM BOT\nSYSTEM (Bot 1 & 2)" as Telegram <<entity>>
+
+' ══════════════════════════════════════════════
+' DATA STORES
+' ══════════════════════════════════════════════
+database "DS1\nUsers &\nAuth" as DS1 <<store>>
+database "DS2\nProducts &\nCatalog" as DS2 <<store>>
+database "DS3\nOrders" as DS3 <<store>>
+database "DS4\nPayments" as DS4 <<store>>
+database "DS5\nInventory" as DS5 <<store>>
+database "DS6\nDelivery &\nDispatch" as DS6 <<store>>
+
+' ══════════════════════════════════════════════
+' PROCESSES  (8 = one per input)
+' ══════════════════════════════════════════════
+rectangle "**P1**\nCustomer\nAuthentication" as P1 <<process>>
+rectangle "**P2**\nProduct &\nCart Management" as P2 <<process>>
+rectangle "**P3**\nOrder\nProcessing" as P3 <<process>>
+rectangle "**P4**\nPayment\nProcessing" as P4 <<process>>
+rectangle "**P5**\nDelivery\nManagement" as P5 <<process>>
+rectangle "**P6**\nStaff Auth &\nDashboard Access" as P6 <<process>>
+rectangle "**P7**\nOrder Fulfillment\n& Shipping" as P7 <<process>>
+rectangle "**P8**\nInventory\nManagement" as P8 <<process>>
+
+' ══════════════════════════════════════════════
+' INPUT 1: Customer Login Credentials & Registration -> P1
+' ══════════════════════════════════════════════
+Customer -right-> P1 : Login Credentials\n& Registration
+P1 -down-> DS1   : Store / Verify\nUser Record
+DS1 -up-> P1     : User Profile
+P1 -left-> Customer : Auth Token &\nProfile Data
+
+' ══════════════════════════════════════════════
+' INPUT 2: Customer Cart Items & Product Search -> P2
+' ══════════════════════════════════════════════
+Customer -right-> P2  : Cart Items &\nProduct Search
+P2 -down-> DS2        : Query Catalog
+DS2 -up-> P2          : Product & Stock Data
+P2 -left-> Customer   : Product Details &\nStock Availability
+
+' ══════════════════════════════════════════════
+' INPUT 3: Customer Order Request -> P3
+' ══════════════════════════════════════════════
+Customer -right-> P3  : Order Request\n(Items, Address, Phone)
+P3 -down-> DS3        : Save New Order
+DS3 -up-> P3          : Order Record
+P3 -left-> Customer   : Order Invoice
+P3 -right-> P4        : Payment Trigger\n(Order ID, Amount)
+P3 -right-> P7        : New Order\nNotification
+P3 -down-> Telegram   : Order Receipt Alert
+
+' ══════════════════════════════════════════════
+' INPUT 4: Customer Payment Details (KHQR) -> P4
+' ══════════════════════════════════════════════
+Customer -right-> P4  : Payment Details\n(Scan KHQR)
+P4 -down-> Gateway    : Signed Payment\nRequest
+Gateway -up-> P4      : KHQR String &\nWebhook Confirmation
+P4 -down-> DS4        : Save Payment\nRecord
+P4 -left-> Customer   : Dynamic KHQR
+P4 -left-> P3         : Payment\nConfirmation
+
+' ══════════════════════════════════════════════
+' INPUT 5: Delivery Courier Confirmation -> P5
+' ══════════════════════════════════════════════
+Delivery -right-> P5  : Completed Delivery\nConfirmation
+P5 -down-> DS6        : Save Delivery\nRecord
+P5 -left-> Delivery   : Dispatch Sheet &\nAddress Coordinates
+P5 -down-> DS3        : Mark Order\nDelivered
+P5 -right-> Telegram  : Delivery Status Alert
+P5 -up-> Customer     : Order Delivery\nNotification
+
+' ══════════════════════════════════════════════
+' INPUT 6: Staff Login Credentials -> P6
+' ══════════════════════════════════════════════
+Seller -left-> P6     : Staff Login\nCredentials
+P6 -down-> DS1        : Verify Staff\nCredentials
+DS1 -up-> P6          : Staff Session
+P6 -right-> Seller    : Staff Session &\nDashboard Access
+
+' ══════════════════════════════════════════════
+' INPUT 7: Staff Order Status Updates -> P7
+' ══════════════════════════════════════════════
+Seller -left-> P7     : Order Status\nUpdates ('shipped')
+P7 -down-> DS3        : Update Order\nStatus
+DS3 -up-> P7          : Order Line Items
+P7 -right-> Seller    : Unfulfilled Orders\n& Line Items
+P7 -left-> P5         : Dispatch Request\n(Order, Address)
+P7 -down-> Telegram   : Shipment Update Alert
+P7 -up-> Warehouse    : Picking & Packing\nOrder Notice
+
+' ══════════════════════════════════════════════
+' INPUT 8: Warehouse Stock In & Adjustments -> P8
+' ══════════════════════════════════════════════
+Warehouse -right-> P8 : Stock In &\nInventory Adjustments
+P8 -down-> DS5        : Update Inventory\nRecord
+DS5 -up-> P8          : Current Stock Level
+P8 -right-> DS2       : Sync Product\nStock to Catalog
+P8 -left-> Warehouse  : Picking & Packing\nOrder Notice
+
+@enduml
