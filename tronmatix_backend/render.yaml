@@ -22,6 +22,7 @@ services:
 
     rootDir: tronmatix_backend
     dockerfilePath: ./Dockerfile
+    dockerContext: .
 
     healthCheckPath: /up
     autoDeploy: true
@@ -72,6 +73,16 @@ services:
         value: /var/www/html/storage/data/backups
       - key: DB_BACKUP_KEEP_LAST
         value: "10"
+      # Offsite copy on R2 (private bucket); auto-restored at boot when the
+      # disk is reset. Create the bucket "tronmatix-backups" in Cloudflare.
+      - key: DB_BACKUP_DISK
+        value: s3_backup
+      - key: DB_BACKUP_BUCKET
+        value: tronmatix-backups
+      - key: DB_BACKUP_S3_PATH
+        value: database-backups
+      - key: DB_BACKUP_INTERVAL_SECONDS
+        value: "900"
 
       # ── Session / cache / queue ───────────────────────────────────────────
       - key: SESSION_DRIVER

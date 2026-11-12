@@ -46,6 +46,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Offsite Copies (object storage)
+    |--------------------------------------------------------------------------
+    |
+    | When an offsite disk is configured (e.g. "s3_backup", backed by a private
+    | Cloudflare R2 bucket), every backup is also uploaded as a latest snapshot. The
+    | Docker entrypoint restores it automatically when the SQLite file on the
+    | persistent disk is missing or empty, so data survives a lost disk or a
+    | service recreated without one.
+    |
+    */
+
+    'offsite_disk' => env('DB_BACKUP_DISK'),
+
+    'offsite_path' => env('DB_BACKUP_S3_PATH', 'database-backups'),
+
+    'offsite_latest' => env('DB_BACKUP_S3_LATEST'),
+
+    /*
+    |--------------------------------------------------------------------------
     | pg_dump / psql Binary Paths (PostgreSQL only)
     |--------------------------------------------------------------------------
     |

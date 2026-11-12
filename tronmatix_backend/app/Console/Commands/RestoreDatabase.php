@@ -5,12 +5,15 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
 
 class RestoreDatabase extends Command
 {
     protected $signature = 'db:restore
-                            {file? : Specific backup file to restore}';
+                            {file? : Specific backup file to restore}
+                            {--cloud : Restore the latest backup uploaded to object storage}
+                            {--force : Restore without asking for confirmation}';
 
     protected $description = 'Restore the database from a backup (SQLite snapshot or PostgreSQL dump)';
 
@@ -43,15 +46,29 @@ class RestoreDatabase extends Command
             return self::FAILURE;
         }
 
-        $backupFile = $this->argument('file')
-            ? $this->resolveBackupFile($this->argument('file'), $backupPath)
-            : $this->selectBackupFile($backupPath, 'sqlite');
+        $temporaryFile = null;
+
+        if ($this->option('cloud')) {
+            $temporaryFile = $this->downloadLatestOffsite('sqlite', $backupPath);
+
+            if ($temporaryFile === null) {
+                return self::FAILURE;
+            }
+
+            $backupFile = $temporaryFile;
+        } else {
+            $backupFile = $this->argument('file')
+                ? $this->resolveBackupFile($this->argument('file'), $backupPath)
+                : $this->selectBackupFile($backupPath, 'sqlite');
+        }
 
         if ($backupFile === null) {
             return self::FAILURE;
         }
 
         if (! $this->isValidSqliteBackup($backupFile)) {
+            $this->removeTemporaryFile($temporaryFile);
+
             return self::FAILURE;
         }
 
@@ -60,8 +77,9 @@ class RestoreDatabase extends Command
             .'" with the contents of: '.basename($backupFile)
         );
 
-        if (! $this->confirm('Continue with restore?', false)) {
+        if (! $this->option('force') && ! $this->confirm('Continue with restore?', false)) {
             $this->info('Restore cancelled.');
+            $this->removeTemporaryFile($temporaryFile);
 
             return self::SUCCESS;
         }
@@ -69,6 +87,8 @@ class RestoreDatabase extends Command
         $safetyFile = $this->createSafetySnapshot($database, $backupPath);
 
         if ($safetyFile === null) {
+            $this->removeTemporaryFile($temporaryFile);
+
             return self::SUCCESS;
         }
 
@@ -88,6 +108,7 @@ class RestoreDatabase extends Command
 
         if (! @copy($backupFile, $database)) {
             $this->error('Could not write the backup to: '.$database);
+            $this->removeTemporaryFile($temporaryFile);
 
             return self::FAILURE;
         }
@@ -95,6 +116,8 @@ class RestoreDatabase extends Command
         @chmod($database, 0664);
 
         $integrity = $this->sqliteIntegrityCheck($database);
+
+        $this->removeTemporaryFile($temporaryFile);
 
         if ($integrity !== 'ok') {
             $this->error('Database restored, but the integrity check reported: '.$integrity);
@@ -134,9 +157,21 @@ class RestoreDatabase extends Command
             return self::FAILURE;
         }
 
-        $backupFile = $this->argument('file')
-            ? $this->resolveBackupFile($this->argument('file'), $backupPath)
-            : $this->selectBackupFile($backupPath, 'sql');
+        $temporaryFile = null;
+
+        if ($this->option('cloud')) {
+            $temporaryFile = $this->downloadLatestOffsite('pgsql', $backupPath);
+
+            if ($temporaryFile === null) {
+                return self::FAILURE;
+            }
+
+            $backupFile = $temporaryFile;
+        } else {
+            $backupFile = $this->argument('file')
+                ? $this->resolveBackupFile($this->argument('file'), $backupPath)
+                : $this->selectBackupFile($backupPath, 'sql');
+        }
 
         if ($backupFile === null) {
             return self::FAILURE;
@@ -147,8 +182,9 @@ class RestoreDatabase extends Command
             .'" with the contents of: '.basename($backupFile)
         );
 
-        if (! $this->confirm('Continue with restore?', false)) {
+        if (! $this->option('force') && ! $this->confirm('Continue with restore?', false)) {
             $this->info('Restore cancelled.');
+            $this->removeTemporaryFile($temporaryFile);
 
             return self::SUCCESS;
         }
@@ -176,6 +212,8 @@ class RestoreDatabase extends Command
         $process->setTimeout(600);
         $process->run();
 
+        $this->removeTemporaryFile($temporaryFile);
+
         if (! $process->isSuccessful()) {
             $errorOutput = trim($process->getErrorOutput());
             $this->error('Database restore failed.');
@@ -201,6 +239,10 @@ class RestoreDatabase extends Command
      */
     private function createSafetySnapshot(string $database, string $backupPath): ?string
     {
+        if (! is_file($database) || filesize($database) === 0) {
+            return '';
+        }
+
         $safetyFile = $backupPath.DIRECTORY_SEPARATOR
             .pathinfo($database, PATHINFO_FILENAME)
             .'_pre-restore_'.now()->format('Y-m-d_His_u').'.sqlite';
@@ -213,13 +255,89 @@ class RestoreDatabase extends Command
         } catch (\Throwable $e) {
             $this->warn('Could not create a safety snapshot: '.$e->getMessage());
 
-            if (! $this->confirm('Continue without a safety snapshot?', false)) {
+            if (! $this->option('force') && ! $this->confirm('Continue without a safety snapshot?', false)) {
                 $this->info('Restore cancelled.');
 
                 return null;
             }
 
             return '';
+        }
+    }
+
+    private function downloadLatestOffsite(string $extension, string $backupPath): ?string
+    {
+        $diskName = config('db-backup.offsite_disk');
+
+        if (! is_string($diskName) || $diskName === '') {
+            $this->error('No offsite backup disk configured (set DB_BACKUP_DISK).');
+
+            return null;
+        }
+
+        $prefix = trim((string) config('db-backup.offsite_path', 'database-backups'), '/');
+        $latest = (string) config('db-backup.offsite_latest');
+
+        if ($latest === '') {
+            $latest = $extension === 'pgsql' ? 'latest.sql' : 'latest.sqlite';
+        }
+
+        $remote = ($prefix !== '' ? $prefix.'/' : '').$latest;
+
+        try {
+            $disk = Storage::disk($diskName);
+
+            if (! $disk->exists($remote)) {
+                $this->error("Offsite backup not found: {$diskName}:{$remote}");
+
+                return null;
+            }
+
+            $targetExtension = $extension === 'pgsql' ? 'sql' : 'sqlite';
+            $target = $backupPath.DIRECTORY_SEPARATOR
+                .'cloud_restore_'.now()->format('Y-m-d_His_u').'.'.$targetExtension;
+            $source = $disk->readStream($remote);
+
+            if (! is_resource($source)) {
+                $this->error("Could not read offsite backup: {$diskName}:{$remote}");
+
+                return null;
+            }
+
+            $destination = @fopen($target, 'wb');
+
+            if ($destination === false) {
+                fclose($source);
+                $this->error('Could not create a temporary file in: '.$backupPath);
+
+                return null;
+            }
+
+            $bytes = stream_copy_to_stream($source, $destination);
+            fclose($source);
+            fclose($destination);
+
+            if ($bytes === false || $bytes === 0) {
+                @unlink($target);
+                $this->error("Offsite backup is empty: {$diskName}:{$remote}");
+
+                return null;
+            }
+
+            $this->info("Downloaded offsite backup: {$diskName}:{$remote}");
+
+            return $target;
+        } catch (\Throwable $e) {
+            $this->error('Offsite restore failed: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    private function removeTemporaryFile(?string $path): void
+    {
+        if (is_string($path) && $path !== '' && is_file($path)) {
+            @unlink($path);
         }
     }
 
