@@ -1,0 +1,31 @@
+<?php
+
+// database/migrations/xxxx_xx_xx_add_avatar_to_admins_table.php
+// Run: php artisan make:migration add_avatar_to_admins_table
+// Then replace the content with this file.
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('admins', function (Blueprint $table) {
+            // Add avatar column after 'username' if not exists
+            if (!Schema::hasColumn('admins', 'avatar')) {
+                $table->string('avatar')->nullable()->after('username');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('admins', function (Blueprint $table) {
+            if (Schema::hasColumn('admins', 'avatar')) {
+                $table->dropColumn('avatar');
+            }
+        });
+    }
+};

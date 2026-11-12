@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        // Private bucket for database dumps. Never point DB_BACKUP_DISK at
+        // the public 's3' disk above: its r2.dev URL exposes every object.
+        's3_backup' => [
+            'driver' => 's3',
+            'key' => env('DB_BACKUP_KEY', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('DB_BACKUP_SECRET', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('DB_BACKUP_REGION', env('AWS_DEFAULT_REGION')),
+            'bucket' => env('DB_BACKUP_BUCKET', 'tronmatix-backups'),
+            'endpoint' => env('DB_BACKUP_ENDPOINT', env('AWS_ENDPOINT')),
+            'use_path_style_endpoint' => env('DB_BACKUP_USE_PATH_STYLE_ENDPOINT', true),
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*

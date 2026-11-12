@@ -20,25 +20,67 @@ export default function DiscountInput({ subtotal }) {
     if (result) setCode('')
   }
 
+  /* ── Applied state ─────────────────────────────────────── */
   if (discount) {
+    const isCode  = !discount.kind || discount.kind === 'code'
+    const kindLabel = isCode ? '🎟 CODE' : '🏷 BADGE'
+    const kindBg    = isCode
+      ? (dark ? 'rgba(249,115,22,0.12)' : 'rgba(249,115,22,0.08)')
+      : (dark ? 'rgba(167,139,250,0.12)' : 'rgba(167,139,250,0.08)')
+    const kindBd    = isCode ? 'rgba(249,115,22,0.35)' : 'rgba(167,139,250,0.35)'
+    const kindColor = isCode ? '#F97316' : '#a78bfa'
+
     return (
-      <div className="flex items-center justify-between rounded-xl px-4 py-3"
-        style={{ background: dark ? 'rgba(22,163,74,0.1)' : '#f0fdf4', border: '1px solid rgba(22,163,74,0.3)' }}>
-        <div className="flex items-center gap-2">
-          <span className="text-green-500 font-black" style={{ fontSize: 16 }}>🏷 {discount.code}</span>
+      <div
+        className="flex items-center justify-between rounded-xl px-4 py-3"
+        style={{
+          background: dark ? 'rgba(22,163,74,0.1)' : '#f0fdf4',
+          border: '1px solid rgba(22,163,74,0.3)',
+        }}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Kind pill */}
+          <span
+            className="font-black"
+            style={{
+              fontSize: 10, letterSpacing: 1, padding: '2px 8px',
+              borderRadius: 20, background: kindBg,
+              border: `1px solid ${kindBd}`, color: kindColor,
+            }}
+          >
+            {kindLabel}
+          </span>
+
+          {/* Code + value */}
+          <span className="text-green-500 font-black" style={{ fontSize: 15 }}>
+            🏷 {discount.code}
+          </span>
           <span className="text-green-600 font-bold" style={{ fontSize: 14 }}>
-            {discount.type === 'percentage' ? `−${discount.value}%` : `−$${Number(discount.value).toFixed(2)}`}
+            {discount.type === 'percentage'
+              ? `−${discount.value}%`
+              : `−$${Number(discount.value).toFixed(2)}`}
           </span>
           <span className="text-green-500" style={{ fontSize: 12 }}>applied!</span>
         </div>
-        <button onClick={removeDiscount} className="text-red-400 hover:text-red-600 font-bold text-lg leading-none" title="Remove discount">✕</button>
+
+        <button
+          onClick={removeDiscount}
+          className="text-red-400 hover:text-red-600 font-bold text-lg leading-none ml-2"
+          title="Remove discount"
+        >
+          ✕
+        </button>
       </div>
     )
   }
 
+  /* ── Input state ───────────────────────────────────────── */
   return (
     <div>
-      <label className="block font-bold mb-1" style={{ fontSize: 13, letterSpacing: 1, color: label }}>
+      <label
+        className="block font-bold mb-1"
+        style={{ fontSize: 13, letterSpacing: 1, color: label }}
+      >
         DISCOUNT CODE
       </label>
       <form onSubmit={handleApply} className="flex gap-2">
@@ -53,13 +95,16 @@ export default function DiscountInput({ subtotal }) {
             border: `1px solid ${error ? '#ef4444' : success ? '#22c55e' : border}`,
           }}
         />
-        <button type="submit" disabled={loading || !code.trim()}
+        <button
+          type="submit"
+          disabled={loading || !code.trim()}
           className="px-5 py-2.5 text-white font-bold rounded-lg hover:bg-primary transition-colors disabled:opacity-50"
-          style={{ fontSize: 14, background: btnBg }}>
+          style={{ fontSize: 14, background: btnBg }}
+        >
           {loading ? '…' : 'APPLY'}
         </button>
       </form>
-      {error   && <p className="text-red-500 font-semibold mt-1" style={{ fontSize: 13 }}>⚠ {error}</p>}
+      {error   && <p className="text-red-500 font-semibold mt-1"   style={{ fontSize: 13 }}>⚠ {error}</p>}
       {success && <p className="text-green-500 font-semibold mt-1" style={{ fontSize: 13 }}>✓ {success}</p>}
     </div>
   )

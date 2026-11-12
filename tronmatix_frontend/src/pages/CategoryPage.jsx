@@ -1,107 +1,247 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import { useTheme } from '../context/ThemeContext'
+import { useLang } from '../context/LanguageContext'
+import { useCategories } from '../context/CategoryContext'
 import axios from '../lib/axios'
 
-const PAGE_SIZE = 12
-
 export function CategoryPage() {
-  const { category, sub } = useParams()
+  const { category, main, sub } = useParams()
   const [searchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
   const { dark } = useTheme()
+  const { t, isKhmer } = useLang()
+  const { categories: categoryTree } = useCategories()
 
-  const qParam    = searchParams.get('q') || ''
+  // Resolve a top-level category slug to the category/brand names that should be
+  // matched. Includes main-category names (CPU, RAM, ...) so products stored under
+  // those show up, PLUS sub-category names (INTEL 12TH, ...) and brand names
+  // (DX RACER, SECRETLAB, ...) to catch leaf-labeled products too.
+  // e.g. "pc-part" → CPU,RAM,MAINBOARD,...,"accessory" → KEYBOARD,MOUSE,...,
+  // "table-chair" → DX RACER,SECRETLAB,TTR RACING,...
+  const topLevelCats = useMemo(() => {
+    const map = {}
+      ; (categoryTree || []).forEach(cat => {
+        const subs = []
+          ; (cat.main_categories || []).forEach(mc => {
+            // Always include the main-category name itself (CPU, RAM, ...)
+            subs.push(mc.name)
+            const subCates = mc.sub_categories || []
+            subCates.forEach(sc => {
+              // Include sub-category name
+              if (sc.name) subs.push(sc.name)
+              // Include brand names living under the sub-category
+              const brands = (sc.brands || []).map(b => b.name).filter(b => b && b !== 'TBD')
+              if (brands.length) subs.push(...brands)
+            })
+          })
+        map[cat.slug] = [...new Set(subs.filter(Boolean))]
+      })
+    return map
+  }, [categoryTree])
+
+  // Resolve the exact product-category name for a deep URL.
+  // e.g. /category/pc-build/pc-build-under-1k → the sub-category "PC BUILD UNDER 1K",
+  // which matches the product's `category` column exactly.
+  const deepCategoryName = useMemo(() => {
+    const rawSlug = sub || main || ''
+    if (!rawSlug) return null
+
+    // When only a top-level slug is present (e.g. a Table/Chair brand like
+    // /category/table-chair/dx-racer from the flattened navbar), resolve it
+    // to a brand name so it can be sent as an exact category filter.
+    if (!sub) {
+      for (const cat of categoryTree || []) {
+        for (const mc of cat.main_categories || []) {
+          for (const sc of mc.sub_categories || []) {
+            for (const b of sc.brands || []) {
+              if (b.slug === rawSlug) return b.name
+            }
+          }
+        }
+      }
+    }
+
+    for (const cat of categoryTree || []) {
+      for (const mc of cat.main_categories || []) {
+        if (mc.slug === rawSlug) return mc.name
+        for (const sc of mc.sub_categories || []) {
+          if (sc.slug === rawSlug) return sc.name
+        }
+      }
+    }
+    return null
+  }, [categoryTree, main, sub])
+
+  const qParam = (searchParams.get('q') || '').toLowerCase()
   const sortParam = searchParams.get('sort') || ''
-  const isSearch  = Boolean(qParam)
+  const isSearch = Boolean(qParam)
 
-  // Human-friendly sort labels shown in the header
+  // Sort labels stay English for display (product names are English from DB)
   const SORT_LABELS = {
-    newest:      'NEW PRODUCTS',
-    'price-asc': 'LOWEST PRICE',
-    'price-desc':'HIGHEST PRICE',
-    name:        'A – Z',
-    rating:      'TOP RATED',
+    newest: isKhmer ? 'ផលិតផលថ្មី' : 'NEW PRODUCTS',
+    'price-asc': isKhmer ? 'តម្លៃទាបបំផុត' : 'LOWEST PRICE',
+    'price-desc': isKhmer ? 'តម្លៃខ្ពស់បំផុត' : 'HIGHEST PRICE',
+    name: isKhmer ? 'A – Z' : 'A – Z',
+    rating: isKhmer ? 'ពិន្ទុខ្ពស់' : 'TOP RATED',
   }
 
-  // Derive the page title:
-  // /search?sort=newest  → "NEW PRODUCTS"
-  // /search?q=ryzen      → 'SEARCH: "RYZEN"'
-  // /category/cpu        → "CPU"
-  // /category/monitor/monitor-42inch → "MONITOR 42INCH"
-  const rawSlug = sub || category || ''
+  const rawSlug = sub || main || category || ''
   const slugLabel = rawSlug.replace(/-/g, ' ').toUpperCase()
+  const brandParam = searchParams.get('brand')
+
+  // When a brand filter is active (e.g. /category/all?brand=ASUS from the
+  // BrandMarquee), the heading reflects the brand instead of the generic
+  // "All Products" label. Same inline i18n pattern as the rest of the page.
+  const brandLabel = brandParam
+    ? (isKhmer ? `${brandParam.toUpperCase()}` : `${brandParam.toUpperCase()}`)
+    : null
 
   const label = isSearch
-    ? `SEARCH: "${qParam.toUpperCase()}"`
+    ? (isKhmer ? `ស្វែងរក: "${qParam.toUpperCase()}"` : `SEARCH: "${qParam.toUpperCase()}"`)
     : (!rawSlug || rawSlug === 'all')
-      ? (SORT_LABELS[sortParam] || 'ALL PRODUCTS')
-      : slugLabel
+      ? (brandLabel || SORT_LABELS[sortParam] || t('common.allProducts'))
+      : (brandParam ? `${slugLabel} - ${brandParam.toUpperCase()}` : slugLabel)
 
   const parentLabel = (category || '').replace(/-/g, ' ').toUpperCase()
-  const parentPath  = `/category/${category}`
+  const parentPath = `/category/${category}`
+  const mainLabel = (main || '').replace(/-/g, ' ').toUpperCase()
+  const mainPath = main ? `/category/${category}/${main}` : null
 
-  const bg      = dark ? '#111827' : '#fff'
-  const text    = dark ? '#f9fafb' : '#1f2937'
+  const bg = dark ? '#111827' : '#fff'
+  const text = dark ? '#f9fafb' : '#1f2937'
   const textSub = dark ? '#9ca3af' : '#6b7280'
-  const border  = dark ? '#374151' : '#e5e7eb'
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    setPage(1)
     setProducts([])
 
-    const sortParam = searchParams.get('sort') || 'default'
+    const brand = searchParams.get('brand')
+    const sortVal = searchParams.get('sort') || 'default'
     const catsParam = searchParams.get('cats')
 
-    // Build API params for this category
     const buildParams = () => {
-      // Search mode
-      if (isSearch) return { search: qParam, per_page: 48, page: 1, sort: sortParam }
+      if (isSearch) return { search: qParam, per_page: 999, page: 1, sort: sortVal }
+      if (catsParam) return { cats: catsParam, per_page: 999, page: 1, sort: sortVal, brand: brand }
+      if (!category || category === 'all') return { per_page: 999, page: 1, sort: sortVal, brand: brand }
 
-      // "all" slug or no category — return everything, just apply sort
-      const slug = (sub || category || '').toLowerCase()
-      if (!slug || slug === 'all') return { per_page: 48, page: 1, sort: sortParam }
+      // Top-level category only: send its sub-category names via cats.
+      const isTopLevel = !main && !sub
+      const catSlug = category
 
-      // Multi-category via ?cats= URL param (from navbar subcategory links)
-      if (catsParam) return { cats: catsParam, per_page: 48, page: 1, sort: sortParam }
+      if (isTopLevel) {
+        const subs = topLevelCats[catSlug]
+        if (subs && subs.length) {
+          return { cats: subs.join(','), per_page: 999, page: 1, sort: sortVal, brand: brand }
+        }
+        const catLabel = category.replace(/-/g, ' ')
+        return { category: catLabel, per_page: 999, page: 1, sort: sortVal, brand: brand }
+      }
 
-      // Single category slug
-      const catName = slug.replace(/-/g, ' ')
-      return { category: catName, per_page: 48, page: 1, sort: sortParam }
+      // Deep level (main/sub): filter by the exact product-category name
+      // resolved from the tree (e.g. "PC BUILD UNDER 1K"). This matches the
+      // product's `category` column so only the right products show.
+      if (deepCategoryName) {
+        return { category: deepCategoryName, per_page: 999, page: 1, sort: sortVal, brand: brand }
+      }
+
+      return { per_page: 999, page: 1, sort: sortVal, brand: brand }
     }
 
     axios.get('/api/products', { params: buildParams() })
       .then(res => {
         if (cancelled) return
         const d = res.data.data ?? res.data ?? []
-        // Never fall back to MOCK — show real empty state instead
-        setProducts(Array.isArray(d) ? d : [])
+        let items = Array.isArray(d) ? d : []
+
+        if (items.length === 0 && !isSearch) {
+          // The backend ?brand= filter already matches brand, brand_pc_part,
+          // category (Table/Chair brands like SECRETLAB are stored there),
+          // and product name — one request is enough, no brand retry needed.
+
+          // Deep level with an exact-name miss: try a keyword search on the
+          // sub-category name. Brand is dropped here on purpose — the search
+          // already matches name/category/brand, and a leftover brand filter
+          // would zero out brand-as-category products.
+          if (deepCategoryName) {
+            axios.get('/api/products', {
+              params: { search: deepCategoryName, per_page: 999, page: 1, sort: sortVal },
+            })
+              .then(res2 => {
+                if (cancelled) return
+                const d2 = res2.data.data ?? res2.data ?? []
+                setProducts(Array.isArray(d2) ? d2 : [])
+              })
+              .catch(() => { if (!cancelled) setProducts([]) })
+              .finally(() => { if (!cancelled) setLoading(false) })
+            return
+          }
+
+          // Nothing resolved — stop and show the empty state instead of dumping
+          // every product in the store onto an empty category page.
+          setProducts([])
+          setLoading(false)
+          return
+        }
+
+        if (isSearch && qParam && items.length > 0) {
+          items = items.filter(p =>
+            (p.name || '').toLowerCase().includes(qParam) ||
+            (p.category || '').toLowerCase().includes(qParam) ||
+            (p.brand || '').toLowerCase().includes(qParam) ||
+            (p.description || '').toLowerCase().includes(qParam)
+          )
+        }
+        setProducts(items)
       })
       .catch(() => { if (!cancelled) setProducts([]) })
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [category, sub, searchParams])
-
-  const totalPages = Math.ceil(products.length / PAGE_SIZE)
-  const paged      = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  }, [category, main, sub, searchParams, topLevelCats, deepCategoryName])
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 py-6" style={{ background: bg, minHeight: '60vh' }}>
+    <div
+      className="max-w-[1280px] mx-auto px-4 py-6"
+      style={{ background: bg, minHeight: "60vh" }}
+    >
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-4" style={{ fontSize: 14, color: textSub }}>
-        <Link to="/" className="hover:text-primary">HOME</Link>
+      <div
+        className="flex items-center gap-2 mb-4"
+        style={{ fontSize: 14, color: textSub }}
+      >
+        <Link to="/" className="hover:text-primary">
+          {t("nav.home")}
+        </Link>
         <span>›</span>
         {isSearch ? (
-          <span className="text-primary font-bold">SEARCH RESULTS</span>
+          <span className="text-primary font-bold">
+            {t("common.searchResults")}
+          </span>
         ) : sub ? (
           <>
-            <Link to={parentPath} className="hover:text-primary">{parentLabel}</Link>
+            <Link to={parentPath} className="hover:text-primary">
+              {parentLabel}
+            </Link>
+            <span>›</span>
+            {mainPath ? (
+              <>
+                <Link to={mainPath} className="hover:text-primary">
+                  {mainLabel}
+                </Link>
+                <span>›</span>
+              </>
+            ) : null}
+            <span className="text-primary font-bold">{label}</span>
+          </>
+        ) : main ? (
+          <>
+            <Link to={parentPath} className="hover:text-primary">
+              {parentLabel}
+            </Link>
             <span>›</span>
             <span className="text-primary font-bold">{label}</span>
           </>
@@ -110,14 +250,50 @@ export function CategoryPage() {
         )}
       </div>
 
-      {/* Header */}
-      <div className="flex items-center mb-6">
-        <div className="flex-1 h-12 rounded-l" style={{ background: dark ? '#374151' : '#000' }} />
-        <div className="bg-primary text-white font-bold px-10 py-3 uppercase"
-          style={{ fontFamily: 'HurstBagod, Rajdhani, sans-serif', fontSize: 20, letterSpacing: 2 }}>
-          {isSearch
-            ? (qParam ? `🔍 ${qParam.toUpperCase()}` : '🔍 SEARCH')
-            : (label || 'ALL PRODUCTS')}
+      {/* Header banner - ribbon flag style */}
+      <div className="relative w-full mb-6" style={{ height: 48 }}>
+        <div
+          className="h-12 rounded-l"
+          style={{
+            width: "calc(100% - 5px)",
+            background: dark ? "#374151" : "#2d2d2e",
+            clipPath: "polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%)",
+          }}
+        />
+
+        <div className="absolute right-0 h-12" style={{ top: -8 }}>
+          <div
+            className="relative h-full flex items-center bg-primary text-white font-bold px-10 uppercase"
+            style={{
+              fontFamily: isKhmer
+                ? "Kh-Koulen, sans-serif"
+                : "HurstBagod, Rajdhani, sans-serif",
+              fontSize: 22,
+              letterSpacing: isKhmer ? 0 : 2,
+              clipPath:
+                "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)",
+            }}
+          >
+            {isSearch
+              ? qParam
+                ? `🔍 ${qParam.toUpperCase()}`
+                : `🔍 ${t("common.search")}`
+              : label || t("common.allProducts")}
+          </div>
+
+          {/* Folded corner - now at top-left of the ribbon */}
+          {/* Folded corner - tucked at top-left of the ribbon */}
+          <div
+            className="absolute"
+            style={{
+              left: 0,
+              bottom: "calc(100% - 8px)",
+              width: 0,
+              height: 0,
+              borderLeft: "10px solid transparent",
+              borderBottom: `8px solid ${dark ? "#1f2937" : "#7a5a00"}`,
+            }}
+          />
         </div>
       </div>
 
@@ -127,52 +303,105 @@ export function CategoryPage() {
         </div>
       ) : (
         <>
-          <p className="mb-4" style={{ fontSize: 15, color: textSub }}>
+          <p
+            className="mb-4"
+            style={{
+              fontFamily: isKhmer
+                ? "Kdam Thmor Pro, sans-serif"
+                : "Rajdhani, sans-serif",
+              fontSize: 15,
+              color: textSub,
+            }}
+          >
             {isSearch && products.length === 0
-              ? `No results found for "${qParam}"`
-              : `Showing ${paged.length} of ${products.length} product${products.length !== 1 ? 's' : ''}`}
+              ? `${t("common.searchNo")} "${qParam}"`
+              : products.length === 0
+                ? t("common.noProductsInCategory")
+                : products.length === 1
+                  ? t("common.showingProducts", { count: products.length })
+                  : t("common.showingProductsPlural", { count: products.length })}
           </p>
 
-          {isSearch && products.length === 0 && (
-            <div className="flex flex-col items-center py-20 gap-4" style={{ color: textSub }}>
-              <div style={{ fontSize: 48 }}>🔍</div>
-              <p style={{ fontSize: 18 }}>We couldn't find anything matching <strong style={{ color: text }}>"{qParam}"</strong></p>
-              <Link to="/" className="text-primary font-bold hover:underline" style={{ fontSize: 15 }}>← Back to home</Link>
+          {(isSearch || !loading) && products.length === 0 && (
+            <div
+              className="flex flex-col items-center py-20 gap-4"
+              style={{ color: textSub }}
+            >
+              {isSearch ? (
+                <div style={{ fontSize: 48 }}>🔍</div>
+              ) : (
+                <svg
+                  width="72"
+                  height="72"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={dark ? "#4b5563" : "#d1d5db"}
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ opacity: 0.7 }}
+                >
+                  {/* Empty product box */}
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                  <path d="M3.27 6.96 12 12.01l8.73-5.05" />
+                  <path d="M12 22.08V12" />
+                  {/* "empty" minus inside the box */}
+                  <line x1="9" y1="15" x2="15" y2="15" opacity="0" />
+                </svg>
+              )}
+              <p
+                style={{
+                  fontFamily: isKhmer
+                    ? "Kdam Thmor Pro, sans-serif"
+                    : "Rajdhani, sans-serif",
+                  fontSize: 18,
+                  fontWeight: 700,
+                  textAlign: "center",
+                  color: text,
+                }}
+              >
+                {isSearch ? (
+                  <>
+                    {t("common.searchNo")}{" "}
+                    <strong style={{ color: text }}>"{qParam}"</strong>
+                  </>
+                ) : (
+                  t("common.noProductsInCategory")
+                )}
+              </p>
+              {brandParam && (
+                <p
+                  style={{
+                    fontFamily: isKhmer
+                      ? "Kdam Thmor Pro, sans-serif"
+                      : "Rajdhani, sans-serif",
+                    fontSize: 14,
+                  }}
+                >
+                  {isKhmer ? `ម៉ាក: ${brandParam}` : `Brand: ${brandParam}`}
+                </p>
+              )}
+              <Link
+                to="/"
+                className="text-primary font-bold hover:underline"
+                style={{ fontSize: 15 }}
+              >
+                {t("common.backToHome")}
+              </Link>
             </div>
           )}
 
           {products.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {paged.map((p, i) => <ProductCard key={p.id || i} product={p} />)}
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              <button onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo(0,0) }}
-                disabled={page === 1}
-                className="px-4 py-2 rounded font-bold hover:border-primary hover:text-primary disabled:opacity-40 transition-colors"
-                style={{ border: `1px solid ${border}`, color: text, fontSize: 15 }}>‹ Prev</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                <button key={n} onClick={() => { setPage(n); window.scrollTo(0,0) }}
-                  className="w-10 h-10 rounded font-bold transition-colors"
-                  style={{
-                    fontSize: 15,
-                    background: page === n ? '#F97316' : 'transparent',
-                    color: page === n ? '#fff' : text,
-                    border: `1px solid ${page === n ? '#F97316' : border}`,
-                  }}>{n}</button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {products.map((p, i) => (
+                <ProductCard key={p.id || i} product={p} />
               ))}
-              <button onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo(0,0) }}
-                disabled={page === totalPages}
-                className="px-4 py-2 rounded font-bold hover:border-primary hover:text-primary disabled:opacity-40 transition-colors"
-                style={{ border: `1px solid ${border}`, color: text, fontSize: 15 }}>Next ›</button>
             </div>
           )}
         </>
       )}
     </div>
-  )
+  );
 }
 
 export default CategoryPage

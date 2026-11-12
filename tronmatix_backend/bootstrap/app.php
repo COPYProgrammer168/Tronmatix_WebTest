@@ -8,12 +8,21 @@ use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+
+        // Trust ALL proxies (Render's edge network). Lets Laravel read the real
+        // client IP from X-Forwarded-For instead of ::1.
+        $middleware->trustProxies(at: '*');
+
+        // IMPORTANT: do NOT use $middleware->use() here — it REPLACES the entire
+        // default global middleware stack (including TrustProxies, TrimStrings,
+        // ConvertEmptyStringsToNull). HandleCors is already in the default
+        // global stack, so nothing needs to be added manually.
 
         // Exclude all /api/* routes from CSRF verification (protected by Bearer token instead)
         $middleware->validateCsrfTokens(except: [
@@ -30,6 +39,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
             'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'not_banned' => \App\Http\Middleware\EnsureNotBanned::class,
         ]);
 
     })
@@ -65,4 +76,8 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
     })
+    ->withMiddleware(function ($m) {
+        $m->web(append: [\App\Http\Middleware\SetLocale::class]);
+    })
     ->create();
+    

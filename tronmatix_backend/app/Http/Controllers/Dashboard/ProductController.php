@@ -1,78 +1,117 @@
 <?php
 
-// app/Http/Controllers/Dashboard/ProductController.php
-// NOTE: rename this file to ProductController.php in app/Http/Controllers/Dashboard/
-
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminSetting;
 use App\Models\Product;
+use App\Services\ImageStorageService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private readonly ImageStorageService $storage
+    ) {}
+
     public function index(Request $request)
     {
         $query = Product::query();
 
         if ($request->filled('search')) {
-            $term = '%'.$request->search.'%';
-            $query->where(fn ($q) => $q
-                ->where('name', 'LIKE', $term)
-                ->orWhere('category', 'LIKE', $term)
-                ->orWhere('brand', 'LIKE', $term)
-            );
+            $term = '%' . $request->search . '%';
+            $query->where(fn($q) => $q
+                ->where('name', 'ILIKE', $term)
+                ->orWhere('category', 'ILIKE', $term)
+                ->orWhere('brand', 'ILIKE', $term));
         }
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
-        // FIX [2]: 'in' filter uses > 0 not > 5 — low-stock items ARE in stock
-        // FIX [2]: threshold from AdminSetting, not hardcoded 5
         $threshold = AdminSetting::int('notif_low_stock_threshold', 5);
+
         if ($request->filled('stock')) {
             match ($request->stock) {
-                'out' => $query->where('stock', '<=', 0),
-                'low' => $query->where('stock', '>', 0)->where('stock', '<=', $threshold),
-                'in' => $query->where(fn ($q) => $q->whereNull('stock')->orWhere('stock', '>', 0)), // FIX [2]
+                'out'   => $query->where('current_stock', '<=', 0),
+                'low'   => $query->where('current_stock', '>', 0)->where('current_stock', '<=', $threshold),
+                'in'    => $query->where(fn($q) => $q->whereNull('current_stock')->orWhere('current_stock', '>', 0)),
                 default => null,
             };
         }
 
         if ($request->filled('filter')) {
             match ($request->filter) {
-                'hot' => $query->where('is_hot', true),
+                'hot'      => $query->where('is_hot', true),
                 'featured' => $query->where('is_featured', true),
-                default => null,
+                default    => null,
             };
         }
 
         $products = $query->latest()->paginate(20)->withQueryString();
 
-        return view('dashboard.products', compact('products'));
+        // ── Dynamic category dropdown from the category-management tree ─────
+        // Each top-level category becomes a group; the main-category level is
+        // flattened out so options read "CATEGORY ▸ SUB" (the product's real
+        // category value). Only nodes with products appear.
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+
+        return view('dashboard.products', compact('products', 'categoryGroups'));
     }
 
     public function create()
     {
-        return view('dashboard.products-form', ['product' => null]);
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+        $stockStatuses  = $this->stockStatusList();
+        $brandList      = \App\Services\DynamicBrandList::all();
+
+        return view('dashboard.products-form', [
+            'product'        => null,
+            'categoryGroups' => $categoryGroups,
+            'stockStatuses'  => $stockStatuses,
+            'brandList'      => $brandList,
+        ]);
     }
 
     public function store(Request $request)
     {
-        // FIX [1]: stock is nullable (null = unlimited) — not required
-        $validated = $this->validateProduct($request);
+        $validated           = $this->validateProduct($request);
         $validated['images'] = $this->buildImagesArray($request);
-        Product::create($validated);
+
+        $product = Product::create($validated);
+
+        \App\Services\ActivityLogger::productCreated($product, $request);
 
         return redirect()->route('dashboard.products')->with('success', 'Product created.');
     }
 
     public function edit(Product $product)
     {
-        return view('dashboard.products-form', compact('product'));
+        $categoryGroups = \App\Services\CategoryFilterOptions::treeGroups();
+        $stockStatuses  = $this->stockStatusList();
+        $brandList      = \App\Services\DynamicBrandList::all();
+
+        return view('dashboard.products-form', compact('product', 'categoryGroups', 'stockStatuses', 'brandList'));
+    }
+
+    /**
+     * Stock-status options for the product form's datalist: the two built-in
+     * defaults always shown, plus any previously-saved custom statuses pulled
+     * from the products table so a status typed once reappears for future items.
+     */
+    private function stockStatusList(): \Illuminate\Support\Collection
+    {
+        $defaults = collect(['Available InStock Now', 'Pre-order']);
+
+        $used = \App\Models\Product::query()
+            ->whereNotNull('stock_status')
+            ->where('stock_status', '!=', '')
+            ->distinct()
+            ->orderBy('stock_status')
+            ->pluck('stock_status');
+
+        return $defaults->merge($used)->unique()->values();
     }
 
     public function update(Request $request, Product $product)
@@ -80,52 +119,66 @@ class ProductController extends Controller
         $validated = $this->validateProduct($request, $product);
 
         if ($request->boolean('remove_image')) {
-            foreach ($product->all_images as $img) {
-                $this->deleteStorageImage($img);
-            }
+            // Delete all existing images from storage
+            $this->storage->deleteMany($product->all_images);
             $validated['images'] = [];
-            $validated['image'] = null;
+            $validated['image']  = null;
         } else {
-            $allImages = $this->buildImagesArray($request);
-            $validated['images'] = empty($allImages) ? $product->all_images : $allImages;
+            $uploaded = $this->buildImagesArray($request);
+            // Keep existing images if no new ones were provided
+            $validated['images'] = empty($uploaded) ? $product->all_images : $uploaded;
         }
 
         $product->update($validated);
 
+        \App\Services\ActivityLogger::productUpdated($product, $request);
+
         return redirect()->route('dashboard.products')->with('success', 'Product updated.');
     }
 
-    public function destroy(Product $product)
+    public function destroy(Product $product, Request $request)
     {
-        foreach ($product->all_images as $img) {
-            $this->deleteStorageImage($img);
-        }
+        $this->storage->deleteMany($product->all_images);
+        $productName = $product->name;
+        $productId = $product->id;
         $product->delete();
+
+        \App\Services\ActivityLogger::log([
+            'action'      => 'product_delete',
+            'entity_type' => 'Product',
+            'entity_id'   => $productId,
+            'entity_name' => $productName,
+            'details'     => ['name' => $productName],
+        ], $request);
 
         return redirect()->route('dashboard.products')->with('success', 'Product deleted.');
     }
 
+    // ── Private helpers ───────────────────────────────────────────────────────
+
     private function buildImagesArray(Request $request): array
     {
         $result = [];
+
+        // 1. Keep existing paths/URLs already stored (passed back from the form)
         foreach ((array) $request->input('existing_images', []) as $path) {
             $path = trim((string) $path);
-            if ($path !== '') {
-                $result[] = $path;
-            }
+            if ($path !== '') $result[] = $path;
         }
+
+        // 2. Upload new files
         if ($request->hasFile('image_files')) {
             foreach ((array) $request->file('image_files') as $file) {
                 if ($file && $file->isValid()) {
-                    $result[] = '/storage/'.$file->store('products', 'public');
+                    $result[] = $this->storage->store($file, 'products');
                 }
             }
         }
+
+        // 3. Accept externally-hosted URLs (user-pasted CDN links, etc.)
         foreach ((array) $request->input('image_urls', []) as $url) {
             $url = trim((string) $url);
-            if ($url !== '') {
-                $result[] = $url;
-            }
+            if ($url !== '') $result[] = $url;
         }
 
         return array_values(array_unique(array_filter($result)));
@@ -134,34 +187,60 @@ class ProductController extends Controller
     private function validateProduct(Request $request, ?Product $product = null): array
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string|max:100',
-            'brand' => 'nullable|string|max:100',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',  // FIX [1]: nullable not required
-            'rating' => 'nullable|numeric|min:0|max:5',
-            'description' => 'nullable|string',
-            'image_files.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
-            'image_urls.*' => 'nullable|string|max:500',
+            'name'              => 'required|string|max:255',
+            'caption'           => 'nullable|string|max:255',
+            'category'          => 'required|string|max:100',
+            'brand'             => 'nullable|string|max:100',
+            'warranty'          => 'nullable|string|max:100',
+            'price'             => ['required', 'string', 'max:20', 'regex:/^\$+$|^\$?[0-9]+(\.[0-9]{1,2})?$/'],
+            'stock'             => 'nullable|integer|min:0',
+            'stock_status'      => 'nullable|string|max:100',
+            'stock_details'     => 'nullable|string|max:255',
+            'brand_pc_part'     => 'nullable|string|max:100',
+            'rating'            => 'nullable|numeric|min:0|max:5',
+            'description'       => 'nullable|string',
+            'image_files.*'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
+            'image_urls.*'      => 'nullable|string|max:500',
             'existing_images.*' => 'nullable|string|max:500',
-            'remove_image' => 'nullable|boolean',
-            'is_featured' => 'nullable|boolean',
-            'is_hot' => 'nullable|boolean',
+            'remove_image'      => 'nullable|boolean',
+            'is_featured'       => 'nullable|boolean',
+            'is_hot'            => 'nullable|boolean',
+            'specs_title'       => 'nullable|string|max:255',
         ]);
 
-        $validated['is_featured'] = $request->boolean('is_featured');
-        $validated['is_hot'] = $request->boolean('is_hot');
+        $raw = trim($validated['price'] ?? '');
+        if ($raw === '' || preg_match('/^\$+$/', $raw)) {
+            // $, $$, $$$ → store as-is (e.g. "$$$")
+            $validated['price'] = $raw ?: null;
+        } else {
+            // $299.99 or 299.99 → strip $ and save as numeric string
+            $validated['price'] = (string) (float) str_replace(['$', ','], '', $raw);
+        }
 
-        unset($validated['image_files'], $validated['image_urls'],
-            $validated['existing_images'], $validated['remove_image']);
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['is_hot']      = $request->boolean('is_hot');
+
+        // ── Specs: parallel arrays → key-value JSON ─────────────────────────
+        $specs = [];
+        if ($request->has('specs.key')) {
+            foreach ((array) $request->input('specs.key') as $i => $k) {
+                $k = trim((string) ($k ?? ''));
+                $v = trim((string) (($request->input('specs.value')[$i] ?? '')));
+                if ($k !== '' && $v !== '') {
+                    $specs[$k] = $v;
+                }
+            }
+        }
+        $validated['specs'] = ! empty($specs) ? $specs : null;
+
+        // Remove fields handled separately — not written directly to DB
+        unset(
+            $validated['image_files'],
+            $validated['image_urls'],
+            $validated['existing_images'],
+            $validated['remove_image'],
+        );
 
         return $validated;
-    }
-
-    private function deleteStorageImage(?string $path): void
-    {
-        if ($path && str_starts_with($path, '/storage/')) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $path));
-        }
     }
 }

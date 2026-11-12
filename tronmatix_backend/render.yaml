@@ -1,0 +1,237 @@
+# =============================================================================
+# Render Blueprint — Tronmatix Laravel backend with SQLite
+# =============================================================================
+# Point the Render Blueprint at this file (repository root:
+# tronmatix_backend/render.yaml). Paths are relative to the repository root.
+#
+# IMPORTANT
+# - Persistent disks require a paid Render instance (plan: starter or higher).
+#   Without a disk, the SQLite file is lost on every deploy.
+# - Set APP_KEY and the other "sync: false" values in the Render dashboard.
+#   Generate the key locally: php artisan key:generate --show
+# - The disk is mounted at /var/www/html/storage/data, which holds both
+#   database.sqlite and the backups/ directory.
+# =============================================================================
+
+services:
+  - type: web
+    name: tronmatix-backend
+    runtime: docker
+    plan: starter
+    branch: master
+
+    rootDir: tronmatix_backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    healthCheckPath: /up
+    autoDeploy: true
+
+    envVars:
+      # ── Application ───────────────────────────────────────────────────────
+      - key: APP_NAME
+        value: Tronmatix Computer
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        value: https://tronmatix-backend.onrender.com
+      - key: APP_LOCALE
+        value: en
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_TIMEZONE
+        value: Asia/Phnom_Penh
+      - key: APP_MAINTENANCE_DRIVER
+        value: file
+      - key: BCRYPT_ROUNDS
+        value: "12"
+
+      # ── Logging ───────────────────────────────────────────────────────────
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+
+      # ── Database + backups (SQLite on the persistent disk) ────────────────
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/storage/data/database.sqlite
+      - key: DB_FOREIGN_KEYS
+        value: "true"
+      - key: DB_BUSY_TIMEOUT
+        value: "5000"
+      - key: DB_JOURNAL_MODE
+        value: WAL
+      - key: DB_SYNCHRONOUS
+        value: NORMAL
+      - key: DB_BACKUP_PATH
+        value: /var/www/html/storage/data/backups
+      - key: DB_BACKUP_KEEP_LAST
+        value: "10"
+      # Offsite copy on R2 (private bucket); auto-restored at boot when the
+      # disk is reset. Create the bucket "tronmatix-backups" in Cloudflare.
+      - key: DB_BACKUP_DISK
+        value: s3_backup
+      - key: DB_BACKUP_BUCKET
+        value: tronmatix-backups
+      - key: DB_BACKUP_S3_PATH
+        value: database-backups
+      - key: DB_BACKUP_INTERVAL_SECONDS
+        value: "900"
+
+      # ── Session / cache / queue ───────────────────────────────────────────
+      - key: SESSION_DRIVER
+        value: file
+      - key: SESSION_LIFETIME
+        value: "120"
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: SESSION_SAME_SITE
+        value: lax
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: BROADCAST_CONNECTION
+        value: log
+
+      # ── Object storage (Cloudflare R2 via S3 driver) ──────────────────────
+      - key: FILESYSTEM_DISK
+        value: s3
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_BUCKET
+        value: tronmatix-storage
+      - key: AWS_DEFAULT_REGION
+        value: auto
+      - key: AWS_ENDPOINT
+        value: https://efa9fc81ab145bae274144ca40776866.r2.cloudflarestorage.com
+      - key: AWS_ENDPOINT_URL
+        value: https://efa9fc81ab145bae274144ca40776866.r2.cloudflarestorage.com
+      - key: AWS_URL
+        value: https://pub-632ee21a5b7647bea10024cea36a8514.r2.dev
+      - key: AWS_USE_PATH_STYLE_ENDPOINT
+        value: "true"
+
+      # ── Frontend / Sanctum ────────────────────────────────────────────────
+      - key: FRONTEND_URL
+        value: https://tronmatix-frontend.onrender.com
+      - key: SANCTUM_STATEFUL_DOMAINS
+        value: tronmatix-frontend.onrender.com
+
+      # ── Mail ──────────────────────────────────────────────────────────────
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: TronmatixComputer
+
+      # ── Telegram ──────────────────────────────────────────────────────────
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: TELEGRAM_USER_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_USER_WEBHOOK_SECRET
+        sync: false
+      - key: TELEGRAM_MINI_APP_URL
+        value: https://tronmatix-frontend.onrender.com/
+      - key: TELEGRAM_POLLER_ENABLED
+        value: "true"
+      - key: VITE_TELEGRAM_BOT_USERNAME
+        value: tronmatix_notification_bot
+      - key: VITE_TELEGRAM_BOT_ID
+        sync: false
+
+      # ── PayWay / ABA KHQR ─────────────────────────────────────────────────
+      - key: PAYWAY_MERCHANT_ID
+        sync: false
+      - key: PAYWAY_API_KEY
+        sync: false
+      - key: PAYWAY_RSA_PUBLIC_KEY
+        value: storage/payway_public.pem
+      - key: PAYWAY_RSA_KEY_PATH
+        value: storage/payway_private.pem
+      - key: PAYWAY_API_URL
+        value: https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments
+      - key: KHQR_BAKONG_MERCHANT_NAME
+        value: TronmatixComputer
+      - key: KHQR_BAKONG_API_URL
+        value: https://api-bakong.nbc.gov.kh/v1
+      - key: KHQR_STATIC_PAYWAY_URL
+        value: https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments
+      - key: KHQR_BAKONG_TOKEN
+        sync: false
+
+      # ── Maps / AI ─────────────────────────────────────────────────────────
+      - key: GOOGLE_MAPS_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+
+      # ── Firebase phone verification (public web config) ───────────────────
+      - key: FIREBASE_API_KEY
+        value: AIzaSyCm_b7K1fCN9EbLJGb-kcIi53AtGIi2QCs
+      - key: FIREBASE_AUTH_DOMAIN
+        value: tronmatixotp.firebaseapp.com
+      - key: FIREBASE_PROJECT_ID
+        value: tronmatixotp
+      - key: FIREBASE_STORAGE_BUCKET
+        value: tronmatixotp.firebasestorage.app
+      - key: FIREBASE_MESSAGING_SENDER_ID
+        value: "49743803686"
+      - key: FIREBASE_APP_ID
+        value: "1:49743803686:web:d50623f738839f5c6ebde7"
+      - key: FIREBASE_MEASUREMENT_ID
+        value: G-50BPGZ5E18
+      - key: FIREBASE_CREDENTIALS
+        sync: false
+
+      # ── SMS / Twilio ──────────────────────────────────────────────────────
+      - key: SMS_DRIVER
+        value: log
+      - key: TWILIO_SID
+        sync: false
+      - key: TWILIO_TOKEN
+        sync: false
+      - key: TWILIO_FROM
+        sync: false
+      - key: SMS_COUNTRY_CODE
+        value: "855"
+
+      # ── Shop origin ───────────────────────────────────────────────────────
+      - key: SHOP_ORIGIN_LAT
+        value: "11.56298"
+      - key: SHOP_ORIGIN_LNG
+        value: "104.899518"
+      - key: SHOP_ADDRESS
+        value: 14 St 160, Phnom Penh, Cambodia (Near Sovannphumi School)
+
+      # ── Developer tools ───────────────────────────────────────────────────
+      - key: DEV_PORTAL_KEY
+        sync: false
+
+    # SQLite database + backups survive deploys/restarts.
+    disk:
+      name: tronmatix-sqlite-data
+      mountPath: /var/www/html/storage/data
+      sizeGB: 1

@@ -34,7 +34,7 @@ return [
     |
     */
 
-    'guard' => ['web'],
+    'guard' => ['web', 'staff'],
 
     /*
     |--------------------------------------------------------------------------
@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => 43200, // 30 days in minutes (null = never). Forces token refresh periodically.
 
     /*
     |--------------------------------------------------------------------------

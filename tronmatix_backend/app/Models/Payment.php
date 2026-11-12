@@ -174,22 +174,26 @@ class Payment extends Model
         ]);
 
         // Keep parent order in sync
-        $this->order?->update([
-            'payment_status' => 'paid',
-            'payment_ref' => $bakongHash ?? $this->bakong_hash,
-        ]);
+        if ($this->order) {
+            $newStatus = $this->order->status === 'pending' ? 'confirmed' : $this->order->status;
+            $this->order->update([
+                'payment_status' => 'paid',
+                'status' => $newStatus,
+                'payment_ref' => $bakongHash ?? $this->bakong_hash,
+            ]);
+        }
 
         return $updated;
     }
 
     public function markAsExpired(): bool
     {
-        return $this->update(['status' => self::STATUS_EXPIRED,        'paid' => false]);
+        return $this->update(['status' => self::STATUS_EXPIRED,'paid' => false]);
     }
 
     public function markAsFailed(): bool
     {
-        return $this->update(['status' => self::STATUS_FAILED,         'paid' => false]);
+        return $this->update(['status' => self::STATUS_FAILED,'paid' => false]);
     }
 
     public function markAsManualPending(): bool
@@ -222,6 +226,12 @@ class Payment extends Model
     public function getEffectiveExpiration(): ?Carbon
     {
         return $this->qr_expires_at ?? $this->expires_at ?? null;
+    }
+
+    /** Read qr_md5 column with meta fallback */
+    public function getQrMd5Value(): ?string
+    {
+        return $this->qr_md5 ?? $this->meta['qr_md5'] ?? null;
     }
 
     /** Badge data for blade views */

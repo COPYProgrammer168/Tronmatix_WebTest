@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    'encrypt' => true, // Encrypt all session data at rest (AES-256-CBC using APP_KEY)
 
     /*
     |--------------------------------------------------------------------------
