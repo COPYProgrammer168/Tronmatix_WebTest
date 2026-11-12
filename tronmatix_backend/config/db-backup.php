@@ -8,9 +8,10 @@ return [
     |--------------------------------------------------------------------------
     |
     | Any Artisan command name listed here will trigger an automatic
-    | pg_dump backup before the command is allowed to execute.
+    | database backup before the command is allowed to execute.
     |
     */
+
     'risky_commands' => [
         'migrate:fresh',
         'migrate:refresh',
@@ -24,26 +25,32 @@ return [
     |--------------------------------------------------------------------------
     |
     | How many recent backups to keep. Older backups are pruned automatically
-    | after each successful dump.
+    | after each successful backup.
     |
     */
-    'keep_last' => 10,
+
+    'keep_last' => (int) env('DB_BACKUP_KEEP_LAST', 10),
 
     /*
     |--------------------------------------------------------------------------
     | Backup Directory
     |--------------------------------------------------------------------------
     |
-    | Where pg_dump output files are stored. Relative to the project root
-    | via storage_path().
+    | Where backup files are stored. On Render, point this at the persistent
+    | disk (e.g. /var/www/html/storage/data/backups) so backups survive
+    | redeploys.
     |
     */
-    'backup_path' => storage_path('app/backups'),
+
+    'backup_path' => env('DB_BACKUP_PATH', storage_path('app/backups')),
 
     /*
     |--------------------------------------------------------------------------
-    | pg_dump / psql Binary Paths
+    | pg_dump / psql Binary Paths (PostgreSQL only)
     |--------------------------------------------------------------------------
+    |
+    | SQLite backups use VACUUM INTO and need no external binaries. These
+    | paths are only used when the default connection driver is "pgsql".
     |
     | Override these in your .env if the binaries are not in PATH.
     | On Windows, pg_dump.exe often needs a full path here, e.g.:
@@ -52,7 +59,8 @@ return [
     |   PSQL_PATH="C:\Program Files\PostgreSQL\17\bin\psql.exe"
     |
     */
+
     'pg_dump_path' => env('PG_DUMP_PATH', 'pg_dump'),
-    'psql_path'   => env('PSQL_PATH', 'psql'),
+    'psql_path' => env('PSQL_PATH', 'psql'),
 
 ];

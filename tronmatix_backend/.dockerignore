@@ -12,6 +12,14 @@ public/spa/
 vendor/
 bootstrap/cache/*.php
 storage/logs/*.log
+storage/framework/cache/data/
+storage/framework/sessions/
+storage/framework/views/
+
+# ── Local SQLite database + backups (never ship user data) ───────────────────
+database/*.sqlite*
+storage/app/backups/
+storage/data/
 
 # ── Git / IDE ─────────────────────────────────────────────────────────────────
 .git/
@@ -23,6 +31,7 @@ storage/logs/*.log
 .env
 .env.backup
 .env.production
+.env.render.example
 # Keep .env.example — used as fallback template in Dockerfile
 !.env.example
 

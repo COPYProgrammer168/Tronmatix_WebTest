@@ -1,6 +1,7 @@
 # ================================================================
 # Backend-only Dockerfile (Laravel + Apache)
-# Database: PostgreSQL (Render managed Postgres)
+# Database: SQLite, stored on a Render persistent disk
+# (mount /var/www/html/storage/data — see render.yaml)
 # ================================================================
 
 
@@ -24,10 +25,10 @@ COPY . .
 # Restore permissions after COPY
 RUN chmod -R 777 bootstrap/cache storage
 
-# Create minimal .env — DB_CONNECTION=pgsql to match Render Postgres
+# Create minimal .env — SQLite is the production database
 RUN if [ ! -f .env ]; then \
         cp .env.example .env 2>/dev/null || \
-        printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=pgsql\n" > .env; \
+        printf "APP_NAME=Laravel\nAPP_ENV=production\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nAPP_DEBUG=false\nAPP_URL=http://localhost\nDB_CONNECTION=sqlite\n" > .env; \
     fi
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -48,18 +49,16 @@ RUN composer dump-autoload --optimize --no-scripts
 # ==============================
 FROM php:8.4-apache
 
-# FIX: Added libpq-dev + pdo_pgsql + pgsql extensions.
-# Previously only pdo_mysql was installed — Laravel couldn't find the
-# PostgreSQL driver → "could not find driver" on migrate.
+# pdo_sqlite + sqlite3 ship with the official PHP image. No PostgreSQL
+# client tools are needed for the SQLite deployment.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev libjpeg-dev libfreetype6-dev \
     libzip-dev libicu-dev libonig-dev libxml2-dev \
-    libpq-dev postgresql-client \
     unzip zip git curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         gd intl mbstring exif pcntl bcmath zip \
-        pdo_mysql pdo_pgsql pgsql \
+        pdo_mysql \
         soap sockets opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -72,7 +71,9 @@ RUN mkdir -p bootstrap/cache \
     && mkdir -p storage/framework/cache/data \
     && mkdir -p storage/framework/sessions \
     && mkdir -p storage/framework/views \
-    && mkdir -p storage/logs
+    && mkdir -p storage/logs \
+    && mkdir -p storage/data/backups \
+    && mkdir -p database
 
 COPY . .
 COPY --from=composer_builder /app/vendor ./vendor
