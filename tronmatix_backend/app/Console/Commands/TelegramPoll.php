@@ -84,8 +84,8 @@ class TelegramPoll extends Command
         // ── Take exclusive control of the bot ─────────────────────────────────
         // This kills any active getUpdates/webhook from other instances
         // (e.g. production Render) so THIS poller gets all updates.
-        // The HTTPS temp webhook fallback uses the production frontend URL
-        // because Telegram requires HTTPS for setWebhook.
+        // The HTTPS temp webhook fallback uses the backend's public URL
+        // (TELEGRAM_WEBHOOK_BASE_URL / RENDER_EXTERNAL_URL) when available.
         $this->disconnectOtherInstances();
 
         $timeout = min(50, (int) $this->option('timeout'));
@@ -231,13 +231,13 @@ class TelegramPoll extends Command
         }
 
         // 2. Force-disconnect other pollers by setting a webhook.
-        //    Telegram requires HTTPS for setWebhook. If local APP_URL is HTTP,
-        //    use the production frontend URL (known to be HTTPS) as a temp target.
-        //    This terminates any active getUpdates from Render's poller.
+        //    Telegram requires HTTPS for setWebhook. Prefer the backend's own
+        //    public URL (RENDER_EXTERNAL_URL / TELEGRAM_WEBHOOK_BASE_URL); only
+        //    fall back to the frontend as a last-resort disconnect target.
         $tempUrl = $currentUrl;
         if (! $tempUrl || ! str_starts_with($tempUrl, 'https://')) {
-            // Fallback: use the mini-app URL (production frontend, always HTTPS)
-            $fallback = config('services.telegram_user.mini_app_url', '');
+            $fallback = config('services.telegram_user.webhook_base_url', '')
+                ?: config('services.telegram_user.mini_app_url', '');
             if ($fallback && str_starts_with($fallback, 'https://')) {
                 $tempUrl = rtrim($fallback, '/') . '/api/telegram/bot-webhook';
             } else {

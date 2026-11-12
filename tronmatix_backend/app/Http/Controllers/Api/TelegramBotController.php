@@ -55,7 +55,8 @@ class TelegramBotController extends Controller
     // ── POST /api/telegram/setup-webhook  (protected) ─────────────────────────
     public function setupWebhook(Request $request): JsonResponse
     {
-        $url = rtrim(config('app.url'), '/') . '/api/telegram/bot-webhook';
+        $baseUrl = config('services.telegram_user.webhook_base_url') ?: config('app.url');
+        $url = rtrim($baseUrl, '/') . '/api/telegram/bot-webhook';
 
         $result = $this->bot->registerWebhook($url);
 

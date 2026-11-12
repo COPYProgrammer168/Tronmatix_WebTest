@@ -31,7 +31,7 @@ class TelegramSetupBot extends Command
         if ($this->option('info')) {
             $info = $bot->getWebhookInfo();
             $this->info('Current webhook info:');
-            $this->line(json_encode($info['result'] ?? $info, JSON_PRETTY_PRINT));
+            $this->line(json_encode($info['result'] ?? $info, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             return self::SUCCESS;
         }
 
@@ -50,7 +50,12 @@ class TelegramSetupBot extends Command
         // ── Webhook registration (skipped with --commands-only) ───────────────
         if (! $this->option('commands-only')) {
 
-            $baseUrl = rtrim($this->option('url') ?: config('app.url'), '/');
+            $baseUrl = rtrim(
+                $this->option('url')
+                    ?: config('services.telegram_user.webhook_base_url')
+                    ?: config('app.url'),
+                '/'
+            );
 
             if (! str_starts_with($baseUrl, 'https://')) {
                 $this->newLine();

@@ -126,25 +126,52 @@ if [ -n "$TELEGRAM_USER_BOT_TOKEN" ]; then
 
     # Try webhook mode first — production has a public URL, so Telegram can
     # POST updates directly. This avoids 409 conflicts with local dev polling.
+    #
+    # The webhook MUST point at this service (the Laravel backend), never the
+    # static frontend: a frontend URL just rewrites to index.html and drops the
+    # update. Render injects RENDER_EXTERNAL_URL automatically, so prefer it
+    # over APP_URL (which may be misconfigured in the dashboard).
     WEBHOOK_OK=0
-    WEBHOOK_URL="${APP_URL}/api/telegram/bot-webhook"
-    if [[ "$APP_URL" =~ ^https:// ]]; then
-        echo ">>> Registering webhook: ${WEBHOOK_URL}"
-        php artisan telegram:setup --url="${APP_URL}" --commands-only 2>/dev/null || true
-        WEBHOOK_OK=$(php artisan telegram:setup --info 2>/dev/null | grep -c '"ok":true' || true)
+    WEBHOOK_BASE_URL="${TELEGRAM_WEBHOOK_BASE_URL:-${RENDER_EXTERNAL_URL:-$APP_URL}}"
+    WEBHOOK_BASE_URL="${WEBHOOK_BASE_URL%/}"
+    WEBHOOK_URL="${WEBHOOK_BASE_URL}/api/telegram/bot-webhook"
 
-        if [ "$WEBHOOK_OK" -gt 0 ]; then
-            # Also register bot commands
-            php artisan telegram:setup --commands-only 2>/dev/null || true
+    if [[ "$WEBHOOK_BASE_URL" =~ ^https:// ]]; then
+        echo ">>> Registering webhook: ${WEBHOOK_URL}"
+        php artisan telegram:setup --url="${WEBHOOK_BASE_URL}" 2>/dev/null || true
+
+        # NOTE: `telegram:setup --info` prints only the `result` object — there
+        # is no "ok" flag in it. Match the registered URL instead.
+        WEBHOOK_INFO=$(php artisan telegram:setup --info 2>/dev/null || true)
+        if printf '%s' "$WEBHOOK_INFO" | grep -Fq "$WEBHOOK_URL"; then
+            WEBHOOK_OK=1
             echo ">>> Webhook mode active - no poller needed."
+
+            # Watchdog: a poller left over from an older deploy can clear the
+            # webhook while handling 409s. Re-register it if it goes missing.
+            WATCHDOG_SECONDS="${TELEGRAM_WEBHOOK_WATCHDOG_SECONDS:-60}"
+            if [ "$WATCHDOG_SECONDS" -gt 0 ] 2>/dev/null; then
+                (
+                    while true; do
+                        sleep "$WATCHDOG_SECONDS"
+                        CURRENT_INFO=$(php artisan telegram:setup --info 2>/dev/null || true)
+                        if ! printf '%s' "$CURRENT_INFO" | grep -Fq "$WEBHOOK_URL"; then
+                            echo ">>> Webhook missing - re-registering ${WEBHOOK_URL}"
+                            php artisan telegram:setup --url="${WEBHOOK_BASE_URL}" >/dev/null 2>&1 || true
+                        fi
+                    done
+                ) &
+                echo ">>> Webhook watchdog PID: $!"
+            fi
         else
             echo ">>> Webhook registration failed - falling back to polling mode."
+            echo ">>> Current webhook info: ${WEBHOOK_INFO}"
             # Fall through to polling below
         fi
     fi
 
-    # Polling mode (fallback or when APP_URL is not HTTPS)
-    if [[ ! "$APP_URL" =~ ^https:// ]] || [ "$WEBHOOK_OK" -eq 0 ]; then
+    # Polling mode (fallback or when WEBHOOK_BASE_URL is not HTTPS)
+    if [[ ! "$WEBHOOK_BASE_URL" =~ ^https:// ]] || [ "$WEBHOOK_OK" -eq 0 ]; then
         echo ">>> Starting Telegram poll worker in background..."
         (
             while true; do

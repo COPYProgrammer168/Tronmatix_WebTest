@@ -42,6 +42,7 @@ return [
         'bot_token'       => env('TELEGRAM_USER_BOT_TOKEN'),
         'chat_id'         => env('TELEGRAM_CHAT_ID'),
         'webhook_secret'  => env('TELEGRAM_USER_WEBHOOK_SECRET', ''),
+        'webhook_base_url' => env('TELEGRAM_WEBHOOK_BASE_URL', env('RENDER_EXTERNAL_URL', env('APP_URL', ''))),
         'mini_app_url'    => env('TELEGRAM_MINI_APP_URL', env('APP_URL', '')),
         'poller_enabled'  => env('TELEGRAM_POLLER_ENABLED', true),
     ],
